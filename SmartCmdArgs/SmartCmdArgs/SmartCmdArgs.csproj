@@ -53,6 +53,13 @@
   <ItemGroup>
     <Compile Include="CmdArgsToolWindow.cs" />
     <Compile Include="CmdArgsToolWindowCommand.cs" />
+    <Compile Include="ViewModel\CmdArgItem.cs" />
+    <Compile Include="ViewModel\CmdArgListViewModel.cs" />
+    <Compile Include="ViewModel\CmdArgsToolWindowViewModel.cs" />
+    <Compile Include="ViewModel\PropertyChangedBase.cs" />
+    <Compile Include="View\CmdArgListControl.xaml.cs">
+      <DependentUpon>CmdArgListControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\CmdArgsToolWindowControl.xaml.cs">
       <DependentUpon>CmdArgsToolWindowControl.xaml</DependentUpon>
     </Compile>
@@ -67,6 +74,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="View\CmdArgListControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\CmdArgsToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
