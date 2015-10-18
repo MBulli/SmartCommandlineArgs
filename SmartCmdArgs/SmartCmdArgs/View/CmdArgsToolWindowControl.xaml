@@ -18,9 +18,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="22" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="22" />
         </Grid.RowDefinitions>
         
         <Button  Grid.Row="0" Content="Click me!" Click="button1_Click" x:Name="button1" />
-        <local:CmdArgListControl Grid.Row="1" DataContext="{Binding CommandlineArguments}"/>
+        <local:CmdArgListControl Grid.Row="1" DataContext="{Binding CommandlineArguments}" />
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Button Content="A" Width="22" />
+        </StackPanel>
     </Grid>
 </UserControl>

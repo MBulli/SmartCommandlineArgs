@@ -24,6 +24,11 @@ namespace SmartCmdArgs
     [Guid("a21b35ed-5c13-4d55-a3d2-71054c4e9540")]
     public class CmdArgsToolWindow : ToolWindowPane
     {
+        private new CmdArgsToolWindowPackage Package
+        {
+            get { return (CmdArgsToolWindowPackage)base.Package; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CmdArgsToolWindow"/> class.
         /// </summary>

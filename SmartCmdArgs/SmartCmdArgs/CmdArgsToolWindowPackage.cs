@@ -49,12 +49,12 @@ namespace SmartCmdArgs
         /// CmdArgsToolWindowPackage GUID string.
         /// </summary>
         public const string PackageGuidString = "131b0c0a-5dd0-4680-b261-86ab5387b86e";
+        public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
+        private readonly string _VSConstants_VSStd97CmdID_GUID;
 
         private EnvDTE.DTE appObject;
         private EnvDTE.SolutionEvents solutionEvents;
         private EnvDTE.CommandEvents commandEvents;
-
-        private readonly string _VSConstants_VSStd97CmdID_GUID;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CmdArgsToolWindow"/> class.
@@ -66,12 +66,11 @@ namespace SmartCmdArgs
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
 
-
             // cache guid value
             _VSConstants_VSStd97CmdID_GUID = typeof(VSConstants.VSStd97CmdID).GUID.ToString("B").ToUpper();
 
             // TODO add option keys to store custom data in suo file
-            // this.AddOptionKey("Test");
+            this.AddOptionKey(SolutionOptionKey);
         }
 
         #region Package Members
@@ -100,10 +99,20 @@ namespace SmartCmdArgs
         protected override void OnLoadOptions(string key, Stream stream)
         {
             base.OnLoadOptions(key, stream);
+
+            if (key == SolutionOptionKey)
+            {
+                Model.CmdArgStorage.Instance.PopulateFromStream(stream);
+            }
         }
         protected override void OnSaveOptions(string key, Stream stream)
         {
             base.OnSaveOptions(key, stream);
+
+            if (key == SolutionOptionKey)
+            {
+                Model.CmdArgStorage.Instance.StoreToStream(stream);
+            }
         }
 
 
