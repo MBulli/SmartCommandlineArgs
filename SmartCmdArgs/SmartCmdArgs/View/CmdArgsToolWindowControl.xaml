@@ -14,6 +14,11 @@
     <UserControl.DataContext>
         <vm:CmdArgsToolWindowViewModel />
     </UserControl.DataContext>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <BitmapImage x:Key="AddIcon" UriSource="../Resources/iconmonstr-plus-2-icon-32.png"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="22" />
@@ -25,7 +30,9 @@
         <local:CmdArgListControl Grid.Row="1" DataContext="{Binding CommandlineArguments}" />
 
         <StackPanel Grid.Row="2" Orientation="Horizontal">
-            <Button Content="A" Width="22" />
+            <Button Width="22" Command="{Binding AddEntryCommand}">
+                <Image Source="{StaticResource AddIcon}" />
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -1,26 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using SmartCmdArgs.ViewModel;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace SmartCmdArgs.Model
 {
-    class CmdArgStorage
+    class CmdArgStorage : PropertyChangedBase
     {
         private static readonly Lazy<CmdArgStorage> singletonLazy = new Lazy<CmdArgStorage>(() => new CmdArgStorage());
 
         // TODO: For now use singleton, better way would be services
         public static CmdArgStorage Instance { get { return singletonLazy.Value; } }
 
-        private List<CmdArgStorageEntry> entryList;
-
+        private List<CmdArgStorageEntry> entryList; 
 
         public IReadOnlyList<CmdArgStorageEntry> Entries { get { return entryList; } }
-        
+        public string CurStartupProject { get; private set; }
+
+        public IReadOnlyList<CmdArgStorageEntry> CurStartupProjectEntries
+        {
+            get { return entryList.FindAll(entry => entry.Project == CurStartupProject); }
+        }
 
         private CmdArgStorage()
         {
@@ -35,7 +40,8 @@ namespace SmartCmdArgs.Model
             StreamReader sr = new StreamReader(stream);
             string jsonStr = sr.ReadToEnd();
 
-            var entries = JsonConvert.DeserializeObject<CmdArgStorageEntry[]>(jsonStr);
+            entryList = JsonConvert.DeserializeObject<List<CmdArgStorageEntry>>(jsonStr);
+            OnEntriesReloaded();
         }
 
         public void StoreToStream(Stream stream)
@@ -48,12 +54,60 @@ namespace SmartCmdArgs.Model
             StreamWriter sw = new StreamWriter(stream);
             sw.Write(jsonStr);
         }
+
+        public void RemoveEntryById(Guid id)
+        {
+            CmdArgStorageEntry entryToRemove = entryList.Find(entry => entry.Id == id);
+            entryList.Remove(entryToRemove);
+            OnEntryRemoved(entryToRemove);
+        }
+
+        public void AddEntry(string command, bool enabled = true)
+        {
+            var newEntry = new CmdArgStorageEntry
+            {
+                Id = Guid.NewGuid(),
+                Enabled = enabled,
+                Project = CurStartupProject,
+                Command = command
+            };
+            entryList.Add(newEntry);
+            OnEntryAdded(newEntry);
+        }
+
+        public void UpdateStartupProject(string projName)
+        {
+            CurStartupProject = projName;
+            OnEntriesReloaded();
+        }
+
+        public event EventHandler<IReadOnlyList<CmdArgStorageEntry>> EntriesReloaded;
+        protected virtual void OnEntriesReloaded()
+        {
+            EntriesReloaded?.Invoke(this, CurStartupProjectEntries);
+        }
+
+        public event EventHandler<CmdArgStorageEntry> EntryAdded;
+        protected virtual void OnEntryAdded(CmdArgStorageEntry e)
+        {
+            EntryAdded?.Invoke(this, e);
+        }
+
+        public event EventHandler<CmdArgStorageEntry> EntryRemoved;
+        protected virtual void OnEntryRemoved(CmdArgStorageEntry e)
+        {
+            EntryRemoved?.Invoke(this, e);
+        }
     }
 
     class CmdArgStorageEntry
     {
+        public Guid Id { get; set; }
+
         public bool Enabled { get; set; }
+
         public string Project { get; set; }
+
         public string Command { get; set; }
     }
 }

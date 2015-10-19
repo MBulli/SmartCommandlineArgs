@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using IramesYTD.Utils;
 using SmartCmdArgs.Model;
 
 namespace SmartCmdArgs.ViewModel
@@ -12,21 +12,15 @@ namespace SmartCmdArgs.ViewModel
     {
         public CmdArgListViewModel CommandlineArguments { get; private set; }
 
+        public RelayCommand AddEntryCommand { get { return addEntryCommand.Value; } }
+        private Lazy<RelayCommand> addEntryCommand = new Lazy<RelayCommand>(() => new RelayCommand(() =>
+        {
+            CmdArgStorage.Instance.AddEntry(command: "", enabled: true);
+        })); 
+
         public CmdArgsToolWindowViewModel()
         {
             this.CommandlineArguments = new CmdArgListViewModel();
-
-            this.CommandlineArguments.CmdLineItems.CollectionChanged += CmdLineItems_CollectionChanged;
-
-            foreach (CmdArgStorageEntry entry in CmdArgStorage.Instance.Entries)
-            {
-                CommandlineArguments.CmdLineItems.Add(new CmdArgItem(entry.Enabled, entry.Command));
-            }
-        }
-
-        private void CmdLineItems_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            
         }
     }
 }

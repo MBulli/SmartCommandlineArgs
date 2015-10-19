@@ -8,8 +8,15 @@ namespace SmartCmdArgs.ViewModel
 {
     public class CmdArgItem : PropertyChangedBase
     {
+        private Guid id;
         private bool enabled;
         private string value;
+
+        public Guid Id
+        {
+            get { return id; }
+            set { id = value; OnNotifyPropertyChanged(); }
+        }
 
         public string Value
         {
@@ -21,12 +28,6 @@ namespace SmartCmdArgs.ViewModel
         {
             get { return enabled; }
             set { enabled = value; OnNotifyPropertyChanged(); }
-        }
-
-        public CmdArgItem(bool enabled = false, string value = "")
-        {
-            this.enabled = enabled;
-            this.value = value;
         }
     }
 }

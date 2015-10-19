@@ -57,11 +57,12 @@
   <ItemGroup>
     <Compile Include="CmdArgsToolWindow.cs" />
     <Compile Include="CmdArgsToolWindowCommand.cs" />
+    <Compile Include="Helper\RelayCommand.cs" />
     <Compile Include="Model\CmdArgStorage.cs" />
     <Compile Include="ViewModel\CmdArgItem.cs" />
     <Compile Include="ViewModel\CmdArgListViewModel.cs" />
     <Compile Include="ViewModel\CmdArgsToolWindowViewModel.cs" />
-    <Compile Include="ViewModel\PropertyChangedBase.cs" />
+    <Compile Include="Helper\PropertyChangedBase.cs" />
     <Compile Include="View\CmdArgListControl.xaml.cs">
       <DependentUpon>CmdArgListControl.xaml</DependentUpon>
     </Compile>
@@ -201,6 +202,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\iconmonstr-plus-2-icon-32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <VSCTCompile Include="CmdArgsToolWindowPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>

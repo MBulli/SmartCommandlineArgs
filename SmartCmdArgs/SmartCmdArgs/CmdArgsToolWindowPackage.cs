@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
+using SmartCmdArgs.Model;
 
 namespace SmartCmdArgs
 {
@@ -128,6 +129,10 @@ namespace SmartCmdArgs
             EnvDTE.Project project;
             bool found = FindProject(this.appObject?.Solution, prjName, out project);
 
+            if (!found)
+                throw new InvalidOperationException("No startup project found.");
+
+            CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
             // TODO
             //var p0 = project?.ConfigurationManager?.ActiveConfiguration?.Properties?.Item("StartArguments"); // CLR project?
             //var p1 = project?.ConfigurationManager?.ActiveConfiguration?.Properties?.Item("CommandArguments"); C project?
