@@ -129,7 +129,7 @@ namespace SmartCmdArgs
 
             if (found)
             {
-                var activeEntries = CmdArgStorage.Instance.CurStartupProjectEntries.Where((e) => e.Enabled);
+                var activeEntries = CmdArgStorage.Instance.CurStartupProjectEntries.Where((e) => e.Enabled).Select(entry => entry.Command);
                 string prjCmdArgs = string.Join(" ", activeEntries);
 
                 foreach (EnvDTE.Configuration config in project.ConfigurationManager)
@@ -153,6 +153,7 @@ namespace SmartCmdArgs
             CmdArgStorage.Instance.EntriesReloaded += CmdArgStore_EntriesReloaded;
             CmdArgStorage.Instance.EntryAdded += CmdArgStoreage_Changed;
             CmdArgStorage.Instance.EntryRemoved += CmdArgStoreage_Changed;
+            CmdArgStorage.Instance.EntryUpdated += CmdArgStoreage_Changed;
 
             EnvDTE.Project project;
             bool found = FindStartupProject(out project);

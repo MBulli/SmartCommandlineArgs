@@ -45,6 +45,7 @@ namespace SmartCmdArgs.Model
             if (entries != null)
             {
                 entryList = entries;
+                entryList.ForEach(entry => entry.PropertyChanged += (sender, args) => OnEntryUpdated((CmdArgStorageEntry) sender));
             }
 
             OnEntriesReloaded();
@@ -78,6 +79,7 @@ namespace SmartCmdArgs.Model
                 Project = CurStartupProject,
                 Command = command
             };
+            newEntry.PropertyChanged += (sender, args) => OnEntryUpdated((CmdArgStorageEntry) sender);
             entryList.Add(newEntry);
             OnEntryAdded(newEntry);
         }
@@ -120,16 +122,43 @@ namespace SmartCmdArgs.Model
         {
             EntryRemoved?.Invoke(this, e);
         }
+
+        public event EventHandler<CmdArgStorageEntry> EntryUpdated;
+        protected virtual void OnEntryUpdated(CmdArgStorageEntry e)
+        {
+            EntryUpdated?.Invoke(this, e);
+        }
     }
 
-    class CmdArgStorageEntry
+    class CmdArgStorageEntry : PropertyChangedBase
     {
-        public Guid Id { get; set; }
+        private Guid id;
+        private bool enabled;
+        private string project;
+        private string command;
 
-        public bool Enabled { get; set; }
+        public Guid Id
+        {
+            get { return id; }
+            set { id = value; OnNotifyPropertyChanged(); }
+        }
 
-        public string Project { get; set; }
+        public bool Enabled
+        {
+            get { return enabled; }
+            set { enabled = value; OnNotifyPropertyChanged(); }
+        }
 
-        public string Command { get; set; }
+        public string Project
+        {
+            get { return project; }
+            set { project = value; OnNotifyPropertyChanged(); }
+        }
+
+        public string Command
+        {
+            get { return command; }
+            set { command = value; OnNotifyPropertyChanged(); }
+        }
     }
 }
