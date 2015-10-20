@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,10 @@ namespace SmartCmdArgs.ViewModel
             CmdArgStorage.Instance.EntryRemoved += (sender, entry) => RemoveById(entry.Id);
             CmdArgStorage.Instance.EntriesReloaded += (sender, list) =>
             {
+                foreach (var cmdLineItem in CmdLineItems)
+                {
+                    cmdLineItem.PropertyChanged -= OnPropertyChangedInItem;
+                }
                 CmdLineItems.Clear();
                 AddAllCmdArgStoreEntries(list);
             };
@@ -38,7 +43,9 @@ namespace SmartCmdArgs.ViewModel
         private void RemoveById(Guid id)
         {
             var itemToRemove = CmdLineItems.FirstOrDefault(item => item.Id == id);
+            if (itemToRemove == null) return;
             CmdLineItems.Remove(itemToRemove);
+            itemToRemove.PropertyChanged -= OnPropertyChangedInItem;
         }
 
         private void AddCmdArgStoreEntry(CmdArgStorageEntry entry)
@@ -49,15 +56,17 @@ namespace SmartCmdArgs.ViewModel
                 Enabled = entry.Enabled,
                 Value = entry.Command
             };
-            newItem.PropertyChanged += (sender, args) =>
-            {
-                var item = sender as CmdArgItem;
-                if (args.PropertyName == "Value")
-                    CmdArgStorage.Instance.UpdateCommandById(item.Id, item.Value);
-                else if (args.PropertyName == "Enabled")
-                    CmdArgStorage.Instance.UpdateEnabledById(item.Id, item.Enabled);
-            };
+            newItem.PropertyChanged += OnPropertyChangedInItem;
             CmdLineItems.Add(newItem);
+        }
+
+        private void OnPropertyChangedInItem(object sender, PropertyChangedEventArgs args)
+        {
+            var item = sender as CmdArgItem;
+            if (args.PropertyName == "Value")
+                CmdArgStorage.Instance.UpdateCommandById(item.Id, item.Value);
+            else if (args.PropertyName == "Enabled")
+                CmdArgStorage.Instance.UpdateEnabledById(item.Id, item.Enabled);
         }
     }
 }

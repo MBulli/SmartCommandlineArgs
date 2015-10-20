@@ -45,7 +45,7 @@ namespace SmartCmdArgs.Model
             if (entries != null)
             {
                 entryList = entries;
-                entryList.ForEach(entry => entry.PropertyChanged += (sender, args) => OnEntryUpdated((CmdArgStorageEntry) sender));
+                entryList.ForEach(entry => entry.PropertyChanged += OnPropertyChangedInEntry);
             }
 
             OnEntriesReloaded();
@@ -67,6 +67,7 @@ namespace SmartCmdArgs.Model
         {
             CmdArgStorageEntry entryToRemove = FindEntryById(id);
             entryList.Remove(entryToRemove);
+            entryToRemove.PropertyChanged -= OnPropertyChangedInEntry;
             OnEntryRemoved(entryToRemove);
         }
 
@@ -79,9 +80,14 @@ namespace SmartCmdArgs.Model
                 Project = CurStartupProject,
                 Command = command
             };
-            newEntry.PropertyChanged += (sender, args) => OnEntryUpdated((CmdArgStorageEntry) sender);
+            newEntry.PropertyChanged += OnPropertyChangedInEntry;
             entryList.Add(newEntry);
             OnEntryAdded(newEntry);
+        }
+
+        private void OnPropertyChangedInEntry(object sender, PropertyChangedEventArgs args)
+        {
+            OnEntryUpdated((CmdArgStorageEntry) sender);
         }
 
         public void UpdateCommandById(Guid id, string newCommand)
