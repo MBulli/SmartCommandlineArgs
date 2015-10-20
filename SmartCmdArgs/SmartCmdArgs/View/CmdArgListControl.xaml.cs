@@ -39,5 +39,8 @@ namespace SmartCmdArgs.View
                 item.Enabled = !item.Enabled;
             }
         }
+
+        // TODO: fix HACK
+        public DataGrid CommandsDataGridProp => CommandsDataGrid;
     }
 }

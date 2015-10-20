@@ -100,7 +100,7 @@ namespace SmartCmdArgs
                 throw new NotSupportedException("Cannot create tool window");
             }
 
-            window.Package = package;
+            //window.Package = package;
             IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }

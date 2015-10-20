@@ -43,12 +43,21 @@ namespace SmartCmdArgs.ViewModel
 
         private void AddCmdArgStoreEntry(CmdArgStorageEntry entry)
         {
-            CmdLineItems.Add(new CmdArgItem
+            CmdArgItem newItem = new CmdArgItem
             {
                 Id = entry.Id,
                 Enabled = entry.Enabled,
                 Value = entry.Command
-            });
+            };
+            newItem.PropertyChanged += (sender, args) =>
+            {
+                var item = sender as CmdArgItem;
+                if (args.PropertyName == "Value")
+                    CmdArgStorage.Instance.UpdateCommandById(item.Id, item.Value);
+                else if (args.PropertyName == "Enabled")
+                    CmdArgStorage.Instance.UpdateEnabledById(item.Id, item.Enabled);
+            };
+            CmdLineItems.Add(newItem);
         }
     }
 }

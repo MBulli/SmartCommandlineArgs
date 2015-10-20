@@ -57,7 +57,7 @@ namespace SmartCmdArgs.Model
 
         public void RemoveEntryById(Guid id)
         {
-            CmdArgStorageEntry entryToRemove = entryList.Find(entry => entry.Id == id);
+            CmdArgStorageEntry entryToRemove = FindEntryById(id);
             entryList.Remove(entryToRemove);
             OnEntryRemoved(entryToRemove);
         }
@@ -75,10 +75,25 @@ namespace SmartCmdArgs.Model
             OnEntryAdded(newEntry);
         }
 
+        public void UpdateCommandById(Guid id, string newCommand)
+        {
+            FindEntryById(id).Command = newCommand;
+        }
+
+        public void UpdateEnabledById(Guid id, bool newEnabled)
+        {
+            FindEntryById(id).Enabled = newEnabled;
+        }
+
         public void UpdateStartupProject(string projName)
         {
             CurStartupProject = projName;
             OnEntriesReloaded();
+        }
+
+        private CmdArgStorageEntry FindEntryById(Guid id)
+        {
+            return entryList.Find(entry => entry.Id == id);
         }
 
         public event EventHandler<IReadOnlyList<CmdArgStorageEntry>> EntriesReloaded;
