@@ -170,6 +170,7 @@ namespace SmartCmdArgs
             CmdArgStorage.Instance.EntriesReloaded -= CmdArgStore_EntriesReloaded;
             CmdArgStorage.Instance.EntryAdded -= CmdArgStoreage_Changed;
             CmdArgStorage.Instance.EntryRemoved -= CmdArgStoreage_Changed;
+            CmdArgStorage.Instance.EntryUpdated -= CmdArgStoreage_Changed;
         }
 
 
