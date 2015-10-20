@@ -185,7 +185,13 @@ namespace SmartCmdArgs
                 switch ((VSConstants.VSStd97CmdID)ID)
                 {
                     case VSConstants.VSStd97CmdID.SetStartupProject:
-                        // startup project changed
+                        EnvDTE.Project project;
+                        bool found = FindStartupProject(out project);
+
+                        if (!found)
+                            throw new InvalidOperationException("No startup project found.");
+
+                        CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
                         break;
                     default:
                         break;
