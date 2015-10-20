@@ -18,6 +18,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using SmartCmdArgs.Model;
+using System.Text;
+using System.Collections.Generic;
 
 namespace SmartCmdArgs
 {
@@ -70,7 +72,7 @@ namespace SmartCmdArgs
             // cache guid value
             _VSConstants_VSStd97CmdID_GUID = typeof(VSConstants.VSStd97CmdID).GUID.ToString("B").ToUpper();
 
-            // TODO add option keys to store custom data in suo file
+            // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
         }
 
@@ -93,6 +95,7 @@ namespace SmartCmdArgs
 
             this.solutionEvents.Opened += SolutionEvents_Opened;
             this.solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
+            this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
             this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
         }
 
@@ -119,47 +122,55 @@ namespace SmartCmdArgs
 
         #endregion
 
+        private void UpdateProjectConfiguration()
+        {
+            EnvDTE.Project project;
+            bool found = FindStartupProject(out project);
+
+            if (found)
+            {
+                var activeEntries = CmdArgStorage.Instance.CurStartupProjectEntries.Where((e) => e.Enabled);
+                string prjCmdArgs = string.Join(" ", activeEntries);
+
+                foreach (EnvDTE.Configuration config in project.ConfigurationManager)
+                {
+                    EnvDTE.Property cmdProp = config.Properties.Item("StartArguments"); // CLR project?
+
+                    if (cmdProp == null)
+                    {
+                        cmdProp = config.Properties.Item("CommandArguments"); // C project?
+                    }
+
+                    cmdProp.Value = prjCmdArgs;
+                }
+            }
+        }
+
         #region VS Events
 
         private void SolutionEvents_Opened()
         {
-            var startupProjects = this.appObject?.Solution?.SolutionBuild?.StartupProjects as object[];
-            string prjName = startupProjects?.FirstOrDefault() as string;
+            CmdArgStorage.Instance.EntriesReloaded += CmdArgStore_EntriesReloaded;
+            CmdArgStorage.Instance.EntryAdded += CmdArgStoreage_Changed;
+            CmdArgStorage.Instance.EntryRemoved += CmdArgStoreage_Changed;
 
             EnvDTE.Project project;
-            bool found = FindProject(this.appObject?.Solution, prjName, out project);
+            bool found = FindStartupProject(out project);
 
             if (!found)
                 throw new InvalidOperationException("No startup project found.");
 
             CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
-            // TODO
-            //var p0 = project?.ConfigurationManager?.ActiveConfiguration?.Properties?.Item("StartArguments"); // CLR project?
-            //var p1 = project?.ConfigurationManager?.ActiveConfiguration?.Properties?.Item("CommandArguments"); C project?
         }
 
-        private bool FindProject(EnvDTE.Solution sln, string uniqueName, out EnvDTE.Project foundProject)
+
+        private void SolutionEvents_BeforeClosing()
         {
-            foundProject = null;
-
-            if (sln == null || uniqueName == null)
-                return false;
-
-            foreach (EnvDTE.Project project in sln.Projects)
-            {
-                if (project.UniqueName == uniqueName)
-                {
-                    foundProject = project;
-                    return true;
-                }
-                else if(project.Kind == EnvDTE80.ProjectKinds.vsProjectKindSolutionFolder)
-                {
-                    // TODO search solution folders
-                }
-            }
-
-            return false;
+            CmdArgStorage.Instance.EntriesReloaded -= CmdArgStore_EntriesReloaded;
+            CmdArgStorage.Instance.EntryAdded -= CmdArgStoreage_Changed;
+            CmdArgStorage.Instance.EntryRemoved -= CmdArgStoreage_Changed;
         }
+
 
         private void SolutionEvents_AfterClosing()
         {
@@ -181,5 +192,47 @@ namespace SmartCmdArgs
             }
         }
         #endregion
+
+        private bool FindStartupProject(out EnvDTE.Project startupProject)
+        {
+            var startupProjects = this.appObject?.Solution?.SolutionBuild?.StartupProjects as object[];
+            string prjName = startupProjects?.FirstOrDefault() as string;
+
+            bool found = FindProject(this.appObject?.Solution, prjName, out startupProject);
+            return found;
+        }
+
+        private bool FindProject(EnvDTE.Solution sln, string uniqueName, out EnvDTE.Project foundProject)
+        {
+            foundProject = null;
+
+            if (sln == null || uniqueName == null)
+                return false;
+
+            foreach (EnvDTE.Project project in sln.Projects)
+            {
+                if (project.UniqueName == uniqueName)
+                {
+                    foundProject = project;
+                    return true;
+                }
+                else if (project.Kind == EnvDTE80.ProjectKinds.vsProjectKindSolutionFolder)
+                {
+                    // TODO search solution folders
+                }
+            }
+
+            return false;
+        }
+
+        private void CmdArgStore_EntriesReloaded(object sender, IReadOnlyList<CmdArgStorageEntry> e)
+        {
+            UpdateProjectConfiguration();
+        }
+
+        private void CmdArgStoreage_Changed(object sender, CmdArgStorageEntry e)
+        {
+            UpdateProjectConfiguration();
+        }
     }
 }

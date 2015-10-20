@@ -40,7 +40,13 @@ namespace SmartCmdArgs.Model
             StreamReader sr = new StreamReader(stream);
             string jsonStr = sr.ReadToEnd();
 
-            entryList = JsonConvert.DeserializeObject<List<CmdArgStorageEntry>>(jsonStr);
+            var entries = JsonConvert.DeserializeObject<List<CmdArgStorageEntry>>(jsonStr);
+
+            if (entries != null)
+            {
+                entryList = entries;
+            }
+
             OnEntriesReloaded();
         }
 
@@ -53,6 +59,7 @@ namespace SmartCmdArgs.Model
 
             StreamWriter sw = new StreamWriter(stream);
             sw.Write(jsonStr);
+            sw.Flush();
         }
 
         public void RemoveEntryById(Guid id)
