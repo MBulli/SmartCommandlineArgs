@@ -5,8 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
+             xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              x:Class="SmartCmdArgs.View.CmdArgsToolWindowControl"
-             Background="{DynamicResource VsBrush.Window}"
+             Background="{DynamicResource vs:EnvironmentColors.ToolWindowBackgroundBrushKey}"
              Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300"
@@ -15,28 +16,34 @@
         <vm:CmdArgsToolWindowViewModel />
     </UserControl.DataContext>
     <UserControl.Resources>
-        <ResourceDictionary>
-            <BitmapImage x:Key="AddIcon" UriSource="../Resources/iconmonstr-plus-2-icon-32.png"/>
-            <BitmapImage x:Key="RemoveIcon" UriSource="../Resources/iconmonstr-minus-2-icon-32.png"/>
-        </ResourceDictionary>
+        <BitmapImage x:Key="AddIcon" UriSource="../Resources/iconmonstr-plus-2-icon-32.png"/>
+        <BitmapImage x:Key="RemoveIcon" UriSource="../Resources/iconmonstr-minus-2-icon-32.png"/>
+
+        <BitmapImage x:Key="AddIcon2" UriSource="../Resources/list-add.png"/>
+        <BitmapImage x:Key="RemoveIcon2" UriSource="../Resources/list-remove.png"/>
+
+        <Style x:Key="vsImageButtonStyle" TargetType="vs:ImageButton">
+            <!--<Setter Property="BackgroundHover" Value="{DynamicResource {x:Static vs:CommonControlsColors.ButtonHoverBrushKey}}" />-->
+            <!--<Setter Property="BackgroundPressed" Value="{DynamicResource {x:Static vs:CommonControlsColors.ButtonPressedBrushKey}}" />-->
+            <Setter Property="BackgroundHover" Value="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarHoverBrushKey}}" />
+            <Setter Property="BackgroundPressed" Value="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarMouseDownBackgroundGradientBrushKey}}" />
+            <Setter Property="ImageHover" Value="{Binding ImageNormal, Mode=OneWay, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="ImagePressed" Value="{Binding ImageNormal, Mode=OneWay, RelativeSource={RelativeSource Self}}" />
+        </Style>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="22" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="22" />
         </Grid.RowDefinitions>
-        
-        <Button  Grid.Row="0" Content="Click me!" Click="button1_Click" x:Name="button1" />
-        <local:CmdArgListControl x:Name="CmdArgListControl" Grid.Row="1" DataContext="{Binding CommandlineArguments}"/>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal">
-            <Button Width="22" Command="{Binding AddEntryCommand}">
-                <Image Source="{StaticResource AddIcon}" />
-            </Button>
-            <Button Width="22" Command="{Binding RemoveEntryCommand}" CommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItem}">
-                <Image Source="{StaticResource RemoveIcon}" />
-            </Button>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarGradientBrushKey}}">
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource AddIcon2}" Command="{Binding AddEntryCommand}" />
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}" ImageNormal="{StaticResource RemoveIcon2}" Command="{Binding RemoveEntryCommand}" CommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItem}" />
         </StackPanel>
+
+        <local:CmdArgListControl x:Name="CmdArgListControl" Grid.Row="1" DataContext="{Binding CommandlineArguments}" />
+
+
     </Grid>
 </UserControl>
