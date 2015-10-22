@@ -17,6 +17,12 @@ namespace SmartCmdArgs.ViewModel
         {
             CmdLineItems = new ObservableCollection<CmdArgItem>();
 
+            if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
+            {
+                CmdLineItems.Add(new CmdArgItem() { Enabled = true, Value = @"C:\Users\Markus\Desktop\" });
+                CmdLineItems.Add(new CmdArgItem() { Enabled = false, Value = "Hello World" });
+            }
+
             AddAllCmdArgStoreEntries(CmdArgStorage.Instance.CurStartupProjectEntries);
 
             CmdArgStorage.Instance.EntryAdded += (sender, entry) => AddCmdArgStoreEntry(entry);

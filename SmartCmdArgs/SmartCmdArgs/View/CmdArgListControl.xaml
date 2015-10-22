@@ -5,24 +5,74 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
+             xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignData CmdArgListViewModel}">
     <Grid>
-        <DataGrid x:Name="CommandsDataGrid" ItemsSource="{Binding CmdLineItems}"  AutoGenerateColumns="False"  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" SelectionMode="Single" CanUserAddRows="False" HeadersVisibility="Row">
+        <DataGrid x:Name="CommandsDataGrid" 
+                  ItemsSource="{Binding CmdLineItems}"
+                  AutoGenerateColumns="False"  
+                  GridLinesVisibility="None" 
+                  HeadersVisibility="None"
+                  SelectionMode="Single"
+                  CanUserAddRows="False" >
             <DataGrid.Columns>
                 <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" Width="25" IsReadOnly="True" />
                 <DataGridTextColumn     Header="Value"   Binding="{Binding Value}" Width="*"/>
             </DataGrid.Columns>
+            <DataGrid.Style>
+                <Style TargetType="DataGrid">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
+                    <Setter Property="BorderThickness" Value="0" />
+                </Style>
+            </DataGrid.Style>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemActiveBrushKey}}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemActiveBrushKey}}"/>
+                        </Trigger>
+                        <!--Selected Row in inactive grid/window -->
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=IsKeyboardFocusWithin}" Value="False" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemInactiveBrushKey}}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemInactiveBrushKey}}"/>
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <!-- Bug: Handler triggers a bogus compiler error, but will compile fine -->
                     <EventSetter Event="PreviewMouseLeftButtonDown" Handler="DataGridCell_PreviewMouseLeftButtonDown" />
+                    
+                    <!-- Let the row style define the background color  -->
                     <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                    <Setter Property="BorderBrush" Value="{x:Null}" />
+                    <Setter Property="Background" Value="{x:Null}" />
+                    
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundTextBrushKey}}"/>
                     <Style.Triggers>
-                        <!-- Hide black border for selected cells -->
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemActiveTextBrushKey}}"/>
                         </Trigger>
+                        <!--Selected Cell in inactive grid/window -->
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=IsKeyboardFocusWithin}" Value="False" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemInactiveTextBrushKey}}"/>
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
                     </Style.Triggers>
                 </Style>
             </DataGrid.CellStyle>
