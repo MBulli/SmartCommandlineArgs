@@ -50,7 +50,9 @@ namespace SmartCmdArgs.ViewModel
         private void RemoveById(Guid id)
         {
             var itemToRemove = CmdLineItems.FirstOrDefault(item => item.Id == id);
-            if (itemToRemove == null) return;
+            if (itemToRemove == null)
+                return;
+
             CmdLineItems.Remove(itemToRemove);
             itemToRemove.PropertyChanged -= OnPropertyChangedInItem;
         }
@@ -69,11 +71,19 @@ namespace SmartCmdArgs.ViewModel
 
         private void OnPropertyChangedInItem(object sender, PropertyChangedEventArgs args)
         {
-            var item = sender as CmdArgItem;
-            if (args.PropertyName == "Value")
-                CmdArgStorage.Instance.UpdateCommandById(item.Id, item.Value);
-            else if (args.PropertyName == "Enabled")
-                CmdArgStorage.Instance.UpdateEnabledById(item.Id, item.Enabled);
+            var item = (CmdArgItem)sender;
+
+            switch (args.PropertyName)
+            {
+                case nameof(CmdArgItem.Value):
+                    CmdArgStorage.Instance.UpdateCommandById(item.Id, item.Value);
+                    break;
+                case nameof(CmdArgItem.Enabled):
+                    CmdArgStorage.Instance.UpdateEnabledById(item.Id, item.Enabled);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

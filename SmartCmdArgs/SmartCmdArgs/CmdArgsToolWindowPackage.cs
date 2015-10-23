@@ -198,6 +198,17 @@ namespace SmartCmdArgs
                         break;
                 }
             }
+
+            if (Guid == CmdArgsToolWindowCommand.CommandSet.ToString("B").ToUpper() && ID == CmdArgsToolWindowCommand.CommandId)
+            {
+                EnvDTE.Project project;
+                bool found = FindStartupProject(out project);
+
+                if (!found)
+                    throw new InvalidOperationException("No startup project found.");
+
+                CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
+            }
         }
         #endregion
 
