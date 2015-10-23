@@ -134,14 +134,19 @@ namespace SmartCmdArgs
 
                 foreach (EnvDTE.Configuration config in project.ConfigurationManager)
                 {
-                    EnvDTE.Property cmdProp = config.Properties.Item("StartArguments"); // CLR project?
-
-                    if (cmdProp == null)
+                    if (config.Properties != null)
                     {
-                        cmdProp = config.Properties.Item("CommandArguments"); // C project?
+                        foreach (EnvDTE.Property prop in config.Properties)
+                        {
+                            // CommandArguments = C/C++ project
+                            // StartArguments   = C#/VB project
+                            if (prop.Name == "CommandArguments" || prop.Name == "StartArguments")
+                            {
+                                prop.Value = prjCmdArgs;
+                                break;
+                            }
+                        }
                     }
-
-                    cmdProp.Value = prjCmdArgs;
                 }
             }
         }
