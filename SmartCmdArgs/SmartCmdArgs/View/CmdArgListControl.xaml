@@ -14,13 +14,10 @@
                 GridLinesVisibility="None" 
                 HeadersVisibility="None"
                 SelectionMode="Single"
-                CanUserAddRows="False"
-                ScrollViewer.CanContentScroll="True" 
-                ScrollViewer.VerticalScrollBarVisibility="Auto"
-                ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                CanUserAddRows="False">
         <DataGrid.Columns>
             <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" Width="25" IsReadOnly="True" />
-            <DataGridTextColumn     Header="Value"   Binding="{Binding Value}" Width="Auto"/>
+            <DataGridTextColumn     Header="Value"   Binding="{Binding Value}" Width="*"/>
         </DataGrid.Columns>
         <DataGrid.Style>
             <Style TargetType="DataGrid">

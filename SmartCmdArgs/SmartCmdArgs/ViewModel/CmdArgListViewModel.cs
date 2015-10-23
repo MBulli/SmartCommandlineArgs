@@ -21,6 +21,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 CmdLineItems.Add(new CmdArgItem() { Enabled = true, Value = @"C:\Users\Markus\Desktop\" });
                 CmdLineItems.Add(new CmdArgItem() { Enabled = false, Value = "Hello World" });
+                CmdLineItems.Add(new CmdArgItem() { Enabled = true, Value = "A very long commandline to test very long commandlines to see how very long commandlines work in our UI." });
             }
 
             AddAllCmdArgStoreEntries(CmdArgStorage.Instance.CurStartupProjectEntries);
