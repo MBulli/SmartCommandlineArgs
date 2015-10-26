@@ -97,6 +97,8 @@ namespace SmartCmdArgs
             this.solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
             this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
+
+            UpdateCurrentStartupProject();
         }
 
 
@@ -160,13 +162,7 @@ namespace SmartCmdArgs
             CmdArgStorage.Instance.EntryRemoved += CmdArgStoreage_Changed;
             CmdArgStorage.Instance.EntryUpdated += CmdArgStoreage_Changed;
 
-            EnvDTE.Project project;
-            bool found = FindStartupProject(out project);
-
-            if (!found)
-                throw new InvalidOperationException("No startup project found.");
-
-            CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
+            UpdateCurrentStartupProject();
         }
 
 
@@ -176,8 +172,9 @@ namespace SmartCmdArgs
             CmdArgStorage.Instance.EntryAdded -= CmdArgStoreage_Changed;
             CmdArgStorage.Instance.EntryRemoved -= CmdArgStoreage_Changed;
             CmdArgStorage.Instance.EntryUpdated -= CmdArgStoreage_Changed;
-        }
 
+            ResetStartupProject();
+        }
 
         private void SolutionEvents_AfterClosing()
         {
@@ -191,31 +188,29 @@ namespace SmartCmdArgs
                 switch ((VSConstants.VSStd97CmdID)ID)
                 {
                     case VSConstants.VSStd97CmdID.SetStartupProject:
-                        EnvDTE.Project project;
-                        bool found = FindStartupProject(out project);
-
-                        if (!found)
-                            throw new InvalidOperationException("No startup project found.");
-
-                        CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
+                        UpdateCurrentStartupProject();
                         break;
                     default:
                         break;
                 }
             }
-
-            if (Guid == CmdArgsToolWindowCommand.CommandSet.ToString("B").ToUpper() && ID == CmdArgsToolWindowCommand.CommandId)
-            {
-                EnvDTE.Project project;
-                bool found = FindStartupProject(out project);
-
-                if (!found)
-                    throw new InvalidOperationException("No startup project found.");
-
-                CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
-            }
         }
         #endregion
+
+        private void UpdateCurrentStartupProject()
+        {
+            EnvDTE.Project project;
+            bool found = FindStartupProject(out project);
+
+            if (found)
+            {
+                CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
+            }  
+        }
+        private void ResetStartupProject()
+        {
+            CmdArgStorage.Instance.UpdateStartupProject(null);
+        }
 
         private bool FindStartupProject(out EnvDTE.Project startupProject)
         {
