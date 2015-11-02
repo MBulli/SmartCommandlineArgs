@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="CmdArgsToolWindow.cs" />
     <Compile Include="CmdArgsToolWindowCommand.cs" />
+    <Compile Include="Helper\BindingListEx.cs" />
     <Compile Include="Helper\RelayCommand.cs" />
     <Compile Include="Model\CmdArgStorage.cs" />
     <Compile Include="ViewModel\CmdArgItem.cs" />

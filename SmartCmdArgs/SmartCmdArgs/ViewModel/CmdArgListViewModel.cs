@@ -13,17 +13,17 @@ namespace SmartCmdArgs.ViewModel
 {
     public class CmdArgListViewModel : PropertyChangedBase
     {
-        private readonly BindingList<CmdArgItem> dataCollection;
+        private readonly BindingListEx<CmdArgItem> dataCollection;
         private readonly ICollectionView dataView;
 
         public ICollectionView CmdLineItems { get { return dataView; } } 
 
         public CmdArgListViewModel()
         {
-            dataCollection = new BindingList<CmdArgItem>();
+            dataCollection = new BindingListEx<CmdArgItem>();
             dataView = CollectionViewSource.GetDefaultView(dataCollection);
 
-            if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
+            //if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
                 dataCollection.Add(new CmdArgItem() { Enabled = true, Value = @"C:\Users\Markus\Desktop\" });
                 dataCollection.Add(new CmdArgItem() { Enabled = false, Value = "Hello World" });
@@ -33,6 +33,7 @@ namespace SmartCmdArgs.ViewModel
             AddAllCmdArgStoreEntries(CmdArgStorage.Instance.CurStartupProjectEntries);
 
             dataCollection.ListChanged += DataCollection_ListChanged;
+            dataCollection.RaiseListChangedEvents = false;
 
             CmdArgStorage.Instance.EntryAdded += (sender, entry) => AddCmdArgStoreEntry(entry);
             CmdArgStorage.Instance.EntryRemoved += (sender, entry) => RemoveById(entry.Id);
@@ -60,6 +61,11 @@ namespace SmartCmdArgs.ViewModel
                     default:
                         break;
                 }
+            }
+            else if(e.ListChangedType == ListChangedType.ItemDeleted)
+            {
+                var item = e.GetDeletedItem<CmdArgItem>();
+                CmdArgStorage.Instance.RemoveEntryById(item.Id);
             }
         }
 
