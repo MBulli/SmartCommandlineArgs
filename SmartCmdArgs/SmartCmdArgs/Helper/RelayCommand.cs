@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Windows.Input;
 
-namespace IramesYTD.Utils
+namespace SmartCmdArgs.Helper
 {
     public class RelayCommand<T> : ICommand
     {

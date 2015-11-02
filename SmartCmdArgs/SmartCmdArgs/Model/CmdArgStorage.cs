@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
 
