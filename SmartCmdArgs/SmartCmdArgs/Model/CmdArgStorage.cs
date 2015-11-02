@@ -101,10 +101,13 @@ namespace SmartCmdArgs.Model
             FindEntryById(id).Enabled = newEnabled;
         }
 
-        public void UpdateStartupProject(string projName)
+        public void UpdateStartupProject(string newProjName)
         {
-            CurStartupProject = projName;
-            OnEntriesReloaded();
+            if (CurStartupProject != newProjName)
+            {
+                CurStartupProject = newProjName;
+                OnEntriesReloaded();
+            }
         }
 
         private CmdArgStorageEntry FindEntryById(Guid id)

@@ -185,6 +185,9 @@ namespace SmartCmdArgs
                     case VSConstants.VSStd97CmdID.SetStartupProject:
                         UpdateCurrentStartupProject();
                         break;
+                    case VSConstants.VSStd97CmdID.SolutionCfg: // this one is called frequently
+                        UpdateCurrentStartupProject();
+                        break;
                     default:
                         break;
                 }
@@ -194,23 +197,34 @@ namespace SmartCmdArgs
 
         private void UpdateCurrentStartupProject()
         {
-            EnvDTE.Project project;
-            bool found = FindStartupProject(out project);
+            string prjName = StartupProjectUniqueName();
 
-            if (found)
+            // if startup project changed
+            if (CmdArgStorage.Instance.CurStartupProject != prjName)
             {
-                CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
-            }  
+                EnvDTE.Project project;
+                bool found = FindProject(this.appObject?.Solution, prjName, out project);
+
+                if (found)
+                {
+                    CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
+                }
+            }
         }
         private void ResetStartupProject()
         {
             CmdArgStorage.Instance.UpdateStartupProject(null);
         }
 
-        private bool FindStartupProject(out EnvDTE.Project startupProject)
+        private string StartupProjectUniqueName()
         {
             var startupProjects = this.appObject?.Solution?.SolutionBuild?.StartupProjects as object[];
-            string prjName = startupProjects?.FirstOrDefault() as string;
+            return startupProjects?.FirstOrDefault() as string;
+        }
+
+        private bool FindStartupProject(out EnvDTE.Project startupProject)
+        {
+            string prjName = StartupProjectUniqueName();
 
             bool found = FindProject(this.appObject?.Solution, prjName, out startupProject);
             return found;
