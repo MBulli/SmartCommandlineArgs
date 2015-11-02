@@ -98,6 +98,11 @@ namespace SmartCmdArgs
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
             this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
 
+            CmdArgStorage.Instance.EntriesReloaded += CmdArgStore_EntriesReloaded;
+            CmdArgStorage.Instance.EntryAdded += CmdArgStoreage_Changed;
+            CmdArgStorage.Instance.EntryRemoved += CmdArgStoreage_Changed;
+            CmdArgStorage.Instance.EntryUpdated += CmdArgStoreage_Changed;
+
             UpdateCurrentStartupProject();
         }
 
@@ -157,22 +162,12 @@ namespace SmartCmdArgs
 
         private void SolutionEvents_Opened()
         {
-            CmdArgStorage.Instance.EntriesReloaded += CmdArgStore_EntriesReloaded;
-            CmdArgStorage.Instance.EntryAdded += CmdArgStoreage_Changed;
-            CmdArgStorage.Instance.EntryRemoved += CmdArgStoreage_Changed;
-            CmdArgStorage.Instance.EntryUpdated += CmdArgStoreage_Changed;
-
             UpdateCurrentStartupProject();
         }
 
 
         private void SolutionEvents_BeforeClosing()
         {
-            CmdArgStorage.Instance.EntriesReloaded -= CmdArgStore_EntriesReloaded;
-            CmdArgStorage.Instance.EntryAdded -= CmdArgStoreage_Changed;
-            CmdArgStorage.Instance.EntryRemoved -= CmdArgStoreage_Changed;
-            CmdArgStorage.Instance.EntryUpdated -= CmdArgStoreage_Changed;
-
             ResetStartupProject();
         }
 
