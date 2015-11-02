@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using IramesYTD.Utils;
 using Microsoft.VisualStudio.Shell.Interop;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.Model;
 
 namespace SmartCmdArgs.ViewModel
