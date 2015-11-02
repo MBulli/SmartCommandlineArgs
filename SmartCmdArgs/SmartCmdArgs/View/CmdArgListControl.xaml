@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
+             xmlns:test="clr-namespace:System.Windows.Controls"
              xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignData CmdArgListViewModel}">
@@ -25,7 +26,7 @@
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource {x:Static vs:EnvironmentColors.ToolWindowContentGridBrushKey}}" />
                 <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource {x:Static vs:EnvironmentColors.ToolWindowContentGridBrushKey}}" />
-             </Style>
+            </Style>
         </DataGrid.Style>
         <DataGrid.RowStyle>
             <Style TargetType="DataGridRow">
@@ -53,7 +54,8 @@
             <Style TargetType="DataGridCell">
                 <!-- Bug: Handler triggers a bogus compiler error, but will compile fine -->
                 <EventSetter Event="PreviewMouseLeftButtonDown" Handler="DataGridCell_PreviewMouseLeftButtonDown" />
-                    
+                <EventSetter Event="PreviewKeyDown" Handler="DataGridCell_PreviewKeyDown" />
+
                 <!-- Let the row style define the background color  -->
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="BorderBrush" Value="{x:Null}" />

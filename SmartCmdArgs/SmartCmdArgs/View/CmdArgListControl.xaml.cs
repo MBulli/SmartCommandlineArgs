@@ -28,6 +28,27 @@ namespace SmartCmdArgs.View
             InitializeComponent();
         }
 
+        private void DataGridCell_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            DataGridCell senderCell = ((DataGridCell)sender);
+
+            if (e.Key == Key.Space)
+            {
+                ToggleEnabledForSelectedCells(senderCell);
+                e.Handled = true;
+            }
+            else if(e.Key == Key.Return)
+            {
+                if (!senderCell.IsEditing)
+                {
+                    // Enter edit mode if current cell is not in edit mode
+                    senderCell.Focus();
+                    this.CommandsDataGrid.BeginEdit();
+                    e.Handled = true;
+                }                      
+            }
+        }
+
         private void DataGridCell_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DataGridCell senderCell = ((DataGridCell)sender);
@@ -42,19 +63,25 @@ namespace SmartCmdArgs.View
                 }
                 else
                 {
-                    // Selected row which possibly takes part in a multi selction
-                    bool newState = !senderItem.Enabled;
-                    senderItem.Enabled = newState;
-
-                    foreach (var item in CommandsDataGrid.SelectedItems)
-                    {
-                        // This actually breaks MVVM
-                        ((CmdArgItem)item).Enabled = newState;
-                    }
-
+                    // Selected row which possibly takes part in a multi selection
+                    ToggleEnabledForSelectedCells(senderCell);
                     // Keep current selection
                     e.Handled = true;
                 }
+            }
+        }
+
+        private void ToggleEnabledForSelectedCells(DataGridCell senderCell)
+        {
+            CmdArgItem senderItem = ((CmdArgItem)senderCell.DataContext);
+
+            bool newState = !senderItem.Enabled;
+            senderItem.Enabled = newState;
+
+            foreach (var item in CommandsDataGrid.SelectedItems)
+            {
+                // This actually breaks MVVM
+                ((CmdArgItem)item).Enabled = newState;
             }
         }
 
