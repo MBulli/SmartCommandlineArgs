@@ -21,27 +21,37 @@ namespace SmartCmdArgs.ViewModel
             private set { startupProject = value; OnNotifyPropertyChanged(); }
         }
 
+        private Lazy<RelayCommand> addEntryCommand;
         public RelayCommand AddEntryCommand { get { return addEntryCommand.Value; } }
-        private Lazy<RelayCommand> addEntryCommand = new Lazy<RelayCommand>(
-            () => new RelayCommand(
-                () =>
-                {
-                    if (CmdArgStorage.Instance.CurStartupProject != null)
-                        CmdArgStorage.Instance.AddEntry(command: "", enabled: true);
-                    else
-                        MessageBox.Show("No startup project found!", "No startup project", MessageBoxButton.OK, MessageBoxImage.Warning);
-                })); 
 
+
+        private Lazy<RelayCommand<CmdArgItem>> removeEntryCommand;
         public RelayCommand<CmdArgItem> RemoveEntryCommand { get { return removeEntryCommand.Value; } }
-        private Lazy<RelayCommand<CmdArgItem>> removeEntryCommand = new Lazy<RelayCommand<CmdArgItem>>(
-            () => new RelayCommand<CmdArgItem>(
-                item => { if (item != null) CmdArgStorage.Instance.RemoveEntryById(item.Id); })); 
 
         public CmdArgsToolWindowViewModel()
         {
             this.CommandlineArguments = new CmdArgListViewModel();
 
             CmdArgStorage.Instance.StartupProjectChanged += Instance_StartupProjectChanged;
+
+            addEntryCommand = new Lazy<RelayCommand>(
+            () => new RelayCommand(
+                () => {
+                    CmdArgStorage.Instance.AddEntry(command: "", enabled: true);
+                }, canExecute: _ =>
+                {
+                    return this.StartupProject != null;
+                }));
+
+            removeEntryCommand = new Lazy<RelayCommand<CmdArgItem>>(
+            () => new RelayCommand<CmdArgItem>(
+               item => {
+                   if (item != null)
+                       CmdArgStorage.Instance.RemoveEntryById(item.Id);
+               }, canExecute: _ =>
+               {
+                   return this.StartupProject != null;
+               }));
         }
 
         private void Instance_StartupProjectChanged(object sender, EventArgs e)
