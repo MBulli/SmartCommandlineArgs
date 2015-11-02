@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
+             xmlns:c="clr-namespace:SmartCmdArgs.Helper"
              x:Class="SmartCmdArgs.View.CmdArgsToolWindowControl"
              Background="{DynamicResource vs:EnvironmentColors.ToolWindowBackgroundBrushKey}"
              Foreground="{DynamicResource VsBrush.WindowText}"
@@ -42,8 +43,13 @@
             <vs:ImageButton Style="{StaticResource vsImageButtonStyle}" ImageNormal="{StaticResource RemoveIcon2}" Command="{Binding RemoveEntryCommand}" CommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItem}" />
         </StackPanel>
 
-        <local:CmdArgListControl x:Name="CmdArgListControl" Grid.Row="1" DataContext="{Binding CommandlineArguments}" />
+        <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
+            <local:CmdArgListControl x:Name="CmdArgListControl" DataContext="{Binding CommandlineArguments}" />
+        </Grid>
 
+        <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">
+            <TextBlock Text="No startup project found." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource {x:Static vs:ThemedDialogColors.ListItemDisabledTextBrushKey}}"  />
+        </Grid>
 
     </Grid>
 </UserControl>

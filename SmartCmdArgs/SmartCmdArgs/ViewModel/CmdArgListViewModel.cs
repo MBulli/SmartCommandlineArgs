@@ -23,7 +23,7 @@ namespace SmartCmdArgs.ViewModel
             dataCollection = new BindingListEx<CmdArgItem>();
             dataView = CollectionViewSource.GetDefaultView(dataCollection);
 
-            //if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
+            if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
                 dataCollection.Add(new CmdArgItem() { Enabled = true, Value = @"C:\Users\Markus\Desktop\" });
                 dataCollection.Add(new CmdArgItem() { Enabled = false, Value = "Hello World" });

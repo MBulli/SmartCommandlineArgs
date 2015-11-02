@@ -14,6 +14,13 @@ namespace SmartCmdArgs.ViewModel
     {
         public CmdArgListViewModel CommandlineArguments { get; private set; }
 
+        private string startupProject;
+        public string StartupProject
+        {
+            get { return startupProject; }
+            private set { startupProject = value; OnNotifyPropertyChanged(); }
+        }
+
         public RelayCommand AddEntryCommand { get { return addEntryCommand.Value; } }
         private Lazy<RelayCommand> addEntryCommand = new Lazy<RelayCommand>(
             () => new RelayCommand(
@@ -33,6 +40,13 @@ namespace SmartCmdArgs.ViewModel
         public CmdArgsToolWindowViewModel()
         {
             this.CommandlineArguments = new CmdArgListViewModel();
+
+            CmdArgStorage.Instance.StartupProjectChanged += Instance_StartupProjectChanged;
+        }
+
+        private void Instance_StartupProjectChanged(object sender, EventArgs e)
+        {
+            this.StartupProject = CmdArgStorage.Instance.CurStartupProject;
         }
     }
 }

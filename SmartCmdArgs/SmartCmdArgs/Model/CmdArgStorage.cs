@@ -106,6 +106,7 @@ namespace SmartCmdArgs.Model
             if (CurStartupProject != newProjName)
             {
                 CurStartupProject = newProjName;
+                OnStartupProjectChanged();
                 OnEntriesReloaded();
             }
         }
@@ -137,6 +138,12 @@ namespace SmartCmdArgs.Model
         protected virtual void OnEntryUpdated(CmdArgStorageEntry e)
         {
             EntryUpdated?.Invoke(this, e);
+        }
+
+        public event EventHandler StartupProjectChanged;
+        protected virtual void OnStartupProjectChanged()
+        {
+            StartupProjectChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
