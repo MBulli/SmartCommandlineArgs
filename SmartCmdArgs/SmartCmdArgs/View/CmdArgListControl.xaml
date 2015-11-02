@@ -11,7 +11,7 @@
     <DataGrid x:Name="CommandsDataGrid" 
                 ItemsSource="{Binding CmdLineItems}"
                 AutoGenerateColumns="False"  
-                GridLinesVisibility="None" 
+                GridLinesVisibility="All" 
                 HeadersVisibility="None"
                 SelectionMode="Single"
                 CanUserAddRows="False">
@@ -23,7 +23,9 @@
             <Style TargetType="DataGrid">
                 <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
                 <Setter Property="BorderThickness" Value="0" />
-            </Style>
+                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource {x:Static vs:EnvironmentColors.ToolWindowContentGridBrushKey}}" />
+                <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource {x:Static vs:EnvironmentColors.ToolWindowContentGridBrushKey}}" />
+             </Style>
         </DataGrid.Style>
         <DataGrid.RowStyle>
             <Style TargetType="DataGridRow">
