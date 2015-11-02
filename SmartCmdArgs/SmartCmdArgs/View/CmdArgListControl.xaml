@@ -13,7 +13,7 @@
                 AutoGenerateColumns="False"  
                 GridLinesVisibility="All" 
                 HeadersVisibility="None"
-                SelectionMode="Single"
+                SelectionMode="Extended"
                 CanUserAddRows="False">
         <DataGrid.Columns>
             <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" Width="25" IsReadOnly="True" />

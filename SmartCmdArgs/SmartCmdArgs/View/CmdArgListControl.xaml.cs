@@ -30,13 +30,31 @@ namespace SmartCmdArgs.View
 
         private void DataGridCell_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            DataGridCell cell = sender as DataGridCell;
+            DataGridCell senderCell = ((DataGridCell)sender);
+            CmdArgItem senderItem = ((CmdArgItem)senderCell.DataContext);
 
-            if (cell.Column is DataGridCheckBoxColumn)
+            if (senderCell.Column is DataGridCheckBoxColumn)
             {
-                // This actually breaks MVVM
-                var item = (CmdArgItem)cell.DataContext;
-                item.Enabled = !item.Enabled;
+                // Single row clicked which doesn't belong to a multi selection
+                if (!senderCell.IsSelected)
+                {
+                    senderItem.Enabled = !senderItem.Enabled;
+                }
+                else
+                {
+                    // Selected row which possibly takes part in a multi selction
+                    bool newState = !senderItem.Enabled;
+                    senderItem.Enabled = newState;
+
+                    foreach (var item in CommandsDataGrid.SelectedItems)
+                    {
+                        // This actually breaks MVVM
+                        ((CmdArgItem)item).Enabled = newState;
+                    }
+
+                    // Keep current selection
+                    e.Handled = true;
+                }
             }
         }
 
