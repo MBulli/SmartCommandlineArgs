@@ -31,6 +31,7 @@ namespace SmartCmdArgs.ViewModel
         public CmdArgsToolWindowViewModel()
         {
             this.CommandlineArguments = new CmdArgListViewModel();
+            this.StartupProject = CmdArgStorage.Instance.CurStartupProject;
 
             CmdArgStorage.Instance.StartupProjectChanged += Instance_StartupProjectChanged;
 
