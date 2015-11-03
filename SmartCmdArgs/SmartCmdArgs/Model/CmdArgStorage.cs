@@ -67,9 +67,13 @@ namespace SmartCmdArgs.Model
         public void RemoveEntryById(Guid id)
         {
             CmdArgStorageEntry entryToRemove = FindEntryById(id);
-            entryList.Remove(entryToRemove);
-            entryToRemove.PropertyChanged -= OnPropertyChangedInEntry;
-            OnEntryRemoved(entryToRemove);
+
+            if (entryToRemove != null)
+            {
+                entryList.Remove(entryToRemove);
+                entryToRemove.PropertyChanged -= OnPropertyChangedInEntry;
+                OnEntryRemoved(entryToRemove);
+            }
         }
 
         public void AddEntry(string command, bool enabled = true)

@@ -33,7 +33,6 @@ namespace SmartCmdArgs.ViewModel
             AddAllCmdArgStoreEntries(CmdArgStorage.Instance.CurStartupProjectEntries);
 
             dataCollection.ListChanged += DataCollection_ListChanged;
-            dataCollection.RaiseListChangedEvents = false;
 
             CmdArgStorage.Instance.EntryAdded += (sender, entry) => AddCmdArgStoreEntry(entry);
             CmdArgStorage.Instance.EntryRemoved += (sender, entry) => RemoveById(entry.Id);
