@@ -98,14 +98,11 @@ namespace SmartCmdArgs
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
             this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
 
-            CmdArgStorage.Instance.EntriesReloaded += CmdArgStore_EntriesReloaded;
-            CmdArgStorage.Instance.EntryAdded += CmdArgStoreage_Changed;
-            CmdArgStorage.Instance.EntryRemoved += CmdArgStoreage_Changed;
-            CmdArgStorage.Instance.EntryUpdated += CmdArgStoreage_Changed;
+            CmdArgStorage.Instance.ItemChanged += Instance_ItemChanged;
 
             UpdateCurrentStartupProject();
+            UpdateProjectConfiguration();
         }
-
 
         protected override void OnLoadOptions(string key, Stream stream)
         {
@@ -114,6 +111,7 @@ namespace SmartCmdArgs
             if (key == SolutionOptionKey)
             {
                 Model.CmdArgStorage.Instance.PopulateFromStream(stream);
+                UpdateProjectConfiguration();
             }
         }
         protected override void OnSaveOptions(string key, Stream stream)
@@ -136,7 +134,10 @@ namespace SmartCmdArgs
 
             if (found)
             {
-                var activeEntries = CmdArgStorage.Instance.CurStartupProjectEntries.Where((e) => e.Enabled).Select(entry => entry.Command);
+                var activeEntries = from e in CmdArgStorage.Instance.StartupProjectEntries
+                                    where e.Enabled && !string.IsNullOrEmpty(e.Command)
+                                    select e.Command;
+
                 string prjCmdArgs = string.Join(" ", activeEntries);
 
                 foreach (EnvDTE.Configuration config in project.ConfigurationManager)
@@ -163,6 +164,7 @@ namespace SmartCmdArgs
         private void SolutionEvents_Opened()
         {
             UpdateCurrentStartupProject();
+            UpdateProjectConfiguration();
         }
 
 
@@ -200,7 +202,7 @@ namespace SmartCmdArgs
             string prjName = StartupProjectUniqueName();
 
             // if startup project changed
-            if (CmdArgStorage.Instance.CurStartupProject != prjName)
+            if (CmdArgStorage.Instance.StartupProject != prjName)
             {
                 EnvDTE.Project project;
                 bool found = FindProject(this.appObject?.Solution, prjName, out project);
@@ -253,12 +255,7 @@ namespace SmartCmdArgs
             return false;
         }
 
-        private void CmdArgStore_EntriesReloaded(object sender, IReadOnlyList<CmdArgStorageEntry> e)
-        {
-            UpdateProjectConfiguration();
-        }
-
-        private void CmdArgStoreage_Changed(object sender, CmdArgStorageEntry e)
+        private void Instance_ItemChanged(object sender, CmdArgStorageEntry e)
         {
             UpdateProjectConfiguration();
         }

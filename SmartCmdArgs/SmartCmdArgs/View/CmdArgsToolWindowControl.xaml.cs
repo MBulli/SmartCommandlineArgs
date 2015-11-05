@@ -15,6 +15,11 @@ namespace SmartCmdArgs.View
     /// </summary>
     public partial class CmdArgsToolWindowControl : UserControl
     {
+        public ViewModel.CmdArgsToolWindowViewModel ViewModel
+        {
+            get { return (ViewModel.CmdArgsToolWindowViewModel)DataContext; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CmdArgsToolWindowControl"/> class.
         /// </summary>
@@ -22,7 +27,7 @@ namespace SmartCmdArgs.View
         {
             this.InitializeComponent();
         }
-
+        
         /// <summary>
         /// Handles click on the button by displaying a message box.
         /// </summary>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Model;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace SmartCmdArgs.ViewModel
 {
@@ -17,6 +18,7 @@ namespace SmartCmdArgs.ViewModel
         private readonly ICollectionView dataView;
 
         public ICollectionView CmdLineItems { get { return dataView; } } 
+
 
         public CmdArgListViewModel()
         {
@@ -30,17 +32,13 @@ namespace SmartCmdArgs.ViewModel
                 dataCollection.Add(new CmdArgItem() { Enabled = true, Value = "A very long commandline to test very long commandlines to see how very long commandlines work in our UI." });
             }
 
-            AddAllCmdArgStoreEntries(CmdArgStorage.Instance.CurStartupProjectEntries);
-
             dataCollection.ListChanged += DataCollection_ListChanged;
+        }
 
-            CmdArgStorage.Instance.EntryAdded += (sender, entry) => AddCmdArgStoreEntry(entry);
-            CmdArgStorage.Instance.EntryRemoved += (sender, entry) => RemoveById(entry.Id);
-            CmdArgStorage.Instance.EntriesReloaded += (sender, list) =>
-            {
-                dataCollection.Clear();
-                AddAllCmdArgStoreEntries(list);
-            };
+        internal void SetListItems(IReadOnlyCollection<CmdArgStorageEntry> list)
+        {
+            dataCollection.Clear();
+            AddAllCmdArgStoreEntries(list);
         }
 
         private void DataCollection_ListChanged(object sender, ListChangedEventArgs e)
@@ -76,7 +74,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        private void RemoveById(Guid id)
+        internal void RemoveById(Guid id)
         {
             var itemToRemove = dataCollection.FirstOrDefault(item => item.Id == id);
             if (itemToRemove == null)
@@ -85,7 +83,7 @@ namespace SmartCmdArgs.ViewModel
             dataCollection.Remove(itemToRemove);
         }
 
-        private void AddCmdArgStoreEntry(CmdArgStorageEntry entry)
+        internal void AddCmdArgStoreEntry(CmdArgStorageEntry entry)
         {
             dataCollection.Add(new CmdArgItem
             {

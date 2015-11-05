@@ -21,43 +21,55 @@ namespace SmartCmdArgs.ViewModel
             private set { startupProject = value; OnNotifyPropertyChanged(); }
         }
 
-        private Lazy<RelayCommand> addEntryCommand;
-        public RelayCommand AddEntryCommand { get { return addEntryCommand.Value; } }
+        private RelayCommand addEntryCommand;
+        public RelayCommand AddEntryCommand { get { return addEntryCommand; } }
 
 
-        private Lazy<RelayCommand<CmdArgItem>> removeEntryCommand;
-        public RelayCommand<CmdArgItem> RemoveEntryCommand { get { return removeEntryCommand.Value; } }
+        private RelayCommand<CmdArgItem> removeEntryCommand;
+        public RelayCommand<CmdArgItem> RemoveEntryCommand { get { return removeEntryCommand; } }
 
         public CmdArgsToolWindowViewModel()
         {
             this.CommandlineArguments = new CmdArgListViewModel();
-            this.StartupProject = CmdArgStorage.Instance.CurStartupProject;
+            this.StartupProject = CmdArgStorage.Instance.StartupProject;
 
             CmdArgStorage.Instance.StartupProjectChanged += Instance_StartupProjectChanged;
 
-            addEntryCommand = new Lazy<RelayCommand>(
-            () => new RelayCommand(
+            addEntryCommand = new RelayCommand(
                 () => {
-                    CmdArgStorage.Instance.AddEntry(command: "", enabled: true);
+                    var newItem = CmdArgStorage.Instance.AddEntry(command: "", enabled: true);
+                    CommandlineArguments.AddCmdArgStoreEntry(newItem);
                 }, canExecute: _ =>
                 {
                     return this.StartupProject != null;
-                }));
+                });
 
-            removeEntryCommand = new Lazy<RelayCommand<CmdArgItem>>(
-            () => new RelayCommand<CmdArgItem>(
+            removeEntryCommand = new RelayCommand<CmdArgItem>(
                item => {
                    if (item != null)
+                   {
                        CmdArgStorage.Instance.RemoveEntryById(item.Id);
+                       CommandlineArguments.RemoveById(item.Id);
+                   }
                }, canExecute: _ =>
                {
                    return this.StartupProject != null;
-               }));
+               });
+        }
+
+        public void UpdateView()
+        {
+            this.StartupProject = CmdArgStorage.Instance.StartupProject;
+
+            if (StartupProject != null)
+            {
+                this.CommandlineArguments.SetListItems(CmdArgStorage.Instance.StartupProjectEntries);
+            }
         }
 
         private void Instance_StartupProjectChanged(object sender, EventArgs e)
         {
-            this.StartupProject = CmdArgStorage.Instance.CurStartupProject;
+            UpdateView();
         }
     }
 }

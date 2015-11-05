@@ -11,7 +11,7 @@ using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace SmartCmdArgs.Model
 {
-    class CmdArgStorage : PropertyChangedBase
+    class CmdArgStorage
     {
         private static readonly Lazy<CmdArgStorage> singletonLazy = new Lazy<CmdArgStorage>(() => new CmdArgStorage());
 
@@ -21,11 +21,11 @@ namespace SmartCmdArgs.Model
         private List<CmdArgStorageEntry> entryList; 
 
         public IReadOnlyList<CmdArgStorageEntry> Entries { get { return entryList; } }
-        public string CurStartupProject { get; private set; }
+        public string StartupProject { get; private set; }
 
-        public IReadOnlyList<CmdArgStorageEntry> CurStartupProjectEntries
+        public IReadOnlyList<CmdArgStorageEntry> StartupProjectEntries
         {
-            get { return entryList.FindAll(entry => entry.Project == CurStartupProject); }
+            get { return EntriesFilteredByProject(StartupProject); }
         }
 
         private CmdArgStorage()
@@ -46,10 +46,7 @@ namespace SmartCmdArgs.Model
             if (entries != null)
             {
                 entryList = entries;
-                entryList.ForEach(entry => entry.PropertyChanged += OnPropertyChangedInEntry);
             }
-
-            OnEntriesReloaded();
         }
 
         public void StoreToStream(Stream stream)
@@ -64,55 +61,63 @@ namespace SmartCmdArgs.Model
             sw.Flush();
         }
 
-        public void RemoveEntryById(Guid id)
-        {
-            CmdArgStorageEntry entryToRemove = FindEntryById(id);
-
-            if (entryToRemove != null)
-            {
-                entryList.Remove(entryToRemove);
-                entryToRemove.PropertyChanged -= OnPropertyChangedInEntry;
-                OnEntryRemoved(entryToRemove);
-            }
-        }
-
-        public void AddEntry(string command, bool enabled = true)
+        // CRUD operations
+        public CmdArgStorageEntry AddEntry(string command, bool enabled = true)
         {
             var newEntry = new CmdArgStorageEntry
             {
                 Id = Guid.NewGuid(),
                 Enabled = enabled,
-                Project = CurStartupProject,
+                Project = StartupProject,
                 Command = command
             };
-            newEntry.PropertyChanged += OnPropertyChangedInEntry;
+
             entryList.Add(newEntry);
-            OnEntryAdded(newEntry);
+            return newEntry;
         }
 
-        private void OnPropertyChangedInEntry(object sender, PropertyChangedEventArgs args)
+        public void RemoveEntryById(Guid id)
         {
-            OnEntryUpdated((CmdArgStorageEntry) sender);
+            var item = FindEntryById(id);
+            if (item != null)
+            {
+                entryList.Remove(item);
+                OnItemChanged(item);
+            }
         }
 
         public void UpdateCommandById(Guid id, string newCommand)
         {
-            FindEntryById(id).Command = newCommand;
+            var item = FindEntryById(id);
+            if (item != null)
+            {
+                item.Command = newCommand;
+                OnItemChanged(item);
+            }
         }
 
         public void UpdateEnabledById(Guid id, bool newEnabled)
         {
-            FindEntryById(id).Enabled = newEnabled;
+            var item = FindEntryById(id);
+            if (item != null)
+            {
+                item.Enabled = newEnabled;
+                OnItemChanged(item);
+            }
         }
 
         public void UpdateStartupProject(string newProjName)
         {
-            if (CurStartupProject != newProjName)
+            if (StartupProject != newProjName)
             {
-                CurStartupProject = newProjName;
+                StartupProject = newProjName;
                 OnStartupProjectChanged();
-                OnEntriesReloaded();
             }
+        }
+
+        public IReadOnlyList<CmdArgStorageEntry> EntriesFilteredByProject(string project)
+        {
+            return entryList.FindAll(entry => entry.Project == project);
         }
 
         private CmdArgStorageEntry FindEntryById(Guid id)
@@ -120,28 +125,10 @@ namespace SmartCmdArgs.Model
             return entryList.Find(entry => entry.Id == id);
         }
 
-        public event EventHandler<IReadOnlyList<CmdArgStorageEntry>> EntriesReloaded;
-        protected virtual void OnEntriesReloaded()
+        public event EventHandler<CmdArgStorageEntry> ItemChanged;
+        protected virtual void OnItemChanged(CmdArgStorageEntry item)
         {
-            EntriesReloaded?.Invoke(this, CurStartupProjectEntries);
-        }
-
-        public event EventHandler<CmdArgStorageEntry> EntryAdded;
-        protected virtual void OnEntryAdded(CmdArgStorageEntry e)
-        {
-            EntryAdded?.Invoke(this, e);
-        }
-
-        public event EventHandler<CmdArgStorageEntry> EntryRemoved;
-        protected virtual void OnEntryRemoved(CmdArgStorageEntry e)
-        {
-            EntryRemoved?.Invoke(this, e);
-        }
-
-        public event EventHandler<CmdArgStorageEntry> EntryUpdated;
-        protected virtual void OnEntryUpdated(CmdArgStorageEntry e)
-        {
-            EntryUpdated?.Invoke(this, e);
+            ItemChanged?.Invoke(this, item);
         }
 
         public event EventHandler StartupProjectChanged;
@@ -151,7 +138,7 @@ namespace SmartCmdArgs.Model
         }
     }
 
-    class CmdArgStorageEntry : PropertyChangedBase
+    class CmdArgStorageEntry
     {
         private Guid id;
         private bool enabled;
@@ -161,25 +148,25 @@ namespace SmartCmdArgs.Model
         public Guid Id
         {
             get { return id; }
-            set { id = value; OnNotifyPropertyChanged(); }
+            set { id = value; }
         }
 
         public bool Enabled
         {
             get { return enabled; }
-            set { enabled = value; OnNotifyPropertyChanged(); }
+            set { enabled = value; }
         }
 
         public string Project
         {
             get { return project; }
-            set { project = value; OnNotifyPropertyChanged(); }
+            set { project = value; }
         }
 
         public string Command
         {
             get { return command; }
-            set { command = value; OnNotifyPropertyChanged(); }
+            set { command = value; }
         }
     }
 }
