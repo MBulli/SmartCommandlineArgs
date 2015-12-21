@@ -57,10 +57,10 @@ namespace SmartCmdArgs.ViewModel
                items => {
                    if (items != null && items.Count != 0)
                    {
-                       foreach (var item in items.Cast<CmdArgItem>())
+                       foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).ToList())
                        {
-                           CmdArgStorage.Instance.RemoveEntryById(item.Id);
-                           CommandlineArguments.RemoveById(item.Id);
+                           CmdArgStorage.Instance.RemoveEntryById(id);
+                           CommandlineArguments.RemoveById(id);
                        }
                    }
                }, canExecute: _ =>
