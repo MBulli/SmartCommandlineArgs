@@ -34,8 +34,11 @@ namespace SmartCmdArgs.View
 
             if (e.Key == Key.Space)
             {
-                ToggleEnabledForSelectedCells(senderCell);
-                e.Handled = true;
+                if (!senderCell.IsEditing)
+                {
+                    ToggleEnabledForSelectedCells(senderCell);
+                    e.Handled = true;
+                }
             }
             else if(e.Key == Key.Return)
             {
