@@ -115,6 +115,37 @@ namespace SmartCmdArgs.Model
             }
         }
 
+        public void MoveEntryDown(Guid id)
+        {
+            int index = GetIndexById(id);
+            if (index > -1 && index < entryList.Count - 1)
+                MoveEntry(index, index - 1);
+        }
+
+        public void MoveEntryUp(Guid id)
+        {
+            int index = GetIndexById(id);
+            if (index > 0)
+                MoveEntry(index, index - 1);
+        }
+
+        public void MoveEntry(int from, int to)
+        {
+            var item = entryList[from];
+            entryList.RemoveAt(from);
+            entryList.Insert(to, item);
+        }
+
+        private int GetIndexById(Guid id)
+        {
+            for (int i = 0; i < entryList.Count; i++)
+            {
+                if (entryList[i].Id == id)
+                    return i;
+            }
+            return -1;
+        }
+
         public IReadOnlyList<CmdArgStorageEntry> EntriesFilteredByProject(string project)
         {
             return entryList.FindAll(entry => entry.Project == project);

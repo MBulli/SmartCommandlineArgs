@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,8 +26,16 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand AddEntryCommand { get { return addEntryCommand; } }
 
 
-        private RelayCommand<CmdArgItem> removeEntryCommand;
-        public RelayCommand<CmdArgItem> RemoveEntryCommand { get { return removeEntryCommand; } }
+        private RelayCommand<IList> removeEntriesCommand;
+        public RelayCommand<IList> RemoveEntriesCommand { get { return removeEntriesCommand; } }
+
+
+        private RelayCommand<IList> moveEntriesUpCommand;
+        public RelayCommand<IList> MoveEntriesUpCommand { get { return moveEntriesUpCommand; } }
+
+
+        private RelayCommand<IList> moveEntriesDownCommand;
+        public RelayCommand<IList> MoveEntriesDownCommand { get { return moveEntriesDownCommand; } }
 
         public CmdArgsToolWindowViewModel()
         {
@@ -44,12 +53,46 @@ namespace SmartCmdArgs.ViewModel
                     return this.StartupProject != null;
                 });
 
-            removeEntryCommand = new RelayCommand<CmdArgItem>(
-               item => {
-                   if (item != null)
+            removeEntriesCommand = new RelayCommand<IList>(
+               items => {
+                   if (items != null && items.Count != 0)
                    {
-                       CmdArgStorage.Instance.RemoveEntryById(item.Id);
-                       CommandlineArguments.RemoveById(item.Id);
+                       foreach (var item in items.Cast<CmdArgItem>())
+                       {
+                           CmdArgStorage.Instance.RemoveEntryById(item.Id);
+                           CommandlineArguments.RemoveById(item.Id);
+                       }
+                   }
+               }, canExecute: _ =>
+               {
+                   return this.StartupProject != null;
+               });
+
+            moveEntriesUpCommand = new RelayCommand<IList>(
+               items => {
+                   if (items != null && items.Count != 0)
+                   {
+                       foreach (var item in items.Cast<CmdArgItem>())
+                       {
+                           CmdArgStorage.Instance.MoveEntryUp(item.Id);
+                           CommandlineArguments.MoveEntryUp(item.Id);
+                       }
+                   }
+               }, canExecute: _ =>
+               {
+                   return this.StartupProject != null;
+               });
+
+            moveEntriesDownCommand = new RelayCommand<IList>(
+               items =>
+               {
+                   if (items != null && items.Count != 0)
+                   {
+                       foreach (var item in items.Cast<CmdArgItem>())
+                       {
+                           CmdArgStorage.Instance.MoveEntryDown(item.Id);
+                           CommandlineArguments.MoveEntryDown(item.Id);
+                       }
                    }
                }, canExecute: _ =>
                {

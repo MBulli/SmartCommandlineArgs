@@ -22,6 +22,8 @@
 
         <BitmapImage x:Key="AddIcon2" UriSource="../Resources/list-add.png"/>
         <BitmapImage x:Key="RemoveIcon2" UriSource="../Resources/list-remove.png"/>
+        <BitmapImage x:Key="UpIcon" UriSource="../Resources/up-arrow.png"/>
+        <BitmapImage x:Key="DownIcon" UriSource="../Resources/down-arrow.png"/>
 
         <Style x:Key="vsImageButtonStyle" TargetType="vs:ImageButton">
             <!--<Setter Property="BackgroundHover" Value="{DynamicResource {x:Static vs:CommonControlsColors.ButtonHoverBrushKey}}" />-->
@@ -38,9 +40,11 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarGradientBrushKey}}">
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource AddIcon2}" Command="{Binding AddEntryCommand}" />
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}" ImageNormal="{StaticResource RemoveIcon2}" Command="{Binding RemoveEntryCommand}" CommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItem}" />
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarGradientBrushKey}}">
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource AddIcon2}" Command="{Binding AddEntryCommand}" Width="18" Margin="10, 0, 0, 0"/>
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}" ImageNormal="{StaticResource RemoveIcon2}" Command="{Binding RemoveEntriesCommand}" CommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItems}" Width="18" Margin="10, 0, 0, 0"/>
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource UpIcon}" Command="{Binding MoveEntriesUpCommand}" Width="18" Margin="30, 0, 0, 0"/>
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource DownIcon}" Command="{Binding MoveEntriesDownCommand}" Width="18" Margin="10, 0, 0, 0"/>
         </StackPanel>
 
         <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
