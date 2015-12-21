@@ -114,6 +114,7 @@ namespace SmartCmdArgs
                 UpdateProjectConfiguration();
             }
         }
+
         protected override void OnSaveOptions(string key, Stream stream)
         {
             base.OnSaveOptions(key, stream);
@@ -163,6 +164,12 @@ namespace SmartCmdArgs
 
         private void SolutionEvents_Opened()
         {
+            if (Model.CmdArgStorage.Instance.Entries.Count == 0)
+            {
+                // Not working right now. Model changes aren't propagate to view
+                //ReadCommandlineArgumentsFromAllProjects();
+            }
+
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();
         }
@@ -196,6 +203,47 @@ namespace SmartCmdArgs
             }
         }
         #endregion
+
+        private void ReadCommandlineArgumentsFromAllProjects()
+        {
+            var result = new List<string>();
+            var solution = this.appObject?.Solution;
+
+            if (solution != null)
+            {
+                foreach (EnvDTE.Project project in solution.Projects)
+                {
+                    List<string> prjCmdArgs = new List<string>();
+                    // Read properties for all configurations (e.g. Debug/Releas)
+                    foreach (EnvDTE.Configuration config in project.ConfigurationManager)
+                    {
+                        if (config.Properties != null)
+                        {
+                            foreach (EnvDTE.Property prop in config.Properties)
+                            {
+                                // CommandArguments = C/C++ project
+                                // StartArguments   = C#/VB project
+                                if (prop.Name == "CommandArguments" || prop.Name == "StartArguments")
+                                {
+                                    string cmdarg = prop.Value as string;
+                                    if (!string.IsNullOrEmpty(cmdarg))
+                                    {
+                                        result.Add(cmdarg);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Create entries for every distinct config property
+                    foreach (var item in prjCmdArgs.Distinct())
+                    {
+                        Model.CmdArgStorage.Instance.AddEntry(item, project.UniqueName, false);
+                    }
+                }
+            }
+        }
 
         private void UpdateCurrentStartupProject()
         {

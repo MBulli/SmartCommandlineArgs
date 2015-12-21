@@ -64,11 +64,19 @@ namespace SmartCmdArgs.Model
         // CRUD operations
         public CmdArgStorageEntry AddEntry(string command, bool enabled = true)
         {
+            return AddEntry(command, StartupProject, enabled);
+        }
+
+        public CmdArgStorageEntry AddEntry(string command, string uniquePrjName, bool enabled = true)
+        {
+            if (string.IsNullOrEmpty(uniquePrjName))
+                throw new ArgumentNullException("uniquePrjName");
+
             var newEntry = new CmdArgStorageEntry
             {
                 Id = Guid.NewGuid(),
                 Enabled = enabled,
-                Project = StartupProject,
+                Project = uniquePrjName,
                 Command = command
             };
 
