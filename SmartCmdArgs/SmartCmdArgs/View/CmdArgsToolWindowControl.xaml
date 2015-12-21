@@ -41,10 +41,10 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarGradientBrushKey}}">
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource AddIcon2}" Command="{Binding AddEntryCommand}" Width="18" Margin="10, 0, 0, 0"/>
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}" ImageNormal="{StaticResource RemoveIcon2}" Command="{Binding RemoveEntriesCommand}" CommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItems}" Width="18" Margin="10, 0, 0, 0"/>
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource UpIcon}" Command="{Binding MoveEntriesUpCommand}" Width="18" Margin="30, 0, 0, 0"/>
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource DownIcon}" Command="{Binding MoveEntriesDownCommand}" Width="18" Margin="10, 0, 0, 0"/>
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource AddIcon2}" Command="{Binding AddEntryCommand}" Width="16" Margin="10, 0, 0, 0"/>
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}" ImageNormal="{StaticResource RemoveIcon2}" Command="{Binding RemoveEntriesCommand}" CommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItems}" Width="16" Margin="10, 0, 0, 0"/>
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource UpIcon}" Command="{Binding MoveEntriesUpCommand}" Width="16" Margin="20, 0, 0, 0"/>
+            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource DownIcon}" Command="{Binding MoveEntriesDownCommand}" Width="16" Margin="10, 0, 0, 0"/>
         </StackPanel>
 
         <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
