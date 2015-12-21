@@ -92,5 +92,36 @@ namespace SmartCmdArgs.ViewModel
                 Value = entry.Command
             });
         }
+
+        internal void MoveEntryDown(Guid id)
+        {
+            int index = GetIndexById(id);
+            if (index > -1 && index < dataCollection.Count - 1)
+                MoveEntry(index, index + 1);
+        }
+
+        internal void MoveEntryUp(Guid id)
+        {
+            int index = GetIndexById(id);
+            if (index > 0)
+                MoveEntry(index, index - 1);
+        }
+
+        internal void MoveEntry(int from, int to)
+        {
+            var item = dataCollection[from];
+            dataCollection.RemoveAt(from);
+            dataCollection.Insert(to, item);
+        }
+
+        private int GetIndexById(Guid id)
+        {
+            for (int i = 0; i < dataCollection.Count; i++)
+            {
+                if (dataCollection[i].Id == id)
+                    return i;
+            }
+            return -1;
+        }
     }
 }
