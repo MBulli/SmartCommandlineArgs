@@ -11,7 +11,8 @@ namespace SmartCmdArgs.ViewModel
     {
         private Guid id;
         private bool enabled;
-        private string value;
+        private string project;       
+        private string command;
 
         public Guid Id
         {
@@ -19,10 +20,16 @@ namespace SmartCmdArgs.ViewModel
             set { id = value; OnNotifyPropertyChanged(); }
         }
 
-        public string Value
+        public string Command
         {
-            get { return value; }
-            set { this.value = value; OnNotifyPropertyChanged(); }
+            get { return command; }
+            set { this.command = value; OnNotifyPropertyChanged(); }
+        }
+
+        public string Project
+        {
+            get { return project; }
+            set { this.project = value; OnNotifyPropertyChanged(); }
         }
 
         public bool Enabled

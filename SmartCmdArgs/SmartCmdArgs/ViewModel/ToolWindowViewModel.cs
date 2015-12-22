@@ -40,17 +40,13 @@ namespace SmartCmdArgs.ViewModel
         public ToolWindowViewModel()
         {
             this.CommandlineArguments = new ListViewModel();
-            this.StartupProject = CmdArgStorage.Instance.StartupProject;
-
-            CmdArgStorage.Instance.StartupProjectChanged += Instance_StartupProjectChanged;
 
             addEntryCommand = new RelayCommand(
                 () => {
-                    var newItem = CmdArgStorage.Instance.AddEntry(command: "", enabled: true);
-                    CommandlineArguments.AddCmdArgStoreEntry(newItem);
+                    CommandlineArguments.AddNewItem(command: "", project: StartupProject, enabled: true);
                 }, canExecute: _ =>
                 {
-                    return this.StartupProject != null;
+                    return StartupProject != null;
                 });
 
             removeEntriesCommand = new RelayCommand<IList>(
@@ -59,13 +55,12 @@ namespace SmartCmdArgs.ViewModel
                    {
                        foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).ToList())
                        {
-                           CmdArgStorage.Instance.RemoveEntryById(id);
                            CommandlineArguments.RemoveById(id);
                        }
                    }
                }, canExecute: _ =>
                {
-                   return this.StartupProject != null;
+                   return StartupProject != null;
                });
 
             moveEntriesUpCommand = new RelayCommand<IList>(
@@ -74,7 +69,6 @@ namespace SmartCmdArgs.ViewModel
                    {
                        foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).ToList())
                        {
-                           CmdArgStorage.Instance.MoveEntryUp(id);
                            CommandlineArguments.MoveEntryUp(id);
                        }
                    }
@@ -90,7 +84,6 @@ namespace SmartCmdArgs.ViewModel
                    {
                        foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).Reverse().ToList())
                        {
-                           CmdArgStorage.Instance.MoveEntryDown(id);
                            CommandlineArguments.MoveEntryDown(id);
                        }
                    }
@@ -100,19 +93,25 @@ namespace SmartCmdArgs.ViewModel
                });
         }
 
-        public void UpdateView()
+        public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()
         {
-            this.StartupProject = CmdArgStorage.Instance.StartupProject;
-
-            if (StartupProject != null)
+            foreach (CmdArgItem item in CommandlineArguments.CmdLineItems.SourceCollection)
             {
-                this.CommandlineArguments.SetListItems(CmdArgStorage.Instance.StartupProjectEntries);
+                if (item.Enabled && item.Project == StartupProject)
+                {
+                    yield return item;
+                }
             }
         }
 
-        private void Instance_StartupProjectChanged(object sender, EventArgs e)
+        public void UpdateStartupProject(string projectName)
         {
-            UpdateView();
+            if (StartupProject != projectName)
+            {
+                this.StartupProject = projectName;
+                
+                // TODO Update List View Model
+            }
         }
     }
 }

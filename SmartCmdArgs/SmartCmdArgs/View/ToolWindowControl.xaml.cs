@@ -27,6 +27,12 @@ namespace SmartCmdArgs.View
         {
             this.InitializeComponent();
         }
+
+        public ToolWindowControl(ViewModel.ToolWindowViewModel vm)
+            : this()
+        {
+            DataContext = vm;
+        }
         
         /// <summary>
         /// Handles click on the button by displaying a message box.

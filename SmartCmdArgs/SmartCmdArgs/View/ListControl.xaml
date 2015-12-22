@@ -18,7 +18,7 @@
                 CanUserAddRows="False">
         <DataGrid.Columns>
             <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" Width="25" IsReadOnly="True" />
-            <DataGridTextColumn     Header="Value"   Binding="{Binding Value}" Width="*"/>
+            <DataGridTextColumn     Header="Value"   Binding="{Binding Command}" Width="*"/>
         </DataGrid.Columns>
         <DataGrid.Style>
             <Style TargetType="DataGrid">

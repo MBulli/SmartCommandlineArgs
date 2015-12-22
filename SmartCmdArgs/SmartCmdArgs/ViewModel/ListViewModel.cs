@@ -9,6 +9,9 @@ using SmartCmdArgs.Helper;
 using SmartCmdArgs.Model;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.IO;
+
+using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace SmartCmdArgs.ViewModel
 {
@@ -17,8 +20,9 @@ namespace SmartCmdArgs.ViewModel
         private readonly BindingListEx<CmdArgItem> dataCollection;
         private readonly ICollectionView dataView;
 
-        public ICollectionView CmdLineItems { get { return dataView; } } 
+        public ICollectionView CmdLineItems { get { return dataView; } }
 
+        public event ListChangedEventHandler ArgumentListChanged;
 
         public ListViewModel()
         {
@@ -27,51 +31,58 @@ namespace SmartCmdArgs.ViewModel
 
             if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
-                dataCollection.Add(new CmdArgItem() { Enabled = true, Value = @"C:\Users\Markus\Desktop\" });
-                dataCollection.Add(new CmdArgItem() { Enabled = false, Value = "Hello World" });
-                dataCollection.Add(new CmdArgItem() { Enabled = true, Value = "A very long commandline to test very long commandlines to see how very long commandlines work in our UI." });
+                dataCollection.Add(new CmdArgItem() { Enabled = true, Command = @"C:\Users\Markus\Desktop\" });
+                dataCollection.Add(new CmdArgItem() { Enabled = false, Command = "Hello World" });
+                dataCollection.Add(new CmdArgItem() { Enabled = true, Command = "A very long commandline to test very long commandlines to see how very long commandlines work in our UI." });
             }
 
-            dataCollection.ListChanged += DataCollection_ListChanged;
+            // Redirect list change events
+            dataCollection.ListChanged += OnArgumentListChanged;
         }
 
-        internal void SetListItems(IReadOnlyCollection<CmdArgStorageEntry> list)
+        public void PopulateFromStream(Stream stream)
         {
-            dataCollection.Clear();
-            AddAllCmdArgStoreEntries(list);
-        }
+            if (stream == null)
+                throw new ArgumentNullException("stream");
 
-        private void DataCollection_ListChanged(object sender, ListChangedEventArgs e)
-        {
-            if (e.ListChangedType == ListChangedType.ItemChanged)
+            StreamReader sr = new StreamReader(stream);
+            string jsonStr = sr.ReadToEnd();
+
+            var entries = JsonConvert.DeserializeObject<List<CmdArgItem>>(jsonStr);
+
+            if (entries != null)
             {
-                CmdArgItem item = dataCollection[e.NewIndex];
-
-                switch (e.PropertyDescriptor.Name)
+                // TODO: AddRange function on BindingList
+                foreach (var item in entries)
                 {
-                    case nameof(CmdArgItem.Value):
-                        CmdArgStorage.Instance.UpdateCommandById(item.Id, item.Value);
-                        break;
-                    case nameof(CmdArgItem.Enabled):
-                        CmdArgStorage.Instance.UpdateEnabledById(item.Id, item.Enabled);
-                        break;
-                    default:
-                        break;
+                    this.dataCollection.Add(item);
                 }
             }
-            else if(e.ListChangedType == ListChangedType.ItemDeleted)
-            {
-                var item = e.GetDeletedItem<CmdArgItem>();
-                CmdArgStorage.Instance.RemoveEntryById(item.Id);
-            }
         }
 
-        private void AddAllCmdArgStoreEntries(IReadOnlyCollection<CmdArgStorageEntry> entryList)
+        public void StoreToStream(Stream stream)
         {
-            foreach (var cmdArgStorageEntry in entryList)
-            {
-                AddCmdArgStoreEntry(cmdArgStorageEntry);
-            }
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+
+            string jsonStr = JsonConvert.SerializeObject(this.dataCollection);
+
+            StreamWriter sw = new StreamWriter(stream);
+            sw.Write(jsonStr);
+            sw.Flush();
+        }
+
+        // CRUD Operations
+        public CmdArgItem AddNewItem(string command, string project, bool enabled = true)
+        {
+            CmdArgItem item = new CmdArgItem() {
+                Id = Guid.NewGuid(),
+                Command = command,
+                Enabled = enabled,
+                Project = project };
+
+            dataCollection.Add(item);
+            return item;
         }
 
         internal void RemoveById(Guid id)
@@ -81,16 +92,6 @@ namespace SmartCmdArgs.ViewModel
                 return;
 
             dataCollection.Remove(itemToRemove);
-        }
-
-        internal void AddCmdArgStoreEntry(CmdArgStorageEntry entry)
-        {
-            dataCollection.Add(new CmdArgItem
-            {
-                Id = entry.Id,
-                Enabled = entry.Enabled,
-                Value = entry.Command
-            });
         }
 
         internal void MoveEntryDown(Guid id)
@@ -122,6 +123,11 @@ namespace SmartCmdArgs.ViewModel
                     return i;
             }
             return -1;
+        }
+
+        private void OnArgumentListChanged(object sender, ListChangedEventArgs args)
+        {
+            ArgumentListChanged?.Invoke(this, args);
         }
     }
 }

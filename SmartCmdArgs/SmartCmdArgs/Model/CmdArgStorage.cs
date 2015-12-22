@@ -11,6 +11,7 @@ using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace SmartCmdArgs.Model
 {
+    [Obsolete]
     class CmdArgStorage
     {
         private static readonly Lazy<CmdArgStorage> singletonLazy = new Lazy<CmdArgStorage>(() => new CmdArgStorage());
@@ -177,6 +178,7 @@ namespace SmartCmdArgs.Model
         }
     }
 
+    [Obsolete]
     class CmdArgStorageEntry
     {
         private Guid id;

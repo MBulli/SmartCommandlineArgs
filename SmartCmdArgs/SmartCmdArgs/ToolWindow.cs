@@ -35,14 +35,23 @@ namespace SmartCmdArgs
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
-        public ToolWindow() : base(null)
+        public ToolWindow() 
+            : this(new ViewModel.ToolWindowViewModel())
         {
+        }
+
+        public ToolWindow(ViewModel.ToolWindowViewModel viewModel)
+            : base(null)
+        {
+            if (viewModel == null)
+                throw new ArgumentNullException(nameof(viewModel));
+
             this.Caption = "Smart Commandline Arguments";
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on
             // the object returned by the Content property.
-            this.view = new View.ToolWindowControl();
+            this.view = new View.ToolWindowControl(viewModel);
             this.Content = view;
         }
 
@@ -50,7 +59,8 @@ namespace SmartCmdArgs
         {
             if (fShow == (int)__FRAMESHOW.FRAMESHOW_WinShown)
             {
-                view.ViewModel.UpdateView();
+                // TODO Obsolete ?!
+                //view.ViewModel.UpdateView();
             }
             return Microsoft.VisualStudio.VSConstants.S_OK;
         }

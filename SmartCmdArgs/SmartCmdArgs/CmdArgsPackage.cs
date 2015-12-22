@@ -17,7 +17,6 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
-using SmartCmdArgs.Model;
 using System.Text;
 using System.Collections.Generic;
 
@@ -59,6 +58,8 @@ namespace SmartCmdArgs
         private EnvDTE.SolutionEvents solutionEvents;
         private EnvDTE.CommandEvents commandEvents;
 
+        public ViewModel.ToolWindowViewModel ToolWindowViewModel { get; } = new ViewModel.ToolWindowViewModel();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
@@ -98,10 +99,22 @@ namespace SmartCmdArgs
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
             this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
 
-            CmdArgStorage.Instance.ItemChanged += Instance_ItemChanged;
+            this.ToolWindowViewModel.CommandlineArguments.ArgumentListChanged += ArgumentListChanged;
 
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();
+        }
+
+        private void ArgumentListChanged(object sender, System.ComponentModel.ListChangedEventArgs e)
+        {
+            UpdateProjectConfiguration();
+        }
+        protected override WindowPane InstantiateToolWindow(Type toolWindowType)
+        {
+            if (toolWindowType == typeof(ToolWindow))
+                return new ToolWindow(ToolWindowViewModel);
+            else
+                return base.InstantiateToolWindow(toolWindowType);
         }
 
         protected override void OnLoadOptions(string key, Stream stream)
@@ -110,7 +123,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                Model.CmdArgStorage.Instance.PopulateFromStream(stream);
+                ToolWindowViewModel.CommandlineArguments.PopulateFromStream(stream);
                 UpdateProjectConfiguration();
             }
         }
@@ -121,7 +134,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                Model.CmdArgStorage.Instance.StoreToStream(stream);
+                ToolWindowViewModel.CommandlineArguments.StoreToStream(stream);
             }
         }
 
@@ -135,10 +148,7 @@ namespace SmartCmdArgs
 
             if (found)
             {
-                var activeEntries = from e in CmdArgStorage.Instance.StartupProjectEntries
-                                    where e.Enabled && !string.IsNullOrEmpty(e.Command)
-                                    select e.Command;
-
+                var activeEntries = ToolWindowViewModel.ActiveItemsForCurrentProject().Select(e => e.Command);
                 string prjCmdArgs = string.Join(" ", activeEntries);
 
                 foreach (EnvDTE.Configuration config in project.ConfigurationManager)
@@ -164,7 +174,7 @@ namespace SmartCmdArgs
 
         private void SolutionEvents_Opened()
         {
-            if (Model.CmdArgStorage.Instance.Entries.Count == 0)
+            if (ToolWindowViewModel.CommandlineArguments.CmdLineItems.IsEmpty)
             {
                 // Not working right now. Model changes aren't propagate to view
                 //ReadCommandlineArgumentsFromAllProjects();
@@ -239,7 +249,7 @@ namespace SmartCmdArgs
                     // Create entries for every distinct config property
                     foreach (var item in prjCmdArgs.Distinct())
                     {
-                        Model.CmdArgStorage.Instance.AddEntry(item, project.UniqueName, false);
+                        ToolWindowViewModel.CommandlineArguments.AddNewItem(item, project.UniqueName, false);
                     }
                 }
             }
@@ -250,20 +260,18 @@ namespace SmartCmdArgs
             string prjName = StartupProjectUniqueName();
 
             // if startup project changed
-            if (CmdArgStorage.Instance.StartupProject != prjName)
+            if (ToolWindowViewModel.StartupProject != prjName)
             {
                 EnvDTE.Project project;
-                bool found = FindProject(this.appObject?.Solution, prjName, out project);
-
-                if (found)
+                if (FindProject(this.appObject?.Solution, prjName, out project))
                 {
-                    CmdArgStorage.Instance.UpdateStartupProject(project.UniqueName);
+                    ToolWindowViewModel.UpdateStartupProject(project.UniqueName);
                 }
             }
         }
         private void ResetStartupProject()
         {
-            CmdArgStorage.Instance.UpdateStartupProject(null);
+            ToolWindowViewModel.UpdateStartupProject(null);
         }
 
         private string StartupProjectUniqueName()
@@ -301,11 +309,6 @@ namespace SmartCmdArgs
             }
 
             return false;
-        }
-
-        private void Instance_ItemChanged(object sender, CmdArgStorageEntry e)
-        {
-            UpdateProjectConfiguration();
         }
     }
 }

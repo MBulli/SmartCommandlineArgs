@@ -8,14 +8,12 @@
              xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              xmlns:c="clr-namespace:SmartCmdArgs.Helper"
              x:Class="SmartCmdArgs.View.ToolWindowControl"
+             mc:Ignorable="d"
              Background="{DynamicResource vs:EnvironmentColors.ToolWindowBackgroundBrushKey}"
              Foreground="{DynamicResource VsBrush.WindowText}"
-             mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300"
+             d:DataContext="{d:DesignData ToolWindowViewModel}"
              x:Name="MyToolWindow">
-    <UserControl.DataContext>
-        <vm:ToolWindowViewModel />
-    </UserControl.DataContext>
     <UserControl.Resources>
         <BitmapImage x:Key="AddIcon" UriSource="../Resources/iconmonstr-plus-2-icon-32.png"/>
         <BitmapImage x:Key="RemoveIcon" UriSource="../Resources/iconmonstr-minus-2-icon-32.png"/>
