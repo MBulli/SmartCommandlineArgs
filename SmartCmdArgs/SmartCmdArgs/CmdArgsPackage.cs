@@ -99,7 +99,7 @@ namespace SmartCmdArgs
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
             this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
 
-            this.ToolWindowViewModel.CommandlineArguments.ArgumentListChanged += ArgumentListChanged;
+            this.ToolWindowViewModel.CommandlineArguments.DataCollection.ListChanged += ArgumentListChanged;
 
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();

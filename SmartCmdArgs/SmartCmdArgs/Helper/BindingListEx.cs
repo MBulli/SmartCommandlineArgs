@@ -9,7 +9,7 @@ namespace SmartCmdArgs.Helper
 {
     // Theres no way to find the deleted item in the item deleted handler.
     // Thats why we need this class
-    class BindingListEx<T> : BindingList<T>
+    public class BindingListEx<T> : BindingList<T>
     {
         protected override void RemoveItem(int index)
         {

@@ -17,33 +17,27 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ListViewModel : PropertyChangedBase
     {
-        private readonly BindingListEx<CmdArgItem> dataCollection;
-        private readonly ICollectionView dataView;
+        public BindingListEx<CmdArgItem> DataCollection { get; }
 
-        public ICollectionView CmdLineItems { get { return dataView; } }
-
-        public event ListChangedEventHandler ArgumentListChanged;
+        public ICollectionView CmdLineItems { get; }
 
         public ListViewModel()
         {
-            dataCollection = new BindingListEx<CmdArgItem>();
-            dataView = new ListCollectionView(dataCollection);
+            DataCollection = new BindingListEx<CmdArgItem>();
+            CmdLineItems = new ListCollectionView(DataCollection);
             
             if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
-                dataCollection.Add(new CmdArgItem() { Enabled = true, Command = @"C:\Users\Markus\Desktop\" });
-                dataCollection.Add(new CmdArgItem() { Enabled = false, Command = "Hello World" });
-                dataCollection.Add(new CmdArgItem() { Enabled = true, Command = "A very long commandline to test very long commandlines to see how very long commandlines work in our UI." });
+                DataCollection.Add(new CmdArgItem() { Enabled = true, Command = @"C:\Users\Markus\Desktop\" });
+                DataCollection.Add(new CmdArgItem() { Enabled = false, Command = "Hello World" });
+                DataCollection.Add(new CmdArgItem() { Enabled = true, Command = "A very long commandline to test very long commandlines to see how very long commandlines work in our UI." });
             }
-
-            // Redirect list change events
-            dataCollection.ListChanged += OnArgumentListChanged;
         }
 
         public void PopulateFromStream(Stream stream)
         {
             if (stream == null)
-                throw new ArgumentNullException("stream");
+                throw new ArgumentNullException(nameof(stream));
 
             StreamReader sr = new StreamReader(stream);
             string jsonStr = sr.ReadToEnd();
@@ -52,16 +46,16 @@ namespace SmartCmdArgs.ViewModel
 
             if (entries != null)
             {
-                this.dataCollection.AddRange(entries);
+                this.DataCollection.AddRange(entries);
             }
         }
 
         public void StoreToStream(Stream stream)
         {
             if (stream == null)
-                throw new ArgumentNullException("stream");
+                throw new ArgumentNullException(nameof(stream));
 
-            string jsonStr = JsonConvert.SerializeObject(this.dataCollection);
+            string jsonStr = JsonConvert.SerializeObject(this.DataCollection);
 
             StreamWriter sw = new StreamWriter(stream);
             sw.Write(jsonStr);
@@ -77,49 +71,39 @@ namespace SmartCmdArgs.ViewModel
                 Enabled = enabled,
                 Project = project };
 
-            dataCollection.Add(item);
+            DataCollection.Add(item);
             return item;
-        }
-
-        internal void RemoveEntries(IEnumerable<CmdArgItem> items)
-        {
-            dataCollection.RemoveRange(items);
         }
 
         internal void MoveEntriesDown(IEnumerable<CmdArgItem> items)
         {
-            var itemIndexDictionary =  items.ToDictionary(item => item, item => dataCollection.IndexOf(item));
+            var itemIndexDictionary =  items.ToDictionary(item => item, item => DataCollection.IndexOf(item));
 
-            if (itemIndexDictionary.Values.Max() >= dataCollection.Count - 1)
+            if (itemIndexDictionary.Values.Max() >= DataCollection.Count - 1)
                 return;
 
             foreach (var itemIndexPair in itemIndexDictionary)
             {
-                dataCollection.Move(itemIndexPair.Key, itemIndexPair.Value - 1);
+                DataCollection.Move(itemIndexPair.Key, itemIndexPair.Value - 1);
             }
         }
 
         internal void MoveEntriesUp(IEnumerable<CmdArgItem> items)
         {
-            var itemIndexDictionary = items.ToDictionary(item => item, item => dataCollection.IndexOf(item));
+            var itemIndexDictionary = items.ToDictionary(item => item, item => DataCollection.IndexOf(item));
 
             if (itemIndexDictionary.Values.Min() <= 0)
                 return;
 
             foreach (var itemIndexPair in itemIndexDictionary)
             {
-                dataCollection.Move(itemIndexPair.Key, itemIndexPair.Value + 1);
+                DataCollection.Move(itemIndexPair.Key, itemIndexPair.Value + 1);
             }
         }
 
         public void FilterByProject(string project)
         {
             CmdLineItems.Filter = e => ((CmdArgItem)e).Project == project;
-        }
-
-        private void OnArgumentListChanged(object sender, ListChangedEventArgs args)
-        {
-            ArgumentListChanged?.Invoke(this, args);
         }
     }
 }

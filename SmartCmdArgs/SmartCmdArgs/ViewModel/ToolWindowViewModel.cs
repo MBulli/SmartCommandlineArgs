@@ -46,7 +46,7 @@ namespace SmartCmdArgs.ViewModel
                items => {
                    if (items != null && items.Count != 0)
                    {
-                       CommandlineArguments.RemoveEntries(items.Cast<CmdArgItem>());
+                       CommandlineArguments.DataCollection.RemoveRange(items.Cast<CmdArgItem>());
                    }
                }, canExecute: _ =>
                {
