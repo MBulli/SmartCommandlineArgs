@@ -79,7 +79,7 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()
         {
-            foreach (CmdArgItem item in CommandlineArguments.DataCollectionView.SourceCollection)
+            foreach (CmdArgItem item in CommandlineArguments.DataCollection)
             {
                 if (item.Enabled && item.Project == StartupProject)
                 {
