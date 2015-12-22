@@ -32,6 +32,41 @@ namespace SmartCmdArgs.Helper
             }
             
         }
+
+        public void Move(T item, int index)
+        {
+            bool raiseListChangedEvents = this.RaiseListChangedEvents;
+            try
+            {
+                this.RaiseListChangedEvents = false;
+                int oldIndex = this.IndexOf(item);
+                this.Remove(item);
+                this.InsertItem(index, item);
+                this.OnListChanged(new ListChangedEventArgs(ListChangedType.ItemMoved, index, oldIndex));
+            }
+            finally
+            {
+                this.RaiseListChangedEvents = raiseListChangedEvents;
+            }
+        }
+
+        public void AddRange(IEnumerable<T> items)
+        {
+            bool raiseListChangedEvents = this.RaiseListChangedEvents;
+            try
+            {
+                this.RaiseListChangedEvents = false;
+                foreach (var item in items)
+                {
+                    this.Add(item);
+                }
+                this.OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1, -1));
+            }
+            finally
+            {
+                this.RaiseListChangedEvents = raiseListChangedEvents;
+            }
+        }
     }
 
     class ListChangedItemDeletedEventArgs : ListChangedEventArgs
