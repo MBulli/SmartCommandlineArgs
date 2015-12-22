@@ -99,13 +99,19 @@ namespace SmartCmdArgs
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
             this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
 
-            this.ToolWindowViewModel.CommandlineArguments.DataCollection.ListChanged += ArgumentListChanged;
+            this.ToolWindowViewModel.CommandlineArguments.DataCollection.CollectionChanged += ArgumentListChanged;
+            this.ToolWindowViewModel.CommandlineArguments.DataCollection.ItemPropertyChanged += ArgumentListItemChanged;
 
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();
         }
 
-        private void ArgumentListChanged(object sender, System.ComponentModel.ListChangedEventArgs e)
+        private void ArgumentListItemChanged(object sender, Helper.CollectionItemPropertyChangedEventArgs<ViewModel.CmdArgItem> e)
+        {
+            UpdateProjectConfiguration();
+        }
+
+        private void ArgumentListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             UpdateProjectConfiguration();
         }

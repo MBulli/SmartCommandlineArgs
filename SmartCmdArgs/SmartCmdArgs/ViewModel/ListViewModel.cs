@@ -17,15 +17,15 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ListViewModel : PropertyChangedBase
     {
-        public BindingListEx<CmdArgItem> DataCollection { get; }
+        public ObservableCollectionEx<CmdArgItem> DataCollection { get; }
 
         public ICollectionView CmdLineItems { get; }
 
         public ListViewModel()
         {
-            DataCollection = new BindingListEx<CmdArgItem>();
-            CmdLineItems = new ListCollectionView(DataCollection);
-            
+            DataCollection = new ObservableCollectionEx<CmdArgItem>();
+            CmdLineItems = CollectionViewSource.GetDefaultView(DataCollection);
+
             if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
                 DataCollection.Add(new CmdArgItem() { Enabled = true, Command = @"C:\Users\Markus\Desktop\" });

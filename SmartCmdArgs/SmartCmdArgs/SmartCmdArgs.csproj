@@ -55,6 +55,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Helper\ObservableCollectionEx.cs" />
     <Compile Include="ToolWindow.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Helper\BindingListEx.cs" />
