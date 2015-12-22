@@ -57,10 +57,10 @@ namespace SmartCmdArgs.ViewModel
                items => {
                    if (items != null && items.Count != 0)
                    {
-                       foreach (var item in items.Cast<CmdArgItem>())
+                       foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).ToList())
                        {
-                           CmdArgStorage.Instance.RemoveEntryById(item.Id);
-                           CommandlineArguments.RemoveById(item.Id);
+                           CmdArgStorage.Instance.RemoveEntryById(id);
+                           CommandlineArguments.RemoveById(id);
                        }
                    }
                }, canExecute: _ =>
@@ -72,10 +72,10 @@ namespace SmartCmdArgs.ViewModel
                items => {
                    if (items != null && items.Count != 0)
                    {
-                       foreach (var item in items.Cast<CmdArgItem>())
+                       foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).ToList())
                        {
-                           CmdArgStorage.Instance.MoveEntryUp(item.Id);
-                           CommandlineArguments.MoveEntryUp(item.Id);
+                           CmdArgStorage.Instance.MoveEntryUp(id);
+                           CommandlineArguments.MoveEntryUp(id);
                        }
                    }
                }, canExecute: _ =>
@@ -88,10 +88,10 @@ namespace SmartCmdArgs.ViewModel
                {
                    if (items != null && items.Count != 0)
                    {
-                       foreach (var item in items.Cast<CmdArgItem>())
+                       foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).Reverse().ToList())
                        {
-                           CmdArgStorage.Instance.MoveEntryDown(item.Id);
-                           CommandlineArguments.MoveEntryDown(item.Id);
+                           CmdArgStorage.Instance.MoveEntryDown(id);
+                           CommandlineArguments.MoveEntryDown(id);
                        }
                    }
                }, canExecute: _ =>
