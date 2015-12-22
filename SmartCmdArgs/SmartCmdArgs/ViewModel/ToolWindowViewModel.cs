@@ -46,10 +46,7 @@ namespace SmartCmdArgs.ViewModel
                items => {
                    if (items != null && items.Count != 0)
                    {
-                       foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).ToList())
-                       {
-                           CommandlineArguments.RemoveById(id);
-                       }
+                       CommandlineArguments.RemoveEntries(items.Cast<CmdArgItem>());
                    }
                }, canExecute: _ =>
                {
@@ -60,10 +57,7 @@ namespace SmartCmdArgs.ViewModel
                items => {
                    if (items != null && items.Count != 0)
                    {
-                       foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).ToList())
-                       {
-                           CommandlineArguments.MoveEntryUp(id);
-                       }
+                       CommandlineArguments.MoveEntriesUp(items.Cast<CmdArgItem>());
                    }
                }, canExecute: _ =>
                {
@@ -75,10 +69,7 @@ namespace SmartCmdArgs.ViewModel
                {
                    if (items != null && items.Count != 0)
                    {
-                       foreach (var id in items.Cast<CmdArgItem>().Select(arg => arg.Id).Reverse().ToList())
-                       {
-                           CommandlineArguments.MoveEntryDown(id);
-                       }
+                       CommandlineArguments.MoveEntriesDown(items.Cast<CmdArgItem>());
                    }
                }, canExecute: _ =>
                {

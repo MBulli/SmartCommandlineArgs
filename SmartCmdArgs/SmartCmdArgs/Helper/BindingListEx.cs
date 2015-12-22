@@ -67,6 +67,24 @@ namespace SmartCmdArgs.Helper
                 this.RaiseListChangedEvents = raiseListChangedEvents;
             }
         }
+
+        public void RemoveRange(IEnumerable<T> items)
+        {
+            bool raiseListChangedEvents = this.RaiseListChangedEvents;
+            try
+            {
+                this.RaiseListChangedEvents = false;
+                foreach (var item in items.ToList())
+                {
+                    this.Remove(item);
+                }
+                this.OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1, -1));
+            }
+            finally
+            {
+                this.RaiseListChangedEvents = raiseListChangedEvents;
+            }
+        }
     }
 
     class ListChangedItemDeletedEventArgs : ListChangedEventArgs
