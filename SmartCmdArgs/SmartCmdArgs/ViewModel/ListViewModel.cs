@@ -84,7 +84,7 @@ namespace SmartCmdArgs.ViewModel
 
             foreach (var itemIndexPair in itemIndexDictionary)
             {
-                DataCollection.Move(itemIndexPair.Key, itemIndexPair.Value - 1);
+                DataCollection.Move(itemIndexPair.Key, itemIndexPair.Value + 1);
             }
         }
 
@@ -97,7 +97,7 @@ namespace SmartCmdArgs.ViewModel
 
             foreach (var itemIndexPair in itemIndexDictionary)
             {
-                DataCollection.Move(itemIndexPair.Key, itemIndexPair.Value + 1);
+                DataCollection.Move(itemIndexPair.Key, itemIndexPair.Value - 1);
             }
         }
 
