@@ -19,12 +19,12 @@ namespace SmartCmdArgs.ViewModel
     {
         public BindingListEx<CmdArgItem> DataCollection { get; }
 
-        public ICollectionView CmdLineItems { get; }
+        public ICollectionView DataCollectionView { get; }
 
         public ListViewModel()
         {
             DataCollection = new BindingListEx<CmdArgItem>();
-            CmdLineItems = new ListCollectionView(DataCollection);
+            DataCollectionView = new ListCollectionView(DataCollection);
             
             if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
@@ -103,7 +103,7 @@ namespace SmartCmdArgs.ViewModel
 
         public void FilterByProject(string project)
         {
-            CmdLineItems.Filter = e => ((CmdArgItem)e).Project == project;
+            DataCollectionView.Filter = e => ((CmdArgItem)e).Project == project;
         }
     }
 }
