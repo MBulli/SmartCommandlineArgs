@@ -22,26 +22,19 @@ namespace SmartCmdArgs.ViewModel
             private set { startupProject = value; OnNotifyPropertyChanged(); }
         }
 
-        private RelayCommand addEntryCommand;
-        public RelayCommand AddEntryCommand { get { return addEntryCommand; } }
+        public RelayCommand AddEntryCommand { get; }
 
+        public RelayCommand<IList> RemoveEntriesCommand { get; }
 
-        private RelayCommand<IList> removeEntriesCommand;
-        public RelayCommand<IList> RemoveEntriesCommand { get { return removeEntriesCommand; } }
+        public RelayCommand<IList> MoveEntriesUpCommand { get; }
 
-
-        private RelayCommand<IList> moveEntriesUpCommand;
-        public RelayCommand<IList> MoveEntriesUpCommand { get { return moveEntriesUpCommand; } }
-
-
-        private RelayCommand<IList> moveEntriesDownCommand;
-        public RelayCommand<IList> MoveEntriesDownCommand { get { return moveEntriesDownCommand; } }
+        public RelayCommand<IList> MoveEntriesDownCommand { get; }
 
         public ToolWindowViewModel()
         {
             this.CommandlineArguments = new ListViewModel();
 
-            addEntryCommand = new RelayCommand(
+            AddEntryCommand = new RelayCommand(
                 () => {
                     CommandlineArguments.AddNewItem(command: "", project: StartupProject, enabled: true);
                 }, canExecute: _ =>
@@ -49,7 +42,7 @@ namespace SmartCmdArgs.ViewModel
                     return StartupProject != null;
                 });
 
-            removeEntriesCommand = new RelayCommand<IList>(
+            RemoveEntriesCommand = new RelayCommand<IList>(
                items => {
                    if (items != null && items.Count != 0)
                    {
@@ -63,7 +56,7 @@ namespace SmartCmdArgs.ViewModel
                    return StartupProject != null;
                });
 
-            moveEntriesUpCommand = new RelayCommand<IList>(
+            MoveEntriesUpCommand = new RelayCommand<IList>(
                items => {
                    if (items != null && items.Count != 0)
                    {
@@ -77,7 +70,7 @@ namespace SmartCmdArgs.ViewModel
                    return this.StartupProject != null;
                });
 
-            moveEntriesDownCommand = new RelayCommand<IList>(
+            MoveEntriesDownCommand = new RelayCommand<IList>(
                items =>
                {
                    if (items != null && items.Count != 0)
