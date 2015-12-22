@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="CmdArgsToolWindowPackage.cs" company="Company">
+// <copyright file="CmdArgsPackage.cs" company="Company">
 //     Copyright (c) Company.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
@@ -43,13 +43,13 @@ namespace SmartCmdArgs
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideToolWindow(typeof(CmdArgsToolWindow))]
-    [Guid(CmdArgsToolWindowPackage.PackageGuidString)]
+    [ProvideToolWindow(typeof(ToolWindow))]
+    [Guid(CmdArgsPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-    public sealed class CmdArgsToolWindowPackage : Package
+    public sealed class CmdArgsPackage : Package
     {
         /// <summary>
-        /// CmdArgsToolWindowPackage GUID string.
+        /// CmdArgsPackage GUID string.
         /// </summary>
         public const string PackageGuidString = "131b0c0a-5dd0-4680-b261-86ab5387b86e";
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
@@ -60,9 +60,9 @@ namespace SmartCmdArgs
         private EnvDTE.CommandEvents commandEvents;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CmdArgsToolWindow"/> class.
+        /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
-        public CmdArgsToolWindowPackage()
+        public CmdArgsPackage()
         {
             // Inside this method you can place any initialization code that does not require
             // any Visual Studio service because at this point the package object is created but
@@ -84,7 +84,7 @@ namespace SmartCmdArgs
         /// </summary>
         protected override void Initialize()
         {
-            CmdArgsToolWindowCommand.Initialize(this);
+            Commands.Initialize(this);
             base.Initialize();
 
             this.appObject = (EnvDTE.DTE)GetService(typeof(SDTE));

@@ -11,9 +11,9 @@ using SmartCmdArgs.Model;
 
 namespace SmartCmdArgs.ViewModel
 {
-    public class CmdArgsToolWindowViewModel : PropertyChangedBase
+    public class ToolWindowViewModel : PropertyChangedBase
     {
-        public CmdArgListViewModel CommandlineArguments { get; private set; }
+        public ListViewModel CommandlineArguments { get; private set; }
 
         private string startupProject;
         public string StartupProject
@@ -37,9 +37,9 @@ namespace SmartCmdArgs.ViewModel
         private RelayCommand<IList> moveEntriesDownCommand;
         public RelayCommand<IList> MoveEntriesDownCommand { get { return moveEntriesDownCommand; } }
 
-        public CmdArgsToolWindowViewModel()
+        public ToolWindowViewModel()
         {
-            this.CommandlineArguments = new CmdArgListViewModel();
+            this.CommandlineArguments = new ListViewModel();
             this.StartupProject = CmdArgStorage.Instance.StartupProject;
 
             CmdArgStorage.Instance.StartupProjectChanged += Instance_StartupProjectChanged;

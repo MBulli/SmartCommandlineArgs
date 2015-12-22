@@ -55,24 +55,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CmdArgsToolWindow.cs" />
-    <Compile Include="CmdArgsToolWindowCommand.cs" />
+    <Compile Include="ToolWindow.cs" />
+    <Compile Include="Commands.cs" />
     <Compile Include="Helper\BindingListEx.cs" />
     <Compile Include="Helper\ConverterBase.cs" />
     <Compile Include="Helper\NullToVisibilityConverter.cs" />
     <Compile Include="Helper\RelayCommand.cs" />
     <Compile Include="Model\CmdArgStorage.cs" />
     <Compile Include="ViewModel\CmdArgItem.cs" />
-    <Compile Include="ViewModel\CmdArgListViewModel.cs" />
-    <Compile Include="ViewModel\CmdArgsToolWindowViewModel.cs" />
+    <Compile Include="ViewModel\ListViewModel.cs" />
+    <Compile Include="ViewModel\ToolWindowViewModel.cs" />
     <Compile Include="Helper\PropertyChangedBase.cs" />
-    <Compile Include="View\CmdArgListControl.xaml.cs">
-      <DependentUpon>CmdArgListControl.xaml</DependentUpon>
+    <Compile Include="View\ListControl.xaml.cs">
+      <DependentUpon>ListControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\CmdArgsToolWindowControl.xaml.cs">
-      <DependentUpon>CmdArgsToolWindowControl.xaml</DependentUpon>
+    <Compile Include="View\ToolWindowControl.xaml.cs">
+      <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CmdArgsToolWindowPackage.cs" />
+    <Compile Include="CmdArgsPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -84,11 +84,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="View\CmdArgListControl.xaml">
+    <Page Include="View\ListControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\CmdArgsToolWindowControl.xaml">
+    <Page Include="View\ToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -223,7 +223,7 @@
     <Resource Include="Resources\iconmonstr-plus-2-icon-32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <VSCTCompile Include="CmdArgsToolWindowPackage.vsct">
+    <VSCTCompile Include="CmdArgsPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
     <Content Include="Resources\CmdArgsToolWindowCommand.png" />
@@ -233,6 +233,7 @@
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

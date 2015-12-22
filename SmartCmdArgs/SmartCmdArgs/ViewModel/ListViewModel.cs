@@ -12,7 +12,7 @@ using System.Windows.Input;
 
 namespace SmartCmdArgs.ViewModel
 {
-    public class CmdArgListViewModel : PropertyChangedBase
+    public class ListViewModel : PropertyChangedBase
     {
         private readonly BindingListEx<CmdArgItem> dataCollection;
         private readonly ICollectionView dataView;
@@ -20,7 +20,7 @@ namespace SmartCmdArgs.ViewModel
         public ICollectionView CmdLineItems { get { return dataView; } } 
 
 
-        public CmdArgListViewModel()
+        public ListViewModel()
         {
             dataCollection = new BindingListEx<CmdArgItem>();
             dataView = CollectionViewSource.GetDefaultView(dataCollection);

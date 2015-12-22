@@ -19,11 +19,11 @@ namespace SmartCmdArgs.View
     /// <summary>
     /// Interaction logic for CmdArgsListControl.xaml
     /// </summary>
-    public partial class CmdArgListControl : UserControl
+    public partial class ListControl : UserControl
     {
         // TODO add drag'n'drop to datagrid http://www.hardcodet.net/2009/03/moving-data-grid-rows-using-drag-and-drop
 
-        public CmdArgListControl()
+        public ListControl()
         {
             InitializeComponent();
         }
