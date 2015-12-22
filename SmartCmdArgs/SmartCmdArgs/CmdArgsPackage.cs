@@ -180,7 +180,7 @@ namespace SmartCmdArgs
 
         private void SolutionEvents_Opened()
         {
-            if (ToolWindowViewModel.CommandlineArguments.CmdLineItems.IsEmpty)
+            if (ToolWindowViewModel.CommandlineArguments.DataCollectionView.IsEmpty)
             {
                 // Not working right now. Model changes aren't propagate to view
                 //ReadCommandlineArgumentsFromAllProjects();

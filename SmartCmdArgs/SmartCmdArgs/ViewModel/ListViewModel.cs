@@ -19,13 +19,13 @@ namespace SmartCmdArgs.ViewModel
     {
         public ObservableCollectionEx<CmdArgItem> DataCollection { get; }
 
-        public ICollectionView CmdLineItems { get; }
+        public ICollectionView DataCollectionView { get; }
 
         public ListViewModel()
         {
             DataCollection = new ObservableCollectionEx<CmdArgItem>();
-            CmdLineItems = CollectionViewSource.GetDefaultView(DataCollection);
-
+            DataCollectionView = CollectionViewSource.GetDefaultView(DataCollection);
+			
             if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
                 DataCollection.Add(new CmdArgItem() { Enabled = true, Command = @"C:\Users\Markus\Desktop\" });
@@ -103,7 +103,7 @@ namespace SmartCmdArgs.ViewModel
 
         public void FilterByProject(string project)
         {
-            CmdLineItems.Filter = e => ((CmdArgItem)e).Project == project;
+            DataCollectionView.Filter = e => ((CmdArgItem)e).Project == project;
         }
     }
 }

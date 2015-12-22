@@ -10,7 +10,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignData CmdArgListViewModel}">
     <DataGrid x:Name="CommandsDataGrid" 
-                ItemsSource="{Binding CmdLineItems}"
+                ItemsSource="{Binding DataCollectionView}"
                 AutoGenerateColumns="False"  
                 GridLinesVisibility="All" 
                 HeadersVisibility="None"
