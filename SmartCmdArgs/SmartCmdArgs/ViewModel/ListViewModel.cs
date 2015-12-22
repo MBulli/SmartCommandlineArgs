@@ -52,11 +52,7 @@ namespace SmartCmdArgs.ViewModel
 
             if (entries != null)
             {
-                // TODO: AddRange function on BindingList
-                foreach (var item in entries)
-                {
-                    this.dataCollection.Add(item);
-                }
+                this.dataCollection.AddRange(entries);
             }
         }
 
