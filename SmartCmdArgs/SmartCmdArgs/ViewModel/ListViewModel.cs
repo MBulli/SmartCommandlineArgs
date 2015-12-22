@@ -81,44 +81,35 @@ namespace SmartCmdArgs.ViewModel
             return item;
         }
 
-        internal void RemoveById(Guid id)
+        internal void RemoveEntries(IEnumerable<CmdArgItem> items)
         {
-            var itemToRemove = dataCollection.FirstOrDefault(item => item.Id == id);
-            if (itemToRemove == null)
+            dataCollection.RemoveRange(items);
+        }
+
+        internal void MoveEntriesDown(IEnumerable<CmdArgItem> items)
+        {
+            var itemIndexDictionary =  items.ToDictionary(item => item, item => dataCollection.IndexOf(item));
+
+            if (itemIndexDictionary.Values.Max() >= dataCollection.Count - 1)
                 return;
 
-            dataCollection.Remove(itemToRemove);
-        }
-
-        internal void MoveEntryDown(Guid id)
-        {
-            int index = GetIndexById(id);
-            if (index > -1 && index < dataCollection.Count - 1)
-                MoveEntry(index, index + 1);
-        }
-
-        internal void MoveEntryUp(Guid id)
-        {
-            int index = GetIndexById(id);
-            if (index > 0)
-                MoveEntry(index, index - 1);
-        }
-
-        internal void MoveEntry(int from, int to)
-        {
-            var item = dataCollection[from];
-            dataCollection.RemoveAt(from);
-            dataCollection.Insert(to, item);
-        }
-
-        private int GetIndexById(Guid id)
-        {
-            for (int i = 0; i < dataCollection.Count; i++)
+            foreach (var itemIndexPair in itemIndexDictionary)
             {
-                if (dataCollection[i].Id == id)
-                    return i;
+                dataCollection.Move(itemIndexPair.Key, itemIndexPair.Value - 1);
             }
-            return -1;
+        }
+
+        internal void MoveEntriesUp(IEnumerable<CmdArgItem> items)
+        {
+            var itemIndexDictionary = items.ToDictionary(item => item, item => dataCollection.IndexOf(item));
+
+            if (itemIndexDictionary.Values.Min() <= 0)
+                return;
+
+            foreach (var itemIndexPair in itemIndexDictionary)
+            {
+                dataCollection.Move(itemIndexPair.Key, itemIndexPair.Value + 1);
+            }
         }
 
         public void FilterByProject(string project)
