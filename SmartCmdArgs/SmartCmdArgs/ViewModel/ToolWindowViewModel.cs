@@ -109,8 +109,7 @@ namespace SmartCmdArgs.ViewModel
             if (StartupProject != projectName)
             {
                 this.StartupProject = projectName;
-                
-                // TODO Update List View Model
+                CommandlineArguments.FilterByProject(projectName);
             }
         }
     }

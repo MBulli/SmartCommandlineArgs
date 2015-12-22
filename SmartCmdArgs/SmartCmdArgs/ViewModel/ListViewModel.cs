@@ -27,8 +27,8 @@ namespace SmartCmdArgs.ViewModel
         public ListViewModel()
         {
             dataCollection = new BindingListEx<CmdArgItem>();
-            dataView = CollectionViewSource.GetDefaultView(dataCollection);
-
+            dataView = new ListCollectionView(dataCollection);
+            
             if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
                 dataCollection.Add(new CmdArgItem() { Enabled = true, Command = @"C:\Users\Markus\Desktop\" });
@@ -119,6 +119,11 @@ namespace SmartCmdArgs.ViewModel
                     return i;
             }
             return -1;
+        }
+
+        public void FilterByProject(string project)
+        {
+            CmdLineItems.Filter = e => ((CmdArgItem)e).Project == project;
         }
 
         private void OnArgumentListChanged(object sender, ListChangedEventArgs args)
