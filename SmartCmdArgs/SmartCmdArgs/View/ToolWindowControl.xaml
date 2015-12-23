@@ -46,7 +46,13 @@
         </StackPanel>
 
         <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
-            <local:ListControl x:Name="CmdArgListControl" DataContext="{Binding CurrentArgumentList}" SelectedItems="{Binding SelectedItems, Mode=TwoWay}" MoveUpCommand="{Binding DataContext.MoveEntriesUpCommand, ElementName=MyToolWindow}" MoveDownCommand="{Binding DataContext.MoveEntriesDownCommand, ElementName=MyToolWindow}"/>
+            <local:ListControl x:Name="CmdArgListControl" 
+                               DataContext="{Binding CurrentArgumentList}" 
+                               SelectedItems="{Binding SelectedItems, Mode=TwoWay}" 
+                               MoveUpCommand="{Binding DataContext.MoveEntriesUpCommand, ElementName=MyToolWindow}" 
+                               MoveDownCommand="{Binding DataContext.MoveEntriesDownCommand, ElementName=MyToolWindow}"
+                               ToogleSelectedItemsEnabledCommand="{Binding DataContext.ToogleItemsEnabledCommand, ElementName=MyToolWindow}"
+                               />
         </Grid>
 
         <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">

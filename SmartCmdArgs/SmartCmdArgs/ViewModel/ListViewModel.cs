@@ -83,6 +83,21 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        internal void ToogleEnabledForItems(IEnumerable<CmdArgItem> items)
+        {
+            CmdArgItem first = items.FirstOrDefault();
+
+            if (first == null)
+                return;
+
+            bool newState = !first.Enabled;
+            
+            foreach (var item in SelectedItems.Cast<CmdArgItem>())
+            {
+                item.Enabled = newState;
+            }
+        }
+
         public void FilterByProject(string project)
         {
             DataCollectionView.Filter = e => ((CmdArgItem)e).Project == project;

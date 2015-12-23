@@ -36,6 +36,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand MoveEntriesDownCommand { get; }
 
+        public RelayCommand ToogleItemsEnabledCommand { get; }
+
         public event EventHandler CommandLineChanged;
 
         public ToolWindowViewModel()
@@ -83,6 +85,15 @@ namespace SmartCmdArgs.ViewModel
                {
                    return this.StartupProject != null;
                });
+
+            ToogleItemsEnabledCommand = new RelayCommand(
+                () =>
+                {
+                    CurrentArgumentList.ToogleEnabledForItems(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
+                }, canExecute: _ =>
+                {
+                    return this.StartupProject != null;
+                });
         }
 
         public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()

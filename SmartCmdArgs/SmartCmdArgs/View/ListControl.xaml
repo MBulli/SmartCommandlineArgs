@@ -56,7 +56,6 @@
             <Style TargetType="DataGridCell">
                 <!-- Bug: Handler triggers a bogus compiler error, but will compile fine -->
                 <EventSetter Event="PreviewMouseLeftButtonDown" Handler="DataGridCell_PreviewMouseLeftButtonDown" />
-                <EventSetter Event="PreviewKeyDown" Handler="DataGridCell_PreviewKeyDown" />
 
                 <!-- Let the row style define the background color  -->
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>

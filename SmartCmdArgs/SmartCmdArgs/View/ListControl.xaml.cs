@@ -29,25 +29,17 @@ namespace SmartCmdArgs.View
             set { SetValue(MoveUpCommandProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MoveUpCommandProperty =
-            DependencyProperty.Register("MoveUpCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
-
-
         public ICommand MoveDownCommand
         {
             get { return (ICommand)GetValue(MoveDownCommandProperty); }
             set { SetValue(MoveDownCommandProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MoveDownCommandProperty =
-            DependencyProperty.Register("MoveDownCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
-
-
-        public static readonly DependencyProperty SelectedItemsProperty =
-            DependencyProperty.Register("SelectedItems", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
-
+        public ICommand ToogleSelectedItemsEnabledCommand
+        {
+            get { return (ICommand)GetValue(ToogleSelectedItemsEnabledCommandProperty); }
+            set { SetValue(ToogleSelectedItemsEnabledCommandProperty, value); }
+        }      
 
         public IList SelectedItems
         {
@@ -66,9 +58,28 @@ namespace SmartCmdArgs.View
 
         private void CommandsDataGridPropOnPreviewKeyDown(object sender, KeyEventArgs e)
         {
+            DataGridCell senderCell = e.OriginalSource as DataGridCell;
             bool ctrlDown = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 
-            if (ctrlDown && e.Key == Key.Up)
+            if (e.Key == Key.Return)
+            {
+                if (senderCell != null && !senderCell.IsEditing)
+                {
+                    // Enter edit mode if current cell is not in edit mode
+                    senderCell.Focus();
+                    this.CommandsDataGrid.BeginEdit();
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.Space)
+            {
+                if (senderCell != null && !senderCell.IsEditing)
+                {
+                    ToggleEnabledForSelectedCells();
+                    e.Handled = true;
+                }
+            }
+            else if (ctrlDown && e.Key == Key.Up)
             {
                 if (MoveUpCommand != null && MoveUpCommand.CanExecute(null))
                 {
@@ -92,32 +103,7 @@ namespace SmartCmdArgs.View
         {
             this.SelectedItems = this.CommandsDataGrid.SelectedItems;
         }
-
-        private void DataGridCell_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            DataGridCell senderCell = ((DataGridCell)sender);
-            bool ctrlDown = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
-
-            if (e.Key == Key.Space)
-            {
-                if (!senderCell.IsEditing)
-                {
-                    ToggleEnabledForSelectedCells(senderCell);
-                    e.Handled = true;
-                }
-            }
-            else if(e.Key == Key.Return)
-            {
-                if (!senderCell.IsEditing)
-                {
-                    // Enter edit mode if current cell is not in edit mode
-                    senderCell.Focus();
-                    this.CommandsDataGrid.BeginEdit();
-                    e.Handled = true;
-                }                      
-            }
-        }
-
+        
         private void DataGridCell_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DataGridCell senderCell = ((DataGridCell)sender);
@@ -133,25 +119,32 @@ namespace SmartCmdArgs.View
                 else
                 {
                     // Selected row which possibly takes part in a multi selection
-                    ToggleEnabledForSelectedCells(senderCell);
+                    ToggleEnabledForSelectedCells();
                     // Keep current selection
                     e.Handled = true;
                 }
             }
         }
 
-        private void ToggleEnabledForSelectedCells(DataGridCell senderCell)
+        private void ToggleEnabledForSelectedCells()
         {
-            CmdArgItem senderItem = ((CmdArgItem)senderCell.DataContext);
-
-            bool newState = !senderItem.Enabled;
-            senderItem.Enabled = newState;
-
-            foreach (var item in CommandsDataGrid.SelectedItems)
+            if (ToogleSelectedItemsEnabledCommand != null && ToogleSelectedItemsEnabledCommand.CanExecute(null))
             {
-                // This actually breaks MVVM
-                ((CmdArgItem)item).Enabled = newState;
+                ToogleSelectedItemsEnabledCommand.Execute(null);
             }
         }
+
+
+        public static readonly DependencyProperty MoveUpCommandProperty =
+            DependencyProperty.Register("MoveUpCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty MoveDownCommandProperty =
+            DependencyProperty.Register("MoveDownCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty SelectedItemsProperty =
+            DependencyProperty.Register("SelectedItems", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty ToogleSelectedItemsEnabledCommandProperty =
+            DependencyProperty.Register("ToogleSelectedItemsEnabledCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
     }
 }
