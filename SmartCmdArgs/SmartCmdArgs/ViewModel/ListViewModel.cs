@@ -50,12 +50,14 @@ namespace SmartCmdArgs.ViewModel
 
         internal void MoveEntriesDown(IEnumerable<CmdArgItem> items)
         {
-            var itemIndexDictionary =  items.ToDictionary(item => item, item => DataCollection.IndexOf(item));
+            var itemIndexList =  items.Select(item => new KeyValuePair<CmdArgItem, int>(item, DataCollection.IndexOf(item))).ToList();
 
-            if (itemIndexDictionary.Values.Max() >= DataCollection.Count - 1)
+            if (itemIndexList.Max(pair => pair.Value) >= DataCollection.Count - 1)
                 return;
 
-            foreach (var itemIndexPair in itemIndexDictionary)
+            itemIndexList.Sort((pairA, pairB) => pairB.Value.CompareTo(pairA.Value));
+
+            foreach (var itemIndexPair in itemIndexList)
             {
                 DataCollection.Move(itemIndexPair.Key, itemIndexPair.Value + 1);
             }
@@ -63,12 +65,14 @@ namespace SmartCmdArgs.ViewModel
 
         internal void MoveEntriesUp(IEnumerable<CmdArgItem> items)
         {
-            var itemIndexDictionary = items.ToDictionary(item => item, item => DataCollection.IndexOf(item));
+            var itemIndexList = items.Select(item => new KeyValuePair<CmdArgItem, int>(item, DataCollection.IndexOf(item))).ToList();
 
-            if (itemIndexDictionary.Values.Min() <= 0)
+            if (itemIndexList.Min(pair => pair.Value) <= 0)
                 return;
 
-            foreach (var itemIndexPair in itemIndexDictionary)
+            itemIndexList.Sort((pairA, pairB) => pairA.Value.CompareTo(pairB.Value));
+
+            foreach (var itemIndexPair in itemIndexList)
             {
                 DataCollection.Move(itemIndexPair.Key, itemIndexPair.Value - 1);
             }
