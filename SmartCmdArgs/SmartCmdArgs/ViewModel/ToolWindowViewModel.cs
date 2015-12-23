@@ -30,11 +30,11 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand AddEntryCommand { get; }
 
-        public RelayCommand<IList> RemoveEntriesCommand { get; }
+        public RelayCommand RemoveEntriesCommand { get; }
 
-        public RelayCommand<IList> MoveEntriesUpCommand { get; }
+        public RelayCommand MoveEntriesUpCommand { get; }
 
-        public RelayCommand<IList> MoveEntriesDownCommand { get; }
+        public RelayCommand MoveEntriesDownCommand { get; }
 
         public event EventHandler CommandLineChanged;
 
@@ -50,34 +50,34 @@ namespace SmartCmdArgs.ViewModel
                     return StartupProject != null;
                 });
 
-            RemoveEntriesCommand = new RelayCommand<IList>(
-               items => {
-                   if (items != null && items.Count != 0)
+            RemoveEntriesCommand = new RelayCommand(
+               () => {
+                   if (CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0)
                    {
-                       CurrentArgumentList.DataCollection.RemoveRange(items.Cast<CmdArgItem>());
+                       CurrentArgumentList.DataCollection.RemoveRange(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
                    }
                }, canExecute: _ =>
                {
                    return StartupProject != null;
                });
 
-            MoveEntriesUpCommand = new RelayCommand<IList>(
-               items => {
-                   if (items != null && items.Count != 0)
+            MoveEntriesUpCommand = new RelayCommand(
+               () => {
+                   if (CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0)
                    {
-                       CurrentArgumentList.MoveEntriesUp(items.Cast<CmdArgItem>());
+                       CurrentArgumentList.MoveEntriesUp(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
                    }
                }, canExecute: _ =>
                {
                    return this.StartupProject != null;
                });
 
-            MoveEntriesDownCommand = new RelayCommand<IList>(
-               items =>
+            MoveEntriesDownCommand = new RelayCommand(
+               () =>
                {
-                   if (items != null && items.Count != 0)
+                   if (CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0)
                    {
-                       CurrentArgumentList.MoveEntriesDown(items.Cast<CmdArgItem>());
+                       CurrentArgumentList.MoveEntriesDown(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
                    }
                }, canExecute: _ =>
                {

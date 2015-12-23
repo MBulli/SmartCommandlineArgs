@@ -46,7 +46,7 @@
         </StackPanel>
 
         <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
-            <local:ListControl x:Name="CmdArgListControl" DataContext="{Binding CurrentArgumentList}" SelectedItems="{Binding SelectedItems, Mode=TwoWay}" MoveUpCommand="{Binding DataContext.MoveEntriesUpCommand, ElementName=MyToolWindow}" MoveUpCommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItems}" MoveDownCommand="{Binding DataContext.MoveEntriesDownCommand, ElementName=MyToolWindow}" MoveDownCommandParameter="{Binding ElementName=CmdArgListControl, Path=CommandsDataGridProp.SelectedItems}"/>
+            <local:ListControl x:Name="CmdArgListControl" DataContext="{Binding CurrentArgumentList}" SelectedItems="{Binding SelectedItems, Mode=TwoWay}" MoveUpCommand="{Binding DataContext.MoveEntriesUpCommand, ElementName=MyToolWindow}" MoveDownCommand="{Binding DataContext.MoveEntriesDownCommand, ElementName=MyToolWindow}"/>
         </Grid>
 
         <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">

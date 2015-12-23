@@ -23,8 +23,6 @@ namespace SmartCmdArgs.View
     public partial class ListControl : UserControl
     {
 
-
-
         public ICommand MoveUpCommand
         {
             get { return (ICommand)GetValue(MoveUpCommandProperty); }
@@ -34,17 +32,6 @@ namespace SmartCmdArgs.View
         // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MoveUpCommandProperty =
             DependencyProperty.Register("MoveUpCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
-
-
-        public IList MoveUpCommandParameter
-        {
-            get { return (IList)GetValue(MoveUpCommandParameterProperty); }
-            set { SetValue(MoveUpCommandParameterProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MoveUpCommandParameterProperty =
-            DependencyProperty.Register("MoveUpCommandParameter", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
 
 
         public ICommand MoveDownCommand
@@ -58,15 +45,6 @@ namespace SmartCmdArgs.View
             DependencyProperty.Register("MoveDownCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
 
 
-        public IList MoveDownCommandParameter
-        {
-            get { return (IList)GetValue(MoveDownCommandParameterProperty); }
-            set { SetValue(MoveDownCommandParameterProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MoveDownCommandParameterProperty =
-            DependencyProperty.Register("MoveDownCommandParameter", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
         public static readonly DependencyProperty SelectedItemsProperty =
             DependencyProperty.Register("SelectedItems", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
 
@@ -115,17 +93,17 @@ namespace SmartCmdArgs.View
             }
             else if (ctrlDown && e.Key == Key.Up)
             {
-                if (MoveUpCommand != null && MoveUpCommand.CanExecute(MoveUpCommandParameter))
+                if (MoveUpCommand != null && MoveUpCommand.CanExecute(null))
                 {
-                    MoveUpCommand.Execute(MoveUpCommandParameter);
+                    MoveUpCommand.Execute(null);
                 }
                 e.Handled = true;
             }
             else if (ctrlDown && e.Key == Key.Down)
             {
-                if (MoveDownCommand != null && MoveDownCommand.CanExecute(MoveDownCommandParameter))
+                if (MoveDownCommand != null && MoveDownCommand.CanExecute(null))
                 {
-                    MoveDownCommand.Execute(MoveDownCommandParameter);
+                    MoveDownCommand.Execute(null);
                 }
                 e.Handled = true;
             }
