@@ -19,6 +19,7 @@ namespace SmartCmdArgs.ViewModel
     {
         public ObservableCollectionEx<CmdArgItem> DataCollection { get; }
 
+        [Newtonsoft.Json.JsonIgnore]
         public ICollectionView DataCollectionView { get; }
 
         public ListViewModel()
@@ -32,34 +33,6 @@ namespace SmartCmdArgs.ViewModel
                 DataCollection.Add(new CmdArgItem() { Enabled = false, Command = "Hello World" });
                 DataCollection.Add(new CmdArgItem() { Enabled = true, Command = "A very long commandline to test very long commandlines to see how very long commandlines work in our UI." });
             }
-        }
-
-        public void PopulateFromStream(Stream stream)
-        {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            StreamReader sr = new StreamReader(stream);
-            string jsonStr = sr.ReadToEnd();
-
-            var entries = JsonConvert.DeserializeObject<List<CmdArgItem>>(jsonStr);
-
-            if (entries != null)
-            {
-                this.DataCollection.AddRange(entries);
-            }
-        }
-
-        public void StoreToStream(Stream stream)
-        {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            string jsonStr = JsonConvert.SerializeObject(this.DataCollection);
-
-            StreamWriter sw = new StreamWriter(stream);
-            sw.Write(jsonStr);
-            sw.Flush();
         }
 
         // CRUD Operations

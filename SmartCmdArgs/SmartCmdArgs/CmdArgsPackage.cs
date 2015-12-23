@@ -99,19 +99,13 @@ namespace SmartCmdArgs
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
             this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
 
-            this.ToolWindowViewModel.CommandlineArguments.DataCollection.CollectionChanged += ArgumentListChanged;
-            this.ToolWindowViewModel.CommandlineArguments.DataCollection.ItemPropertyChanged += ArgumentListItemChanged;
+            this.ToolWindowViewModel.CommandLineChanged += OnCommandLineChanged;
 
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();
         }
 
-        private void ArgumentListItemChanged(object sender, Helper.CollectionItemPropertyChangedEventArgs<ViewModel.CmdArgItem> e)
-        {
-            UpdateProjectConfiguration();
-        }
-
-        private void ArgumentListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void OnCommandLineChanged(object sender, EventArgs e)
         {
             UpdateProjectConfiguration();
         }
@@ -129,7 +123,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                ToolWindowViewModel.CommandlineArguments.PopulateFromStream(stream);
+                ToolWindowViewModel.PopulateFromStream(stream);
                 UpdateProjectConfiguration();
             }
         }
@@ -140,7 +134,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                ToolWindowViewModel.CommandlineArguments.StoreToStream(stream);
+                ToolWindowViewModel.StoreToStream(stream);
             }
         }
 
@@ -180,11 +174,11 @@ namespace SmartCmdArgs
 
         private void SolutionEvents_Opened()
         {
-            if (ToolWindowViewModel.CommandlineArguments.DataCollectionView.IsEmpty)
-            {
-                // Not working right now. Model changes aren't propagate to view
-                //ReadCommandlineArgumentsFromAllProjects();
-            }
+            //if (ToolWindowViewModel.CurrentArgumentList)
+            //{
+            //    // Not working right now. Model changes aren't propagate to view
+            //    //ReadCommandlineArgumentsFromAllProjects();
+            //}
 
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();
@@ -255,7 +249,8 @@ namespace SmartCmdArgs
                     // Create entries for every distinct config property
                     foreach (var item in prjCmdArgs.Distinct())
                     {
-                        ToolWindowViewModel.CommandlineArguments.AddNewItem(item, project.UniqueName, false);
+                        // TODO: 
+                        //ToolWindowViewModel.CommandlineArguments.AddNewItem(item, project.UniqueName, false);
                     }
                 }
             }
