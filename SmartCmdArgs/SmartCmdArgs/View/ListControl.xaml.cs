@@ -67,10 +67,27 @@ namespace SmartCmdArgs.View
         // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MoveDownCommandParameterProperty =
             DependencyProperty.Register("MoveDownCommandParameter", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty SelectedItemsProperty =
+            DependencyProperty.Register("SelectedItems", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
+
+
+        public IList SelectedItems
+        {
+            get { return (IList)GetValue(SelectedItemsProperty); }
+            set { SetValue(SelectedItemsProperty, value); }
+        }
+
 
         public ListControl()
         {
             InitializeComponent();
+
+            this.CommandsDataGridProp.SelectedCellsChanged += DataGrid_SelectedCellsChanged;
+        }
+
+        private void DataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
+        {
+            this.SelectedItems = this.CommandsDataGrid.SelectedItems;
         }
 
         private void DataGridCell_PreviewKeyDown(object sender, KeyEventArgs e)
