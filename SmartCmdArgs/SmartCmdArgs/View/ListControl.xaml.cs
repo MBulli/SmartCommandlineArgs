@@ -1,5 +1,6 @@
 ﻿using SmartCmdArgs.ViewModel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,11 +22,27 @@ namespace SmartCmdArgs.View
     /// </summary>
     public partial class ListControl : UserControl
     {
-        // TODO add drag'n'drop to datagrid http://www.hardcodet.net/2009/03/moving-data-grid-rows-using-drag-and-drop
+        public static readonly DependencyProperty SelectedItemsProperty =
+            DependencyProperty.Register("SelectedItems", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
+
+
+        public IList SelectedItems
+        {
+            get { return (IList)GetValue(SelectedItemsProperty); }
+            set { SetValue(SelectedItemsProperty, value); }
+        }
+
 
         public ListControl()
         {
             InitializeComponent();
+
+            this.CommandsDataGridProp.SelectedCellsChanged += DataGrid_SelectedCellsChanged;
+        }
+
+        private void DataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
+        {
+            this.SelectedItems = this.CommandsDataGrid.SelectedItems;
         }
 
         private void DataGridCell_PreviewKeyDown(object sender, KeyEventArgs e)

@@ -19,6 +19,11 @@ namespace SmartCmdArgs.ViewModel
     {
         public ObservableCollectionEx<CmdArgItem> DataCollection { get; }
 
+        public System.Collections.IList SelectedItems
+        {
+            get; set;
+        }
+
         [Newtonsoft.Json.JsonIgnore]
         public ICollectionView DataCollectionView { get; }
 
