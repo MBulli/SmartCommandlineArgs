@@ -60,8 +60,8 @@ namespace SmartCmdArgs.View
         {
             InitializeComponent();
 
-            this.CommandsDataGridProp.SelectedCellsChanged += DataGrid_SelectedCellsChanged;
-            this.CommandsDataGridProp.PreviewKeyDown += CommandsDataGridPropOnPreviewKeyDown;
+            this.CommandsDataGrid.SelectedCellsChanged += DataGrid_SelectedCellsChanged;
+            this.CommandsDataGrid.PreviewKeyDown += CommandsDataGridPropOnPreviewKeyDown;
         }
 
         private void CommandsDataGridPropOnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -75,7 +75,7 @@ namespace SmartCmdArgs.View
                     MoveUpCommand.Execute(null);
                 }
                 e.Handled = true;
-                CommandsDataGridProp.Focus();           // DataGrid loses keyboard focus after moving items
+                CommandsDataGrid.Focus();           // DataGrid loses keyboard focus after moving items
             }
             else if (ctrlDown && e.Key == Key.Down)
             {
@@ -84,7 +84,7 @@ namespace SmartCmdArgs.View
                     MoveDownCommand.Execute(null);
                 }
                 e.Handled = true;
-                CommandsDataGridProp.Focus();           // DataGrid loses keyboard focus after moving items
+                CommandsDataGrid.Focus();           // DataGrid loses keyboard focus after moving items
             }
         }
 
@@ -153,8 +153,5 @@ namespace SmartCmdArgs.View
                 ((CmdArgItem)item).Enabled = newState;
             }
         }
-
-        // TODO: fix HACK
-        public DataGrid CommandsDataGridProp => CommandsDataGrid;
     }
 }
