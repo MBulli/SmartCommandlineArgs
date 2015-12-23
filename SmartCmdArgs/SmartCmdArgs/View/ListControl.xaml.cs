@@ -61,6 +61,31 @@ namespace SmartCmdArgs.View
             InitializeComponent();
 
             this.CommandsDataGridProp.SelectedCellsChanged += DataGrid_SelectedCellsChanged;
+            this.CommandsDataGridProp.PreviewKeyDown += CommandsDataGridPropOnPreviewKeyDown;
+        }
+
+        private void CommandsDataGridPropOnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            bool ctrlDown = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+
+            if (ctrlDown && e.Key == Key.Up)
+            {
+                if (MoveUpCommand != null && MoveUpCommand.CanExecute(null))
+                {
+                    MoveUpCommand.Execute(null);
+                }
+                e.Handled = true;
+                CommandsDataGridProp.Focus();           // DataGrid loses keyboard focus after moving items
+            }
+            else if (ctrlDown && e.Key == Key.Down)
+            {
+                if (MoveDownCommand != null && MoveDownCommand.CanExecute(null))
+                {
+                    MoveDownCommand.Execute(null);
+                }
+                e.Handled = true;
+                CommandsDataGridProp.Focus();           // DataGrid loses keyboard focus after moving items
+            }
         }
 
         private void DataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
@@ -90,22 +115,6 @@ namespace SmartCmdArgs.View
                     this.CommandsDataGrid.BeginEdit();
                     e.Handled = true;
                 }                      
-            }
-            else if (ctrlDown && e.Key == Key.Up)
-            {
-                if (MoveUpCommand != null && MoveUpCommand.CanExecute(null))
-                {
-                    MoveUpCommand.Execute(null);
-                }
-                e.Handled = true;
-            }
-            else if (ctrlDown && e.Key == Key.Down)
-            {
-                if (MoveDownCommand != null && MoveDownCommand.CanExecute(null))
-                {
-                    MoveDownCommand.Execute(null);
-                }
-                e.Handled = true;
             }
         }
 
