@@ -1,5 +1,6 @@
 ﻿using SmartCmdArgs.ViewModel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,51 @@ namespace SmartCmdArgs.View
     /// </summary>
     public partial class ListControl : UserControl
     {
-        // TODO add drag'n'drop to datagrid http://www.hardcodet.net/2009/03/moving-data-grid-rows-using-drag-and-drop
+
+
+
+        public ICommand MoveUpCommand
+        {
+            get { return (ICommand)GetValue(MoveUpCommandProperty); }
+            set { SetValue(MoveUpCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MoveUpCommandProperty =
+            DependencyProperty.Register("MoveUpCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
+
+
+        public IList MoveUpCommandParameter
+        {
+            get { return (IList)GetValue(MoveUpCommandParameterProperty); }
+            set { SetValue(MoveUpCommandParameterProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MoveUpCommandParameterProperty =
+            DependencyProperty.Register("MoveUpCommandParameter", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
+
+
+        public ICommand MoveDownCommand
+        {
+            get { return (ICommand)GetValue(MoveDownCommandProperty); }
+            set { SetValue(MoveDownCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MoveDownCommandProperty =
+            DependencyProperty.Register("MoveDownCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
+
+
+        public IList MoveDownCommandParameter
+        {
+            get { return (IList)GetValue(MoveDownCommandParameterProperty); }
+            set { SetValue(MoveDownCommandParameterProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MoveUpCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MoveDownCommandParameterProperty =
+            DependencyProperty.Register("MoveDownCommandParameter", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
 
         public ListControl()
         {
@@ -31,6 +76,7 @@ namespace SmartCmdArgs.View
         private void DataGridCell_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             DataGridCell senderCell = ((DataGridCell)sender);
+            bool ctrlDown = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 
             if (e.Key == Key.Space)
             {
@@ -49,6 +95,22 @@ namespace SmartCmdArgs.View
                     this.CommandsDataGrid.BeginEdit();
                     e.Handled = true;
                 }                      
+            }
+            else if (ctrlDown && e.Key == Key.Up)
+            {
+                if (MoveUpCommand != null && MoveUpCommand.CanExecute(MoveUpCommandParameter))
+                {
+                    MoveUpCommand.Execute(MoveUpCommandParameter);
+                }
+                e.Handled = true;
+            }
+            else if (ctrlDown && e.Key == Key.Down)
+            {
+                if (MoveDownCommand != null && MoveDownCommand.CanExecute(MoveDownCommandParameter))
+                {
+                    MoveDownCommand.Execute(MoveDownCommandParameter);
+                }
+                e.Handled = true;
             }
         }
 
