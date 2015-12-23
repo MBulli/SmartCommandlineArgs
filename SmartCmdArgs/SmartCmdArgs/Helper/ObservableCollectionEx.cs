@@ -12,7 +12,7 @@ namespace SmartCmdArgs.Helper
     public class ObservableCollectionEx<T> : ObservableCollection<T>
          where T : INotifyPropertyChanged
     {
-        private bool raiseEvents;
+        private bool raiseEvents = true;
 
         public event EventHandler<CollectionItemPropertyChangedEventArgs<T>> ItemPropertyChanged;
 
