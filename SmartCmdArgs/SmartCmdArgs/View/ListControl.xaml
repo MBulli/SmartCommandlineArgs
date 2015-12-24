@@ -10,7 +10,33 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignData CmdArgListViewModel}">
     <UserControl.Resources>
-        <Style x:Key="EnabledCellStyle" TargetType="{x:Type DataGridCell}">
+        <Style x:Key="GeneralCellStyle" TargetType="{x:Type DataGridCell}">
+            <!-- Let the row style define the background color  -->
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="BorderBrush" Value="{x:Null}" />
+            <Setter Property="Background" Value="Transparent" />
+
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundTextBrushKey}}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemActiveTextBrushKey}}"/>
+                </Trigger>
+                <!--Selected Cell in inactive grid/window -->
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=IsKeyboardFocusWithin}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemInactiveTextBrushKey}}"/>
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="CheckBoxCell" TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource GeneralCellStyle}">
+            <!-- Bug: Handler triggers a bogus compiler error, but will compile fine -->
+            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="DataGridCell_PreviewMouseLeftButtonDown" />
+            
             <Setter Property="Focusable" Value="False"/>
         </Style>
     </UserControl.Resources>
@@ -24,8 +50,8 @@
               dd:DragDrop.IsDragSource="True"
               dd:DragDrop.IsDropTarget="True">
         <DataGrid.Columns>
-            <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" Width="25" IsReadOnly="True" CellStyle="{StaticResource EnabledCellStyle}"/>
-            <DataGridTextColumn     Header="Value"   Binding="{Binding Command}" Width="*"/>
+            <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" Width="25" IsReadOnly="True" CellStyle="{StaticResource CheckBoxCell}"/>
+            <DataGridTextColumn     Header="Value"   Binding="{Binding Command}" Width="*" CellStyle="{StaticResource GeneralCellStyle}"/>
         </DataGrid.Columns>
         <DataGrid.Style>
             <Style TargetType="DataGrid">
@@ -57,33 +83,5 @@
                 </Style.Triggers>
             </Style>
         </DataGrid.RowStyle>
-        <DataGrid.CellStyle>
-            <Style TargetType="DataGridCell">
-                <!-- Bug: Handler triggers a bogus compiler error, but will compile fine -->
-                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="DataGridCell_PreviewMouseLeftButtonDown" />
-
-                <!-- Let the row style define the background color  -->
-                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="BorderBrush" Value="{x:Null}" />
-                <Setter Property="Background" Value="Transparent" />
-                    
-                <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundTextBrushKey}}"/>
-                <Style.Triggers>
-                    <Trigger Property="IsSelected" Value="True">
-                        <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemActiveTextBrushKey}}"/>
-                    </Trigger>
-                    <!--Selected Cell in inactive grid/window -->
-                    <MultiDataTrigger>
-                        <MultiDataTrigger.Conditions>
-                            <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
-                            <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=IsKeyboardFocusWithin}" Value="False" />
-                        </MultiDataTrigger.Conditions>
-                        <MultiDataTrigger.Setters>
-                            <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemInactiveTextBrushKey}}"/>
-                        </MultiDataTrigger.Setters>
-                    </MultiDataTrigger>
-                </Style.Triggers>
-            </Style>
-        </DataGrid.CellStyle>
     </DataGrid>
 </UserControl>
