@@ -7,6 +7,7 @@
 namespace SmartCmdArgs
 {
     using System;
+    using System.ComponentModel.Design;
     using System.Runtime.InteropServices;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
@@ -53,6 +54,8 @@ namespace SmartCmdArgs
             // the object returned by the Content property.
             this.view = new View.ToolWindowControl(viewModel);
             this.Content = view;
+
+            this.ToolBar = new CommandID(Commands.CmdArgsToolBarCmdSet, Commands.TWToolbar);
         }
 
         public int OnShow(int fShow)

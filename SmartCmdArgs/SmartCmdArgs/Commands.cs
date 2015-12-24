@@ -17,31 +17,39 @@ namespace SmartCmdArgs
     /// </summary>
     internal sealed class Commands
     {
-        /// <summary>
-        /// Command ID.
-        /// </summary>
-        public const int CommandId = 0x0100;
 
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
-        public static readonly Guid CommandSet = new Guid("57bc4ddc-5ae1-4b7c-9224-9cd8e1b2bc20");
+        public static readonly Guid VSMenuCmdSet = new Guid("C5334667-5DDA-4F4A-BC24-6E0084DC5068");
+
+        public const int ToolWindowCommandId = 0x0100;
+
+
+        public static readonly Guid CmdArgsToolBarCmdSet = new Guid("53D59879-7413-491E-988C-938117B773E3");
+
+        public const int TWToolbar = 0x1000;
+        public const int TWToolbarGroup = 0x1050;
+        public const int ToolbarAddCommandId = 0x1100;
+        public const int ToolbarRemoveCommandId = 0x1101;
+        public const int ToolbarMoveUpCommandId = 0x1102;
+        public const int ToolbarMoveDownCommandId = 0x1103;
 
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
-        private readonly Package package;
+        private readonly CmdArgsPackage package;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Commands"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        private Commands(Package package)
+        private Commands(CmdArgsPackage package)
         {
             if (package == null)
             {
-                throw new ArgumentNullException("package");
+                throw new ArgumentNullException(nameof(package));
             }
 
             this.package = package;
@@ -49,9 +57,12 @@ namespace SmartCmdArgs
             OleMenuCommandService commandService = this.ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (commandService != null)
             {
-                var menuCommandID = new CommandID(CommandSet, CommandId);
-                var menuItem = new MenuCommand(this.ShowToolWindow, menuCommandID);
-                commandService.AddCommand(menuItem);
+                AddCommandToService(commandService, VSMenuCmdSet, ToolWindowCommandId, this.ShowToolWindow);
+
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddCommandId, this.AddCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, this.RemoveCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, this.MoveUpCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, this.MoveDownCommand);
             }
         }
 
@@ -79,9 +90,16 @@ namespace SmartCmdArgs
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        public static void Initialize(Package package)
+        public static void Initialize(CmdArgsPackage package)
         {
             Instance = new Commands(package);
+        }
+
+        private void AddCommandToService(OleMenuCommandService service, Guid cmdSet, int cmdId, EventHandler handler)
+        {
+            var commandId = new CommandID(cmdSet, cmdId);
+            var menuCommand = new MenuCommand(handler, commandId);
+            service.AddCommand(menuCommand);
         }
 
         /// <summary>
@@ -102,6 +120,42 @@ namespace SmartCmdArgs
 
             IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+        }
+
+        private void AddCommand(object sender, EventArgs e)
+        {
+            var command = package.ToolWindowViewModel.AddEntryCommand;
+            if (command != null && command.CanExecute(null))
+            {
+                command.Execute(null);
+            }
+        }
+
+        private void RemoveCommand(object sender, EventArgs e)
+        {
+            var command = package.ToolWindowViewModel.RemoveEntriesCommand;
+            if (command != null && command.CanExecute(null))
+            {
+                command.Execute(null);
+            }
+        }
+
+        private void MoveUpCommand(object sender, EventArgs e)
+        {
+            var command = package.ToolWindowViewModel.MoveEntriesUpCommand;
+            if (command != null && command.CanExecute(null))
+            {
+                command.Execute(null);
+            }
+        }
+
+        private void MoveDownCommand(object sender, EventArgs e)
+        {
+            var command = package.ToolWindowViewModel.MoveEntriesDownCommand;
+            if (command != null && command.CanExecute(null))
+            {
+                command.Execute(null);
+            }
         }
     }
 }

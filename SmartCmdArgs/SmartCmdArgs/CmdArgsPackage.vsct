@@ -31,6 +31,22 @@
     group; your package should define its own command set in order to avoid collisions
     with command ids defined by other packages. -->
 
+    <Menus>
+      <Menu guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" type="ToolWindowToolbar">
+        <CommandFlag>DefaultDocked</CommandFlag>
+        <Strings>
+          <ButtonText>Test Toolbar</ButtonText>
+          <CommandName>Test Toolbar</CommandName>
+        </Strings>
+      </Menu>
+    </Menus>
+
+    <Groups>
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" priority="0x0000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
+    </Groups>
+    
     <!--Buttons section. -->
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
@@ -42,11 +58,40 @@
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
-      <Button guid="guidCmdArgsToolWindowPackageCmdSet" id="CmdArgsToolWindowCommandId" priority="0x0100" type="Button">
+      <Button guid="guidVSMenuCmdSet" id="ToolWindowCommandId" priority="0x0100" type="Button">
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
-        <Icon guid="guidImages" id="bmpPic1" />
+        <Icon guid="guidImages" id="bmpVSMenuIcon" />
         <Strings>
-          <ButtonText>CmdArgsToolWindow</ButtonText>
+          <ButtonText>CmdArgsTool</ButtonText>
+        </Strings>
+      </Button>
+    
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" />
+        <Icon guid="guidToolBarImages" id="bmpAddIcon" />
+        <Strings>
+          <ButtonText>Add Command</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" />
+        <Icon guid="guidToolBarImages" id="bmpRemoveIcon" />
+        <Strings>
+          <ButtonText>Remove selected Commands</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" />
+        <Icon guid="guidToolBarImages" id="bmpUpArrowIcon" />
+        <Strings>
+          <ButtonText>Move selected Commands up</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" />
+        <Icon guid="guidToolBarImages" id="bmpDownArrowIcon" />
+        <Strings>
+          <ButtonText>Move selected Commands down</ButtonText>
         </Strings>
       </Button>
     </Buttons>
@@ -58,7 +103,10 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Resources\CmdArgsToolWindowCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough"/>
+      <Bitmap guid="guidToolBarImages" href="Resources\ToolBarIconStrip.png" usedList="bmpAddIcon, bmpRemoveIcon, bmpUpArrowIcon, bmpDownArrowIcon"/>
+      <Bitmap guid="guidImages" href="Resources\VSMeuIcon.png" usedList="bmpVSMenuIcon"/>
+      
+      <Bitmap guid="guidDefaultImages" href="Resources\CmdArgsToolWindowCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough"/>
     </Bitmaps>
   </Commands>
 
@@ -66,12 +114,36 @@
     <!-- This is the package guid. -->
     <GuidSymbol name="guidCmdArgsToolWindowPackage" value="{131b0c0a-5dd0-4680-b261-86ab5387b86e}" />
 
-    <!-- This is the guid used to group the menu commands together -->
-    <GuidSymbol name="guidCmdArgsToolWindowPackageCmdSet" value="{57bc4ddc-5ae1-4b7c-9224-9cd8e1b2bc20}">
-      <IDSymbol name="CmdArgsToolWindowCommandId" value="0x0100" />
+    <!-- This is the guid used to group exteranl Visual Studio commands together -->
+    <GuidSymbol name="guidVSMenuCmdSet" value="{C5334667-5DDA-4F4A-BC24-6E0084DC5068}">
+      <IDSymbol name="ToolWindowCommandId" value="0x0100" />
     </GuidSymbol>
-
-    <GuidSymbol name="guidImages" value="{0770f4c0-4c46-4ca2-9ee2-a0afa4304978}" >
+    
+    <!-- This is the guid used to group toolbar commands together -->
+    <GuidSymbol name="guidCmdArgsToolBarCmdSet" value="{53D59879-7413-491E-988C-938117B773E3}">
+      <IDSymbol name="ToolbarAddCommandId" value="0x1100"/>
+      <IDSymbol name="ToolbarRemoveCommandId" value="0x1101"/>
+      <IDSymbol name="ToolbarMoveUpCommandId" value="0x1102"/>
+      <IDSymbol name="ToolbarMoveDownCommandId" value="0x1103"/>
+      
+      <IDSymbol name="TWToolbar" value="0x1000" />
+      <IDSymbol name="TWToolbarGroup" value="0x1050" />
+    </GuidSymbol>
+    
+    
+    <GuidSymbol name="guidImages" value="{B7F63ABD-939F-4912-912E-E98C7CC9EF6F}" >
+      <IDSymbol name="bmpVSMenuIcon" value="1" />
+    </GuidSymbol>
+    
+    <GuidSymbol name="guidToolBarImages" value="{F87D8310-848A-43A7-9FAB-AFB633CB98C3}" >
+      <IDSymbol name="bmpAddIcon" value="1" />
+      <IDSymbol name="bmpRemoveIcon" value="2" />
+      <IDSymbol name="bmpUpArrowIcon" value="3" />
+      <IDSymbol name="bmpDownArrowIcon" value="4" />
+    </GuidSymbol>
+    
+    
+    <GuidSymbol name="guidDefaultImages" value="{0770f4c0-4c46-4ca2-9ee2-a0afa4304978}" >
       <IDSymbol name="bmpPic1" value="1" />
       <IDSymbol name="bmpPic2" value="2" />
       <IDSymbol name="bmpPicSearch" value="3" />

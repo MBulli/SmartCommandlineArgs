@@ -34,11 +34,11 @@
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="22" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarGradientBrushKey}}">
+        <StackPanel Visibility="Collapsed" Grid.Row="0" Height="22" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarGradientBrushKey}}">
             <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource AddIcon2}" Command="{Binding AddEntryCommand}" Width="16" Margin="10, 0, 0, 0"/>
             <vs:ImageButton Style="{StaticResource vsImageButtonStyle}" ImageNormal="{StaticResource RemoveIcon2}" Command="{Binding RemoveEntriesCommand}" Width="16" Margin="10, 0, 0, 0"/>
             <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource UpIcon}" Command="{Binding MoveEntriesUpCommand}" Width="16" Margin="20, 0, 0, 0"/>
