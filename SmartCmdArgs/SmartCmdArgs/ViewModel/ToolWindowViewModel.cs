@@ -39,6 +39,7 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand ToogleItemsEnabledCommand { get; }
 
         public event EventHandler CommandLineChanged;
+        public event EventHandler<IList> SelectedItemsChanged;
 
         public ToolWindowViewModel()
         {
@@ -168,6 +169,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 CurrentArgumentList.DataCollection.ItemPropertyChanged += OnArgumentListItemChanged;
                 CurrentArgumentList.DataCollection.CollectionChanged += OnArgumentListChanged;
+                CurrentArgumentList.SelectedItemsChanged += OnSelectedItemsChanged;
             }
         }
 
@@ -178,6 +180,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 CurrentArgumentList.DataCollection.ItemPropertyChanged -= OnArgumentListItemChanged;
                 CurrentArgumentList.DataCollection.CollectionChanged -= OnArgumentListChanged;
+                CurrentArgumentList.SelectedItemsChanged -= OnSelectedItemsChanged;
             }
         }
 
@@ -194,6 +197,11 @@ namespace SmartCmdArgs.ViewModel
         protected virtual void OnCommandLineChanged()
         {
             CommandLineChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnSelectedItemsChanged(object obj, IList e)
+        {
+            SelectedItemsChanged?.Invoke(this, e);
         }
     }
 }

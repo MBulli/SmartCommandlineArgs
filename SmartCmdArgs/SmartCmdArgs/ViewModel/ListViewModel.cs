@@ -19,13 +19,16 @@ namespace SmartCmdArgs.ViewModel
     {
         public ObservableCollectionEx<CmdArgItem> DataCollection { get; }
 
+        private System.Collections.IList _selectedItems;
         public System.Collections.IList SelectedItems
         {
-            get; set;
+            get { return _selectedItems; } set { _selectedItems = value; OnSelectedItemsChanged(); }
         }
 
         [Newtonsoft.Json.JsonIgnore]
         public ICollectionView DataCollectionView { get; }
+
+        public event EventHandler<System.Collections.IList> SelectedItemsChanged;
 
         public ListViewModel()
         {
@@ -97,10 +100,10 @@ namespace SmartCmdArgs.ViewModel
                 item.Enabled = newState;
             }
         }
-
-        public void FilterByProject(string project)
+        
+        protected virtual void OnSelectedItemsChanged()
         {
-            DataCollectionView.Filter = e => ((CmdArgItem)e).Project == project;
+            SelectedItemsChanged?.Invoke(this, SelectedItems);
         }
     }
 }

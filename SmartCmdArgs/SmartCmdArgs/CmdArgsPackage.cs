@@ -89,6 +89,12 @@ namespace SmartCmdArgs
             Commands.Initialize(this);
             base.Initialize();
 
+            ToolWindowViewModel.SelectedItemsChanged += (sender, list) =>
+            {
+                IVsUIShell vsUiShell = GetService(typeof (IVsUIShell)) as IVsUIShell;
+                vsUiShell?.UpdateCommandUI(1);
+            };
+
             this.appObject = (EnvDTE.DTE)GetService(typeof(SDTE));
 
             // see: https://support.microsoft.com/en-us/kb/555430
