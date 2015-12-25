@@ -4,16 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SmartCmdArgs.View
 {
@@ -86,7 +80,10 @@ namespace SmartCmdArgs.View
                     MoveUpCommand.Execute(null);
                 }
                 e.Handled = true;
-                CommandsDataGrid.Focus();           // DataGrid loses keyboard focus after moving items
+
+                // DataGrid loses keyboard focus after moving items
+                DelayExecution(TimeSpan.FromMilliseconds(10), () =>
+                    Keyboard.Focus(GetDataGridCell(CommandsDataGrid.SelectedCells[1])));
             }
             else if (ctrlDown && e.Key == Key.Down)
             {
@@ -95,8 +92,16 @@ namespace SmartCmdArgs.View
                     MoveDownCommand.Execute(null);
                 }
                 e.Handled = true;
-                CommandsDataGrid.Focus();           // DataGrid loses keyboard focus after moving items
+
+                // DataGrid loses keyboard focus after moving items
+                DelayExecution(TimeSpan.FromMilliseconds(10), () =>
+                    Keyboard.Focus(GetDataGridCell(CommandsDataGrid.SelectedCells[1])));
             }
+        }
+
+        private static DataGridCell GetDataGridCell(DataGridCellInfo cellInfo)
+        {
+            return (DataGridCell)cellInfo.Column.GetCellContent(cellInfo.Item)?.Parent;
         }
 
         private void DataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
@@ -134,6 +139,19 @@ namespace SmartCmdArgs.View
             }
         }
 
+        private static void DelayExecution(TimeSpan delay, Action action)
+        {
+            System.Threading.Timer timer = null;
+            SynchronizationContext context = SynchronizationContext.Current;
+
+            timer = new System.Threading.Timer(
+                (ignore) =>
+                {
+                    timer.Dispose();
+
+                    context.Post(ignore2 => action(), null);
+                }, null, delay, TimeSpan.FromMilliseconds(-1));
+        }
 
         public static readonly DependencyProperty MoveUpCommandProperty =
             DependencyProperty.Register("MoveUpCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
