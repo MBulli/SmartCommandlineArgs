@@ -42,7 +42,10 @@
     </Menus>
 
     <Groups>
-      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" priority="0x0000">
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" priority="0x0000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" priority="0x0000">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
       </Group>
     </Groups>
@@ -67,28 +70,28 @@
       </Button>
     
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" />
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="guidToolBarImages" id="bmpAddIcon" />
         <Strings>
           <ButtonText>Add Command</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" />
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="guidToolBarImages" id="bmpRemoveIcon" />
         <Strings>
           <ButtonText>Remove selected Commands</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" />
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" />
         <Icon guid="guidToolBarImages" id="bmpUpArrowIcon" />
         <Strings>
           <ButtonText>Move selected Commands up</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroup" />
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" />
         <Icon guid="guidToolBarImages" id="bmpDownArrowIcon" />
         <Strings>
           <ButtonText>Move selected Commands down</ButtonText>
@@ -127,7 +130,8 @@
       <IDSymbol name="ToolbarMoveDownCommandId" value="0x1103"/>
       
       <IDSymbol name="TWToolbar" value="0x1000" />
-      <IDSymbol name="TWToolbarGroup" value="0x1050" />
+      <IDSymbol name="TWToolbarGroupAddRemove" value="0x1050" />
+      <IDSymbol name="TWToolbarGroupMove" value="0x1051" />
     </GuidSymbol>
     
     
