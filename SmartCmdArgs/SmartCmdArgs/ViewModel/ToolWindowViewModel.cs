@@ -60,7 +60,7 @@ namespace SmartCmdArgs.ViewModel
                    }
                }, canExecute: _ =>
                {
-                   return StartupProject != null;
+                   return StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
                });
 
             MoveEntriesUpCommand = new RelayCommand(
@@ -71,7 +71,7 @@ namespace SmartCmdArgs.ViewModel
                    }
                }, canExecute: _ =>
                {
-                   return this.StartupProject != null;
+                   return this.StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
                });
 
             MoveEntriesDownCommand = new RelayCommand(
@@ -83,7 +83,7 @@ namespace SmartCmdArgs.ViewModel
                    }
                }, canExecute: _ =>
                {
-                   return this.StartupProject != null;
+                   return this.StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
                });
 
             ToogleItemsEnabledCommand = new RelayCommand(

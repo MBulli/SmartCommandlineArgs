@@ -9,6 +9,7 @@ using System.ComponentModel.Design;
 using System.Globalization;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs
 {
@@ -59,10 +60,10 @@ namespace SmartCmdArgs
             {
                 AddCommandToService(commandService, VSMenuCmdSet, ToolWindowCommandId, this.ShowToolWindow);
 
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddCommandId, this.AddCommand);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, this.RemoveCommand);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, this.MoveUpCommand);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, this.MoveDownCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddCommandId, package.ToolWindowViewModel.AddEntryCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, package.ToolWindowViewModel.RemoveEntriesCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, package.ToolWindowViewModel.MoveEntriesUpCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, package.ToolWindowViewModel.MoveEntriesDownCommand);
             }
         }
 
@@ -102,6 +103,22 @@ namespace SmartCmdArgs
             service.AddCommand(menuCommand);
         }
 
+        private void AddCommandToService(OleMenuCommandService service, Guid cmdSet, int cmdId, RelayCommand relayCommand)
+        {
+            var commandId = new CommandID(cmdSet, cmdId);
+            var menuCommand = new OleMenuCommand((sender, args) =>
+            {
+                relayCommand.Execute(null);
+            }, commandId);
+
+            menuCommand.BeforeQueryStatus += (sender, args) =>
+            {
+                menuCommand.Enabled = relayCommand.CanExecute(null);
+            };
+
+            service.AddCommand(menuCommand);
+        }
+
         /// <summary>
         /// Shows the tool window when the menu item is clicked.
         /// </summary>
@@ -120,42 +137,6 @@ namespace SmartCmdArgs
 
             IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
-        }
-
-        private void AddCommand(object sender, EventArgs e)
-        {
-            var command = package.ToolWindowViewModel.AddEntryCommand;
-            if (command != null && command.CanExecute(null))
-            {
-                command.Execute(null);
-            }
-        }
-
-        private void RemoveCommand(object sender, EventArgs e)
-        {
-            var command = package.ToolWindowViewModel.RemoveEntriesCommand;
-            if (command != null && command.CanExecute(null))
-            {
-                command.Execute(null);
-            }
-        }
-
-        private void MoveUpCommand(object sender, EventArgs e)
-        {
-            var command = package.ToolWindowViewModel.MoveEntriesUpCommand;
-            if (command != null && command.CanExecute(null))
-            {
-                command.Execute(null);
-            }
-        }
-
-        private void MoveDownCommand(object sender, EventArgs e)
-        {
-            var command = package.ToolWindowViewModel.MoveEntriesDownCommand;
-            if (command != null && command.CanExecute(null))
-            {
-                command.Execute(null);
-            }
         }
     }
 }
