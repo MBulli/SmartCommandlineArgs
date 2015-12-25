@@ -77,31 +77,35 @@ namespace SmartCmdArgs.View
             {
                 if (MoveUpCommand != null && MoveUpCommand.CanExecute(null))
                 {
+                    var focusedCellItem = (Keyboard.FocusedElement as DataGridCell)?.DataContext;
+
                     MoveUpCommand.Execute(null);
+
+                    // DataGrid loses keyboard focus after moving items
+                    DelayExecution(TimeSpan.FromMilliseconds(10), () =>
+                        Keyboard.Focus(GetDataGridCell(focusedCellItem)));
                 }
                 e.Handled = true;
-
-                // DataGrid loses keyboard focus after moving items
-                DelayExecution(TimeSpan.FromMilliseconds(10), () =>
-                    Keyboard.Focus(GetDataGridCell(CommandsDataGrid.SelectedCells[1])));
             }
             else if (ctrlDown && e.Key == Key.Down)
             {
                 if (MoveDownCommand != null && MoveDownCommand.CanExecute(null))
                 {
+                    var focusedCellItem = (Keyboard.FocusedElement as DataGridCell)?.DataContext;
+
                     MoveDownCommand.Execute(null);
+
+                    // DataGrid loses keyboard focus after moving items
+                    DelayExecution(TimeSpan.FromMilliseconds(10), () =>
+                        Keyboard.Focus(GetDataGridCell(focusedCellItem)));
                 }
                 e.Handled = true;
-
-                // DataGrid loses keyboard focus after moving items
-                DelayExecution(TimeSpan.FromMilliseconds(10), () =>
-                    Keyboard.Focus(GetDataGridCell(CommandsDataGrid.SelectedCells[1])));
             }
         }
 
-        private static DataGridCell GetDataGridCell(DataGridCellInfo cellInfo)
+        private DataGridCell GetDataGridCell(object item)
         {
-            return (DataGridCell)cellInfo.Column.GetCellContent(cellInfo.Item)?.Parent;
+            return (DataGridCell)CommandsDataGrid.Columns[1].GetCellContent(item)?.Parent;
         }
 
         private void DataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
