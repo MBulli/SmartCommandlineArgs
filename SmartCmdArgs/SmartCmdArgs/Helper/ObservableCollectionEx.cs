@@ -58,6 +58,7 @@ namespace SmartCmdArgs.Helper
             if (items == this)
                 throw new InvalidOperationException("Can't add range equals self.");
 
+            bool oldRaiseEvents = raiseEvents;
             try
             {
                 raiseEvents = false;
@@ -67,13 +68,13 @@ namespace SmartCmdArgs.Helper
                     Add(item);
                 }
 
-                raiseEvents = true;
+                raiseEvents = oldRaiseEvents;
                 //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items.ToList()));
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
             finally
             {
-                raiseEvents = true;
+                raiseEvents = oldRaiseEvents;
             }
         }
         public void RemoveRange(IEnumerable<T> items)
@@ -81,6 +82,7 @@ namespace SmartCmdArgs.Helper
             if (items == this)
                 throw new InvalidOperationException("Can't remove range equals self.");
 
+            bool oldRaiseEvents = raiseEvents;
             try
             {
                 raiseEvents = false;
@@ -92,7 +94,7 @@ namespace SmartCmdArgs.Helper
                         removedItems.Add(item);
                 }
 
-                raiseEvents = true;
+                raiseEvents = oldRaiseEvents;
                 if (removedItems.Count > 0)
                 {
                     //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
@@ -101,7 +103,7 @@ namespace SmartCmdArgs.Helper
             }
             finally
             {
-                raiseEvents = true;
+                raiseEvents = oldRaiseEvents;
             }
         }
 
@@ -112,6 +114,11 @@ namespace SmartCmdArgs.Helper
             {
                 MoveItem(idx, index);
             }
+        }
+
+        public ObservableCollectionExBulkChangeContext OpenBulkChange()
+        {
+            return new ObservableCollectionExBulkChangeContext(this);
         }
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -129,6 +136,25 @@ namespace SmartCmdArgs.Helper
                 ItemPropertyChanged?.Invoke(this, new CollectionItemPropertyChangedEventArgs<T>((T)sender, e.PropertyName));
             }
         }
+
+        public class ObservableCollectionExBulkChangeContext : IDisposable
+        {
+            private ObservableCollectionEx<T> owner;
+
+            public ObservableCollectionExBulkChangeContext(ObservableCollectionEx<T> owner)
+            {
+                this.owner = owner;
+                this.owner.raiseEvents = false;
+            }
+
+            public void Dispose()
+            {
+                this.owner.raiseEvents = true;
+                // HACK: Totaly stupid. Reset would mess up focus of DataGrid
+                this.owner.OnItemPropertyChanged(null, new PropertyChangedEventArgs(""));
+                //this.owner.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+        }
     }
 
     public class CollectionItemPropertyChangedEventArgs<T> : PropertyChangedEventArgs
@@ -141,4 +167,6 @@ namespace SmartCmdArgs.Helper
             Item = item;
         }
     }
+
+
 }

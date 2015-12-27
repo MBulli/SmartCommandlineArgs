@@ -94,10 +94,13 @@ namespace SmartCmdArgs.ViewModel
                 return;
 
             bool newState = !first.Enabled;
-            
-            foreach (var item in SelectedItems.Cast<CmdArgItem>())
+
+            using (var _ = DataCollection.OpenBulkChange())
             {
-                item.Enabled = newState;
+                foreach (var item in SelectedItems.Cast<CmdArgItem>())
+                {
+                    item.Enabled = newState;
+                }
             }
         }
         
