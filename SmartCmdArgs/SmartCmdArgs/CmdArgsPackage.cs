@@ -92,7 +92,7 @@ namespace SmartCmdArgs
             ToolWindowViewModel.SelectedItemsChanged += (sender, list) =>
             {
                 IVsUIShell vsUiShell = GetService(typeof (IVsUIShell)) as IVsUIShell;
-                vsUiShell?.UpdateCommandUI(1);
+                vsUiShell?.UpdateCommandUI(0);
             };
 
             this.appObject = (EnvDTE.DTE)GetService(typeof(SDTE));
@@ -116,6 +116,7 @@ namespace SmartCmdArgs
         {
             UpdateProjectConfiguration();
         }
+
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)
         {
             if (toolWindowType == typeof(ToolWindow))
@@ -144,7 +145,6 @@ namespace SmartCmdArgs
                 ToolWindowViewModel.StoreToStream(stream);
             }
         }
-
 
         #endregion
 
@@ -181,11 +181,12 @@ namespace SmartCmdArgs
 
         private void SolutionEvents_Opened()
         {
-            //if (ToolWindowViewModel.CurrentArgumentList)
-            //{
-            //    // Not working right now. Model changes aren't propagate to view
-            //    //ReadCommandlineArgumentsFromAllProjects();
-            //}
+            if (!ToolWindowViewModel.Initialized)
+            {
+                var allCommands = ReadCommandlineArgumentsFromAllProjects();
+                if (allCommands != null)
+                    ToolWindowViewModel.PopulateFromDictinary(allCommands);
+            }
 
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();
@@ -219,48 +220,45 @@ namespace SmartCmdArgs
                 }
             }
         }
+
         #endregion
 
-        private void ReadCommandlineArgumentsFromAllProjects()
+        private Dictionary<string, IList<string>> ReadCommandlineArgumentsFromAllProjects()
         {
-            var result = new List<string>();
+            var dict = new Dictionary<string, IList<string>>();
             var solution = this.appObject?.Solution;
 
-            if (solution != null)
-            {
-                foreach (EnvDTE.Project project in solution.Projects)
-                {
-                    List<string> prjCmdArgs = new List<string>();
-                    // Read properties for all configurations (e.g. Debug/Releas)
-                    foreach (EnvDTE.Configuration config in project.ConfigurationManager)
-                    {
-                        if (config.Properties != null)
-                        {
-                            foreach (EnvDTE.Property prop in config.Properties)
-                            {
-                                // CommandArguments = C/C++ project
-                                // StartArguments   = C#/VB project
-                                if (prop.Name == "CommandArguments" || prop.Name == "StartArguments")
-                                {
-                                    string cmdarg = prop.Value as string;
-                                    if (!string.IsNullOrEmpty(cmdarg))
-                                    {
-                                        result.Add(cmdarg);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
+            if (solution == null)
+                return null;
 
-                    // Create entries for every distinct config property
-                    foreach (var item in prjCmdArgs.Distinct())
+            foreach (EnvDTE.Project project in solution.Projects)
+            {
+                List<string> prjCmdArgs = new List<string>();
+                // Read properties for all configurations (e.g. Debug/Releas)
+                foreach (EnvDTE.Configuration config in project.ConfigurationManager)
+                {
+                    if (config.Properties == null)
+                        continue;
+
+                    foreach (EnvDTE.Property prop in config.Properties)
                     {
-                        // TODO: 
-                        //ToolWindowViewModel.CommandlineArguments.AddNewItem(item, project.UniqueName, false);
+                        // CommandArguments = C/C++ project
+                        // StartArguments   = C#/VB project
+                        if (prop.Name != "CommandArguments" && prop.Name != "StartArguments")
+                            continue;
+
+                        string cmdarg = prop.Value as string;
+                        if (!string.IsNullOrEmpty(cmdarg))
+                        {
+                            prjCmdArgs.Add(cmdarg);
+                        }
+                        break;
                     }
                 }
+                dict.Add(project.UniqueName, prjCmdArgs.Distinct().ToList());
             }
+
+            return dict;
         }
 
         private void UpdateCurrentStartupProject()
@@ -270,13 +268,10 @@ namespace SmartCmdArgs
             // if startup project changed
             if (ToolWindowViewModel.StartupProject != prjName)
             {
-                EnvDTE.Project project;
-                if (FindProject(this.appObject?.Solution, prjName, out project))
-                {
-                    ToolWindowViewModel.UpdateStartupProject(project.UniqueName);
-                }
+                ToolWindowViewModel.UpdateStartupProject(prjName);
             }
         }
+
         private void ResetStartupProject()
         {
             ToolWindowViewModel.UpdateStartupProject(null);

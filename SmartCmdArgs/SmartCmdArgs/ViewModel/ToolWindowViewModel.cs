@@ -12,6 +12,11 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
+        private bool populatedFromStream;
+        private bool populatedFromDictionary;
+
+        public bool Initialized => populatedFromDictionary || populatedFromStream;
+
         private Dictionary<string, ListViewModel> solutionArguments; 
 
         private ListViewModel _currentArgumentList;
@@ -97,6 +102,19 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        public void PopulateFromDictinary(Dictionary<string, IList<string>> dict)
+        {
+            foreach (var projectCommandsPair in dict)
+            {
+                var curListVM = GetListViewModel(projectCommandsPair.Key);
+                foreach (var command in projectCommandsPair.Value)
+                {
+                    curListVM.AddNewItem(command, projectCommandsPair.Key, false);
+                }
+            }
+            populatedFromDictionary = true;
+        }
+
         public void PopulateFromStream(Stream stream)
         {
             if (stream == null)
@@ -109,6 +127,8 @@ namespace SmartCmdArgs.ViewModel
 
             if (entries != null)
                 solutionArguments = entries;
+
+            populatedFromStream = true;
         }
 
         public void StoreToStream(Stream stream)
@@ -121,6 +141,17 @@ namespace SmartCmdArgs.ViewModel
             StreamWriter sw = new StreamWriter(stream);
             sw.Write(jsonStr);
             sw.Flush();
+        }
+
+        public ListViewModel GetListViewModel(string projectName)
+        {
+            ListViewModel listVM;
+            if (!solutionArguments.TryGetValue(projectName, out listVM))
+            {
+                listVM = new ListViewModel();
+                solutionArguments.Add(projectName, listVM);
+            }
+            return listVM;
         }
 
         public void UpdateStartupProject(string projectName)
@@ -138,15 +169,7 @@ namespace SmartCmdArgs.ViewModel
                 UnsubscribeToChangeEvents();
 
                 this.StartupProject = projectName;
-
-                ListViewModel listVM = null;
-                if (!solutionArguments.TryGetValue(projectName, out listVM))
-                {
-                    listVM = new ListViewModel();
-                    solutionArguments.Add(projectName, listVM);
-                }
-
-                this.CurrentArgumentList = listVM;
+                this.CurrentArgumentList = GetListViewModel(projectName);
 
                 SubscribeToChangeEvents();
             }
