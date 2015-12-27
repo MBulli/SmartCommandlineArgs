@@ -55,10 +55,7 @@ namespace SmartCmdArgs.ViewModel
 
             RemoveEntriesCommand = new RelayCommand(
                () => {
-                   if (CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0)
-                   {
                        CurrentArgumentList.DataCollection.RemoveRange(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-                   }
                }, canExecute: _ =>
                {
                    return StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
@@ -66,30 +63,22 @@ namespace SmartCmdArgs.ViewModel
 
             MoveEntriesUpCommand = new RelayCommand(
                () => {
-                   if (CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0)
-                   {
                        CurrentArgumentList.MoveEntriesUp(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-                   }
                }, canExecute: _ =>
                {
                    return this.StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
                });
 
             MoveEntriesDownCommand = new RelayCommand(
-               () =>
-               {
-                   if (CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0)
-                   {
+               () => {
                        CurrentArgumentList.MoveEntriesDown(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-                   }
                }, canExecute: _ =>
                {
                    return this.StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
                });
 
             ToogleItemsEnabledCommand = new RelayCommand(
-                () =>
-                {
+                () => {
                     CurrentArgumentList.ToogleEnabledForItems(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
                 }, canExecute: _ =>
                 {
