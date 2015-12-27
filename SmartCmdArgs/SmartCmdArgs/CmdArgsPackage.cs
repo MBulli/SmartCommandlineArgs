@@ -11,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -92,7 +93,7 @@ namespace SmartCmdArgs
             ToolWindowViewModel.SelectedItemsChanged += (sender, list) =>
             {
                 IVsUIShell vsUiShell = GetService(typeof (IVsUIShell)) as IVsUIShell;
-                vsUiShell?.UpdateCommandUI(0);
+                vsUiShell?.UpdateCommandUI(1);
             };
 
             this.appObject = (EnvDTE.DTE)GetService(typeof(SDTE));
