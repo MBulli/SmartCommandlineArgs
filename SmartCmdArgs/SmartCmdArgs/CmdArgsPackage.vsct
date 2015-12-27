@@ -65,7 +65,7 @@
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
         <Icon guid="guidImages" id="bmpVSMenuIcon" />
         <Strings>
-          <ButtonText>CmdArgsTool</ButtonText>
+          <ButtonText>Commandline Arguments</ButtonText>
         </Strings>
       </Button>
     
@@ -73,28 +73,28 @@
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="guidToolBarImages" id="bmpAddIcon" />
         <Strings>
-          <ButtonText>Add Command</ButtonText>
+          <ButtonText>Add new row</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="guidToolBarImages" id="bmpRemoveIcon" />
         <Strings>
-          <ButtonText>Remove selected Commands</ButtonText>
+          <ButtonText>Remove selected rows</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" />
         <Icon guid="guidToolBarImages" id="bmpUpArrowIcon" />
         <Strings>
-          <ButtonText>Move selected Commands up</ButtonText>
+          <ButtonText>Move selected rows up</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" />
         <Icon guid="guidToolBarImages" id="bmpDownArrowIcon" />
         <Strings>
-          <ButtonText>Move selected Commands down</ButtonText>
+          <ButtonText>Move selected rows down</ButtonText>
         </Strings>
       </Button>
     </Buttons>
