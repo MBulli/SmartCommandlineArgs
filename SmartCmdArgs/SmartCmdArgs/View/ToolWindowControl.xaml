@@ -14,38 +14,8 @@
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{d:DesignData ToolWindowViewModel}"
              x:Name="MyToolWindow">
-    <UserControl.Resources>
-        <BitmapImage x:Key="AddIcon" UriSource="../Resources/iconmonstr-plus-2-icon-32.png"/>
-        <BitmapImage x:Key="RemoveIcon" UriSource="../Resources/iconmonstr-minus-2-icon-32.png"/>
-
-        <BitmapImage x:Key="AddIcon2" UriSource="../Resources/list-add.png"/>
-        <BitmapImage x:Key="RemoveIcon2" UriSource="../Resources/list-remove.png"/>
-        <BitmapImage x:Key="UpIcon" UriSource="../Resources/up-arrow.png"/>
-        <BitmapImage x:Key="DownIcon" UriSource="../Resources/down-arrow.png"/>
-
-        <Style x:Key="vsImageButtonStyle" TargetType="vs:ImageButton">
-            <!--<Setter Property="BackgroundHover" Value="{DynamicResource {x:Static vs:CommonControlsColors.ButtonHoverBrushKey}}" />-->
-            <!--<Setter Property="BackgroundPressed" Value="{DynamicResource {x:Static vs:CommonControlsColors.ButtonPressedBrushKey}}" />-->
-            <Setter Property="BackgroundHover" Value="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarHoverBrushKey}}" />
-            <Setter Property="BackgroundPressed" Value="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarMouseDownBackgroundGradientBrushKey}}" />
-            <Setter Property="ImageHover" Value="{Binding ImageNormal, Mode=OneWay, RelativeSource={RelativeSource Self}}" />
-            <Setter Property="ImagePressed" Value="{Binding ImageNormal, Mode=OneWay, RelativeSource={RelativeSource Self}}" />
-        </Style>
-    </UserControl.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <StackPanel Visibility="Collapsed" Grid.Row="0" Height="22" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{DynamicResource {x:Static vs:EnvironmentColors.CommandBarGradientBrushKey}}">
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource AddIcon2}" Command="{Binding AddEntryCommand}" Width="16" Margin="10, 0, 0, 0"/>
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}" ImageNormal="{StaticResource RemoveIcon2}" Command="{Binding RemoveEntriesCommand}" Width="16" Margin="10, 0, 0, 0"/>
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource UpIcon}" Command="{Binding MoveEntriesUpCommand}" Width="16" Margin="20, 0, 0, 0"/>
-            <vs:ImageButton Style="{StaticResource vsImageButtonStyle}"  ImageNormal="{StaticResource DownIcon}" Command="{Binding MoveEntriesDownCommand}" Width="16" Margin="10, 0, 0, 0"/>
-        </StackPanel>
-
-        <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
+        <Grid Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
             <local:ListControl x:Name="CmdArgListControl" 
                                DataContext="{Binding CurrentArgumentList}" 
                                SelectedItems="{Binding SelectedItems, Mode=TwoWay}" 
@@ -55,7 +25,7 @@
                                />
         </Grid>
 
-        <Grid Grid.Row="1" Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">
+        <Grid Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">
             <TextBlock Text="No startup project found." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource {x:Static vs:ThemedDialogColors.ListItemDisabledTextBrushKey}}"  />
         </Grid>
 
