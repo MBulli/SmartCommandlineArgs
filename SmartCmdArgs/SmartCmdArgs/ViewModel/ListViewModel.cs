@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.Model;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.IO;
