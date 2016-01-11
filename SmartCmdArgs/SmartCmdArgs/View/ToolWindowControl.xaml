@@ -21,7 +21,7 @@
                                SelectedItems="{Binding SelectedItems, Mode=TwoWay}" 
                                MoveUpCommand="{Binding DataContext.MoveEntriesUpCommand, ElementName=MyToolWindow}" 
                                MoveDownCommand="{Binding DataContext.MoveEntriesDownCommand, ElementName=MyToolWindow}"
-                               ToogleSelectedItemsEnabledCommand="{Binding DataContext.ToogleItemsEnabledCommand, ElementName=MyToolWindow}"
+                               ToggleItemEnabledCommand="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow}"
                                />
         </Grid>
 

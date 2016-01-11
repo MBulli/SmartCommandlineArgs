@@ -1,4 +1,5 @@
-﻿<UserControl x:Class="SmartCmdArgs.View.ListControl"
+﻿<UserControl x:Name="userControl" 
+             x:Class="SmartCmdArgs.View.ListControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -34,10 +35,8 @@
             </Style.Triggers>
         </Style>
         <Style x:Key="CheckBoxCell" TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource GeneralCellStyle}">
-            <!-- Bug: Handler triggers a bogus compiler error, but will compile fine -->
-            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="DataGridCell_PreviewMouseLeftButtonDown" />
-            
             <Setter Property="Focusable" Value="False"/>
+            <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
     </UserControl.Resources>
     <DataGrid x:Name="CommandsDataGrid" 
@@ -50,7 +49,14 @@
               dd:DragDrop.IsDragSource="True"
               dd:DragDrop.IsDropTarget="True">
         <DataGrid.Columns>
-            <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" Width="25" IsReadOnly="True" CellStyle="{StaticResource CheckBoxCell}"/>
+            <DataGridTemplateColumn Header="Enabled" Width="25" CellStyle="{StaticResource CheckBoxCell}">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <CheckBox IsChecked="{Binding Enabled}" Command="{Binding ToggleItemEnabledCommand, ElementName=userControl, Mode=OneWay}" CommandParameter="{Binding Mode=OneWay}" />
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
             <DataGridTextColumn     Header="Value"   Binding="{Binding Command}" Width="*" CellStyle="{StaticResource GeneralCellStyle}"/>
         </DataGrid.Columns>
         <DataGrid.Style>

@@ -41,7 +41,7 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand MoveEntriesDownCommand { get; }
 
-        public RelayCommand ToogleItemsEnabledCommand { get; }
+        public RelayCommand<CmdArgItem> ToggleItemEnabledCommand { get; }
 
         public event EventHandler CommandLineChanged;
         public event EventHandler<IList> SelectedItemsChanged;
@@ -82,9 +82,9 @@ namespace SmartCmdArgs.ViewModel
                    return this.StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
                });
 
-            ToogleItemsEnabledCommand = new RelayCommand(
-                () => {
-                    CurrentArgumentList.ToogleEnabledForItems(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
+            ToggleItemEnabledCommand = new RelayCommand<CmdArgItem>(
+                (item) => {
+                    CurrentArgumentList.ToogleEnabledForItem(item);
                 }, canExecute: _ =>
                 {
                     return this.StartupProject != null;

@@ -29,10 +29,10 @@ namespace SmartCmdArgs.View
             set { SetValue(MoveDownCommandProperty, value); }
         }
 
-        public ICommand ToogleSelectedItemsEnabledCommand
+        public ICommand ToggleItemEnabledCommand
         {
-            get { return (ICommand)GetValue(ToogleSelectedItemsEnabledCommandProperty); }
-            set { SetValue(ToogleSelectedItemsEnabledCommandProperty, value); }
+            get { return (ICommand)GetValue(ToggleItemEnabledProperty); }
+            set { SetValue(ToggleItemEnabledProperty, value); }
         }      
 
         public IList SelectedItems
@@ -69,7 +69,7 @@ namespace SmartCmdArgs.View
             {
                 if (senderCell != null && !senderCell.IsEditing)
                 {
-                    ToggleEnabledForSelectedCells();
+                    ToggleEnabledForCell(senderCell);
                     e.Handled = true;
                 }
             }
@@ -112,37 +112,16 @@ namespace SmartCmdArgs.View
         {
             this.SelectedItems = this.CommandsDataGrid.SelectedItems;
         }
+
+
+        private void ToggleEnabledForCell(DataGridCell cell)
+        {
+            if (ToggleItemEnabledCommand != null && ToggleItemEnabledCommand.CanExecute(cell.DataContext))
+            {
+                ToggleItemEnabledCommand.Execute(cell.DataContext);
+            }
+        }
         
-        private void DataGridCell_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            DataGridCell senderCell = ((DataGridCell)sender);
-            CmdArgItem senderItem = ((CmdArgItem)senderCell.DataContext);
-
-            if (senderCell.Column is DataGridCheckBoxColumn)
-            {
-                // Single row clicked which doesn't belong to a multi selection
-                if (!senderCell.IsSelected)
-                {
-                    senderItem.Enabled = !senderItem.Enabled;
-                }
-                else
-                {
-                    // Selected row which possibly takes part in a multi selection
-                    ToggleEnabledForSelectedCells();
-                    // Keep current selection
-                    e.Handled = true;
-                }
-            }
-        }
-
-        private void ToggleEnabledForSelectedCells()
-        {
-            if (ToogleSelectedItemsEnabledCommand != null && ToogleSelectedItemsEnabledCommand.CanExecute(null))
-            {
-                ToogleSelectedItemsEnabledCommand.Execute(null);
-            }
-        }
-
         private static void DelayExecution(TimeSpan delay, Action action)
         {
             System.Threading.Timer timer = null;
@@ -166,7 +145,7 @@ namespace SmartCmdArgs.View
         public static readonly DependencyProperty SelectedItemsProperty =
             DependencyProperty.Register("SelectedItems", typeof(IList), typeof(ListControl), new PropertyMetadata(null));
 
-        public static readonly DependencyProperty ToogleSelectedItemsEnabledCommandProperty =
-            DependencyProperty.Register("ToogleSelectedItemsEnabledCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty ToggleItemEnabledProperty =
+            DependencyProperty.Register("ToggleItemEnabledCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
     }
 }
