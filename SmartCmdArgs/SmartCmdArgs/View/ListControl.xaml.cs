@@ -69,7 +69,15 @@ namespace SmartCmdArgs.View
             {
                 if (senderCell != null && !senderCell.IsEditing)
                 {
-                    ToggleEnabledForCell(senderCell);
+                    object item = senderCell.DataContext;
+
+                    // In some cases senderCell is not selected. This can happen after multi selection over all items.
+                    if (!senderCell.IsSelected)
+                    {
+                        item = CommandsDataGrid.SelectedItem; // simply use first selected item
+                    }
+
+                    ToggleEnabledForItem(item);
                     e.Handled = true;
                 }
             }
@@ -113,15 +121,14 @@ namespace SmartCmdArgs.View
             this.SelectedItems = this.CommandsDataGrid.SelectedItems;
         }
 
-
-        private void ToggleEnabledForCell(DataGridCell cell)
+        private void ToggleEnabledForItem(object item)
         {
-            if (ToggleItemEnabledCommand != null && ToggleItemEnabledCommand.CanExecute(cell.DataContext))
+            if (ToggleItemEnabledCommand != null && ToggleItemEnabledCommand.CanExecute(item))
             {
-                ToggleItemEnabledCommand.Execute(cell.DataContext);
+                ToggleItemEnabledCommand.Execute(item);
             }
         }
-        
+
         private static void DelayExecution(TimeSpan delay, Action action)
         {
             System.Threading.Timer timer = null;
