@@ -67,6 +67,7 @@ namespace SmartCmdArgs.View
             this.CommandsDataGrid.PreviewKeyDown += CommandsDataGridPropOnPreviewKeyDown;
             this.CommandsDataGrid.BeginningEdit += CommandsDataGrid_BeginningEdit;
             this.CommandsDataGrid.CellEditEnding += CommandsDataGrid_CellEditEnding;
+            this.CommandsDataGrid.MouseUp += CommandsDataGrid_MouseUp;
         }
 
         private void CommandsDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
@@ -137,6 +138,15 @@ namespace SmartCmdArgs.View
                         Keyboard.Focus(GetDataGridCell(focusedCellItem)));
                 }
                 e.Handled = true;
+            }
+        }
+
+        private void CommandsDataGrid_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            // Commit edit if user clicks data grid background
+            if (IsInEditMode && e.OriginalSource is ScrollViewer)
+            {
+                CommandsDataGrid.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
             }
         }
 
