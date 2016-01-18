@@ -53,6 +53,7 @@ namespace SmartCmdArgs
         /// CmdArgsPackage GUID string.
         /// </summary>
         public const string PackageGuidString = "131b0c0a-5dd0-4680-b261-86ab5387b86e";
+        public const string ClipboardCmdItemFormat = "SmartCommandlineArgs_D11D715E-CBF3-43F2-A1C1-168FD5C48505";
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
         private readonly string _VSConstants_VSStd97CmdID_GUID;
 

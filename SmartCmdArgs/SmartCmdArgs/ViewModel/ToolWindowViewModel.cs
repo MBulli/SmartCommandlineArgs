@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using SmartCmdArgs.Helper;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
 
@@ -49,6 +50,10 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand MoveEntriesDownCommand { get; }
 
         public RelayCommand<CmdArgItem> ToggleItemEnabledCommand { get; }
+        
+        public RelayCommand CopySelectedItemsCommand { get; }
+        
+        public RelayCommand PasteItemsCommand { get; }
 
         public event EventHandler CommandLineChanged;
         public event EventHandler<IList> SelectedItemsChanged;
@@ -96,6 +101,49 @@ namespace SmartCmdArgs.ViewModel
                 {
                     return this.StartupProject != null;
                 });
+
+            CopySelectedItemsCommand = new RelayCommand(CopySelectedItemsToClipboard, canExecute: _ => CurrentArgumentList.SelectedItems.Count != 0);
+
+            PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => StartupProject != null);
+        }
+
+        private void CopySelectedItemsToClipboard()
+        {
+            var dataObject = new DataObject();
+
+            var selectedItemsText = string.Join(
+                                        Environment.NewLine,
+                                        from x in CurrentArgumentList.SelectedItems.Cast<CmdArgItem>() select x.Command);
+            dataObject.SetText(selectedItemsText);
+
+            var selectedItemsJson = JsonConvert.SerializeObject(
+                from x in CurrentArgumentList.SelectedItems.Cast<CmdArgItem>()
+                select new CmdArgClipboardItem { Enabled = x.Enabled, Command = x.Command });
+            dataObject.SetData(CmdArgsPackage.ClipboardCmdItemFormat, selectedItemsJson);
+
+            Clipboard.SetDataObject(dataObject);
+        }
+
+        private void PasteItemsFromClipboard()
+        {
+            var pastedItemsJson = Clipboard.GetDataObject()?.GetData(CmdArgsPackage.ClipboardCmdItemFormat) as string;
+
+            if (pastedItemsJson != null)
+            {
+                var pastedItems = JsonConvert.DeserializeObject<CmdArgClipboardItem[]>(pastedItemsJson);
+                foreach (var item in pastedItems)
+                {
+                    CurrentArgumentList.AddNewItem(item.Command, StartupProject, item.Enabled);
+                }
+            }
+            else if (Clipboard.ContainsText())
+            {
+                var pastedItems = Clipboard.GetText().Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var s in pastedItems)
+                {
+                    CurrentArgumentList.AddNewItem(s, StartupProject);
+                }
+            }
         }
 
         public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()

@@ -38,4 +38,10 @@ namespace SmartCmdArgs.ViewModel
             set { enabled = value; OnNotifyPropertyChanged(); }
         }
     }
+
+    public struct CmdArgClipboardItem
+    {
+        public bool Enabled { get; set; }
+        public string Command { get; set; }
+    }
 }

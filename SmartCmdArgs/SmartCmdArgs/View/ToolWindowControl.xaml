@@ -23,8 +23,8 @@
                                MoveDownCommand="{Binding DataContext.MoveEntriesDownCommand, ElementName=MyToolWindow}"
                                ToggleItemEnabledCommand="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow}"
                                IsInEditMode="{Binding DataContext.IsInEditMode, ElementName=MyToolWindow, Mode=TwoWay}"
-                               CopyCommand="{Binding CopySelectedItemsCommand}"
-                               PasteCommand="{Binding PasteItemsCommand}"
+                               CopyCommand="{Binding DataContext.CopySelectedItemsCommand, ElementName=MyToolWindow}"
+                               PasteCommand="{Binding DataContext.PasteItemsCommand, ElementName=MyToolWindow}"
                                />
         </Grid>
 
