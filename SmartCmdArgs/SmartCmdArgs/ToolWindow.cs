@@ -24,7 +24,7 @@ namespace SmartCmdArgs
     /// </para>
     /// </remarks>
     [Guid("a21b35ed-5c13-4d55-a3d2-71054c4e9540")]
-    public class ToolWindow : ToolWindowPane, IVsWindowFrameNotify3
+    public class ToolWindow : ToolWindowPane, IVsWindowFrameNotify3, IVsWindowPaneCommit, IVsWindowPaneCommitFilter
     {
         private View.ToolWindowControl view;
 
@@ -85,6 +85,32 @@ namespace SmartCmdArgs
 
         public int OnClose(ref uint pgrfSaveOptions)
         {
+            return Microsoft.VisualStudio.VSConstants.S_OK;
+        }
+
+        int IVsWindowPaneCommit.CommitPendingEdit(out int pfCommitFailed)
+        {
+            // This method is called when the user hits escape
+            // If the datagrid is in EditMode we don't want to loose focus and just cancel the edit mode.
+            // The tool window keeps the focus if pfCommitFailed==1
+
+            bool escapeDown = System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Escape);
+            if (escapeDown && view.ViewModel.IsInEditMode)
+            {
+                pfCommitFailed = 1;
+                view.ViewModel.CancelEdit();
+            }
+            else
+            {
+                pfCommitFailed = 0;
+            }
+
+            return Microsoft.VisualStudio.VSConstants.S_OK;
+        }
+
+        int IVsWindowPaneCommitFilter.IsCommitCommand(ref Guid pguidCmdGroup, uint dwCmdID, out int pfCommitCommand)
+        {
+            pfCommitCommand = 1;
             return Microsoft.VisualStudio.VSConstants.S_OK;
         }
     }

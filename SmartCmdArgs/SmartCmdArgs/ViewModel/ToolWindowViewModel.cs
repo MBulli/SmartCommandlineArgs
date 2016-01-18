@@ -33,6 +33,13 @@ namespace SmartCmdArgs.ViewModel
             private set { _startupProject = value; OnNotifyPropertyChanged(); }
         }
 
+        private bool _isInEditMode;
+        public bool IsInEditMode
+        {
+            get { return _isInEditMode; }
+            set { _isInEditMode = value; OnNotifyPropertyChanged(); }
+        }
+
         public RelayCommand AddEntryCommand { get; }
 
         public RelayCommand RemoveEntriesCommand { get; }
@@ -173,6 +180,11 @@ namespace SmartCmdArgs.ViewModel
 
                 SubscribeToChangeEvents();
             }
+        }
+
+        public void CancelEdit()
+        {
+            System.Windows.Controls.DataGrid.CancelEditCommand.Execute(null, null);
         }
 
         private void SubscribeToChangeEvents()

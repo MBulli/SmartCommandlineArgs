@@ -16,7 +16,6 @@ namespace SmartCmdArgs.View
     /// </summary>
     public partial class ListControl : UserControl
     {
-
         public ICommand MoveUpCommand
         {
             get { return (ICommand)GetValue(MoveUpCommandProperty); }
@@ -41,6 +40,12 @@ namespace SmartCmdArgs.View
             set { SetValue(SelectedItemsProperty, value); }
         }
 
+        public bool IsInEditMode
+        {
+            get { return (bool)GetValue(IsInEditModeProperty); }
+            set { SetValue(IsInEditModeProperty, value); }
+        }
+
 
         public ListControl()
         {
@@ -48,6 +53,18 @@ namespace SmartCmdArgs.View
 
             this.CommandsDataGrid.SelectedCellsChanged += DataGrid_SelectedCellsChanged;
             this.CommandsDataGrid.PreviewKeyDown += CommandsDataGridPropOnPreviewKeyDown;
+            this.CommandsDataGrid.BeginningEdit += CommandsDataGrid_BeginningEdit;
+            this.CommandsDataGrid.CellEditEnding += CommandsDataGrid_CellEditEnding;
+        }
+
+        private void CommandsDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+        {
+            this.IsInEditMode = true;
+        }
+
+        private void CommandsDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            this.IsInEditMode = false;
         }
 
         private void CommandsDataGridPropOnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -154,5 +171,8 @@ namespace SmartCmdArgs.View
 
         public static readonly DependencyProperty ToggleItemEnabledProperty =
             DependencyProperty.Register("ToggleItemEnabledCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty IsInEditModeProperty =
+            DependencyProperty.Register("IsInEditMode", typeof(bool), typeof(ListControl), new PropertyMetadata(false));
     }
 }

@@ -22,6 +22,7 @@
                                MoveUpCommand="{Binding DataContext.MoveEntriesUpCommand, ElementName=MyToolWindow}" 
                                MoveDownCommand="{Binding DataContext.MoveEntriesDownCommand, ElementName=MyToolWindow}"
                                ToggleItemEnabledCommand="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow}"
+                               IsInEditMode="{Binding DataContext.IsInEditMode, ElementName=MyToolWindow, Mode=TwoWay}"
                                />
         </Grid>
 
