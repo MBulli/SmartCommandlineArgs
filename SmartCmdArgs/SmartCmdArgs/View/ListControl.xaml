@@ -46,8 +46,12 @@
                 HeadersVisibility="None"
                 SelectionMode="Extended"
                 CanUserAddRows="False"
-              dd:DragDrop.IsDragSource="True"
-              dd:DragDrop.IsDropTarget="True">
+             dd:DragDrop.IsDragSource="True"
+             dd:DragDrop.IsDropTarget="True">
+        <DataGrid.CommandBindings>
+            <CommandBinding Command="ApplicationCommands.Copy" Executed="DataGrid_OnExecuteCopy" CanExecute="DataGrid_OnCanExecuteCopy" />
+            <CommandBinding Command="ApplicationCommands.Paste" Executed="DataGrid_OnExecutePaste" CanExecute="DataGrid_OnCanExecutePaste" />
+        </DataGrid.CommandBindings>
         <DataGrid.Columns>
             <DataGridTemplateColumn Header="Enabled" Width="25" CellStyle="{StaticResource CheckBoxCell}">
                 <DataGridTemplateColumn.CellTemplate>

@@ -46,6 +46,18 @@ namespace SmartCmdArgs.View
             set { SetValue(IsInEditModeProperty, value); }
         }
 
+        public ICommand CopyCommand
+        {
+            get { return (ICommand)GetValue(CopyCommandProperty); }
+            set { SetValue(CopyCommandProperty, value); }
+        }
+
+        public ICommand PasteCommand
+        {
+            get { return (ICommand)GetValue(PasteCommandProperty); }
+            set { SetValue(PasteCommandProperty, value); }
+        }
+
 
         public ListControl()
         {
@@ -146,6 +158,29 @@ namespace SmartCmdArgs.View
             }
         }
 
+        private void DataGrid_OnExecuteCopy(object sender, ExecutedRoutedEventArgs e)
+        {
+            CopyCommand?.Execute(e.Parameter);
+        }
+
+        private void DataGrid_OnCanExecuteCopy(object sender, CanExecuteRoutedEventArgs e)
+        {
+            var canExec = CopyCommand?.CanExecute(e.Parameter);
+            e.CanExecute = canExec.GetValueOrDefault();
+        }
+
+        private void DataGrid_OnExecutePaste(object sender, ExecutedRoutedEventArgs e)
+        {
+            PasteCommand?.Execute(e.Parameter);
+        }
+
+        private void DataGrid_OnCanExecutePaste(object sender, CanExecuteRoutedEventArgs e)
+        {
+            var canExec = PasteCommand?.CanExecute(e.Parameter);
+            e.CanExecute = canExec.GetValueOrDefault();
+        }
+
+
         private static void DelayExecution(TimeSpan delay, Action action)
         {
             System.Threading.Timer timer = null;
@@ -174,5 +209,11 @@ namespace SmartCmdArgs.View
 
         public static readonly DependencyProperty IsInEditModeProperty =
             DependencyProperty.Register("IsInEditMode", typeof(bool), typeof(ListControl), new PropertyMetadata(false));
+
+        public static readonly DependencyProperty CopyCommandProperty =
+            DependencyProperty.Register("CopyCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty PasteCommandProperty =
+            DependencyProperty.Register("PasteCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
     }
 }
