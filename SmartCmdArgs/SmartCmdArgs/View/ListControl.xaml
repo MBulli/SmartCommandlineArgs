@@ -51,6 +51,7 @@
         <DataGrid.CommandBindings>
             <CommandBinding Command="ApplicationCommands.Copy" Executed="DataGrid_OnExecuteCopy" CanExecute="DataGrid_OnCanExecuteCopy" />
             <CommandBinding Command="ApplicationCommands.Paste" Executed="DataGrid_OnExecutePaste" CanExecute="DataGrid_OnCanExecutePaste" />
+            <CommandBinding Command="ApplicationCommands.Cut" Executed="DataGrid_OnExecuteCut" CanExecute="DataGrid_OnCanExecuteCut" />
         </DataGrid.CommandBindings>
         <DataGrid.Columns>
             <DataGridTemplateColumn Header="Enabled" Width="25" CellStyle="{StaticResource CheckBoxCell}">

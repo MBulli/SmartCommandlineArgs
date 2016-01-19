@@ -25,6 +25,7 @@
                                IsInEditMode="{Binding DataContext.IsInEditMode, ElementName=MyToolWindow, Mode=TwoWay}"
                                CopyCommand="{Binding DataContext.CopySelectedItemsCommand, ElementName=MyToolWindow}"
                                PasteCommand="{Binding DataContext.PasteItemsCommand, ElementName=MyToolWindow}"
+                               CutCommand="{Binding DataContext.CutItemsCommand, ElementName=MyToolWindow}"
                                />
         </Grid>
 

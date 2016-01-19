@@ -58,6 +58,11 @@ namespace SmartCmdArgs.View
             set { SetValue(PasteCommandProperty, value); }
         }
 
+        public ICommand CutCommand
+        {
+            get { return (ICommand)GetValue(CutCommandProperty); }
+            set { SetValue(CutCommandProperty, value); }
+        }
 
         public ListControl()
         {
@@ -148,6 +153,9 @@ namespace SmartCmdArgs.View
             {
                 CommandsDataGrid.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
             }
+
+            if (e.OriginalSource is ScrollViewer && SelectedItems.Count > 0)
+                Keyboard.Focus(GetDataGridCell(SelectedItems[0]));
         }
 
         private DataGridCell GetDataGridCell(object item)
@@ -190,6 +198,17 @@ namespace SmartCmdArgs.View
             e.CanExecute = canExec.GetValueOrDefault();
         }
 
+        private void DataGrid_OnExecuteCut(object sender, ExecutedRoutedEventArgs e)
+        {
+            CutCommand?.Execute(e.Parameter);
+        }
+
+        private void DataGrid_OnCanExecuteCut(object sender, CanExecuteRoutedEventArgs e)
+        {
+            var canExec = CutCommand?.CanExecute(e.Parameter);
+            e.CanExecute = canExec.GetValueOrDefault();
+        }
+
 
         private static void DelayExecution(TimeSpan delay, Action action)
         {
@@ -225,5 +244,8 @@ namespace SmartCmdArgs.View
 
         public static readonly DependencyProperty PasteCommandProperty =
             DependencyProperty.Register("PasteCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty CutCommandProperty =
+            DependencyProperty.Register("CutCommand", typeof(ICommand), typeof(ListControl), new PropertyMetadata(null));
     }
 }

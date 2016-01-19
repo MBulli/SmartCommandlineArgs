@@ -54,6 +54,8 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand CopySelectedItemsCommand { get; }
         
         public RelayCommand PasteItemsCommand { get; }
+        
+        public RelayCommand CutItemsCommand { get; }
 
         public event EventHandler CommandLineChanged;
         public event EventHandler<IList> SelectedItemsChanged;
@@ -72,7 +74,7 @@ namespace SmartCmdArgs.ViewModel
 
             RemoveEntriesCommand = new RelayCommand(
                () => {
-                       CurrentArgumentList.DataCollection.RemoveRange(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
+                         RemoveSelectedItems();
                }, canExecute: _ =>
                {
                    return StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
@@ -105,6 +107,8 @@ namespace SmartCmdArgs.ViewModel
             CopySelectedItemsCommand = new RelayCommand(CopySelectedItemsToClipboard, canExecute: _ => CurrentArgumentList.SelectedItems.Count != 0);
 
             PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => StartupProject != null);
+
+            CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => CurrentArgumentList.SelectedItems.Count != 0);
         }
 
         private void CopySelectedItemsToClipboard()
@@ -144,6 +148,26 @@ namespace SmartCmdArgs.ViewModel
                     CurrentArgumentList.AddNewItem(s, StartupProject);
                 }
             }
+        }
+
+        private void CutItemsToClipboard()
+        {
+            CopySelectedItemsToClipboard();
+            RemoveSelectedItems();
+        }
+
+        private void RemoveSelectedItems()
+        {
+            // TODO: select a row after delete
+            //var selectedIndex = CurrentArgumentList.DataCollection.IndexOf((CmdArgItem) CurrentArgumentList.SelectedItems[0]);
+
+            CurrentArgumentList.DataCollection.RemoveRange(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
+            
+            //if (CurrentArgumentList.DataCollection.Count > 0)
+            //{
+            //    var newSelectionIndex = Math.Min(selectedIndex, CurrentArgumentList.DataCollection.Count - 1);
+            //    CurrentArgumentList.SelectedItems.Add(CurrentArgumentList.DataCollection[newSelectionIndex]);
+            //}
         }
 
         public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()
