@@ -55,6 +55,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Helper\DelayExecution.cs" />
     <Compile Include="Helper\ObservableCollectionEx.cs" />
     <Compile Include="ToolWindow.cs" />
     <Compile Include="Commands.cs" />
@@ -66,9 +67,7 @@
     <Compile Include="ViewModel\ListViewModel.cs" />
     <Compile Include="ViewModel\ToolWindowViewModel.cs" />
     <Compile Include="Helper\PropertyChangedBase.cs" />
-    <Compile Include="View\ListControl.xaml.cs">
-      <DependentUpon>ListControl.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="View\DataGridEx.cs" />
     <Compile Include="View\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>
@@ -87,10 +86,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="View\DataGridStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\ListControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

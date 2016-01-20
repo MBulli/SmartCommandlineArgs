@@ -14,19 +14,39 @@
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{d:DesignData ToolWindowViewModel}"
              x:Name="MyToolWindow">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="DataGridStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
-            <local:ListControl x:Name="CmdArgListControl" 
-                               DataContext="{Binding CurrentArgumentList}" 
-                               SelectedItems="{Binding SelectedItems, Mode=TwoWay}" 
-                               MoveUpCommand="{Binding DataContext.MoveEntriesUpCommand, ElementName=MyToolWindow}" 
-                               MoveDownCommand="{Binding DataContext.MoveEntriesDownCommand, ElementName=MyToolWindow}"
-                               ToggleItemEnabledCommand="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow}"
-                               IsInEditMode="{Binding DataContext.IsInEditMode, ElementName=MyToolWindow, Mode=TwoWay}"
-                               CopyCommand="{Binding DataContext.CopySelectedItemsCommand, ElementName=MyToolWindow}"
-                               PasteCommand="{Binding DataContext.PasteItemsCommand, ElementName=MyToolWindow}"
-                               CutCommand="{Binding DataContext.CutItemsCommand, ElementName=MyToolWindow}"
-                               />
+            <local:DataGridEx x:Name="CmdArgListControl" 
+                               Style="{StaticResource DataGridVS}"
+                               ItemsSource="{Binding CurrentArgumentList.DataCollectionView}"
+                               SelectedItems="{Binding CurrentArgumentList.SelectedItems, Mode=TwoWay}" 
+                               MoveUpCommand="{Binding MoveEntriesUpCommand}" 
+                               MoveDownCommand="{Binding MoveEntriesDownCommand}"
+                               ToggleItemEnabledCommand="{Binding ToggleItemEnabledCommand}"
+                               IsInEditMode="{Binding IsInEditMode, Mode=TwoWay}"
+                               CopyCommand="{Binding CopySelectedItemsCommand}"
+                               PasteCommand="{Binding PasteItemsCommand}"
+                               CutCommand="{Binding CutItemsCommand}"
+                               >
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Enabled" Width="25" CellStyle="{StaticResource CheckBoxCell}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Enabled}" Command="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow, Mode=OneWay}" CommandParameter="{Binding Mode=OneWay}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn     Header="Value"   Binding="{Binding Command}" Width="*" />
+                </DataGrid.Columns>
+            </local:DataGridEx>
         </Grid>
 
         <Grid Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">
