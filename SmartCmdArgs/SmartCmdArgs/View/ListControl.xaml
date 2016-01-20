@@ -6,48 +6,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
-             xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
-             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignData CmdArgListViewModel}">
     <UserControl.Resources>
-        <Style x:Key="GeneralCellStyle" TargetType="{x:Type DataGridCell}">
-            <!-- Let the row style define the background color  -->
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="BorderBrush" Value="{x:Null}" />
-            <Setter Property="Background" Value="Transparent" />
-
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundTextBrushKey}}"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemActiveTextBrushKey}}"/>
-                </Trigger>
-                <!--Selected Cell in inactive grid/window -->
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
-                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=IsKeyboardFocusWithin}" Value="False" />
-                    </MultiDataTrigger.Conditions>
-                    <MultiDataTrigger.Setters>
-                        <Setter Property="Foreground" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemInactiveTextBrushKey}}"/>
-                    </MultiDataTrigger.Setters>
-                </MultiDataTrigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="CheckBoxCell" TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource GeneralCellStyle}">
-            <Setter Property="Focusable" Value="False"/>
-            <Setter Property="HorizontalAlignment" Value="Center" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="DataGridStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
     <DataGrid x:Name="CommandsDataGrid" 
-                ItemsSource="{Binding DataCollectionView}"
-                AutoGenerateColumns="False"  
-                GridLinesVisibility="All" 
-                HeadersVisibility="None"
-                SelectionMode="Extended"
-                CanUserAddRows="False"
-             dd:DragDrop.IsDragSource="True"
-             dd:DragDrop.IsDropTarget="True">
+                Style="{StaticResource DataGridVS}"
+                ItemsSource="{Binding DataCollectionView}">
         <DataGrid.CommandBindings>
             <CommandBinding Command="ApplicationCommands.Copy" Executed="DataGrid_OnExecuteCopy" CanExecute="DataGrid_OnCanExecuteCopy" />
             <CommandBinding Command="ApplicationCommands.Paste" Executed="DataGrid_OnExecutePaste" CanExecute="DataGrid_OnCanExecutePaste" />
@@ -62,37 +32,7 @@
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
 
-            <DataGridTextColumn     Header="Value"   Binding="{Binding Command}" Width="*" CellStyle="{StaticResource GeneralCellStyle}"/>
+            <DataGridTextColumn     Header="Value"   Binding="{Binding Command}" Width="*" />
         </DataGrid.Columns>
-        <DataGrid.Style>
-            <Style TargetType="DataGrid">
-                <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
-                <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource {x:Static vs:EnvironmentColors.ToolWindowContentGridBrushKey}}" />
-                <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource {x:Static vs:EnvironmentColors.ToolWindowContentGridBrushKey}}" />
-            </Style>
-        </DataGrid.Style>
-        <DataGrid.RowStyle>
-            <Style TargetType="DataGridRow">
-                <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
-                <Style.Triggers>
-                    <Trigger Property="IsSelected" Value="True">
-                        <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemActiveBrushKey}}"/>
-                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemActiveBrushKey}}"/>
-                    </Trigger>
-                    <!--Selected Row in inactive grid/window -->
-                    <MultiDataTrigger>
-                        <MultiDataTrigger.Conditions>
-                            <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
-                            <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=IsKeyboardFocusWithin}" Value="False" />
-                        </MultiDataTrigger.Conditions>
-                        <MultiDataTrigger.Setters>
-                            <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemInactiveBrushKey}}"/>
-                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vs:TreeViewColors.SelectedItemInactiveBrushKey}}"/>
-                        </MultiDataTrigger.Setters>
-                    </MultiDataTrigger>
-                </Style.Triggers>
-            </Style>
-        </DataGrid.RowStyle>
     </DataGrid>
 </UserControl>
