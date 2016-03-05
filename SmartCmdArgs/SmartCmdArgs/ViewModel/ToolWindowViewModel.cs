@@ -172,11 +172,18 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()
         {
-            foreach (CmdArgItem item in CurrentArgumentList.DataCollection)
+            if (CurrentArgumentList == null)
             {
-                if (item.Enabled && item.Project == StartupProject)
+                yield break;
+            }
+            else
+            {
+                foreach (CmdArgItem item in CurrentArgumentList.DataCollection)
                 {
-                    yield return item;
+                    if (item.Enabled && item.Project == StartupProject)
+                    {
+                        yield return item;
+                    }
                 }
             }
         }
