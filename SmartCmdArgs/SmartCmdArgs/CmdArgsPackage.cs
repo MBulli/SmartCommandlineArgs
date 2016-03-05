@@ -302,18 +302,40 @@ namespace SmartCmdArgs
 
             foreach (EnvDTE.Project project in sln.Projects)
             {
-                if (project.UniqueName == uniqueName)
+                if (FindProject(project, uniqueName, out foundProject))
                 {
-                    foundProject = project;
                     return true;
-                }
-                else if (project.Kind == EnvDTE80.ProjectKinds.vsProjectKindSolutionFolder)
-                {
-                    // TODO search solution folders
                 }
             }
 
-            return false;
+            return false; // Nothing found
+        }
+
+        private bool FindProject(EnvDTE.Project project, string uniqueName, out EnvDTE.Project foundProject)
+        {
+            foundProject = null;
+
+            if (project == null || uniqueName == null)
+            {
+                return false;
+            }
+            else if (project != null && project.UniqueName == uniqueName)
+            {
+                foundProject = project;
+                return true;
+            }
+            else
+            {
+                foreach (EnvDTE.ProjectItem child in project.ProjectItems)
+                {
+                    if (FindProject(child?.SubProject, uniqueName, out foundProject))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false; // Nothing found
         }
     }
 }
