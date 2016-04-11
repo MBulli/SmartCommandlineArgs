@@ -156,7 +156,7 @@ namespace SmartCmdArgs.View
                 CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
             }
 
-            if (e.OriginalSource is ScrollViewer && SelectedItems.Count > 0)
+            if (e.OriginalSource is ScrollViewer && SelectedItems?.Count > 0)
                 Keyboard.Focus(GetDataGridCell(SelectedItems[0]));
         }
 
