@@ -55,12 +55,8 @@ namespace SmartCmdArgs
         public const string PackageGuidString = "131b0c0a-5dd0-4680-b261-86ab5387b86e";
         public const string ClipboardCmdItemFormat = "SmartCommandlineArgs_D11D715E-CBF3-43F2-A1C1-168FD5C48505";
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
-        private readonly string _VSConstants_VSStd97CmdID_GUID;
 
-        private EnvDTE.DTE appObject;
-        private EnvDTE.SolutionEvents solutionEvents;
-        private EnvDTE.CommandEvents commandEvents;
-
+        private VisualStudioHelper vsHelper;
         public ViewModel.ToolWindowViewModel ToolWindowViewModel { get; } = new ViewModel.ToolWindowViewModel();
 
         /// <summary>
@@ -73,15 +69,16 @@ namespace SmartCmdArgs
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
 
-            // cache guid value
-            _VSConstants_VSStd97CmdID_GUID = typeof(VSConstants.VSStd97CmdID).GUID.ToString("B").ToUpper();
-
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
         }
 
         #region Package Members
-
+        internal Interface GetService<Service, Interface>()
+        {
+            return (Interface)base.GetService(typeof(Service));
+        }
+     
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -97,23 +94,17 @@ namespace SmartCmdArgs
                 vsUiShell?.UpdateCommandUI(1);
             };
 
-            this.appObject = (EnvDTE.DTE)GetService(typeof(SDTE));
-
-            // see: https://support.microsoft.com/en-us/kb/555430
-            this.solutionEvents = this.appObject.Events.SolutionEvents;
-            this.commandEvents = this.appObject.Events.CommandEvents;
-
-            this.solutionEvents.Opened += SolutionEvents_Opened;
-            this.solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
-            this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
-            this.commandEvents.AfterExecute += CommandEvents_AfterExecute;
-
-            this.ToolWindowViewModel.CommandLineChanged += OnCommandLineChanged;
+            vsHelper = new VisualStudioHelper(this);
+            vsHelper.SolutionOpend += VsHelper_SolutionOpend;
+            vsHelper.SolutionWillClose += VsHelper_SolutionWillClose;
+            vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
+           
+            ToolWindowViewModel.CommandLineChanged += OnCommandLineChanged;
 
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();
         }
-
+      
         private void OnCommandLineChanged(object sender, EventArgs e)
         {
             UpdateProjectConfiguration();
@@ -153,7 +144,7 @@ namespace SmartCmdArgs
         private void UpdateProjectConfiguration()
         {
             EnvDTE.Project project;
-            bool found = FindStartupProject(out project);
+            bool found = vsHelper.FindStartupProject(out project);
 
             if (found)
             {
@@ -180,8 +171,7 @@ namespace SmartCmdArgs
         }
 
         #region VS Events
-
-        private void SolutionEvents_Opened()
+        private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
             if (!ToolWindowViewModel.Initialized)
             {
@@ -194,41 +184,21 @@ namespace SmartCmdArgs
             UpdateProjectConfiguration();
         }
 
-
-        private void SolutionEvents_BeforeClosing()
+        private void VsHelper_SolutionWillClose(object sender, EventArgs e)
         {
             ResetStartupProject();
         }
 
-        private void SolutionEvents_AfterClosing()
+        private void VsHelper_StartupProjectChanged(object sender, EventArgs e)
         {
-
-        }
-
-        private void CommandEvents_AfterExecute(string Guid, int ID, object CustomIn, object CustomOut)
-        {
-            if (Guid == _VSConstants_VSStd97CmdID_GUID)
-            {
-                switch ((VSConstants.VSStd97CmdID)ID)
-                {
-                    case VSConstants.VSStd97CmdID.SetStartupProject:
-                        UpdateCurrentStartupProject();
-                        break;
-                    case VSConstants.VSStd97CmdID.SolutionCfg: // this one is called frequently
-                        UpdateCurrentStartupProject();
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
+            UpdateCurrentStartupProject();
+        }        
         #endregion
 
         private Dictionary<string, IList<string>> ReadCommandlineArgumentsFromAllProjects()
         {
             var dict = new Dictionary<string, IList<string>>();
-            var solution = this.appObject?.Solution;
+            var solution = vsHelper.Solution;
 
             if (solution == null)
                 return null;
@@ -265,7 +235,7 @@ namespace SmartCmdArgs
 
         private void UpdateCurrentStartupProject()
         {
-            string prjName = StartupProjectUniqueName();
+            string prjName = vsHelper.StartupProjectUniqueName();
 
             // if startup project changed
             if (ToolWindowViewModel.StartupProject != prjName)
@@ -277,65 +247,6 @@ namespace SmartCmdArgs
         private void ResetStartupProject()
         {
             ToolWindowViewModel.UpdateStartupProject(null);
-        }
-
-        private string StartupProjectUniqueName()
-        {
-            var startupProjects = this.appObject?.Solution?.SolutionBuild?.StartupProjects as object[];
-            return startupProjects?.FirstOrDefault() as string;
-        }
-
-        private bool FindStartupProject(out EnvDTE.Project startupProject)
-        {
-            string prjName = StartupProjectUniqueName();
-
-            bool found = FindProject(this.appObject?.Solution, prjName, out startupProject);
-            return found;
-        }
-
-        private bool FindProject(EnvDTE.Solution sln, string uniqueName, out EnvDTE.Project foundProject)
-        {
-            foundProject = null;
-
-            if (sln == null || uniqueName == null)
-                return false;
-
-            foreach (EnvDTE.Project project in sln.Projects)
-            {
-                if (FindProject(project, uniqueName, out foundProject))
-                {
-                    return true;
-                }
-            }
-
-            return false; // Nothing found
-        }
-
-        private bool FindProject(EnvDTE.Project project, string uniqueName, out EnvDTE.Project foundProject)
-        {
-            foundProject = null;
-
-            if (project == null || uniqueName == null)
-            {
-                return false;
-            }
-            else if (project != null && project.UniqueName == uniqueName)
-            {
-                foundProject = project;
-                return true;
-            }
-            else
-            {
-                foreach (EnvDTE.ProjectItem child in project.ProjectItems)
-                {
-                    if (FindProject(child?.SubProject, uniqueName, out foundProject))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false; // Nothing found
         }
     }
 }
