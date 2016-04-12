@@ -88,26 +88,26 @@ namespace SmartCmdArgs
             Commands.Initialize(this);
             base.Initialize();
 
-            ToolWindowViewModel.SelectedItemsChanged += (sender, list) =>
-            {
-                IVsUIShell vsUiShell = GetService(typeof (IVsUIShell)) as IVsUIShell;
-                vsUiShell?.UpdateCommandUI(1);
-            };
-
             vsHelper = new VisualStudioHelper(this);
             vsHelper.SolutionOpend += VsHelper_SolutionOpend;
             vsHelper.SolutionWillClose += VsHelper_SolutionWillClose;
             vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
            
             ToolWindowViewModel.CommandLineChanged += OnCommandLineChanged;
+            ToolWindowViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
 
             UpdateCurrentStartupProject();
             UpdateProjectConfiguration();
         }
-      
+
         private void OnCommandLineChanged(object sender, EventArgs e)
         {
             UpdateProjectConfiguration();
+        }
+
+        private void OnSelectedItemsChanged(object sender, System.Collections.IList e)
+        {
+            vsHelper.UpdateShellCommandUI();
         }
 
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)

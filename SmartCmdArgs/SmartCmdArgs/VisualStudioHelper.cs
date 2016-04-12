@@ -75,6 +75,11 @@ namespace SmartCmdArgs
             return false;           
         }
 
+        public void UpdateShellCommandUI(bool immediateUpdate = true)
+        {
+            package.GetService<SVsUIShell, IVsUIShell>()?.UpdateCommandUI(immediateUpdate ? 1 : 0);
+        }
+
         #region Solution Events
         private void SolutionEvents_Opened()
         {
