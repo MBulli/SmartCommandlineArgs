@@ -149,22 +149,21 @@ namespace SmartCmdArgs
 
             if (found)
             {
-                var activeEntries = ToolWindowViewModel.ActiveItemsForCurrentProject().Select(e => e.Command);
-                string prjCmdArgs = string.Join(" ", activeEntries);
-                
-                foreach (EnvDTE.Configuration config in project.ConfigurationManager)
+                EnvDTE.Properties properties = project.ConfigurationManager?.ActiveConfiguration?.Properties;
+
+                if (properties != null)
                 {
-                    if (config.Properties != null)
+                    var activeEntries = ToolWindowViewModel.ActiveItemsForCurrentProject().Select(e => e.Command);
+                    string prjCmdArgs = string.Join(" ", activeEntries);
+
+                    foreach (EnvDTE.Property prop in properties)
                     {
-                        foreach (EnvDTE.Property prop in config.Properties)
+                        // CommandArguments = C/C++ project
+                        // StartArguments   = C#/VB project
+                        if (prop.Name == "CommandArguments" || prop.Name == "StartArguments")
                         {
-                            // CommandArguments = C/C++ project
-                            // StartArguments   = C#/VB project
-                            if (prop.Name == "CommandArguments" || prop.Name == "StartArguments")
-                            {
-                                prop.Value = prjCmdArgs;
-                                break;
-                            }
+                            prop.Value = prjCmdArgs;
+                            break;
                         }
                     }
                 }
