@@ -29,16 +29,13 @@ namespace SmartCmdArgs
         private uint selectionEventsCookie = 0;
         private uint updateSolutionEventsCookie = 0;
 
-        private EnvDTE.Project startupProject;
-
         public EnvDTE.Solution Solution { get { return appObject.Solution; } }
-
 
         public event EventHandler SolutionOpend;
         public event EventHandler SolutionWillClose;
         public event EventHandler SolutionClosed;
         public event EventHandler StartupProjectChanged;
-        public event EventHandler ProjectConfigurationChanged;
+        public event EventHandler StartupProjectConfigurationChanged;
 
         public VisualStudioHelper(CmdArgsPackage package)
         {
@@ -114,8 +111,6 @@ namespace SmartCmdArgs
             this.solutionBuildService = null;
             this.selectionMonitor = null;
 
-            this.startupProject = null;
-
             SolutionClosed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -126,7 +121,10 @@ namespace SmartCmdArgs
         {
             if (elementid == (uint)VSConstants.VSSELELEMID.SEID_StartupProject)
             {
-                StartupProjectChanged?.Invoke(this, EventArgs.Empty);
+                if (varValueNew != null)
+                {
+                    StartupProjectChanged?.Invoke(this, EventArgs.Empty);
+                }
             }
             return S_OK;
         }
@@ -138,10 +136,23 @@ namespace SmartCmdArgs
         #region IVsUpdateSolutionEvents2 Implementation
         int IVsUpdateSolutionEvents.OnActiveProjectCfgChange(IVsHierarchy pIVsHierarchy)
         {
-            // Will be called if the user changes soultion config e.g. from Debug to Release.
-            // Or if a new solution config was created
+            // This method is called if the user is changing solution or project configuration e.g. from Debug to Release.
+            // Also if a new solution config was created.
+            // This method is called for each Hierachy element (e.g. project and folders), thus we filter for the startup project
+            // to only trigger the config changed event once.
 
-            ProjectConfigurationChanged?.Invoke(this, EventArgs.Empty);
+            object objProj = null;
+            pIVsHierarchy?.GetProperty(VSConstants.VSITEMID_ROOT,
+                                       (int)__VSHPROPID.VSHPROPID_ExtObject,
+                                       out objProj);
+
+            EnvDTE.Project project = objProj as EnvDTE.Project;
+
+            if (project?.UniqueName == StartupProjectUniqueName())
+            {
+                StartupProjectConfigurationChanged?.Invoke(this, EventArgs.Empty);
+            }
+
             return S_OK;
         }
 

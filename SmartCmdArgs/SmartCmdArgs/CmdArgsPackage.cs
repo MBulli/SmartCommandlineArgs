@@ -92,6 +92,7 @@ namespace SmartCmdArgs
             vsHelper.SolutionOpend += VsHelper_SolutionOpend;
             vsHelper.SolutionWillClose += VsHelper_SolutionWillClose;
             vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
+            vsHelper.StartupProjectConfigurationChanged += VsHelper_StartupProjectConfigurationChanged;
            
             ToolWindowViewModel.CommandLineChanged += OnCommandLineChanged;
             ToolWindowViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
@@ -150,7 +151,7 @@ namespace SmartCmdArgs
             {
                 var activeEntries = ToolWindowViewModel.ActiveItemsForCurrentProject().Select(e => e.Command);
                 string prjCmdArgs = string.Join(" ", activeEntries);
-
+                
                 foreach (EnvDTE.Configuration config in project.ConfigurationManager)
                 {
                     if (config.Properties != null)
@@ -192,7 +193,12 @@ namespace SmartCmdArgs
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)
         {
             UpdateCurrentStartupProject();
-        }        
+        }
+
+        private void VsHelper_StartupProjectConfigurationChanged(object sender, EventArgs e)
+        {
+            UpdateProjectConfiguration();
+        }
         #endregion
 
         private Dictionary<string, IList<string>> ReadCommandlineArgumentsFromAllProjects()
