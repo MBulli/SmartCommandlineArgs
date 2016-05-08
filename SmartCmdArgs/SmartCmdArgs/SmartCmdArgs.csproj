@@ -55,6 +55,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CmdArgsOptionPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Helper\DelayExecution.cs" />
     <Compile Include="Helper\ObservableCollectionEx.cs" />
     <Compile Include="Logic\ToolWindowSolutionDataSerializer.cs" />

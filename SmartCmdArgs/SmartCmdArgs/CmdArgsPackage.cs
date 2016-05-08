@@ -47,6 +47,7 @@ namespace SmartCmdArgs
     [ProvideBindingPath]
     [Guid(CmdArgsPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
+    [ProvideOptionPage(typeof(CmdArgsOptionPage), "Smart Commandline Arguments", "General", 1000, 1001, false)]
     public sealed class CmdArgsPackage : Package
     {
         /// <summary>
@@ -77,6 +78,12 @@ namespace SmartCmdArgs
         internal Interface GetService<Service, Interface>()
         {
             return (Interface)base.GetService(typeof(Service));
+        }
+
+        internal Page GetDialogPage<Page>()
+            where Page : class
+        {
+            return GetDialogPage(typeof(Page)) as Page;
         }
      
         /// <summary>

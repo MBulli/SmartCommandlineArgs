@@ -117,6 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="1000" xml:space="preserve">
+    <value>Smart Commandline Arguments</value>
+    <comment>Option category name</comment>
+  </data>
+  <data name="1001" xml:space="preserve">
+    <value>General</value>
+    <comment>Option page name</comment>
+  </data>
   <data name="110" xml:space="preserve">
     <value>Smart Commandline Arguments Extension</value>
   </data>
