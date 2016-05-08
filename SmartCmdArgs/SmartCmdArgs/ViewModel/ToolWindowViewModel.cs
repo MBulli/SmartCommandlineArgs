@@ -13,12 +13,16 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
-        private bool populatedFromStream;
+        private bool populatedFromSolution;
         private bool populatedFromDictionary;
 
-        public bool Initialized => populatedFromDictionary || populatedFromStream;
+        public bool Initialized => populatedFromDictionary || populatedFromSolution;
 
         private Dictionary<string, ListViewModel> solutionArguments; 
+        public Dictionary<string, ListViewModel> SolutionArguments
+        {
+            get { return solutionArguments; }
+        }
 
         private ListViewModel _currentArgumentList;
         public ListViewModel CurrentArgumentList
@@ -188,8 +192,32 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        public void PopulateFromSolutionData(Logic.ToolWindowStateSolutionData data)
+        {
+            if (data == null)
+                return;
+
+            foreach (var projectCommandsPair in data)
+            {
+                var curListVM = GetListViewModel(projectCommandsPair.Key);
+                foreach (var item in projectCommandsPair.Value.DataCollection)
+                {
+                    curListVM.DataCollection.Add(new CmdArgItem() {
+                        Id = item.Id,
+                        Command = item.Command,
+                        Enabled = item.Enabled,
+                        Project = projectCommandsPair.Key
+                    });
+                }
+            }
+            populatedFromSolution = true;
+        }
+
         public void PopulateFromDictinary(Dictionary<string, IList<string>> dict)
         {
+            if (dict == null)
+                return;
+
             foreach (var projectCommandsPair in dict)
             {
                 var curListVM = GetListViewModel(projectCommandsPair.Key);
@@ -199,34 +227,6 @@ namespace SmartCmdArgs.ViewModel
                 }
             }
             populatedFromDictionary = true;
-        }
-
-        public void PopulateFromStream(Stream stream)
-        {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            StreamReader sr = new StreamReader(stream);
-            string jsonStr = sr.ReadToEnd();
-
-            var entries = JsonConvert.DeserializeObject<Dictionary<string, ListViewModel>>(jsonStr);
-
-            if (entries != null)
-                solutionArguments = entries;
-
-            populatedFromStream = true;
-        }
-
-        public void StoreToStream(Stream stream)
-        {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            string jsonStr = JsonConvert.SerializeObject(this.solutionArguments);
-
-            StreamWriter sw = new StreamWriter(stream);
-            sw.Write(jsonStr);
-            sw.Flush();
         }
 
         public ListViewModel GetListViewModel(string projectName)

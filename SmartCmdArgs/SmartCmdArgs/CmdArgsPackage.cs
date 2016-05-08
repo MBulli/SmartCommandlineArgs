@@ -125,7 +125,8 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                ToolWindowViewModel.PopulateFromStream(stream);
+                var args = Logic.ToolWindowSolutionDataSerializer.DeserializeFromSolution(stream);
+                ToolWindowViewModel.PopulateFromSolutionData(args);
                 UpdateProjectConfiguration();
             }
         }
@@ -136,7 +137,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                ToolWindowViewModel.StoreToStream(stream);
+                Logic.ToolWindowSolutionDataSerializer.SerializeToSolution(ToolWindowViewModel, stream);
             }
         }
 

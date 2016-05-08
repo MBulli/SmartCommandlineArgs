@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Helper\DelayExecution.cs" />
     <Compile Include="Helper\ObservableCollectionEx.cs" />
+    <Compile Include="Logic\ToolWindowSolutionDataSerializer.cs" />
     <Compile Include="ToolWindow.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Helper\BindingListEx.cs" />
