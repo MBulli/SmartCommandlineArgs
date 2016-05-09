@@ -115,6 +115,18 @@ namespace SmartCmdArgs.ViewModel
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => CurrentArgumentList.SelectedItems.Count != 0);
         }
 
+        /// <summary>
+        /// Resets the whole state of the tool window view model
+        /// </summary>
+        public void Reset()
+        {
+            UpdateStartupProject(null);
+
+            solutionArguments.Clear();
+            populatedFromDictionary = false;
+            populatedFromSolution = false;
+        }
+
         private void CopySelectedItemsToClipboard()
         {
             var dataObject = new DataObject();
