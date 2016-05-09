@@ -62,6 +62,8 @@ namespace SmartCmdArgs
         private VisualStudioHelper vsHelper;
         public ViewModel.ToolWindowViewModel ToolWindowViewModel { get; } = new ViewModel.ToolWindowViewModel();
 
+        private bool IsSvcSupportEnabled { get { return GetDialogPage<CmdArgsOptionPage>().SvcSupport; } }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
@@ -135,26 +137,6 @@ namespace SmartCmdArgs
             if (key == SolutionOptionKey)
             {
                 var solutionData = Logic.ToolWindowSolutionDataSerializer.DeserializeFromSolution(stream);
-
-                if (IsSvcSupportEnabled())
-                {
-                    foreach (EnvDTE.Project project in vsHelper.Solution.Projects) // TODO: fix
-                    {
-                        string containingFolder = Path.GetDirectoryName(project.FileName);
-                        string filePath = Path.Combine(containingFolder, SvcFileName);
-                        
-                        if (File.Exists(filePath))
-                        {
-                            Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read);
-                            ToolWindowStateProjectData projectData = Logic.ToolWindowProjectDataSerializer.DeserializeFromFile(fileStream);
-                            fileStream.Close();
-                            
-                            if (projectData != null)
-                                solutionData[project.UniqueName] = projectData;
-                        }
-                    }
-                }
-
                 ToolWindowViewModel.PopulateFromSolutionData(solutionData);
                 UpdateProjectConfiguration();
             }
@@ -165,7 +147,7 @@ namespace SmartCmdArgs
             base.OnSaveOptions(key, stream);
             if (key == SolutionOptionKey)
             {
-                if (IsSvcSupportEnabled())
+                if (IsSvcSupportEnabled)
                 {
                     foreach (EnvDTE.Project project in vsHelper.Solution.Projects)
                     {
@@ -174,9 +156,11 @@ namespace SmartCmdArgs
                         {
                             string containingFolder = Path.GetDirectoryName(project.FileName);
                             string filePath = Path.Combine(containingFolder, SvcFileName);
-                            Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write);
-                            Logic.ToolWindowProjectDataSerializer.SerializeToFile(vm, fileStream);
-                            fileStream.Close();
+
+                            using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+                            {
+                                Logic.ToolWindowProjectDataSerializer.SerializeToFile(vm, fileStream);
+                            }
                         }
                     }
                 }
@@ -218,6 +202,30 @@ namespace SmartCmdArgs
         #region VS Events
         private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
+            if (IsSvcSupportEnabled)
+            {
+                var solutionData = new ToolWindowStateSolutionData();
+
+                foreach (EnvDTE.Project project in vsHelper.Solution.Projects)
+                {
+                    string containingFolder = Path.GetDirectoryName(project.FileName);
+                    string filePath = Path.Combine(containingFolder, SvcFileName);
+
+                    if (File.Exists(filePath))
+                    {
+                        using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+                        {
+                            ToolWindowStateProjectData projectData = Logic.ToolWindowProjectDataSerializer.DeserializeFromFile(fileStream);
+
+                            if (projectData != null)
+                                solutionData[project.UniqueName] = projectData;
+                        }
+                    }
+                }
+
+                ToolWindowViewModel.PopulateFromSolutionData(solutionData);
+            }
+
             if (!ToolWindowViewModel.Initialized)
             {
                 var allCommands = ReadCommandlineArgumentsFromAllProjects();
@@ -292,11 +300,6 @@ namespace SmartCmdArgs
             {
                 ToolWindowViewModel.UpdateStartupProject(prjName);
             }
-        }
-
-        private bool IsSvcSupportEnabled()
-        {
-            return GetDialogPage<CmdArgsOptionPage>().SvcSupport;
         }
     }
 }
