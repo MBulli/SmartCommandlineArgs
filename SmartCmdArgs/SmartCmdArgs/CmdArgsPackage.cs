@@ -136,7 +136,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                var solutionData = Logic.ToolWindowSolutionDataSerializer.DeserializeFromSolution(stream);
+                var solutionData = Logic.ToolWindowSolutionDataSerializer.Deserialize(stream);
                 ToolWindowViewModel.PopulateFromSolutionData(solutionData);
                 UpdateProjectConfiguration();
             }
@@ -159,13 +159,13 @@ namespace SmartCmdArgs
 
                             using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
                             {
-                                Logic.ToolWindowProjectDataSerializer.SerializeToFile(vm, fileStream);
+                                Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
                             }
                         }
                     }
                 }
 
-                Logic.ToolWindowSolutionDataSerializer.SerializeToSolution(ToolWindowViewModel, stream);
+                Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
             }
         }
 
@@ -215,7 +215,7 @@ namespace SmartCmdArgs
                     {
                         using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
                         {
-                            ToolWindowStateProjectData projectData = Logic.ToolWindowProjectDataSerializer.DeserializeFromFile(fileStream);
+                            ToolWindowStateProjectData projectData = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
 
                             if (projectData != null)
                                 solutionData[project.UniqueName] = projectData;

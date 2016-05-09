@@ -11,7 +11,7 @@ namespace SmartCmdArgs.Logic
 {
     public class ToolWindowSolutionDataSerializer
     {
-        public static ToolWindowStateSolutionData DeserializeFromSolution(Stream stream)
+        public static ToolWindowStateSolutionData Deserialize(Stream stream)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
@@ -24,7 +24,7 @@ namespace SmartCmdArgs.Logic
             return entries;
         }
 
-        public static void SerializeToSolution(ToolWindowViewModel vm, Stream stream)
+        public static void Serialize(ToolWindowViewModel vm, Stream stream)
         {
             if (vm == null)
                 throw new ArgumentNullException(nameof(vm));
@@ -57,6 +57,4 @@ namespace SmartCmdArgs.Logic
             sw.Flush();
         }
     }
-
-    
 }

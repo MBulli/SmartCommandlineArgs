@@ -11,8 +11,7 @@ namespace SmartCmdArgs.Logic
 {
     class ToolWindowProjectDataSerializer
     {
-
-        public static void SerializeToFile(ListViewModel vm, Stream stream)
+        public static void Serialize(ListViewModel vm, Stream stream)
         {
             if (vm == null)
                 throw new ArgumentNullException(nameof(vm));
@@ -39,7 +38,7 @@ namespace SmartCmdArgs.Logic
             sw.Flush();
         }
 
-        public static ToolWindowStateProjectData DeserializeFromFile(Stream stream)
+        public static ToolWindowStateProjectData Deserialize(Stream stream)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
