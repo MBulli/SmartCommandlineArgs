@@ -35,12 +35,12 @@ namespace SmartCmdArgs.Logic
 
             foreach (var kvp in vm.SolutionArguments)
             {
-                var list = new ToolWindowStateSolutionData.ListData();
+                var list = new ToolWindowStateProjectData();
                 data.Add(kvp.Key, list);
 
                 foreach (var item in kvp.Value.DataCollection)
                 {
-                    list.DataCollection.Add(new ToolWindowStateSolutionData.ListEntryData()
+                    list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
                     {
                         Id = item.Id,
                         Command = item.Command,
@@ -59,19 +59,4 @@ namespace SmartCmdArgs.Logic
     }
 
     
-    public class ToolWindowStateSolutionData : Dictionary<string, ToolWindowStateSolutionData.ListData>
-    {
-        public class ListData
-        {
-            public List<ListEntryData> DataCollection = new List<ListEntryData>();
-        }
-
-        public class ListEntryData
-        {
-            public Guid Id;
-            public string Command;
-            public string Project; // this one is useles
-            public bool Enabled;
-        }
-    }
 }

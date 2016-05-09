@@ -60,7 +60,9 @@
     </Compile>
     <Compile Include="Helper\DelayExecution.cs" />
     <Compile Include="Helper\ObservableCollectionEx.cs" />
+    <Compile Include="Logic\ToolWindowProjectDataSerializer.cs" />
     <Compile Include="Logic\ToolWindowSolutionDataSerializer.cs" />
+    <Compile Include="Logic\ToolWindowStateData.cs" />
     <Compile Include="ToolWindow.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Helper\BindingListEx.cs" />
