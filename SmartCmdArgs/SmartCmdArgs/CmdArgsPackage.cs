@@ -194,7 +194,7 @@ namespace SmartCmdArgs
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
         {
-            ResetStartupProject();
+            ToolWindowViewModel.Reset();
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)
@@ -255,11 +255,6 @@ namespace SmartCmdArgs
             {
                 ToolWindowViewModel.UpdateStartupProject(prjName);
             }
-        }
-
-        private void ResetStartupProject()
-        {
-            ToolWindowViewModel.UpdateStartupProject(null);
         }
     }
 }
