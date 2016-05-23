@@ -103,7 +103,7 @@ namespace SmartCmdArgs
 
             vsHelper = new VisualStudioHelper(this);
             vsHelper.SolutionOpend += VsHelper_SolutionOpend;
-            vsHelper.SolutionWillClose += VsHelper_SolutionWillClose;
+            vsHelper.SolutionClosed += VsHelper_SolutionClosed;
             vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
             vsHelper.StartupProjectConfigurationChanged += VsHelper_StartupProjectConfigurationChanged;
 
@@ -237,7 +237,7 @@ namespace SmartCmdArgs
             UpdateProjectConfiguration();
         }
 
-        private void VsHelper_SolutionWillClose(object sender, EventArgs e)
+        private void VsHelper_SolutionClosed(object sender, EventArgs e)
         {
             ToolWindowViewModel.Reset();
             toolWindowStateLoadedFromSolution = null;
