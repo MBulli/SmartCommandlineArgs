@@ -214,6 +214,7 @@ namespace SmartCmdArgs.ViewModel
                 var curListVM = GetListViewModel(projectCommandsPair.Key);
                 foreach (var item in projectCommandsPair.Value.DataCollection)
                 {
+                    // TODO check dup key
                     curListVM.DataCollection.Add(new CmdArgItem() {
                         Id = item.Id,
                         Command = item.Command,

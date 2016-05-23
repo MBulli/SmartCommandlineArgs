@@ -26,12 +26,12 @@ namespace SmartCmdArgs.Logic
                 {
                     Id = item.Id,
                     Command = item.Command,
-                    Project = item.Project,
-                    Enabled = item.Enabled
+                    //Project = item.Project,
+                    //Enabled = item.Enabled
                 });
             }
 
-            string jsonStr = JsonConvert.SerializeObject(data);
+            string jsonStr = JsonConvert.SerializeObject(data, Formatting.Indented);
 
             StreamWriter sw = new StreamWriter(stream);
             sw.Write(jsonStr);

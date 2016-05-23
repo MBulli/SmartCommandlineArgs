@@ -64,6 +64,8 @@ namespace SmartCmdArgs
 
         private bool IsSvcSupportEnabled { get { return GetDialogPage<CmdArgsOptionPage>().SvcSupport; } }
 
+        private ToolWindowStateSolutionData toolWindowStateLoadedFromSolution;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
@@ -136,9 +138,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                var solutionData = Logic.ToolWindowSolutionDataSerializer.Deserialize(stream);
-                ToolWindowViewModel.PopulateFromSolutionData(solutionData);
-                UpdateProjectConfiguration();
+                toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(stream);
             }
         }
 
@@ -164,8 +164,8 @@ namespace SmartCmdArgs
                         }
                     }
                 }
-
-                Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
+                
+                Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream, serializeFullData: !IsSvcSupportEnabled);
             }
         }
 
@@ -204,7 +204,7 @@ namespace SmartCmdArgs
         {
             if (IsSvcSupportEnabled)
             {
-                var solutionData = new ToolWindowStateSolutionData();
+                var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
 
                 foreach (EnvDTE.Project project in vsHelper.Solution.Projects)
                 {
@@ -240,6 +240,7 @@ namespace SmartCmdArgs
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
         {
             ToolWindowViewModel.Reset();
+            toolWindowStateLoadedFromSolution = null;
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)
