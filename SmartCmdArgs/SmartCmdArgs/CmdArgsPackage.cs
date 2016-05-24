@@ -222,17 +222,25 @@ namespace SmartCmdArgs
                                 // joins data from solution and project 
                                 //  => overrides solution commands with project commands if they have the same id
                                 //  => keeps all data from the solution with a command if the id is not present in the project commands
-                                var dataCollectionFromSolution = solutionData[project.UniqueName].DataCollection;
-                                foreach (var dataFromProject in projectData.DataCollection)
+                                ToolWindowStateProjectData curSolutionProjectData;
+                                if(solutionData.TryGetValue(project.UniqueName, out curSolutionProjectData))
                                 {
-                                    var dataFromSolution = dataCollectionFromSolution.Find(data => data.Id == dataFromProject.Id);
-                                    if (dataFromSolution != null)
+                                    var dataCollectionFromSolution = curSolutionProjectData?.DataCollection;
+                                    var dataCollectionFromProject = projectData?.DataCollection;
+                                    if (dataCollectionFromSolution != null && dataCollectionFromProject != null)
                                     {
-                                        dataCollectionFromSolution.Remove(dataFromSolution);
-                                        dataFromProject.Enabled = dataFromSolution.Enabled;
+                                        foreach (var dataFromProject in dataCollectionFromProject)
+                                        {
+                                            var dataFromSolution = dataCollectionFromSolution.Find(data => data.Id == dataFromProject.Id);
+                                            if (dataFromSolution != null)
+                                            {
+                                                dataCollectionFromSolution.Remove(dataFromSolution);
+                                                dataFromProject.Enabled = dataFromSolution.Enabled;
+                                            }
+                                        }
+                                        projectData.DataCollection.AddRange(dataCollectionFromSolution);
                                     }
                                 }
-                                projectData.DataCollection.AddRange(dataCollectionFromSolution);
                                 solutionData[project.UniqueName] = projectData;
                             }
                         }
