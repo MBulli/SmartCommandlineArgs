@@ -209,41 +209,46 @@ namespace SmartCmdArgs
                 foreach (EnvDTE.Project project in vsHelper.Solution.Projects)
                 {
                     string containingFolder = Path.GetDirectoryName(project.FileName);
+
+                    if (containingFolder == null)
+                        continue;
+
                     string filePath = Path.Combine(containingFolder, SvcFileName);
 
-                    if (File.Exists(filePath))
-                    {
-                        using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
-                        {
-                            ToolWindowStateProjectData projectData = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
+                    if (!File.Exists(filePath))
+                        continue;
 
-                            if (projectData != null)
+                    using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+                    {
+                        ToolWindowStateProjectData projectData = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
+
+                        if (projectData == null)
+                            continue;
+
+                        // joins data from solution and project 
+                        //  => overrides solution commands with project commands if they have the same id
+                        //  => keeps all data from the solution with a command if the id is not present in the project commands
+                        ToolWindowStateProjectData curSolutionProjectData;
+                        if(solutionData.TryGetValue(project.UniqueName, out curSolutionProjectData))
+                        {
+                            var dataCollectionFromSolution = curSolutionProjectData?.DataCollection;
+                            var dataCollectionFromProject = projectData?.DataCollection;
+                            if (dataCollectionFromSolution != null && dataCollectionFromProject != null)
                             {
-                                // joins data from solution and project 
-                                //  => overrides solution commands with project commands if they have the same id
-                                //  => keeps all data from the solution with a command if the id is not present in the project commands
-                                ToolWindowStateProjectData curSolutionProjectData;
-                                if(solutionData.TryGetValue(project.UniqueName, out curSolutionProjectData))
+                                foreach (var dataFromProject in dataCollectionFromProject)
                                 {
-                                    var dataCollectionFromSolution = curSolutionProjectData?.DataCollection;
-                                    var dataCollectionFromProject = projectData?.DataCollection;
-                                    if (dataCollectionFromSolution != null && dataCollectionFromProject != null)
-                                    {
-                                        foreach (var dataFromProject in dataCollectionFromProject)
-                                        {
-                                            var dataFromSolution = dataCollectionFromSolution.Find(data => data.Id == dataFromProject.Id);
-                                            if (dataFromSolution != null)
-                                            {
-                                                dataCollectionFromSolution.Remove(dataFromSolution);
-                                                dataFromProject.Enabled = dataFromSolution.Enabled;
-                                            }
-                                        }
-                                        projectData.DataCollection.AddRange(dataCollectionFromSolution);
-                                    }
+                                    var dataFromSolution = dataCollectionFromSolution.Find(data => data.Id == dataFromProject.Id);
+
+                                    if (dataFromSolution == null)
+                                        continue;
+
+                                    dataCollectionFromSolution.Remove(dataFromSolution);
+                                    dataFromProject.Enabled = dataFromSolution.Enabled;
                                 }
-                                solutionData[project.UniqueName] = projectData;
+                                projectData.DataCollection.AddRange(dataCollectionFromSolution);
                             }
                         }
+                        solutionData[project.UniqueName] = projectData;
                     }
                 }
                 ToolWindowViewModel.PopulateFromSolutionData(solutionData);
