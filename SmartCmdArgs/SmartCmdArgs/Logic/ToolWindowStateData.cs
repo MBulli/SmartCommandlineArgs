@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace SmartCmdArgs.Logic
 {
@@ -15,12 +20,23 @@ namespace SmartCmdArgs.Logic
 
         public class ListEntryData
         {
-            public Guid Id;
-            public string Command;
-            public string Project; // this one is useles
-            public bool Enabled;
+            public Guid Id = Guid.NewGuid();
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public string Command = null;
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public string Project = null; // this one is useles
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public bool Enabled = false;
+
+            [OnError]
+            public void OnError(StreamingContext context, ErrorContext errorContext)
+            {
+                if (errorContext?.Member?.ToString() == nameof(Id))
+                {
+                    errorContext.Handled = true;
+                }
+            }
         }
     }
 
-    
 }

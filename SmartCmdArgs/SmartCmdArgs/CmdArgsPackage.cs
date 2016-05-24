@@ -218,15 +218,34 @@ namespace SmartCmdArgs
                             ToolWindowStateProjectData projectData = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
 
                             if (projectData != null)
+                            {
+                                // joins data from solution and project 
+                                //  => overrides solution commands with project commands if they have the same id
+                                //  => keeps all data from the solution with a command if the id is not present in the project commands
+                                var dataCollectionFromSolution = solutionData[project.UniqueName].DataCollection;
+                                foreach (var dataFromProject in projectData.DataCollection)
+                                {
+                                    var dataFromSolution = dataCollectionFromSolution.Find(data => data.Id == dataFromProject.Id);
+                                    if (dataFromSolution != null)
+                                    {
+                                        dataCollectionFromSolution.Remove(dataFromSolution);
+                                        dataFromProject.Enabled = dataFromSolution.Enabled;
+                                    }
+                                }
+                                // dont know if .Where(data => !string.IsNullOrEmpty(data.Command)) is a good idea
+                                projectData.DataCollection.AddRange(dataCollectionFromSolution.Where(data => !string.IsNullOrEmpty(data.Command)));
                                 solutionData[project.UniqueName] = projectData;
+                            }
                         }
                     }
                 }
-
                 ToolWindowViewModel.PopulateFromSolutionData(solutionData);
             }
-
-            if (!ToolWindowViewModel.Initialized)
+            else if (toolWindowStateLoadedFromSolution != null)
+            {
+                ToolWindowViewModel.PopulateFromSolutionData(toolWindowStateLoadedFromSolution);
+            }
+            else
             {
                 var allCommands = ReadCommandlineArgumentsFromAllProjects();
                 if (allCommands != null)
