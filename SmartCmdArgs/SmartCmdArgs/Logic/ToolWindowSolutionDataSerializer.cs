@@ -24,7 +24,7 @@ namespace SmartCmdArgs.Logic
             return entries;
         }
 
-        public static void Serialize(ToolWindowViewModel vm, Stream stream, bool serializeFullData = true)
+        public static void Serialize(ToolWindowViewModel vm, Stream stream)
         {
             if (vm == null)
                 throw new ArgumentNullException(nameof(vm));
@@ -40,24 +40,13 @@ namespace SmartCmdArgs.Logic
 
                 foreach (var item in kvp.Value.DataCollection)
                 {
-                    if (serializeFullData)
+                    list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
                     {
-                        list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
-                        {
-                            Id = item.Id,
-                            Command = item.Command,
-                            Project = item.Project,
-                            Enabled = item.Enabled
-                        });
-                    }
-                    else
-                    {
-                        list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
-                        {
-                            Id = item.Id,
-                            Enabled = item.Enabled
-                        });
-                    }
+                        Id = item.Id,
+                        Command = item.Command,
+                        //Project = item.Project,   // deprecated
+                        Enabled = item.Enabled
+                    });
                 }
             }
 

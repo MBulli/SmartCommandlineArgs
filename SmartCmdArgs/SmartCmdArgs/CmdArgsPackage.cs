@@ -165,7 +165,7 @@ namespace SmartCmdArgs
                     }
                 }
                 
-                Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream, serializeFullData: !IsSvcSupportEnabled);
+                Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
             }
         }
 
@@ -232,8 +232,7 @@ namespace SmartCmdArgs
                                         dataFromProject.Enabled = dataFromSolution.Enabled;
                                     }
                                 }
-                                // dont know if .Where(data => !string.IsNullOrEmpty(data.Command)) is a good idea
-                                projectData.DataCollection.AddRange(dataCollectionFromSolution.Where(data => !string.IsNullOrEmpty(data.Command)));
+                                projectData.DataCollection.AddRange(dataCollectionFromSolution);
                                 solutionData[project.UniqueName] = projectData;
                             }
                         }

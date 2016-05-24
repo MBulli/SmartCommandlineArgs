@@ -26,7 +26,7 @@ namespace SmartCmdArgs.Logic
                 {
                     Id = item.Id,
                     Command = item.Command,
-                    //Project = item.Project,
+                    //Project = item.Project,   // deprecated
                     //Enabled = item.Enabled
                 });
             }
