@@ -100,7 +100,13 @@ namespace SmartCmdArgs
             vsHelper.SolutionWillClose += VsHelper_SolutionWillClose;
             vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
             vsHelper.StartupProjectConfigurationChanged += VsHelper_StartupProjectConfigurationChanged;
-           
+
+            // Extension window was opend while a solution is already open
+            if (vsHelper.IsSolutionOpen)
+            {
+                vsHelper.Initialize();
+            }
+
             ToolWindowViewModel.CommandLineChanged += OnCommandLineChanged;
             ToolWindowViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
 
@@ -181,6 +187,8 @@ namespace SmartCmdArgs
         #region VS Events
         private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
+            vsHelper.Initialize();
+
             if (!ToolWindowViewModel.Initialized)
             {
                 var allCommands = ReadCommandlineArgumentsFromAllProjects();
@@ -195,6 +203,8 @@ namespace SmartCmdArgs
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
         {
             ToolWindowViewModel.Reset();
+
+            vsHelper.Deinitalize();
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)

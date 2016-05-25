@@ -26,10 +26,12 @@ namespace SmartCmdArgs
         private IVsSolutionBuildManager2 solutionBuildService;
         private IVsMonitorSelection selectionMonitor;
 
+        private bool initialized = false;
         private uint selectionEventsCookie = 0;
         private uint updateSolutionEventsCookie = 0;
 
         public EnvDTE.Solution Solution { get { return appObject.Solution; } }
+        public bool IsSolutionOpen { get { return appObject?.Solution?.IsOpen ?? false; } }
 
         public event EventHandler SolutionOpend;
         public event EventHandler SolutionWillClose;
@@ -49,6 +51,42 @@ namespace SmartCmdArgs
             this.solutionEvents.Opened += SolutionEvents_Opened;
             this.solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
+        }
+
+        public void Initialize()
+        {
+            if (!initialized)
+            {
+                // Setup solution related stuff
+                this.solutionService = package.GetService<SVsSolution, IVsSolution5>();
+                this.solutionBuildService = package.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager2>();
+                this.selectionMonitor = package.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
+
+                // Set startp project
+
+                ErrorHandler.ThrowOnFailure(this.selectionMonitor.AdviseSelectionEvents(this, out selectionEventsCookie));
+                ErrorHandler.ThrowOnFailure(this.solutionBuildService.AdviseUpdateSolutionEvents(this, out updateSolutionEventsCookie));
+
+                initialized = true;
+            }
+        }
+
+        public void Deinitalize()
+        {
+            // Cleanup solution related stuff
+            if (selectionEventsCookie != 0)
+                ErrorHandler.ThrowOnFailure(this.selectionMonitor.UnadviseSelectionEvents(selectionEventsCookie));
+            if (updateSolutionEventsCookie != 0)
+                ErrorHandler.ThrowOnFailure(this.solutionBuildService.UnadviseUpdateSolutionEvents(updateSolutionEventsCookie));
+
+            selectionEventsCookie = 0;
+            updateSolutionEventsCookie = 0;
+
+            this.solutionService = null;
+            this.solutionBuildService = null;
+            this.selectionMonitor = null;
+
+            initialized = false;
         }
 
         public string StartupProjectUniqueName()
@@ -79,17 +117,7 @@ namespace SmartCmdArgs
 
         #region Solution Events
         private void SolutionEvents_Opened()
-        {
-            // Setup solution related stuff
-            this.solutionService = package.GetService<SVsSolution, IVsSolution5>();
-            this.solutionBuildService = package.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager2>();
-            this.selectionMonitor = package.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
-
-            // Set startp project
-
-            ErrorHandler.ThrowOnFailure(this.selectionMonitor.AdviseSelectionEvents(this, out selectionEventsCookie));
-            ErrorHandler.ThrowOnFailure(this.solutionBuildService.AdviseUpdateSolutionEvents(this, out updateSolutionEventsCookie));
-            
+        {           
             SolutionOpend?.Invoke(this, EventArgs.Empty);
         }
 
@@ -100,17 +128,6 @@ namespace SmartCmdArgs
 
         private void SolutionEvents_AfterClosing()
         {
-            // Cleanup solution related stuff
-            ErrorHandler.ThrowOnFailure(this.selectionMonitor.UnadviseSelectionEvents(selectionEventsCookie));
-            ErrorHandler.ThrowOnFailure(this.solutionBuildService.UnadviseUpdateSolutionEvents(updateSolutionEventsCookie));
-
-            selectionEventsCookie = 0;
-            updateSolutionEventsCookie = 0;
-
-            this.solutionService = null;
-            this.solutionBuildService = null;
-            this.selectionMonitor = null;
-
             SolutionClosed?.Invoke(this, EventArgs.Empty);
         }
 
