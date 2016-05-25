@@ -11,7 +11,7 @@ namespace SmartCmdArgs.Logic
 {
     public class ToolWindowSolutionDataSerializer
     {
-        public static ToolWindowStateSolutionData DeserializeFromSolution(Stream stream)
+        public static ToolWindowStateSolutionData Deserialize(Stream stream)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
@@ -24,7 +24,7 @@ namespace SmartCmdArgs.Logic
             return entries;
         }
 
-        public static void SerializeToSolution(ToolWindowViewModel vm, Stream stream)
+        public static void Serialize(ToolWindowViewModel vm, Stream stream)
         {
             if (vm == null)
                 throw new ArgumentNullException(nameof(vm));
@@ -35,16 +35,16 @@ namespace SmartCmdArgs.Logic
 
             foreach (var kvp in vm.SolutionArguments)
             {
-                var list = new ToolWindowStateSolutionData.ListData();
+                var list = new ToolWindowStateProjectData();
                 data.Add(kvp.Key, list);
 
                 foreach (var item in kvp.Value.DataCollection)
                 {
-                    list.DataCollection.Add(new ToolWindowStateSolutionData.ListEntryData()
+                    list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
                     {
                         Id = item.Id,
                         Command = item.Command,
-                        Project = item.Project,
+                        //Project = item.Project,   // deprecated
                         Enabled = item.Enabled
                     });
                 }
@@ -55,23 +55,6 @@ namespace SmartCmdArgs.Logic
             StreamWriter sw = new StreamWriter(stream);
             sw.Write(jsonStr);
             sw.Flush();
-        }
-    }
-
-    
-    public class ToolWindowStateSolutionData : Dictionary<string, ToolWindowStateSolutionData.ListData>
-    {
-        public class ListData
-        {
-            public List<ListEntryData> DataCollection = new List<ListEntryData>();
-        }
-
-        public class ListEntryData
-        {
-            public Guid Id;
-            public string Command;
-            public string Project; // this one is useles
-            public bool Enabled;
         }
     }
 }

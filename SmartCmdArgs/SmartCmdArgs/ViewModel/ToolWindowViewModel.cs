@@ -13,11 +13,6 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
-        private bool populatedFromSolution;
-        private bool populatedFromDictionary;
-
-        public bool Initialized => populatedFromDictionary || populatedFromSolution;
-
         private Dictionary<string, ListViewModel> solutionArguments; 
         public Dictionary<string, ListViewModel> SolutionArguments
         {
@@ -123,8 +118,6 @@ namespace SmartCmdArgs.ViewModel
             UpdateStartupProject(null);
 
             solutionArguments.Clear();
-            populatedFromDictionary = false;
-            populatedFromSolution = false;
         }
 
         private void CopySelectedItemsToClipboard()
@@ -214,6 +207,7 @@ namespace SmartCmdArgs.ViewModel
                 var curListVM = GetListViewModel(projectCommandsPair.Key);
                 foreach (var item in projectCommandsPair.Value.DataCollection)
                 {
+                    // TODO check dup key
                     curListVM.DataCollection.Add(new CmdArgItem() {
                         Id = item.Id,
                         Command = item.Command,
@@ -222,7 +216,6 @@ namespace SmartCmdArgs.ViewModel
                     });
                 }
             }
-            populatedFromSolution = true;
         }
 
         public void PopulateFromDictinary(Dictionary<string, IList<string>> dict)
@@ -238,7 +231,6 @@ namespace SmartCmdArgs.ViewModel
                     curListVM.AddNewItem(command, projectCommandsPair.Key, false);
                 }
             }
-            populatedFromDictionary = true;
         }
 
         public ListViewModel GetListViewModel(string projectName)
