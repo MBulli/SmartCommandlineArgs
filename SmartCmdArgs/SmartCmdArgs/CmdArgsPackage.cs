@@ -110,7 +110,7 @@ namespace SmartCmdArgs
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
             {
-                vsHelper.Initialize();
+                VsHelper_SolutionOpend(this, EventArgs.Empty);
             }
 
             ToolWindowViewModel.CommandLineChanged += OnCommandLineChanged;
