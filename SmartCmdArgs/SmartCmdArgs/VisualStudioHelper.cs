@@ -16,7 +16,7 @@ namespace SmartCmdArgs
         /// </summary>
         private const int S_OK = Microsoft.VisualStudio.VSConstants.S_OK;
 
-        private CmdArgsPackage package;  
+        private CmdArgsPackage package;
         private EnvDTE.DTE appObject;
 
         private EnvDTE.SolutionEvents solutionEvents;
@@ -62,7 +62,7 @@ namespace SmartCmdArgs
                 this.solutionBuildService = package.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager2>();
                 this.selectionMonitor = package.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
-                // Set startp project
+                // Set startup project
 
                 ErrorHandler.ThrowOnFailure(this.selectionMonitor.AdviseSelectionEvents(this, out selectionEventsCookie));
                 ErrorHandler.ThrowOnFailure(this.solutionBuildService.AdviseUpdateSolutionEvents(this, out updateSolutionEventsCookie));
@@ -95,6 +95,55 @@ namespace SmartCmdArgs
             return startupProjects?.FirstOrDefault() as string;
         }
 
+        public void GetProjects(EnvDTE.Project project, ref List<EnvDTE.Project> allProjects)
+        {
+            // Make sure we have a valid list
+            if (allProjects == null)
+            {
+                allProjects = new List<EnvDTE.Project>();
+            }
+
+            // We determine if this is an actual project by looking if it has a ConfigurationManager
+            // This could be wrong for some types of project, but it works for our needs
+            if (project.ConfigurationManager != null)
+            {
+                allProjects.Add(project);
+            }
+            else if (project.Collection != null)
+            {
+                foreach (EnvDTE.Project subProject in project.Collection)
+                {
+                    if (subProject != project)
+                    {
+                        GetProjects(subProject, ref allProjects);
+                    }
+                }
+            }
+            else if (project.ProjectItems != null)
+            {
+                foreach (EnvDTE.ProjectItem item in project.ProjectItems)
+                {
+                    if (item.SubProject != null && item.SubProject != project)
+                    {
+                        GetProjects(item.SubProject, ref allProjects);
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<EnvDTE.Project> FindAllProjects()
+        {
+            List<EnvDTE.Project> allProjects = new List<EnvDTE.Project>();
+            if (this.appObject?.Solution != null)
+            {
+                foreach (EnvDTE.Project project in this.appObject?.Solution.Projects)
+                {
+                    GetProjects(project, ref allProjects);
+                }
+            }
+            return allProjects;
+        }
+
         public bool FindStartupProject(out EnvDTE.Project startupProject)
         {
             startupProject = null;
@@ -103,11 +152,19 @@ namespace SmartCmdArgs
 
             if (prjName != null)
             {
-                startupProject = this.appObject?.Solution.Item(prjName);
-                return true;
+                try
+                {
+                    startupProject = this.appObject?.Solution.Item(prjName);
+                }
+                catch
+                {
+                    // If we couldn't find it in the solution directly, check in the nested projects
+                    startupProject = FindAllProjects().FirstOrDefault(p => p.UniqueName == prjName);
+                }
+                return startupProject != null;
             }
 
-            return false;           
+            return false;
         }
 
         public void UpdateShellCommandUI(bool immediateUpdate = true)
@@ -117,7 +174,7 @@ namespace SmartCmdArgs
 
         #region Solution Events
         private void SolutionEvents_Opened()
-        {           
+        {
             SolutionOpend?.Invoke(this, EventArgs.Empty);
         }
 
@@ -155,7 +212,7 @@ namespace SmartCmdArgs
         {
             // This method is called if the user is changing solution or project configuration e.g. from Debug to Release.
             // Also if a new solution config was created.
-            // This method is called for each Hierachy element (e.g. project and folders), thus we filter for the startup project
+            // This method is called for each Hierarchy element (e.g. project and folders), thus we filter for the startup project
             // to only trigger the config changed event once.
 
             object objProj = null;

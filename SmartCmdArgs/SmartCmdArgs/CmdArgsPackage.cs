@@ -91,7 +91,7 @@ namespace SmartCmdArgs
         {
             return GetDialogPage(typeof(Page)) as Page;
         }
-     
+
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -170,7 +170,7 @@ namespace SmartCmdArgs
                         }
                     }
                 }
-                
+
                 Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
             }
         }
@@ -233,7 +233,7 @@ namespace SmartCmdArgs
                         if (projectData == null)
                             continue;
 
-                        // joins data from solution and project 
+                        // joins data from solution and project
                         //  => overrides solution commands with project commands if they have the same id
                         //  => keeps all data from the solution with a command if the id is not present in the project commands
                         ToolWindowStateProjectData curSolutionProjectData;
@@ -298,15 +298,12 @@ namespace SmartCmdArgs
         private Dictionary<string, IList<string>> ReadCommandlineArgumentsFromAllProjects()
         {
             var dict = new Dictionary<string, IList<string>>();
-            var solution = vsHelper.Solution;
+            var allProjects = vsHelper.FindAllProjects();
 
-            if (solution == null)
-                return null;
-
-            foreach (EnvDTE.Project project in solution.Projects)
+            foreach (EnvDTE.Project project in allProjects)
             {
                 List<string> prjCmdArgs = new List<string>();
-                // Read properties for all configurations (e.g. Debug/Releas)
+                // Read properties for all configurations (e.g. Debug/Release)
                 foreach (EnvDTE.Configuration config in project.ConfigurationManager)
                 {
                     if (config.Properties == null)
