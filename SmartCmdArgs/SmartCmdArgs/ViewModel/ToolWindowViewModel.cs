@@ -167,16 +167,28 @@ namespace SmartCmdArgs.ViewModel
 
         private void RemoveSelectedItems()
         {
-            // TODO: select a row after delete
-            //var selectedIndex = CurrentArgumentList.DataCollection.IndexOf((CmdArgItem) CurrentArgumentList.SelectedItems[0]);
+            if (CurrentArgumentList.SelectedItems.Count > 0)
+            {
+                var last = CurrentArgumentList.SelectedItems[CurrentArgumentList.SelectedItems.Count - 1];
+                // This will select the previous, not currently selected, item of the last item selected
+                CmdArgItem itemToSelect = ActiveItemsForCurrentProject()
+                    // Take everything up to the last item selected
+                    .TakeWhile(item => item != last)
+                    // Now the item we want is at the end of the list
+                    // Just filter out those already selected
+                    .LastOrDefault(item => !CurrentArgumentList.SelectedItems.Contains(item));
 
-            CurrentArgumentList.DataCollection.RemoveRange(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-            
-            //if (CurrentArgumentList.DataCollection.Count > 0)
-            //{
-            //    var newSelectionIndex = Math.Min(selectedIndex, CurrentArgumentList.DataCollection.Count - 1);
-            //    CurrentArgumentList.SelectedItems.Add(CurrentArgumentList.DataCollection[newSelectionIndex]);
-            //}
+                // Actually remove the items
+                CurrentArgumentList.DataCollection.RemoveRange(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
+
+                // In case the first item was selected, now select the new first item
+                itemToSelect = itemToSelect ?? ActiveItemsForCurrentProject().FirstOrDefault();
+                // If this is null, it means the list is now empty
+                if (itemToSelect != null)
+                {
+                    CurrentArgumentList.SelectedItems.Add(itemToSelect);
+                }
+            }
         }
 
         public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()
