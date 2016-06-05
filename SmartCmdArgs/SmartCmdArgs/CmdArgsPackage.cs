@@ -184,24 +184,9 @@ namespace SmartCmdArgs
 
             if (found)
             {
-                EnvDTE.Properties properties = project.ConfigurationManager?.ActiveConfiguration?.Properties;
-
-                if (properties != null)
-                {
-                    var activeEntries = ToolWindowViewModel.ActiveItemsForCurrentProject().Select(e => e.Command);
-                    string prjCmdArgs = string.Join(" ", activeEntries);
-
-                    foreach (EnvDTE.Property prop in properties)
-                    {
-                        // CommandArguments = C/C++ project
-                        // StartArguments   = C#/VB project
-                        if (prop.Name == "CommandArguments" || prop.Name == "StartArguments")
-                        {
-                            prop.Value = prjCmdArgs;
-                            break;
-                        }
-                    }
-                }
+                var activeEntries = ToolWindowViewModel.ActiveItemsForCurrentProject().Select(e => e.Command);
+                string prjCmdArgs = string.Join(" ", activeEntries);
+                Helper.ProjectArguments.SetArguments(project, prjCmdArgs);
             }
         }
 
@@ -303,27 +288,7 @@ namespace SmartCmdArgs
             foreach (EnvDTE.Project project in allProjects)
             {
                 List<string> prjCmdArgs = new List<string>();
-                // Read properties for all configurations (e.g. Debug/Release)
-                foreach (EnvDTE.Configuration config in project.ConfigurationManager)
-                {
-                    if (config.Properties == null)
-                        continue;
-
-                    foreach (EnvDTE.Property prop in config.Properties)
-                    {
-                        // CommandArguments = C/C++ project
-                        // StartArguments   = C#/VB project
-                        if (prop.Name != "CommandArguments" && prop.Name != "StartArguments")
-                            continue;
-
-                        string cmdarg = prop.Value as string;
-                        if (!string.IsNullOrEmpty(cmdarg))
-                        {
-                            prjCmdArgs.Add(cmdarg);
-                        }
-                        break;
-                    }
-                }
+                Helper.ProjectArguments.AddAllArguments(project, prjCmdArgs);
                 dict.Add(project.UniqueName, prjCmdArgs.Distinct().ToList());
             }
 

@@ -105,7 +105,7 @@ namespace SmartCmdArgs
 
             // We determine if this is an actual project by looking if it has a ConfigurationManager
             // This could be wrong for some types of project, but it works for our needs
-            if (project.ConfigurationManager != null)
+            if (SmartCmdArgs.Helper.ProjectArguments.IsSupportedProject(project))
             {
                 allProjects.Add(project);
             }
