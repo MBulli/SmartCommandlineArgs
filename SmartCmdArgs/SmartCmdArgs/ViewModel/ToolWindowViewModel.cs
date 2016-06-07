@@ -167,16 +167,8 @@ namespace SmartCmdArgs.ViewModel
 
         private void RemoveSelectedItems()
         {
-            // TODO: select a row after delete
-            //var selectedIndex = CurrentArgumentList.DataCollection.IndexOf((CmdArgItem) CurrentArgumentList.SelectedItems[0]);
-
-            CurrentArgumentList.DataCollection.RemoveRange(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-            
-            //if (CurrentArgumentList.DataCollection.Count > 0)
-            //{
-            //    var newSelectionIndex = Math.Min(selectedIndex, CurrentArgumentList.DataCollection.Count - 1);
-            //    CurrentArgumentList.SelectedItems.Add(CurrentArgumentList.DataCollection[newSelectionIndex]);
-            //}
+            // This will eventually bubble down to the DataGridView
+            System.Windows.Input.ApplicationCommands.Delete.Execute(parameter: null, target: null);
         }
 
         public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()
