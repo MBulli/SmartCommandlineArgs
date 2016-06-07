@@ -215,8 +215,8 @@ namespace SmartCmdArgs
                             continue;
 
                         // joins data from solution and project
-                        //  => overrides solution commands with project commands if they have the same id
-                        //  => keeps all data from the solution with a command if the id is not present in the project commands
+                        //  => overrides solution commands for a project if a project json file exists
+                        //  => keeps all data from the solution for projects without a json
                         ToolWindowStateProjectData curSolutionProjectData;
                         if(solutionData.TryGetValue(project.UniqueName, out curSolutionProjectData))
                         {
@@ -230,11 +230,9 @@ namespace SmartCmdArgs
 
                                     if (dataFromSolution == null)
                                         continue;
-
-                                    dataCollectionFromSolution.Remove(dataFromSolution);
+                                    
                                     dataFromProject.Enabled = dataFromSolution.Enabled;
                                 }
-                                projectData.DataCollection.AddRange(dataCollectionFromSolution);
                             }
                         }
                         solutionData[project.UniqueName] = projectData;
