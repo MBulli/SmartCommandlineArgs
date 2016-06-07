@@ -57,7 +57,6 @@ namespace SmartCmdArgs
         public const string PackageGuidString = "131b0c0a-5dd0-4680-b261-86ab5387b86e";
         public const string ClipboardCmdItemFormat = "SmartCommandlineArgs_D11D715E-CBF3-43F2-A1C1-168FD5C48505";
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
-        public const string SvcFileName = "SmartCommandlineArgs.json";
 
         private VisualStudioHelper vsHelper;
         public ViewModel.ToolWindowViewModel ToolWindowViewModel { get; } = new ViewModel.ToolWindowViewModel();
@@ -160,8 +159,7 @@ namespace SmartCmdArgs
                         ViewModel.ListViewModel vm = null;
                         if (ToolWindowViewModel.SolutionArguments.TryGetValue(project.UniqueName, out vm))
                         {
-                            string containingFolder = Path.GetDirectoryName(project.FileName);
-                            string filePath = Path.Combine(containingFolder, SvcFileName);
+                            string filePath = FullFilenameForProjectJsonFile(project);
 
                             using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
                             {
@@ -216,12 +214,10 @@ namespace SmartCmdArgs
 
                 foreach (EnvDTE.Project project in vsHelper.Solution.Projects)
                 {
-                    string containingFolder = Path.GetDirectoryName(project.FileName);
-
-                    if (containingFolder == null)
+                    if (string.IsNullOrEmpty(project.FileName))
                         continue;
 
-                    string filePath = Path.Combine(containingFolder, SvcFileName);
+                    string filePath = FullFilenameForProjectJsonFile(project);
 
                     if (!File.Exists(filePath))
                         continue;
@@ -339,6 +335,13 @@ namespace SmartCmdArgs
             {
                 ToolWindowViewModel.UpdateStartupProject(prjName);
             }
+        }
+
+
+        private string FullFilenameForProjectJsonFile(EnvDTE.Project project)
+        {
+            string filename = string.Format("{0}.args.json", Path.GetFileNameWithoutExtension(project.FileName));
+            return Path.Combine(Path.GetDirectoryName(project.FileName), filename);
         }
     }
 }
