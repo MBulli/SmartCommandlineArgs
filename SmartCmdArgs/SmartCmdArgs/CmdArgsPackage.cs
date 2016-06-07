@@ -154,7 +154,7 @@ namespace SmartCmdArgs
             {
                 if (IsSvcSupportEnabled)
                 {
-                    foreach (EnvDTE.Project project in vsHelper.Solution.Projects)
+                    foreach (EnvDTE.Project project in vsHelper.FindAllProjects())
                     {
                         ViewModel.ListViewModel vm = null;
                         if (ToolWindowViewModel.SolutionArguments.TryGetValue(project.UniqueName, out vm))
@@ -197,7 +197,7 @@ namespace SmartCmdArgs
             {
                 var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
 
-                foreach (EnvDTE.Project project in vsHelper.Solution.Projects)
+                foreach (EnvDTE.Project project in vsHelper.FindAllProjects())
                 {
                     if (string.IsNullOrEmpty(project.FileName))
                         continue;
