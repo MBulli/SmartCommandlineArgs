@@ -59,6 +59,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Helper\DelayExecution.cs" />
+    <Compile Include="Helper\Extensions.cs" />
+    <Compile Include="Helper\FileSystemWatcherDisabledContext.cs" />
     <Compile Include="Helper\ObservableCollectionEx.cs" />
     <Compile Include="Helper\ProjectArguments.cs" />
     <Compile Include="Logic\ToolWindowProjectDataSerializer.cs" />

@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Threading;
 using EnvDTE;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
 
@@ -69,7 +70,7 @@ namespace SmartCmdArgs
 
         private ToolWindowStateSolutionData toolWindowStateLoadedFromSolution;
 
-        private Dictionary<Project, FileSystemWatcher> projectFsWatcherDictionary = new Dictionary<Project, FileSystemWatcher>();
+        private Dictionary<Project, FileSystemWatcher> projectFsWatchers = new Dictionary<Project, FileSystemWatcher>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
@@ -171,22 +172,14 @@ namespace SmartCmdArgs
                         if (ToolWindowViewModel.SolutionArguments.TryGetValue(project, out vm))
                         {
                             string filePath = FullFilenameForProjectJsonFile(project);
+                            FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(project);
 
-                            FileSystemWatcher fsWatcher = null;
-                            if (projectFsWatcherDictionary.TryGetValue(project, out fsWatcher))
-                                fsWatcher.EnableRaisingEvents = false;
-
-                            try
+                            using (fsWatcher.TemporarilyDisable())
                             {
                                 using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
                                 {
                                     Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
                                 }
-                            }
-                            finally
-                            {
-                                if (fsWatcher != null)
-                                    fsWatcher.EnableRaisingEvents = true;
                             }
                         }
                     }
@@ -218,7 +211,7 @@ namespace SmartCmdArgs
             projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
             projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
 
-            projectFsWatcherDictionary.Add(project, projectJsonFileWatcher);
+            projectFsWatchers.Add(project, projectJsonFileWatcher);
             projectJsonFileWatcher.EnableRaisingEvents = true;
         }
 
@@ -233,20 +226,20 @@ namespace SmartCmdArgs
         private void DetachFsWatcherFromProject(Project project)
         {
             FileSystemWatcher fsWatcher;
-            if (projectFsWatcherDictionary.TryGetValue(project, out fsWatcher))
+            if (projectFsWatchers.TryGetValue(project, out fsWatcher))
             {
                 fsWatcher.Dispose();
-                projectFsWatcherDictionary.Remove(project);
+                projectFsWatchers.Remove(project);
             }
         }
 
         private void DetachFsWatcherFromAllProjects()
         {
-            foreach (var pair in projectFsWatcherDictionary)
+            foreach (var pair in projectFsWatchers)
             {
                 pair.Value.Dispose();
             }
-            projectFsWatcherDictionary.Clear();
+            projectFsWatchers.Clear();
         }
 
         private void UpdateCommandsForProjectOnDispatcher(Project project)
@@ -294,12 +287,12 @@ namespace SmartCmdArgs
             // project json overrides if it exists
             if (projectData != null)
             {
-                ToolWindowStateProjectData curSolutionProjectData = null;
-                ListViewModel projectListViewModel = null;
+                ToolWindowStateProjectData curSolutionProjectData = solutionData.GetValueOrDefault(project.UniqueName);
+                ListViewModel projectListViewModel = ToolWindowViewModel.SolutionArguments.GetValueOrDefault(project);
+
                 // check if we have data in the suo file or the ViewModel
-                solutionData.TryGetValue(project.UniqueName, out curSolutionProjectData);
-                ToolWindowViewModel.SolutionArguments.TryGetValue(project, out projectListViewModel);
-                if (curSolutionProjectData != null || projectListViewModel != null) {
+                if (curSolutionProjectData != null || projectListViewModel != null)
+                {
                     // update enabled state of the project json data (source prio: ViewModel > suo file)
                     var dataCollectionFromProject = projectData?.DataCollection;
                     if (dataCollectionFromProject != null)
@@ -321,20 +314,28 @@ namespace SmartCmdArgs
                                     dataFromProject.Enabled = dataFromSolution.Enabled;
                             }
                         }
-                    } else
+                    }
+                    else
+                    {
                         projectData = new ToolWindowStateProjectData();
+                    }
                 }
+            }
             // if we have data in the ViewModel we keep it
-            } else if (ToolWindowViewModel.SolutionArguments.ContainsKey(project)) {
-                return;
+            else if (ToolWindowViewModel.SolutionArguments.ContainsKey(project))
+            {
+                return;           
+            }
             // we try to read the suo file data
-            } else if (!solutionData.TryGetValue(project.UniqueName, out projectData)) {
+            else if (!solutionData.TryGetValue(project.UniqueName, out projectData))
+            {
                 // if we don't have suo file data we read cmd args from the project configs
                 projectData = new ToolWindowStateProjectData();
                 projectData.DataCollection.AddRange(
                     ReadCommandlineArgumentsFromProject(project)
                         .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData {Command = cmdLineArg}));
             }
+
             // push projectData to the ViewModel
             ToolWindowViewModel.PopulateFromProjectData(project, projectData);
             if (project == ToolWindowViewModel.StartupProject) UpdateConfigurationForProject(project);
@@ -394,10 +395,9 @@ namespace SmartCmdArgs
         private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectRenamedEventArgs e)
         {
             FileSystemWatcher fsWatcher;
-            if (projectFsWatcherDictionary.TryGetValue(e.project, out fsWatcher))
+            if (projectFsWatchers.TryGetValue(e.project, out fsWatcher))
             {
-                fsWatcher.EnableRaisingEvents = false;
-                try
+                using (fsWatcher.TemporarilyDisable())
                 {
                     var newFileName = FullFilenameForProjectJsonFile(e.project);
                     var oldFileName = FullFilenameForProjectJsonFile(e.oldName);
@@ -411,10 +411,6 @@ namespace SmartCmdArgs
                         File.Move(oldFileName, newFileName);
                     }
                     fsWatcher.Filter = Path.GetFileName(newFileName);
-                }
-                finally
-                {
-                    fsWatcher.EnableRaisingEvents = true;
                 }
             }
         }
