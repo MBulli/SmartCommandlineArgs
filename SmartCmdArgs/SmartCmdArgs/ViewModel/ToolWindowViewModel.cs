@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using EnvDTE;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
@@ -96,7 +97,7 @@ namespace SmartCmdArgs.ViewModel
 
             ToggleItemEnabledCommand = new RelayCommand<CmdArgItem>(
                 (item) => {
-                    CurrentArgumentList.ToogleEnabledForItem(item);
+                    CurrentArgumentList.ToogleEnabledForItem(item, Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt));
                 }, canExecute: _ =>
                 {
                     return this.StartupProject != null;

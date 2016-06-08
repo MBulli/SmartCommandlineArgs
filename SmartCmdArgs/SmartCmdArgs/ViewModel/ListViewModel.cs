@@ -84,11 +84,21 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        internal void ToogleEnabledForItem(CmdArgItem item)
+        internal void ToogleEnabledForItem(CmdArgItem item, bool singleEnabled)
         {
             bool newState = !item.Enabled;
-
-            if (SelectedItems.Contains(item))
+            if (singleEnabled)
+            {
+                using (DataCollection.OpenBulkChange())
+                {
+                    foreach (var cmdArgItem in DataCollection)
+                    {
+                        cmdArgItem.Enabled = false;
+                    }
+                    item.Enabled = newState;
+                }
+            }
+            else if (SelectedItems.Contains(item))
             {
                 using (DataCollection.OpenBulkChange())
                 {
