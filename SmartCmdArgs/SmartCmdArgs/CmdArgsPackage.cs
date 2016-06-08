@@ -238,7 +238,8 @@ namespace SmartCmdArgs
 
         private void UpdateCommandsForProject(Project project)
         {
-            if (project == null) throw new ArgumentNullException(nameof(project));
+            if (project == null)
+                throw new ArgumentNullException(nameof(project));
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
 
@@ -251,7 +252,8 @@ namespace SmartCmdArgs
 
             // get project json data
             ToolWindowStateProjectData projectData = null;
-            if (IsSvcSupportEnabled && File.Exists(filePath)) {
+            if (IsSvcSupportEnabled && File.Exists(filePath))
+            {
                 try
                 {
                     using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
@@ -265,6 +267,7 @@ namespace SmartCmdArgs
                     projectData = null;
                 }
             }
+
             // project json overrides if it exists
             if (projectData != null)
             {

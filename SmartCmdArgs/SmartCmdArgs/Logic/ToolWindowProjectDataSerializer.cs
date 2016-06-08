@@ -46,9 +46,16 @@ namespace SmartCmdArgs.Logic
             StreamReader sr = new StreamReader(stream);
             string jsonStr = sr.ReadToEnd();
 
-            var entries = JsonConvert.DeserializeObject<ToolWindowStateProjectData>(jsonStr);
-
-            return entries;
+            if (string.IsNullOrEmpty(jsonStr))
+            {
+                // If the file is empty return empty project data
+                return new ToolWindowStateProjectData();
+            }
+            else
+            {
+                var entries = JsonConvert.DeserializeObject<ToolWindowStateProjectData>(jsonStr);
+                return entries;
+            }
         }
     }
 }
