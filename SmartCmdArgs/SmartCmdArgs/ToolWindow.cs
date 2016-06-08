@@ -23,9 +23,11 @@ namespace SmartCmdArgs
     /// implementation of the IVsUIElementPane interface.
     /// </para>
     /// </remarks>
-    [Guid("a21b35ed-5c13-4d55-a3d2-71054c4e9540")]
+    [Guid(ToolWindow.ToolWindowGuidString)]
     public class ToolWindow : ToolWindowPane, IVsWindowFrameNotify3, IVsWindowPaneCommit, IVsWindowPaneCommitFilter
     {
+        public const string ToolWindowGuidString = "a21b35ed-5c13-4d55-a3d2-71054c4e9540";
+
         private View.ToolWindowControl view;
 
         private new CmdArgsPackage Package
