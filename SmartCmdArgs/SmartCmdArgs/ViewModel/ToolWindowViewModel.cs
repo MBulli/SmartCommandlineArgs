@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Logic;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace SmartCmdArgs.ViewModel
@@ -196,18 +197,23 @@ namespace SmartCmdArgs.ViewModel
 
             foreach (var projectCommandsPair in data)
             {
-                var curListVM = GetListViewModel(projectCommandsPair.Key);
-                foreach (var item in projectCommandsPair.Value.DataCollection)
-                {
+                PopulateFromProjectData(projectCommandsPair.Key, projectCommandsPair.Value);
+            }
+        }
+
+        public void PopulateFromProjectData(string projectName, ToolWindowStateProjectData data)
+        {
+            var curListVM = GetListViewModel(projectName);
+            curListVM.DataCollection.Clear();
+            curListVM.DataCollection.AddRange(
+                data.DataCollection.Select(
                     // TODO check dup key
-                    curListVM.DataCollection.Add(new CmdArgItem() {
+                    item => new CmdArgItem {
                         Id = item.Id,
                         Command = item.Command,
                         Enabled = item.Enabled,
-                        Project = projectCommandsPair.Key
-                    });
-                }
-            }
+                        Project = projectName
+                    }));
         }
 
         public void PopulateFromDictinary(Dictionary<string, IList<string>> dict)

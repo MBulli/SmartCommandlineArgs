@@ -20,6 +20,9 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using System.Text;
 using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Threading;
+using EnvDTE;
 using SmartCmdArgs.Logic;
 
 namespace SmartCmdArgs
@@ -65,6 +68,8 @@ namespace SmartCmdArgs
 
         private ToolWindowStateSolutionData toolWindowStateLoadedFromSolution;
 
+        private Dictionary<Project, FileSystemWatcher> projectFsWatcherDictionary = new Dictionary<Project, FileSystemWatcher>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
@@ -102,9 +107,14 @@ namespace SmartCmdArgs
 
             vsHelper = new VisualStudioHelper(this);
             vsHelper.SolutionOpend += VsHelper_SolutionOpend;
+            vsHelper.SolutionWillClose += VsHelper_SolutionWillClose;
             vsHelper.SolutionClosed += VsHelper_SolutionClosed;
             vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
             vsHelper.StartupProjectConfigurationChanged += VsHelper_StartupProjectConfigurationChanged;
+
+            vsHelper.ProjectAdded += VsHelper_ProjectAdded;
+            vsHelper.ProjectRemoved += VsHelper_ProjectRemoved;
+            vsHelper.ProjectRenamed += VsHelper_ProjectRenamed;
 
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
@@ -160,7 +170,7 @@ namespace SmartCmdArgs
                         if (ToolWindowViewModel.SolutionArguments.TryGetValue(project.UniqueName, out vm))
                         {
                             string filePath = FullFilenameForProjectJsonFile(project);
-
+                            
                             using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
                             {
                                 Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
@@ -185,6 +195,97 @@ namespace SmartCmdArgs
                 var activeEntries = ToolWindowViewModel.ActiveItemsForCurrentProject().Select(e => e.Command);
                 string prjCmdArgs = string.Join(" ", activeEntries);
                 Helper.ProjectArguments.SetArguments(project, prjCmdArgs);
+            }
+        }
+
+        private void AttachFsWatcherToProject(Project project)
+        {
+            var projectJsonFileWatcher = new FileSystemWatcher();
+            projectJsonFileWatcher.Changed += (fsWatcher, args) => UpdateProjectCommands(project);
+            projectJsonFileWatcher.Created += (fsWatcher, args) => UpdateProjectCommands(project);
+
+            string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
+            projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
+            projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
+            projectJsonFileWatcher.EnableRaisingEvents = true;
+            projectFsWatcherDictionary.Add(project, projectJsonFileWatcher);
+        }
+
+        private void DetachFsWatcherFromProject(Project project)
+        {
+            FileSystemWatcher fsWatcher;
+            if (projectFsWatcherDictionary.TryGetValue(project, out fsWatcher))
+            {
+                fsWatcher.Dispose();
+                projectFsWatcherDictionary.Remove(project);
+            }
+        }
+
+        private void DetachFsWatcherFromAllProjects()
+        {
+            foreach (var pair in projectFsWatcherDictionary)
+            {
+                pair.Value.Dispose();
+            }
+            projectFsWatcherDictionary.Clear();
+        }
+
+        private void UpdateProjectCommands(Project project)
+        {
+            if (!IsSvcSupportEnabled) return;
+
+            var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
+            var currentData = ToolWindowViewModel.GetListViewModel(project.UniqueName).DataCollection;
+
+            if (string.IsNullOrEmpty(project.FileName))
+                return;
+
+            string filePath = FullFilenameForProjectJsonFile(project);
+
+            if (!File.Exists(filePath))
+                return;
+
+            using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+            {
+                ToolWindowStateProjectData projectData = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
+
+                if (projectData == null)
+                    return;
+
+                // joins data from solution and project
+                //  => overrides solution commands for a project if a project json file exists
+                //  => keeps all data from the solution for projects without a json
+                ToolWindowStateProjectData curSolutionProjectData;
+                if (solutionData.TryGetValue(project.UniqueName, out curSolutionProjectData))
+                {
+                    var dataCollectionFromSolution = curSolutionProjectData?.DataCollection;
+                    var dataCollectionFromProject = projectData?.DataCollection;
+                    if (dataCollectionFromSolution != null && dataCollectionFromProject != null)
+                    {
+                        foreach (var dataFromProject in dataCollectionFromProject)
+                        {
+                            var dataFromVM = currentData.FirstOrDefault(data => data.Id == dataFromProject.Id);
+
+                            if (dataFromVM != null)
+                                dataFromProject.Enabled = dataFromVM.Enabled;
+                            else
+                            {
+
+                                var dataFromSolution = dataCollectionFromSolution.Find(data => data.Id == dataFromProject.Id);
+
+                                if (dataFromSolution != null)
+                                    dataFromProject.Enabled = dataFromSolution.Enabled;
+                            }
+                        }
+                    }
+                }
+                Application.Current.Dispatcher.BeginInvoke(
+                    DispatcherPriority.Normal,
+                    new Action(() =>
+                    {
+                        ToolWindowViewModel.PopulateFromProjectData(project.UniqueName, projectData);
+                        UpdateProjectConfiguration();
+                    }));
             }
         }
 
@@ -255,6 +356,11 @@ namespace SmartCmdArgs
             UpdateProjectConfiguration();
         }
 
+        private void VsHelper_SolutionWillClose(object sender, EventArgs e)
+        {
+            DetachFsWatcherFromAllProjects();
+        }
+
         private void VsHelper_SolutionClosed(object sender, EventArgs e)
         {
             ToolWindowViewModel.Reset();
@@ -271,6 +377,31 @@ namespace SmartCmdArgs
         private void VsHelper_StartupProjectConfigurationChanged(object sender, EventArgs e)
         {
             UpdateProjectConfiguration();
+        }
+
+        private void VsHelper_ProjectAdded(object sender, Project project)
+        {
+            AttachFsWatcherToProject(project);
+        }
+
+        private void VsHelper_ProjectRemoved(object sender, Project project)
+        {
+            DetachFsWatcherFromProject(project);
+        }
+
+        private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectRenamedEventArgs e)
+        {
+            FileSystemWatcher fsWatcher;
+            if (projectFsWatcherDictionary.TryGetValue(e.project, out fsWatcher))
+            {
+                fsWatcher.EnableRaisingEvents = false;
+                var newFileName = FullFilenameForProjectJsonFile(e.project);
+                var oldFileName = FullFilenameForProjectJsonFile(e.oldName);
+                if (File.Exists(oldFileName) && !File.Exists(newFileName))
+                    File.Move(FullFilenameForProjectJsonFile(e.oldName), newFileName);
+                fsWatcher.Filter = Path.GetFileName(newFileName);
+                fsWatcher.EnableRaisingEvents = true;
+            }
         }
         #endregion
 
@@ -303,8 +434,13 @@ namespace SmartCmdArgs
 
         private string FullFilenameForProjectJsonFile(EnvDTE.Project project)
         {
-            string filename = string.Format("{0}.args.json", Path.GetFileNameWithoutExtension(project.FileName));
-            return Path.Combine(Path.GetDirectoryName(project.FileName), filename);
+            return FullFilenameForProjectJsonFile(project.FileName);
+        }
+
+        private string FullFilenameForProjectJsonFile(string projectFile)
+        {
+            string filename = string.Format("{0}.args.json", Path.GetFileNameWithoutExtension(projectFile));
+            return Path.Combine(Path.GetDirectoryName(projectFile), filename);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EnvDTE;
 
 namespace SmartCmdArgs
 {
@@ -39,6 +40,10 @@ namespace SmartCmdArgs
         public event EventHandler StartupProjectChanged;
         public event EventHandler StartupProjectConfigurationChanged;
 
+        public event EventHandler<Project> ProjectAdded;
+        public event EventHandler<Project> ProjectRemoved;
+        public event EventHandler<ProjectRenamedEventArgs> ProjectRenamed;
+
         public VisualStudioHelper(CmdArgsPackage package)
         {
             this.package = package;
@@ -51,6 +56,9 @@ namespace SmartCmdArgs
             this.solutionEvents.Opened += SolutionEvents_Opened;
             this.solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
             this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
+            this.solutionEvents.ProjectAdded += SolutionEvents_ProjectAdded;
+            this.solutionEvents.ProjectRemoved += SolutionEvents_ProjectRemoved;
+            this.solutionEvents.ProjectRenamed += SolutionEvents_ProjectRenamed;
         }
 
         public void Initialize()
@@ -188,6 +196,26 @@ namespace SmartCmdArgs
             SolutionClosed?.Invoke(this, EventArgs.Empty);
         }
 
+        private void SolutionEvents_ProjectAdded(Project project)
+        {
+            ProjectAdded?.Invoke(this, project);
+        }
+
+        private void SolutionEvents_ProjectRemoved(Project project)
+        {
+            ProjectRemoved?.Invoke(this, project);
+        }
+
+        private void SolutionEvents_ProjectRenamed(Project project, string oldName)
+        {
+            ProjectRenamed?.Invoke(this, new ProjectRenamedEventArgs {project = project, oldName = oldName});
+        }
+
+        public class ProjectRenamedEventArgs
+        {
+            public Project project;
+            public string oldName;
+        }
         #endregion
 
         #region IVsSelectionEvents Implementation
