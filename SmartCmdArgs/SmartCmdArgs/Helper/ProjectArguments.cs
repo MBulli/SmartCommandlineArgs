@@ -1,6 +1,7 @@
 ﻿using SmartCmdArgs.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,8 @@ namespace SmartCmdArgs.Helper
 
         private static void SetSingleConfigArgument(EnvDTE.Project project, string arguments, string propertyName)
         {
-            try {project.Properties.Item(propertyName).Value = arguments; } catch { }
+            try {project.Properties.Item(propertyName).Value = arguments; }
+            catch { Debug.WriteLine("Could not set arguments for project: " + project.UniqueName); }
         }
 
         private static void GetSingleConfigAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
@@ -33,14 +35,15 @@ namespace SmartCmdArgs.Helper
                     allArgs.Add(cmdarg);
                 }
             }
-            catch { }
+            catch { Debug.WriteLine("Could not get arguments for project: " + project.UniqueName); }
         }
 
         private static void SetMultiConfigArguments(EnvDTE.Project project, string arguments, string propertyName)
         {
             // Set the arguments only on the active configuration
             EnvDTE.Properties properties = project.ConfigurationManager?.ActiveConfiguration?.Properties;
-            try { properties.Item(propertyName).Value = arguments; } catch { }
+            try { properties.Item(propertyName).Value = arguments; }
+            catch { Debug.WriteLine("Could not set arguments for project: " + project.UniqueName); }
         }
 
         private static void GetMultiConfigAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
@@ -55,7 +58,7 @@ namespace SmartCmdArgs.Helper
                         allArgs.Add(cmdarg);
                     }
                 }
-                catch { }
+                catch { Debug.WriteLine("Could not get arguments for project: " + project.UniqueName); }
             }
         }
 
@@ -63,8 +66,8 @@ namespace SmartCmdArgs.Helper
         {
             // C#
             {"{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "CommandArguments"),
-                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "CommandArguments")
+                SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "StartArguments"),
+                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
             } },
             // VB.NET
             {"{F184B08F-C81C-45F6-A57F-5ABD9991F28F}", new ProjectArgumentsHandlers() {
@@ -73,8 +76,8 @@ namespace SmartCmdArgs.Helper
             } },
             // C/C++
             {"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}", new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "StartArguments"),
-                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
+                SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "CommandArguments"),
+                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "CommandArguments")
             } },
             // Python
             {"{888888a0-9f3d-457c-b088-3a5042f75d52}", new ProjectArgumentsHandlers() {
