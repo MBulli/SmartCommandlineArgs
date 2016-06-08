@@ -39,12 +39,11 @@
                     <DataGridTemplateColumn Header="Enabled" Width="25" CellStyle="{StaticResource CheckBoxCell}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <CheckBox IsChecked="{Binding Enabled}" Command="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow, Mode=OneWay}" CommandParameter="{Binding Mode=OneWay}" />
+                                <CheckBox IsChecked="{Binding Enabled}" Command="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow, Mode=OneWay}" CommandParameter="{Binding Mode=OneWay}" Style="{StaticResource CheckBoxStyle}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-
-                    <DataGridTextColumn     Header="Value"   Binding="{Binding Command}" Width="*" />
+                    <DataGridTextColumn Header="Value" Binding="{Binding Command}" Width="*" />
                 </DataGrid.Columns>
             </local:DataGridEx>
         </Grid>

@@ -75,4 +75,7 @@
         <Setter Property="Focusable" Value="False"/>
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
+    <Style x:Key="CheckBoxStyle" TargetType="{x:Type CheckBox}">
+        <Setter Property="Focusable" Value="False"/>
+    </Style>
 </ResourceDictionary>
