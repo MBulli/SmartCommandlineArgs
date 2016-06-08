@@ -173,12 +173,21 @@ namespace SmartCmdArgs
                             string filePath = FullFilenameForProjectJsonFile(project);
 
                             FileSystemWatcher fsWatcher = null;
-                            if (projectFsWatcherDictionary.TryGetValue(project, out fsWatcher)) fsWatcher.EnableRaisingEvents = false;
-                            using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+                            if (projectFsWatcherDictionary.TryGetValue(project, out fsWatcher))
+                                fsWatcher.EnableRaisingEvents = false;
+
+                            try
                             {
-                                Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
+                                using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+                                {
+                                    Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
+                                }
                             }
-                            if (fsWatcher != null) fsWatcher.EnableRaisingEvents = true;
+                            finally
+                            {
+                                if (fsWatcher != null)
+                                    fsWatcher.EnableRaisingEvents = true;
+                            }
                         }
                     }
                 }
@@ -208,8 +217,9 @@ namespace SmartCmdArgs
             string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
             projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
             projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
-            projectJsonFileWatcher.EnableRaisingEvents = true;
+
             projectFsWatcherDictionary.Add(project, projectJsonFileWatcher);
+            projectJsonFileWatcher.EnableRaisingEvents = true;
         }
 
         private void AttachFsWatcherToAllProjects()
@@ -387,16 +397,25 @@ namespace SmartCmdArgs
             if (projectFsWatcherDictionary.TryGetValue(e.project, out fsWatcher))
             {
                 fsWatcher.EnableRaisingEvents = false;
-                var newFileName = FullFilenameForProjectJsonFile(e.project);
-                var oldFileName = FullFilenameForProjectJsonFile(e.oldName);
-                if (File.Exists(newFileName)) {
-                    File.Delete(oldFileName);
-                    UpdateCommandsForProject(e.project);
-                } else if (File.Exists(oldFileName)) {
-                    File.Move(oldFileName, newFileName);
+                try
+                {
+                    var newFileName = FullFilenameForProjectJsonFile(e.project);
+                    var oldFileName = FullFilenameForProjectJsonFile(e.oldName);
+                    if (File.Exists(newFileName))
+                    {
+                        File.Delete(oldFileName);
+                        UpdateCommandsForProject(e.project);
+                    }
+                    else if (File.Exists(oldFileName))
+                    {
+                        File.Move(oldFileName, newFileName);
+                    }
+                    fsWatcher.Filter = Path.GetFileName(newFileName);
                 }
-                fsWatcher.Filter = Path.GetFileName(newFileName);
-                fsWatcher.EnableRaisingEvents = true;
+                finally
+                {
+                    fsWatcher.EnableRaisingEvents = true;
+                }
             }
         }
         #endregion
