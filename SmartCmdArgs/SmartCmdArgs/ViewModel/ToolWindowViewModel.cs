@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using EnvDTE;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
@@ -14,11 +15,8 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
-        private Dictionary<string, ListViewModel> solutionArguments; 
-        public Dictionary<string, ListViewModel> SolutionArguments
-        {
-            get { return solutionArguments; }
-        }
+        private Dictionary<Project, ListViewModel> solutionArguments; 
+        public Dictionary<Project, ListViewModel> SolutionArguments => solutionArguments;
 
         private ListViewModel _currentArgumentList;
         public ListViewModel CurrentArgumentList
@@ -27,8 +25,8 @@ namespace SmartCmdArgs.ViewModel
             set { _currentArgumentList = value; OnNotifyPropertyChanged(); }
         }
 
-        private string _startupProject;
-        public string StartupProject
+        private Project _startupProject;
+        public Project StartupProject
         {
             get { return _startupProject; }
             private set { _startupProject = value; OnNotifyPropertyChanged(); }
@@ -62,11 +60,11 @@ namespace SmartCmdArgs.ViewModel
 
         public ToolWindowViewModel()
         {
-            solutionArguments = new Dictionary<string, ListViewModel>();
+            solutionArguments = new Dictionary<Project, ListViewModel>();
 
             AddEntryCommand = new RelayCommand(
                 () => {
-                    CurrentArgumentList.AddNewItem(command: "", project: StartupProject, enabled: true);
+                    CurrentArgumentList.AddNewItem(command: "", enabled: true);
                 }, canExecute: _ =>
                 {
                     return StartupProject != null;
@@ -147,7 +145,7 @@ namespace SmartCmdArgs.ViewModel
                 var pastedItems = JsonConvert.DeserializeObject<CmdArgClipboardItem[]>(pastedItemsJson);
                 foreach (var item in pastedItems)
                 {
-                    CurrentArgumentList.AddNewItem(item.Command, StartupProject, item.Enabled);
+                    CurrentArgumentList.AddNewItem(item.Command, item.Enabled);
                 }
             }
             else if (Clipboard.ContainsText())
@@ -155,7 +153,7 @@ namespace SmartCmdArgs.ViewModel
                 var pastedItems = Clipboard.GetText().Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var s in pastedItems)
                 {
-                    CurrentArgumentList.AddNewItem(s, StartupProject);
+                    CurrentArgumentList.AddNewItem(s);
                 }
             }
         }
@@ -172,36 +170,12 @@ namespace SmartCmdArgs.ViewModel
             System.Windows.Input.ApplicationCommands.Delete.Execute(parameter: null, target: null);
         }
 
-        public IEnumerable<CmdArgItem> ActiveItemsForCurrentProject()
+        public IEnumerable<CmdArgItem> EnabledItemsForCurrentProject()
         {
-            if (CurrentArgumentList == null)
-            {
-                yield break;
-            }
-            else
-            {
-                foreach (CmdArgItem item in CurrentArgumentList.DataCollection)
-                {
-                    if (item.Enabled && item.Project == StartupProject)
-                    {
-                        yield return item;
-                    }
-                }
-            }
+            return CurrentArgumentList?.DataCollection.Where(item => item.Enabled) ?? new CmdArgItem[0];
         }
 
-        public void PopulateFromSolutionData(Logic.ToolWindowStateSolutionData data)
-        {
-            if (data == null)
-                return;
-
-            foreach (var projectCommandsPair in data)
-            {
-                PopulateFromProjectData(projectCommandsPair.Key, projectCommandsPair.Value);
-            }
-        }
-
-        public void PopulateFromProjectData(string projectName, ToolWindowStateProjectData data)
+        public void PopulateFromProjectData(Project projectName, ToolWindowStateProjectData data)
         {
             var curListVM = GetListViewModel(projectName);
             curListVM.DataCollection.Clear();
@@ -211,41 +185,25 @@ namespace SmartCmdArgs.ViewModel
                     item => new CmdArgItem {
                         Id = item.Id,
                         Command = item.Command,
-                        Enabled = item.Enabled,
-                        Project = projectName
+                        Enabled = item.Enabled
                     }));
         }
 
-        public void PopulateFromDictinary(Dictionary<string, IList<string>> dict)
-        {
-            if (dict == null)
-                return;
-
-            foreach (var projectCommandsPair in dict)
-            {
-                var curListVM = GetListViewModel(projectCommandsPair.Key);
-                foreach (var command in projectCommandsPair.Value)
-                {
-                    curListVM.AddNewItem(command, projectCommandsPair.Key, false);
-                }
-            }
-        }
-
-        public ListViewModel GetListViewModel(string projectName)
+        public ListViewModel GetListViewModel(Project project)
         {
             ListViewModel listVM;
-            if (!solutionArguments.TryGetValue(projectName, out listVM))
+            if (!solutionArguments.TryGetValue(project, out listVM))
             {
                 listVM = new ListViewModel();
-                solutionArguments.Add(projectName, listVM);
+                solutionArguments.Add(project, listVM);
             }
             return listVM;
         }
 
-        public void UpdateStartupProject(string projectName)
+        public void UpdateStartupProject(Project project)
         {
-            if (StartupProject == projectName) return;
-            if (projectName == null)
+            if (StartupProject == project) return;
+            if (project == null)
             {
                 UnsubscribeToChangeEvents();
 
@@ -256,8 +214,8 @@ namespace SmartCmdArgs.ViewModel
             {
                 UnsubscribeToChangeEvents();
 
-                this.StartupProject = projectName;
-                this.CurrentArgumentList = GetListViewModel(projectName);
+                this.StartupProject = project;
+                this.CurrentArgumentList = GetListViewModel(project);
 
                 SubscribeToChangeEvents();
             }

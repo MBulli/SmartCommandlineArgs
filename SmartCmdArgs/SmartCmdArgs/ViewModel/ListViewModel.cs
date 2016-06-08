@@ -43,13 +43,12 @@ namespace SmartCmdArgs.ViewModel
         }
 
         // CRUD Operations
-        public CmdArgItem AddNewItem(string command, string project, bool enabled = true)
+        public CmdArgItem AddNewItem(string command, bool enabled = true)
         {
             CmdArgItem item = new CmdArgItem() {
                 Id = Guid.NewGuid(),
                 Command = command,
-                Enabled = enabled,
-                Project = project };
+                Enabled = enabled};
 
             DataCollection.Add(item);
             return item;
