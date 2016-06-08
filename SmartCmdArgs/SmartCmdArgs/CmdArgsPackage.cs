@@ -271,9 +271,9 @@ namespace SmartCmdArgs
                 ToolWindowStateProjectData curSolutionProjectData = null;
                 ListViewModel projectListViewModel = null;
                 // check if we have data in the suo file or the ViewModel
-                if (solutionData.TryGetValue(project.UniqueName, out curSolutionProjectData)
-                    || ToolWindowViewModel.SolutionArguments.TryGetValue(project, out projectListViewModel))
-                {
+                solutionData.TryGetValue(project.UniqueName, out curSolutionProjectData);
+                ToolWindowViewModel.SolutionArguments.TryGetValue(project, out projectListViewModel);
+                if (curSolutionProjectData != null || projectListViewModel != null) {
                     // update enabled state of the project json data (source prio: ViewModel > suo file)
                     var dataCollectionFromProject = projectData?.DataCollection;
                     if (dataCollectionFromProject != null)
