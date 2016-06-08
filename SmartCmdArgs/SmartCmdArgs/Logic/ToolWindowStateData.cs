@@ -24,6 +24,7 @@ namespace SmartCmdArgs.Logic
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string Command = null;
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            [Obsolete]
             public string Project = null; // this one is useles
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public bool Enabled = false;

@@ -26,6 +26,7 @@ namespace SmartCmdArgs.ViewModel
             set { this.command = value; OnNotifyPropertyChanged(); }
         }
 
+        [Obsolete]
         public string Project
         {
             get { return project; }
