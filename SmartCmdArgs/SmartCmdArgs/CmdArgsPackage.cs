@@ -197,10 +197,10 @@ namespace SmartCmdArgs
         private void AttachFsWatcherToProject(Project project)
         {
             var projectJsonFileWatcher = new FileSystemWatcher();
-            projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsSvcSupportEnabled) UpdateCommandsForProject(project); };
-            projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsSvcSupportEnabled) UpdateCommandsForProject(project); };
+            projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsSvcSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
+            projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsSvcSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
             projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
-                { if (IsSvcSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProject(project); };
+                { if (IsSvcSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
 
             string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
             projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
@@ -234,6 +234,16 @@ namespace SmartCmdArgs
                 pair.Value.Dispose();
             }
             projectFsWatcherDictionary.Clear();
+        }
+
+        private void UpdateCommandsForProjectOnDispatcher(Project project)
+        {
+            Application.Current.Dispatcher.BeginInvoke(
+                DispatcherPriority.Normal,
+                new Action(() =>
+                {
+                    UpdateCommandsForProject(project);
+                }));
         }
 
         private void UpdateCommandsForProject(Project project)
@@ -313,13 +323,8 @@ namespace SmartCmdArgs
                         .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData {Command = cmdLineArg}));
             }
             // push projectData to the ViewModel
-            Application.Current.Dispatcher.BeginInvoke(
-                DispatcherPriority.Normal,
-                new Action(() =>
-                {
-                    ToolWindowViewModel.PopulateFromProjectData(project, projectData);
-                    if (project == ToolWindowViewModel.StartupProject) UpdateConfigurationForProject(project);
-                }));
+            ToolWindowViewModel.PopulateFromProjectData(project, projectData);
+            if (project == ToolWindowViewModel.StartupProject) UpdateConfigurationForProject(project);
         }
 
         private void UpdateCommandsForAllProjects()
