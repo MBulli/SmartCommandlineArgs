@@ -171,11 +171,14 @@ namespace SmartCmdArgs
                         if (ToolWindowViewModel.SolutionArguments.TryGetValue(project, out vm))
                         {
                             string filePath = FullFilenameForProjectJsonFile(project);
-                            
+
+                            FileSystemWatcher fsWatcher = null;
+                            if (projectFsWatcherDictionary.TryGetValue(project, out fsWatcher)) fsWatcher.EnableRaisingEvents = false;
                             using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
                             {
                                 Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
                             }
+                            if (fsWatcher != null) fsWatcher.EnableRaisingEvents = true;
                         }
                     }
                 }
