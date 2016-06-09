@@ -4,6 +4,8 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
+using System.Windows.Input;
+
 namespace SmartCmdArgs.View
 {
     using System.Diagnostics.CodeAnalysis;
@@ -32,6 +34,11 @@ namespace SmartCmdArgs.View
             : this()
         {
             DataContext = vm;
+        }
+
+        private void CheckboxCellOnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            CmdArgListControl.CheckboxCellOnMouseDown(sender, e);
         }
     }
 }

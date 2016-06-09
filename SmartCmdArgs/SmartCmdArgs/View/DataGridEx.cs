@@ -160,6 +160,16 @@ namespace SmartCmdArgs.View
                 Keyboard.Focus(GetDataGridCell(SelectedItems[0]));
         }
 
+        public void CheckboxCellOnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (IsInEditMode)
+                CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
+
+            var checkBoxCell = sender as DataGridCell;
+            if (checkBoxCell == null) return;
+            Keyboard.Focus(GetDataGridCell(new DataGridCellInfo(checkBoxCell).Item));
+        }
+
         protected override void OnSelectedCellsChanged(SelectedCellsChangedEventArgs e)
         {
             base.OnSelectedCellsChanged(e);

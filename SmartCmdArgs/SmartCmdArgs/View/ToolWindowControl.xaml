@@ -36,7 +36,12 @@
                                CutCommand="{Binding CutItemsCommand}"
                                >
                 <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="Enabled" Width="25" CellStyle="{StaticResource CheckBoxCell}">
+                    <DataGridTemplateColumn Header="Enabled" Width="25">
+                        <DataGridTemplateColumn.CellStyle>
+                            <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource CheckBoxCell}">
+                                <EventSetter Event="PreviewMouseDown" Handler="CheckboxCellOnMouseDown" HandledEventsToo="True"/>
+                            </Style>
+                        </DataGridTemplateColumn.CellStyle>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding Enabled}" Command="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow, Mode=OneWay}" CommandParameter="{Binding Mode=OneWay}" Style="{StaticResource CheckBoxStyle}"/>
