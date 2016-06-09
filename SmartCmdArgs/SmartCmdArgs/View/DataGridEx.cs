@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-
+using SmartCmdArgs.ViewModel;
 using static SmartCmdArgs.Helper.DelayExecution;
 
 namespace SmartCmdArgs.View
@@ -68,6 +68,8 @@ namespace SmartCmdArgs.View
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, OnExecuteCopy, OnCanExecuteCopy));
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Cut, OnExecuteCut, OnCanExecuteCut));
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, OnExecutePaste, OnCanExecutePaste));
+
+            DataContextChanged += OnDataContextChanged;
         }
 
         private DataGridCell GetDataGridCell(object item)
@@ -168,6 +170,26 @@ namespace SmartCmdArgs.View
             var checkBoxCell = sender as DataGridCell;
             if (checkBoxCell == null) return;
             Keyboard.Focus(GetDataGridCell(new DataGridCellInfo(checkBoxCell).Item));
+        }
+
+        private void SelectAndSetFocusToItem(CmdArgItem item)
+        {
+            if (IsInEditMode)
+                CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
+
+            SelectedItems?.Clear();
+            SelectedItem = item;
+            ScrollIntoView(item);
+
+            ExecuteAfter(TimeSpan.FromMilliseconds(10), () =>
+                Keyboard.Focus(GetDataGridCell(item)));
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs args)
+        {
+            var viewModel = args.NewValue as ToolWindowViewModel;
+            if (viewModel == null) return;
+            viewModel.ItemAddedToCurrentArgumentList += (o, item) => SelectAndSetFocusToItem(item);
         }
 
         protected override void OnSelectedCellsChanged(SelectedCellsChangedEventArgs e)
