@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Helper;
 using static SmartCmdArgs.Helper.DelayExecution;
+using static SmartCmdArgs.Helper.TreeHelper;
 
 namespace SmartCmdArgs.View
 {
@@ -68,13 +71,38 @@ namespace SmartCmdArgs.View
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, OnExecuteCopy, OnCanExecuteCopy));
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Cut, OnExecuteCut, OnCanExecuteCut));
             CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, OnExecutePaste, OnCanExecutePaste));
-
-            DataContextChanged += OnDataContextChanged;
         }
 
-        private DataGridCell GetDataGridCell(object item)
+        private void FocusCellAfterDelay(object item, int columnIndex = 1, int delayInMs = 10)
         {
-            return (DataGridCell)Columns[1].GetCellContent(item)?.Parent;
+            ExecuteAfter(TimeSpan.FromMilliseconds(delayInMs), () => FocusCell(item));
+        }
+
+        private void FocusCell(object item, int columnIndex = 1)
+        {
+            DataGridRow row = ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+            if (row == null)
+            {
+                ScrollIntoView(item);
+                row = ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+            }
+            if (row != null)
+            {
+                DataGridCell cell = GetCell(row, columnIndex);
+                cell?.Focus();
+            }
+        }
+
+        private void SelectAndSetFocusToItem(object item)
+        {
+            if (IsInEditMode)
+                CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
+
+            SelectedItems?.Clear();
+            SelectedItem = item;
+            ScrollIntoView(item);
+
+            FocusCellAfterDelay(item);
         }
 
         private void ToggleEnabledForItem(object item)
@@ -83,6 +111,14 @@ namespace SmartCmdArgs.View
             {
                 ToggleItemEnabledCommand.Execute(item);
             }
+        }
+
+        protected override void OnItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsChanged(e);
+
+            if (e.Action == NotifyCollectionChangedAction.Add)
+                SelectAndSetFocusToItem(e.NewItems.Cast<object>().First());
         }
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -127,8 +163,7 @@ namespace SmartCmdArgs.View
                     MoveUpCommand.Execute(null);
 
                     // DataGrid loses keyboard focus after moving items
-                    ExecuteAfter(TimeSpan.FromMilliseconds(10), () =>
-                        Keyboard.Focus(GetDataGridCell(focusedCellItem)));
+                    FocusCellAfterDelay(focusedCellItem);
                 }
                 e.Handled = true;
             }
@@ -141,8 +176,7 @@ namespace SmartCmdArgs.View
                     MoveDownCommand.Execute(null);
 
                     // DataGrid loses keyboard focus after moving items
-                    ExecuteAfter(TimeSpan.FromMilliseconds(10), () =>
-                        Keyboard.Focus(GetDataGridCell(focusedCellItem)));
+                    FocusCellAfterDelay(focusedCellItem);
                 }
                 e.Handled = true;
             }
@@ -157,9 +191,6 @@ namespace SmartCmdArgs.View
             {
                 CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
             }
-
-            if (e.OriginalSource is ScrollViewer && SelectedItems?.Count > 0)
-                Keyboard.Focus(GetDataGridCell(SelectedItems[0]));
         }
 
         public void CheckboxCellOnMouseDown(object sender, MouseButtonEventArgs e)
@@ -167,29 +198,8 @@ namespace SmartCmdArgs.View
             if (IsInEditMode)
                 CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
 
-            var checkBoxCell = sender as DataGridCell;
-            if (checkBoxCell == null) return;
-            Keyboard.Focus(GetDataGridCell(new DataGridCellInfo(checkBoxCell).Item));
-        }
-
-        private void SelectAndSetFocusToItem(CmdArgItem item)
-        {
-            if (IsInEditMode)
-                CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true);
-
-            SelectedItems?.Clear();
-            SelectedItem = item;
-            ScrollIntoView(item);
-
-            ExecuteAfter(TimeSpan.FromMilliseconds(10), () =>
-                Keyboard.Focus(GetDataGridCell(item)));
-        }
-
-        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs args)
-        {
-            var viewModel = args.NewValue as ToolWindowViewModel;
-            if (viewModel == null) return;
-            viewModel.ItemAddedToCurrentArgumentList += (o, item) => SelectAndSetFocusToItem(item);
+            var checkBoxCell = (DataGridCell)sender;
+            FocusCell(new DataGridCellInfo(checkBoxCell).Item);
         }
 
         protected override void OnSelectedCellsChanged(SelectedCellsChangedEventArgs e)
@@ -241,6 +251,35 @@ namespace SmartCmdArgs.View
         {
             var canExec = CutCommand?.CanExecute(e.Parameter);
             e.CanExecute = canExec.GetValueOrDefault();
+        }
+
+        private DataGridCell GetCell(DataGridRow rowContainer, int column)
+        {
+            if (rowContainer != null)
+            {
+                DataGridCellsPresenter presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
+                if (presenter == null)
+                {
+                    /* if the row has been virtualized away, call its ApplyTemplate() method 
+                     * to build its visual tree in order for the DataGridCellsPresenter
+                     * and the DataGridCells to be created */
+                    rowContainer.ApplyTemplate();
+                    presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
+                }
+                if (presenter != null)
+                {
+                    DataGridCell cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+                    if (cell == null)
+                    {
+                        /* bring the column into view
+                         * in case it has been virtualized away */
+                        ScrollIntoView(rowContainer, Columns[column]);
+                        cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+                    }
+                    return cell;
+                }
+            }
+            return null;
         }
 
 

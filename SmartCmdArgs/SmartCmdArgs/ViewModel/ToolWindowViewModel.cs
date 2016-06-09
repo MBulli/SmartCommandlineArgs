@@ -58,7 +58,6 @@ namespace SmartCmdArgs.ViewModel
 
         public event EventHandler CommandLineChanged;
         public event EventHandler<IList> SelectedItemsChanged;
-        public event EventHandler<CmdArgItem> ItemAddedToCurrentArgumentList;
 
         public ToolWindowViewModel()
         {
@@ -257,8 +256,6 @@ namespace SmartCmdArgs.ViewModel
         private void OnArgumentListChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
             OnCommandLineChanged();
-            if (args.Action == NotifyCollectionChangedAction.Add)
-                OnItemAddedToCurrentArgumentList(args.NewItems.Cast<CmdArgItem>().FirstOrDefault());
         }
 
         protected virtual void OnCommandLineChanged()
@@ -269,11 +266,6 @@ namespace SmartCmdArgs.ViewModel
         protected virtual void OnSelectedItemsChanged(object obj, IList e)
         {
             SelectedItemsChanged?.Invoke(this, e);
-        }
-
-        protected virtual void OnItemAddedToCurrentArgumentList(CmdArgItem item)
-        {
-            ItemAddedToCurrentArgumentList?.Invoke(this, item);
         }
     }
 }
