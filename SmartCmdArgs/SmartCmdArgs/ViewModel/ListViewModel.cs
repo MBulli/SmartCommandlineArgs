@@ -91,10 +91,13 @@ namespace SmartCmdArgs.ViewModel
             {
                 using (DataCollection.OpenBulkChange())
                 {
+                    int enabledCount = 0;
                     foreach (var cmdArgItem in DataCollection)
                     {
+                        if (cmdArgItem.Enabled) enabledCount++;
                         cmdArgItem.Enabled = false;
                     }
+                    if (enabledCount > 1) newState = true;
                     item.Enabled = newState;
                 }
             }
