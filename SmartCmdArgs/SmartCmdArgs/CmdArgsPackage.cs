@@ -67,7 +67,7 @@ namespace SmartCmdArgs
         private VisualStudioHelper vsHelper;
         public ViewModel.ToolWindowViewModel ToolWindowViewModel { get; } = new ViewModel.ToolWindowViewModel();
 
-        private bool IsSvcSupportEnabled { get { return GetDialogPage<CmdArgsOptionPage>().SvcSupport; } }
+        private bool IsVcsSupportEnabled => GetDialogPage<CmdArgsOptionPage>().VcsSupport;
 
         private ToolWindowStateSolutionData toolWindowStateLoadedFromSolution;
 
@@ -165,7 +165,7 @@ namespace SmartCmdArgs
             base.OnSaveOptions(key, stream);
             if (key == SolutionOptionKey)
             {
-                if (IsSvcSupportEnabled)
+                if (IsVcsSupportEnabled)
                 {
                     foreach (EnvDTE.Project project in vsHelper.FindAllProjects())
                     {
@@ -203,10 +203,10 @@ namespace SmartCmdArgs
         private void AttachFsWatcherToProject(Project project)
         {
             var projectJsonFileWatcher = new FileSystemWatcher();
-            projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsSvcSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
-            projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsSvcSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
+            projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
+            projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
             projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
-                { if (IsSvcSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
+                { if (IsVcsSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
 
             string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
             projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
@@ -269,7 +269,7 @@ namespace SmartCmdArgs
 
             // get project json data
             ToolWindowStateProjectData projectData = null;
-            if (IsSvcSupportEnabled && File.Exists(filePath))
+            if (IsVcsSupportEnabled && File.Exists(filePath))
             {
                 try
                 {
