@@ -33,7 +33,7 @@ namespace SmartCmdArgs.Logic
 
             string jsonStr = JsonConvert.SerializeObject(data, Formatting.Indented);
 
-            StreamWriter sw = new StreamWriter(stream);
+            StreamWriter sw = new StreamWriter(stream, Encoding.UTF8);
             sw.Write(jsonStr);
             sw.Flush();
         }
@@ -43,7 +43,7 @@ namespace SmartCmdArgs.Logic
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            StreamReader sr = new StreamReader(stream);
+            StreamReader sr = new StreamReader(stream, Encoding.UTF8);
             string jsonStr = sr.ReadToEnd();
 
             if (string.IsNullOrEmpty(jsonStr))
