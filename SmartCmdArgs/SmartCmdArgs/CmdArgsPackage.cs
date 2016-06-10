@@ -441,7 +441,7 @@ namespace SmartCmdArgs
 
         private string FullFilenameForProjectJsonFile(EnvDTE.Project project)
         {
-            return FullFilenameForProjectJsonFile(project.FileName);
+            return FullFilenameForProjectJsonFile(project.FullName);
         }
 
         private string FullFilenameForProjectJsonFile(string projectFile)
