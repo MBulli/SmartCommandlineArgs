@@ -84,23 +84,32 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        internal void ToogleEnabledForItem(CmdArgItem item, bool singleEnabled)
+        internal void ToogleEnabledForItem(CmdArgItem item, bool exclusiveMode)
         {
             bool newState = !item.Enabled;
-            if (singleEnabled)
+
+            // If exclusiveMode is true only one item at a time should be enabled
+            if (exclusiveMode)
             {
                 using (DataCollection.OpenBulkChange())
                 {
                     int enabledCount = 0;
                     foreach (var cmdArgItem in DataCollection)
                     {
-                        if (cmdArgItem.Enabled) enabledCount++;
+                        if (cmdArgItem.Enabled)
+                            enabledCount++;
+
                         cmdArgItem.Enabled = false;
                     }
-                    if (enabledCount > 1) newState = true;
+
+                    // If more than one items are enabled disable all, but not 'item'
+                    if (enabledCount > 1)
+                        newState = true;
+
                     item.Enabled = newState;
                 }
             }
+            // If item is selected set enable state of all selected items
             else if (SelectedItems.Contains(item))
             {
                 using (DataCollection.OpenBulkChange())
@@ -111,6 +120,7 @@ namespace SmartCmdArgs.ViewModel
                     }
                 }
             }
+            // Just toggle the item
             else
             {
                 item.Enabled = newState;
