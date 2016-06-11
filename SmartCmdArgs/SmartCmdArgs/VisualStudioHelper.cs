@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EnvDTE;
+using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs
 {
@@ -113,7 +114,7 @@ namespace SmartCmdArgs
 
             // We determine if this is an actual project by looking if it has a ConfigurationManager
             // This could be wrong for some types of project, but it works for our needs
-            if (SmartCmdArgs.Helper.ProjectArguments.IsSupportedProject(project))
+            if (ProjectArguments.IsSupportedProject(project))
             {
                 allProjects.Add(project);
             }
@@ -162,7 +163,9 @@ namespace SmartCmdArgs
             {
                 try
                 {
-                    startupProject = this.appObject?.Solution.Item(prjName);
+                    var project = this.appObject?.Solution.Item(prjName);
+                    if (ProjectArguments.IsSupportedProject(project))
+                        startupProject = project;
                 }
                 catch
                 {
@@ -198,17 +201,20 @@ namespace SmartCmdArgs
 
         private void SolutionEvents_ProjectAdded(Project project)
         {
-            ProjectAdded?.Invoke(this, project);
+            if (ProjectArguments.IsSupportedProject(project))
+                ProjectAdded?.Invoke(this, project);
         }
 
         private void SolutionEvents_ProjectRemoved(Project project)
         {
-            ProjectRemoved?.Invoke(this, project);
+            if (ProjectArguments.IsSupportedProject(project))
+                ProjectRemoved?.Invoke(this, project);
         }
 
         private void SolutionEvents_ProjectRenamed(Project project, string oldName)
         {
-            ProjectRenamed?.Invoke(this, new ProjectRenamedEventArgs {project = project, oldName = oldName});
+            if (ProjectArguments.IsSupportedProject(project))
+                ProjectRenamed?.Invoke(this, new ProjectRenamedEventArgs {project = project, oldName = oldName});
         }
 
         public class ProjectRenamedEventArgs

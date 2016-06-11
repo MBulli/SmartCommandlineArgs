@@ -54,7 +54,7 @@
         </Grid>
 
         <Grid Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">
-            <TextBlock Text="No startup project found." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource {x:Static vs:ThemedDialogColors.ListItemDisabledTextBrushKey}}"  />
+            <TextBlock Text="No supported startup project found." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource {x:Static vs:ThemedDialogColors.ListItemDisabledTextBrushKey}}"  />
         </Grid>
 
     </Grid>
