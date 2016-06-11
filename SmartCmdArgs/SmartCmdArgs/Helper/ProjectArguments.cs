@@ -21,7 +21,7 @@ namespace SmartCmdArgs.Helper
 
         private static void SetSingleConfigArgument(EnvDTE.Project project, string arguments, string propertyName)
         {
-            try {project.Properties.Item(propertyName).Value = arguments; }
+            try { project.Properties.Item(propertyName).Value = arguments; }
             catch { Debug.WriteLine("Could not set arguments for project: " + project.UniqueName); }
         }
 
@@ -83,6 +83,11 @@ namespace SmartCmdArgs.Helper
             {"{888888a0-9f3d-457c-b088-3a5042f75d52}", new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetSingleConfigArgument(project, arguments, "CommandLineArguments"),
                 GetAllArguments = (project, allArgs) => GetSingleConfigAllArguments(project, allArgs, "CommandLineArguments")
+            } },
+            // Node.js
+            {"{9092aa53-fb77-4645-b42d-1ccca6bd08bd}", new ProjectArgumentsHandlers() {
+                SetArguments = (project, arguments) => SetSingleConfigArgument(project, arguments, "ScriptArguments"),
+                GetAllArguments = (project, allArgs) => GetSingleConfigAllArguments(project, allArgs, "ScriptArguments")
             } },
         };
 
