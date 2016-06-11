@@ -209,8 +209,9 @@ namespace SmartCmdArgs
                 { if (IsVcsSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
 
             string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
-            projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
-            projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
+            string realJsonFileName = SymbolicLinkUtils.GetTarget(projectJsonFileFullName) ?? projectJsonFileFullName;
+            projectJsonFileWatcher.Path = Path.GetDirectoryName(realJsonFileName);
+            projectJsonFileWatcher.Filter = Path.GetFileName(realJsonFileName);
 
             projectFsWatchers.Add(project, projectJsonFileWatcher);
             projectJsonFileWatcher.EnableRaisingEvents = true;
