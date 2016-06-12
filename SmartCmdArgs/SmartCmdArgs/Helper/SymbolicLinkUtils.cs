@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -160,6 +161,21 @@ namespace SmartCmdArgs.Helper
                 reparseDataBuffer.PrintNameOffset, reparseDataBuffer.PrintNameLength);
 
             return target;
+        }
+
+        public static string GetRealPath(string path)
+        {
+            string realPath = path;
+            try
+            {
+                if (File.Exists(path) || Directory.Exists(path))
+                    realPath = GetTarget(path) ?? path;
+            }
+            catch (Exception)
+            {
+                Debug.WriteLine("Could not resolve symbolic link: " + path);
+            }
+            return realPath;
         }
     }
 }

@@ -202,25 +202,19 @@ namespace SmartCmdArgs
 
         private void AttachFsWatcherToProject(Project project)
         {
+            string realProjectJsonFileFullName = SymbolicLinkUtils.GetRealPath(FullFilenameForProjectJsonFile(project));
+
             var projectJsonFileWatcher = new FileSystemWatcher();
             projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
             projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
             projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
-                { if (IsVcsSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
-
-            string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
-            try
             {
-                if (File.Exists(projectJsonFileFullName))
-                    projectJsonFileFullName = SymbolicLinkUtils.GetTarget(projectJsonFileFullName) ?? projectJsonFileFullName;
-            }
-            catch (Exception)
-            {
-                Debug.WriteLine("Could not resolve symbolic link: " + projectJsonFileFullName);
-            }
+                if (IsVcsSupportEnabled && realProjectJsonFileFullName == args.FullPath)
+                    UpdateCommandsForProjectOnDispatcher(project);
+            };
 
-            projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
-            projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
+            projectJsonFileWatcher.Path = Path.GetDirectoryName(realProjectJsonFileFullName);
+            projectJsonFileWatcher.Filter = Path.GetFileName(realProjectJsonFileFullName);
 
             projectFsWatchers.Add(project, projectJsonFileWatcher);
             projectJsonFileWatcher.EnableRaisingEvents = true;
