@@ -209,9 +209,18 @@ namespace SmartCmdArgs
                 { if (IsVcsSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
 
             string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
-            string realJsonFileName = SymbolicLinkUtils.GetTarget(projectJsonFileFullName) ?? projectJsonFileFullName;
-            projectJsonFileWatcher.Path = Path.GetDirectoryName(realJsonFileName);
-            projectJsonFileWatcher.Filter = Path.GetFileName(realJsonFileName);
+            try
+            {
+                if (File.Exists(projectJsonFileFullName))
+                    projectJsonFileFullName = SymbolicLinkUtils.GetTarget(projectJsonFileFullName) ?? projectJsonFileFullName;
+            }
+            catch (Exception)
+            {
+                Debug.WriteLine("Could not resolve symbolic link: " + projectJsonFileFullName);
+            }
+
+            projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
+            projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
 
             projectFsWatchers.Add(project, projectJsonFileWatcher);
             projectJsonFileWatcher.EnableRaisingEvents = true;
