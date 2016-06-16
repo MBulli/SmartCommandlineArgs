@@ -429,17 +429,12 @@ namespace SmartCmdArgs
 
         private void UpdateCurrentStartupProject()
         {
-            string prjName = vsHelper.StartupProjectUniqueName();
+            Project startupProject;
+            vsHelper.FindStartupProject(out startupProject);
 
-            // if startup project changed
-            // TODO: if the startup project is invalid update always
-            if (ToolWindowViewModel.StartupProject?.UniqueName != prjName)
-            {
-                Project startupProject;
-                vsHelper.FindStartupProject(out startupProject);
-                ToolWindowViewModel.UpdateStartupProject(startupProject);
+            // update StartupProject and if it changed update the Configuration
+            if (ToolWindowViewModel.UpdateStartupProject(startupProject))
                 UpdateConfigurationForProject(startupProject);
-            }
         }
 
 

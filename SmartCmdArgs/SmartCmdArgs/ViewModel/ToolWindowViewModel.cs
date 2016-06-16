@@ -202,9 +202,9 @@ namespace SmartCmdArgs.ViewModel
             return listVM;
         }
 
-        public void UpdateStartupProject(Project project)
+        public bool UpdateStartupProject(Project project)
         {
-            if (StartupProject == project) return;
+            if (StartupProject == project) return false;
             if (project == null)
             {
                 UnsubscribeToChangeEvents();
@@ -221,6 +221,7 @@ namespace SmartCmdArgs.ViewModel
 
                 SubscribeToChangeEvents();
             }
+            return true;
         }
 
         public void CancelEdit()
