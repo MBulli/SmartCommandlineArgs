@@ -1,0 +1,12 @@
+﻿{
+  "DataCollection": [
+    {
+      "Id": "ac3f6619-4027-4417-935c-824c3a45e604",
+      "Command": "/RootSuffix Exp"
+    },
+    {
+      "Id": "2a47c412-f43d-45f7-b248-6aa8cf233c30",
+      "Command": "/Log"
+    }
+  ]
+}
