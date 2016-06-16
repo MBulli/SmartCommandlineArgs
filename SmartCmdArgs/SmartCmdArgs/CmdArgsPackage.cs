@@ -389,6 +389,9 @@ namespace SmartCmdArgs
 
         private void VsHelper_ProjectRemoved(object sender, Project project)
         {
+            if (ToolWindowViewModel.StartupProject == project)
+                ToolWindowViewModel.UpdateStartupProject(null);
+
             ToolWindowViewModel.SolutionArguments.Remove(project);
             DetachFsWatcherFromProject(project);
         }
@@ -429,6 +432,7 @@ namespace SmartCmdArgs
             string prjName = vsHelper.StartupProjectUniqueName();
 
             // if startup project changed
+            // TODO: if the startup project is invalid update always
             if (ToolWindowViewModel.StartupProject?.UniqueName != prjName)
             {
                 Project startupProject;
