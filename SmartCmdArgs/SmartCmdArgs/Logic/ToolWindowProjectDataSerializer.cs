@@ -33,7 +33,7 @@ namespace SmartCmdArgs.Logic
 
             string jsonStr = JsonConvert.SerializeObject(data, Formatting.Indented);
 
-            StreamWriter sw = new StreamWriter(stream, Encoding.UTF8);
+            StreamWriter sw = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             sw.Write(jsonStr);
             sw.Flush();
         }
