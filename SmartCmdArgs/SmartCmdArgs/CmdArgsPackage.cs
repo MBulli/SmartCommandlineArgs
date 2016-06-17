@@ -181,18 +181,34 @@ namespace SmartCmdArgs
                             string filePath = FullFilenameForProjectJsonFile(project);
                             FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(project);
 
-                            using (fsWatcher.TemporarilyDisable())
+                            if (vm.DataCollection.Count != 0)
                             {
+                                using (fsWatcher?.TemporarilyDisable())
+                                {
+                                    try
+                                    {
+                                        using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+                                        {
+                                            Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Logger.Warn($"Failed to write to file '{filePath}' with error '{e}'.");
+                                    }
+                                }
+                            }
+                            else if (File.Exists(filePath))
+                            {
+                                Logger.Info("Deleting json file because command list is empty but json-file exists.");
+
                                 try
                                 {
-                                    using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
-                                    {
-                                        Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
-                                    }
+                                    File.Delete(filePath);
                                 }
                                 catch (Exception e)
                                 {
-                                    Logger.Warn($"Failed to write to file '{filePath}' with error '{e}'.");
+                                    Logger.Warn($"Failed to delete file '{filePath}' with error '{e}'.");
                                 }
                             }
                         }
