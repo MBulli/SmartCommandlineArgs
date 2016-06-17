@@ -162,6 +162,7 @@ namespace SmartCmdArgs
 
         protected override void OnSaveOptions(string key, Stream stream)
         {
+            Logger.Info("Saving all Commands");
             base.OnSaveOptions(key, stream);
             if (key == SolutionOptionKey)
             {
@@ -177,9 +178,16 @@ namespace SmartCmdArgs
 
                             using (fsWatcher.TemporarilyDisable())
                             {
-                                using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+                                try
                                 {
-                                    Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
+                                    using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+                                    {
+                                        Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.Warn($"Failed to write to file: {filePath} ({e.Message})");
                                 }
                             }
                         }
@@ -188,6 +196,7 @@ namespace SmartCmdArgs
 
                 Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
             }
+            Logger.Info("All Commands Saved");
         }
 
         #endregion
@@ -198,22 +207,33 @@ namespace SmartCmdArgs
             var enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(e => e.Command);
             string prjCmdArgs = string.Join(" ", enabledEntries);
             Helper.ProjectArguments.SetArguments(project, prjCmdArgs);
+            Logger.Info($"Updated Configuration for Project: {project.UniqueName}");
         }
 
         private void AttachFsWatcherToProject(Project project)
         {
-            var projectJsonFileWatcher = new FileSystemWatcher();
-            projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
-            projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
-            projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
-                { if (IsVcsSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
-
             string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
-            projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
-            projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
+            try
+            {
+                var projectJsonFileWatcher = new FileSystemWatcher();
 
-            projectFsWatchers.Add(project, projectJsonFileWatcher);
-            projectJsonFileWatcher.EnableRaisingEvents = true;
+                projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
+                projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
+
+                projectJsonFileWatcher.EnableRaisingEvents = true;
+                projectFsWatchers.Add(project, projectJsonFileWatcher);
+
+                projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
+                projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
+                projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
+                    { if (IsVcsSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
+
+                Logger.Info($"Attached FsWatcher to Project: {project.UniqueName} (File: {projectJsonFileFullName})");
+            }
+            catch (Exception e)
+            {
+                Logger.Warn($"Failed to attach FsWatcher to Project: {project.UniqueName} (File: {projectJsonFileFullName}, Error: {e.Message})");
+            }
         }
 
         private void AttachFsWatcherToAllProjects()
@@ -231,6 +251,7 @@ namespace SmartCmdArgs
             {
                 fsWatcher.Dispose();
                 projectFsWatchers.Remove(project);
+                Logger.Info($"Detached FsWatcher from Project: {project.UniqueName}");
             }
         }
 
@@ -241,6 +262,7 @@ namespace SmartCmdArgs
                 pair.Value.Dispose();
             }
             projectFsWatchers.Clear();
+            Logger.Info("Detached FsWatcher from all Projects");
         }
 
         private void UpdateCommandsForProjectOnDispatcher(Project project)
@@ -273,14 +295,15 @@ namespace SmartCmdArgs
             {
                 try
                 {
+                    Logger.Info($"Read Commands from JSON for Project: {project.UniqueName} (File: {filePath})");
                     using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
                     {
                         projectData = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    Debug.WriteLine("Could not read file: " + filePath);
+                    Logger.Warn($"Failed to read from file: {filePath} (Error: {e.Message})");
                     projectData = null;
                 }
             }
@@ -288,6 +311,8 @@ namespace SmartCmdArgs
             // project json overrides if it exists
             if (projectData != null)
             {
+                Logger.Info($"Updating Commands from JSON for Project: {project.UniqueName} (File: {filePath})");
+
                 ToolWindowStateProjectData curSolutionProjectData = solutionData.GetValueOrDefault(project.UniqueName);
                 ListViewModel projectListViewModel = ToolWindowViewModel.SolutionArguments.GetValueOrDefault(project);
 
@@ -330,16 +355,23 @@ namespace SmartCmdArgs
             // we try to read the suo file data
             else if (!solutionData.TryGetValue(project.UniqueName, out projectData))
             {
+                Logger.Info($"Gathering commands from configurations for Project: {project.UniqueName}");
                 // if we don't have suo file data we read cmd args from the project configs
                 projectData = new ToolWindowStateProjectData();
                 projectData.DataCollection.AddRange(
                     ReadCommandlineArgumentsFromProject(project)
                         .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData {Command = cmdLineArg}));
             }
+            else
+            {
+                Logger.Info($"Updating commands from '.suo' file for Project: {project.UniqueName}");
+            }
 
             // push projectData to the ViewModel
             ToolWindowViewModel.PopulateFromProjectData(project, projectData);
             if (project == ToolWindowViewModel.StartupProject) UpdateConfigurationForProject(project);
+
+            Logger.Info($"Updated Commands for Project: {project.UniqueName}");
         }
 
         private void UpdateCommandsForAllProjects()
