@@ -24,7 +24,7 @@ namespace SmartCmdArgs
         private EnvDTE.SolutionEvents solutionEvents;
         private EnvDTE.CommandEvents commandEvents;
 
-        private IVsSolution5 solutionService;
+        private IVsSolution solutionService;
         private IVsSolutionBuildManager2 solutionBuildService;
         private IVsMonitorSelection selectionMonitor;
 
@@ -67,7 +67,7 @@ namespace SmartCmdArgs
             if (!initialized)
             {
                 // Setup solution related stuff
-                this.solutionService = package.GetService<SVsSolution, IVsSolution5>();
+                this.solutionService = package.GetService<SVsSolution, IVsSolution>();
                 this.solutionBuildService = package.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager2>();
                 this.selectionMonitor = package.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
@@ -183,6 +183,24 @@ namespace SmartCmdArgs
             package.GetService<SVsUIShell, IVsUIShell>()?.UpdateCommandUI(immediateUpdate ? 1 : 0);
         }
 
+        public IVsHierarchy HierarchyForStartupProject()
+        {
+            IVsHierarchy hier;
+            ErrorHandler.ThrowOnFailure(solutionBuildService.get_StartupProject(out hier));
+
+            return hier;
+        }
+
+        public string TEST_PropertyExample()
+        {
+            var propStore = (IVsBuildPropertyStorage)HierarchyForStartupProject();
+
+            string value;
+            ErrorHandler.ThrowOnFailure(propStore.GetPropertyValue("Configuration", "Debug|Win32", (int)_PersistStorageType.PST_PROJECT_FILE, out value));
+
+            return value;
+        }
+
         #region Solution Events
         private void SolutionEvents_Opened()
         {
@@ -214,7 +232,7 @@ namespace SmartCmdArgs
         private void SolutionEvents_ProjectRenamed(Project project, string oldName)
         {
             if (ProjectArguments.IsSupportedProject(project))
-                ProjectRenamed?.Invoke(this, new ProjectRenamedEventArgs {project = project, oldName = oldName});
+                ProjectRenamed?.Invoke(this, new ProjectRenamedEventArgs { project = project, oldName = oldName });
         }
 
         public class ProjectRenamedEventArgs
@@ -231,6 +249,7 @@ namespace SmartCmdArgs
             {
                 if (varValueNew != null)
                 {
+                    TEST_PropertyExample();
                     StartupProjectChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
