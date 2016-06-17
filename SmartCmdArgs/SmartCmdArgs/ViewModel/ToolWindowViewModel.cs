@@ -212,7 +212,7 @@ namespace SmartCmdArgs.ViewModel
                 this.StartupProject = null;
                 this.CurrentArgumentList = null;
 
-                Logger.Info("Reseted StartupProject");
+                Logger.Info("Reset Startup project");
             }
             else
             {
@@ -223,7 +223,7 @@ namespace SmartCmdArgs.ViewModel
 
                 SubscribeToChangeEvents();
 
-                Logger.Info($"Updated StartupProject to: {project.UniqueName}");
+                Logger.Info($"Startup project changed to '{project.UniqueName}'.");
             }
             return true;
         }

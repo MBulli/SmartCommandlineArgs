@@ -503,19 +503,17 @@ namespace SmartCmdArgs
         }
         #endregion
 
-        private IList<string> ReadCommandlineArgumentsFromProject(Project project)
+        private IEnumerable<string> ReadCommandlineArgumentsFromProject(Project project)
         {
             List<string> prjCmdArgs = new List<string>();
             Helper.ProjectArguments.AddAllArguments(project, prjCmdArgs);
-            return prjCmdArgs.Distinct().ToList();
+            return prjCmdArgs.Distinct();
         }
 
         private void UpdateCurrentStartupProject()
         {
             Project startupProject;
             vsHelper.FindStartupProject(out startupProject);
-
-            Logger.Info($"Startup project changed to '{startupProject?.UniqueName}'.");
 
             // update StartupProject and if it changed update the Configuration
             if (ToolWindowViewModel.UpdateStartupProject(startupProject))
@@ -530,7 +528,7 @@ namespace SmartCmdArgs
 
         private string FullFilenameForProjectJsonFile(string projectFile)
         {
-            string filename = string.Format("{0}.args.json", Path.GetFileNameWithoutExtension(projectFile));
+            string filename = $"{Path.GetFileNameWithoutExtension(projectFile)}.args.json";
             return Path.Combine(Path.GetDirectoryName(projectFile), filename);
         }
     }
