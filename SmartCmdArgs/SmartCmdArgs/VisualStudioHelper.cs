@@ -207,16 +207,22 @@ namespace SmartCmdArgs
                 Debug.WriteLine($"Could not get active configuration name for project '{project.UniqueName}'.");
             }
 
-            string value;
-            if (ErrorHandler.Failed(propStorage.GetPropertyValue(propName, configName,
-                    (int) _PersistStorageType.PST_PROJECT_FILE, out value)))
+            if (configName != null)
             {
-                // TODO: logging
-                Debug.WriteLine($"Could not evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}'.");
-                value = "";
+                string value;
+                if (ErrorHandler.Failed(propStorage.GetPropertyValue(propName, configName,
+                    (int) _PersistStorageType.PST_PROJECT_FILE, out value)))
+                {
+                    // TODO: logging
+                    Debug.WriteLine($"Could not evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}'.");
+                    value = "";
+                }
+                return value;
             }
-
-            return value;
+            else
+            {
+                return "";
+            }
         }
 
         #region Solution Events
