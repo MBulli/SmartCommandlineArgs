@@ -379,7 +379,7 @@ namespace SmartCmdArgs
             }
             else
             {
-                Logger.Info($"Updating commands from '.suo' file for project '{project.UniqueName}'-");
+                Logger.Info($"Will use commands from suo file for project '{project.UniqueName}'.");
             }
 
             // push projectData to the ViewModel
