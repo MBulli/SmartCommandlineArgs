@@ -61,6 +61,7 @@
     <Compile Include="Helper\DelayExecution.cs" />
     <Compile Include="Helper\Extensions.cs" />
     <Compile Include="Helper\FileSystemWatcherDisabledContext.cs" />
+    <Compile Include="Helper\MSBuildUtils.cs" />
     <Compile Include="Helper\ObservableCollectionEx.cs" />
     <Compile Include="Helper\ProjectArguments.cs" />
     <Compile Include="Helper\TreeHelper.cs" />
@@ -77,6 +78,9 @@
     <Compile Include="ViewModel\ListViewModel.cs" />
     <Compile Include="ViewModel\ToolWindowViewModel.cs" />
     <Compile Include="Helper\PropertyChangedBase.cs" />
+    <Compile Include="View\AutocompletePopup.xaml.cs">
+      <DependentUpon>AutocompletePopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\DataGridEx.cs" />
     <Compile Include="View\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
@@ -96,6 +100,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="View\AutocompletePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\DataGridStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -122,6 +130,7 @@
       <HintPath>..\packages\gong-wpf-dragdrop.1.0.0-ALPHA012\lib\net40\GongSolutions.Wpf.DragDrop.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.CommandBars, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

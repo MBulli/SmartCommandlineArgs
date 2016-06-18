@@ -24,6 +24,18 @@ namespace SmartCmdArgs.View
             set { SetValue(IsInEditModeProperty, value); }
         }
 
+        public string EditingTextBoxText
+        {
+            get { return (string)GetValue(EditingTextBoxTextProperty); }
+            set { SetValue(EditingTextBoxTextProperty, value); }
+        }
+
+        public int EditingTextBoxSelectionStart
+        {
+            get { return (int)GetValue(EditingTextBoxSelectionStartProperty); }
+            set { SetValue(EditingTextBoxSelectionStartProperty, value); }
+        }
+
         public IList SelectedItems
         {
             get { return (IList)GetValue(SelectedItemsProperty); }
@@ -65,6 +77,9 @@ namespace SmartCmdArgs.View
             get { return (ICommand)GetValue(CutCommandProperty); }
             set { SetValue(CutCommandProperty, value); }
         }
+
+        private DataGridCell curEditingCell;
+        private TextBox curEditingTextBox;
 
         public DataGridEx()
         {
@@ -211,11 +226,43 @@ namespace SmartCmdArgs.View
 
         protected override void OnBeginningEdit(DataGridBeginningEditEventArgs e)
         {
+            curEditingCell = GetCell(e.Row, 1);
             this.IsInEditMode = true;
+        }
+
+        protected override void OnExecutedBeginEdit(ExecutedRoutedEventArgs e)
+        {
+            base.OnExecutedBeginEdit(e);
+            curEditingTextBox = curEditingCell.Content as TextBox;
+            if (curEditingTextBox != null)
+            {
+                EditingTextBoxText = curEditingTextBox.Text;
+                EditingTextBoxSelectionStart = curEditingTextBox.SelectionStart;
+                curEditingTextBox.TextChanged += CurEditingTextBoxOnTextChanged;
+                curEditingTextBox.SelectionChanged += CurEditingTextBoxOnSelectionChanged;
+            }
+        }
+
+        private void CurEditingTextBoxOnSelectionChanged(object sender, RoutedEventArgs routedEventArgs)
+        {
+            EditingTextBoxSelectionStart = curEditingTextBox.SelectionStart;
+        }
+
+        private void CurEditingTextBoxOnTextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
+        {
+            EditingTextBoxText = curEditingTextBox.Text;
         }
 
         protected override void OnCellEditEnding(DataGridCellEditEndingEventArgs e)
         {
+            if (curEditingTextBox != null)
+            {
+                curEditingTextBox.TextChanged -= CurEditingTextBoxOnTextChanged;
+                curEditingTextBox.SelectionChanged -= CurEditingTextBoxOnSelectionChanged;
+                EditingTextBoxSelectionStart = 0;
+                EditingTextBoxText = "";
+                curEditingTextBox = null;
+            }
             this.IsInEditMode = false;
         }
 
@@ -297,6 +344,12 @@ namespace SmartCmdArgs.View
 
         public static readonly DependencyProperty IsInEditModeProperty =
             DependencyProperty.Register("IsInEditMode", typeof(bool), typeof(DataGridEx), new PropertyMetadata(false));
+
+        public static readonly DependencyProperty EditingTextBoxTextProperty =
+            DependencyProperty.Register("EditingTextBoxText", typeof(string), typeof(DataGridEx), new PropertyMetadata(""));
+
+        public static readonly DependencyProperty EditingTextBoxSelectionStartProperty =
+            DependencyProperty.Register("EditingTextBoxSelectionStart", typeof(int), typeof(DataGridEx), new PropertyMetadata(0));
 
         public static readonly DependencyProperty CopyCommandProperty =
             DependencyProperty.Register("CopyCommand", typeof(ICommand), typeof(DataGridEx), new PropertyMetadata(null));

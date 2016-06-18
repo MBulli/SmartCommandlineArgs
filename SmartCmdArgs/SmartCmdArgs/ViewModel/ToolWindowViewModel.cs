@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -17,6 +18,8 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
+        private readonly Regex autocompleteRegex = new Regex(@"\$\((?<propertyName>[^ )]*)$", RegexOptions.RightToLeft);
+
         private Dictionary<Project, ListViewModel> solutionArguments; 
         public Dictionary<Project, ListViewModel> SolutionArguments => solutionArguments;
 
@@ -41,6 +44,43 @@ namespace SmartCmdArgs.ViewModel
             set { _isInEditMode = value; OnNotifyPropertyChanged(); }
         }
 
+        private ICollection<string> _choisesItemsForStartupProject;
+        public ICollection<string> ChoisesItemsForStartupProject
+        {
+            get
+            {
+                return _choisesItemsForStartupProject?.Where(item => item.Contains(PropertySearchString)).OrderBy(item => item.IndexOf(PropertySearchString)).ToList();
+            }
+            set { _choisesItemsForStartupProject = value; OnNotifyPropertyChanged(); }
+        }
+
+        public bool ShowAutocompletePopup => PropertySearchString != null;
+
+        private string _propertySearchString;
+        public string PropertySearchString
+        {
+            get { return _propertySearchString; }
+            set {
+                _propertySearchString = value;
+                OnNotifyPropertyChanged(nameof(ChoisesItemsForStartupProject));
+                OnNotifyPropertyChanged(nameof(ShowAutocompletePopup));
+            }
+        }
+
+        private string _editingTextBoxText;
+        public string EditingTextBoxText
+        {
+            private get { return _editingTextBoxText; }
+            set { _editingTextBoxText = value; UpdatePropertySearchString(); }
+        }
+
+        private int _editingTextBoxSelectionStart;
+        public int EditingTextBoxSelectionStart
+        {
+            private get { return _editingTextBoxSelectionStart; }
+            set { _editingTextBoxSelectionStart = value; UpdatePropertySearchString(); }
+        }
+
         public RelayCommand AddEntryCommand { get; }
 
         public RelayCommand RemoveEntriesCommand { get; }
@@ -56,7 +96,7 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand PasteItemsCommand { get; }
         
         public RelayCommand CutItemsCommand { get; }
-
+        
         public event EventHandler CommandLineChanged;
         public event EventHandler<IList> SelectedItemsChanged;
 
@@ -109,6 +149,12 @@ namespace SmartCmdArgs.ViewModel
             PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => StartupProject != null);
 
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => CurrentArgumentList.SelectedItems.Count != 0);
+        }
+
+        private void UpdatePropertySearchString()
+        {
+            var match = autocompleteRegex.Match(EditingTextBoxText.Substring(0, EditingTextBoxSelectionStart)).Groups["propertyName"];
+            PropertySearchString = match.Success ? match.Value : null;
         }
 
         /// <summary>
@@ -211,6 +257,8 @@ namespace SmartCmdArgs.ViewModel
 
                 this.StartupProject = null;
                 this.CurrentArgumentList = null;
+
+                ChoisesItemsForStartupProject = null;
             }
             else
             {
@@ -218,6 +266,8 @@ namespace SmartCmdArgs.ViewModel
 
                 this.StartupProject = project;
                 this.CurrentArgumentList = GetListViewModel(project);
+
+                ChoisesItemsForStartupProject = MSBuildUtils.GetMSBuildPropNamesForProject(project);
 
                 SubscribeToChangeEvents();
             }
