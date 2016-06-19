@@ -47,10 +47,9 @@ namespace SmartCmdArgs.Helper
                 else
                     realPath = result.ToString();
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                // TODO: logging
-                Debug.WriteLine($"Could not resolve symbolic link '{path}'");
+                Logger.Warn($"Failed to retrieve real path for '{path}' with error '{e.Message}'");
             }
             finally
             {
