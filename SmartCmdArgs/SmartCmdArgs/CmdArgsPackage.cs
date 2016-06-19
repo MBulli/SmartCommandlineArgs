@@ -233,13 +233,13 @@ namespace SmartCmdArgs
 
         private void AttachFsWatcherToProject(Project project)
         {
-            string projectJsonFileFullName = FullFilenameForProjectJsonFile(project);
+            string realProjectJsonFileFullName = SymbolicLinkUtils.GetRealPath(FullFilenameForProjectJsonFile(project));
             try
             {
                 var projectJsonFileWatcher = new FileSystemWatcher();
 
-                projectJsonFileWatcher.Path = Path.GetDirectoryName(projectJsonFileFullName);
-                projectJsonFileWatcher.Filter = Path.GetFileName(projectJsonFileFullName);
+                projectJsonFileWatcher.Path = Path.GetDirectoryName(realProjectJsonFileFullName);
+                projectJsonFileWatcher.Filter = Path.GetFileName(realProjectJsonFileFullName);
 
                 projectJsonFileWatcher.EnableRaisingEvents = true;
                 projectFsWatchers.Add(project, projectJsonFileWatcher);
@@ -247,13 +247,13 @@ namespace SmartCmdArgs
                 projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
                 projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
                 projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
-                    { if (IsVcsSupportEnabled && FullFilenameForProjectJsonFile(project) == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
+                    { if (IsVcsSupportEnabled && realProjectJsonFileFullName == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
 
-                Logger.Info($"Attached FileSystemWatcher to file '{projectJsonFileFullName}' for project '{project.UniqueName}'.");
+                Logger.Info($"Attached FileSystemWatcher to file '{realProjectJsonFileFullName}' for project '{project.UniqueName}'.");
             }
             catch (Exception e)
             {
-                Logger.Warn($"Failed to attach FileSystemWatcher to file '{projectJsonFileFullName}' for project '{project.UniqueName}' with error '{e}'.");
+                Logger.Warn($"Failed to attach FileSystemWatcher to file '{realProjectJsonFileFullName}' for project '{project.UniqueName}' with error '{e}'.");
             }
         }
 
