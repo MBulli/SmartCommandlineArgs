@@ -18,8 +18,6 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
-        private readonly Regex autocompleteRegex = new Regex(@"\$\((?<propertyName>[^ )]*)$", RegexOptions.RightToLeft);
-
         private Dictionary<Project, ListViewModel> solutionArguments; 
         public Dictionary<Project, ListViewModel> SolutionArguments => solutionArguments;
 
@@ -47,38 +45,8 @@ namespace SmartCmdArgs.ViewModel
         private ICollection<string> _choisesItemsForStartupProject;
         public ICollection<string> ChoisesItemsForStartupProject
         {
-            get
-            {
-                return _choisesItemsForStartupProject?.Where(item => item.Contains(PropertySearchString)).OrderBy(item => item.IndexOf(PropertySearchString)).ToList();
-            }
+            get { return _choisesItemsForStartupProject; }
             set { _choisesItemsForStartupProject = value; OnNotifyPropertyChanged(); }
-        }
-
-        public bool ShowAutocompletePopup => PropertySearchString != null;
-
-        private string _propertySearchString;
-        public string PropertySearchString
-        {
-            get { return _propertySearchString; }
-            set {
-                _propertySearchString = value;
-                OnNotifyPropertyChanged(nameof(ChoisesItemsForStartupProject));
-                OnNotifyPropertyChanged(nameof(ShowAutocompletePopup));
-            }
-        }
-
-        private string _editingTextBoxText;
-        public string EditingTextBoxText
-        {
-            private get { return _editingTextBoxText; }
-            set { _editingTextBoxText = value; UpdatePropertySearchString(); }
-        }
-
-        private int _editingTextBoxSelectionStart;
-        public int EditingTextBoxSelectionStart
-        {
-            private get { return _editingTextBoxSelectionStart; }
-            set { _editingTextBoxSelectionStart = value; UpdatePropertySearchString(); }
         }
 
         public RelayCommand AddEntryCommand { get; }
@@ -149,12 +117,6 @@ namespace SmartCmdArgs.ViewModel
             PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => StartupProject != null);
 
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => CurrentArgumentList.SelectedItems.Count != 0);
-        }
-
-        private void UpdatePropertySearchString()
-        {
-            var match = autocompleteRegex.Match(EditingTextBoxText.Substring(0, EditingTextBoxSelectionStart)).Groups["propertyName"];
-            PropertySearchString = match.Success ? match.Value : null;
         }
 
         /// <summary>

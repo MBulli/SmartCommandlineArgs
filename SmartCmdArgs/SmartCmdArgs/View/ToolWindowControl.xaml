@@ -34,8 +34,6 @@
                                CopyCommand="{Binding CopySelectedItemsCommand}"
                                PasteCommand="{Binding PasteItemsCommand}"
                                CutCommand="{Binding CutItemsCommand}"
-                               EditingTextBoxText="{Binding EditingTextBoxText, Mode=OneWayToSource}"
-                               EditingTextBoxSelectionStart="{Binding EditingTextBoxSelectionStart, Mode=OneWayToSource}"
                                >
                 <DataGrid.Columns>
                     <DataGridTemplateColumn Header="Enabled" Width="25">
@@ -59,8 +57,20 @@
             <TextBlock Text="No supported startup project found." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource {x:Static vs:ThemedDialogColors.ListItemDisabledTextBrushKey}}"  />
         </Grid>
 
-        <Popup x:Name="MSBuildPropAutocompletePopup" Width="160" Height="180" IsOpen="{Binding ShowAutocompletePopup}" PlacementTarget="{Binding ElementName=CmdArgListControl}" Placement="Left">
-            <ListView x:Name="AutocompleteList" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding ChoisesItemsForStartupProject}"/>
+        <Popup x:Name="MSBuildPropAutocompletePopup" Width="160" Height="180" 
+               IsOpen="{Binding ElementName=CmdArgListControl, Path=AutocompleteSearchString, Converter={c:NullToBoolConverter}}" 
+               PlacementTarget="{Binding ElementName=CmdArgListControl, Path=AutocompletePopupPlacementTarget}" 
+               PlacementRectangle="{Binding ElementName=CmdArgListControl, Path=AutocompletePopupPlacementRectangle}" 
+               Placement="Bottom"
+               HorizontalOffset="{Binding RelativeSource={RelativeSource Self}, Path=Width}">
+            <ListView x:Name="AutocompleteList" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <ListView.ItemsSource>
+                    <MultiBinding Converter="{c:FilterListByStringConverter}">
+                        <Binding Path="ChoisesItemsForStartupProject"/>
+                        <Binding ElementName="CmdArgListControl" Path="AutocompleteSearchString"/>
+                    </MultiBinding>
+                </ListView.ItemsSource>
+            </ListView>
         </Popup>
     </Grid>
 </UserControl>

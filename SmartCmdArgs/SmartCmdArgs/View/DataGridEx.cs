@@ -2,8 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,24 +19,14 @@ using static SmartCmdArgs.Helper.TreeHelper;
 
 namespace SmartCmdArgs.View
 {
-    public class DataGridEx : DataGrid
+    public class DataGridEx : DataGrid, INotifyPropertyChanged
     {
+        private readonly Regex autocompleteRegex = new Regex(@"\$\((?<propertyName>[^ )]*)$", RegexOptions.RightToLeft | RegexOptions.Compiled);
+
         public bool IsInEditMode
         {
             get { return (bool)GetValue(IsInEditModeProperty); }
             set { SetValue(IsInEditModeProperty, value); }
-        }
-
-        public string EditingTextBoxText
-        {
-            get { return (string)GetValue(EditingTextBoxTextProperty); }
-            set { SetValue(EditingTextBoxTextProperty, value); }
-        }
-
-        public int EditingTextBoxSelectionStart
-        {
-            get { return (int)GetValue(EditingTextBoxSelectionStartProperty); }
-            set { SetValue(EditingTextBoxSelectionStartProperty, value); }
         }
 
         public IList SelectedItems
@@ -78,8 +71,36 @@ namespace SmartCmdArgs.View
             set { SetValue(CutCommandProperty, value); }
         }
 
-        private DataGridCell curEditingCell;
-        private TextBox curEditingTextBox;
+        private string _autocompleteSearchString;
+        public string AutocompleteSearchString
+        {
+            get { return _autocompleteSearchString; }
+            set
+            {
+                if (value == _autocompleteSearchString) return;
+                _autocompleteSearchString = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private UIElement _autocompletePopupPlacementTarget;
+        public UIElement AutocompletePopupPlacementTarget
+        {
+            get { return _autocompletePopupPlacementTarget; }
+            set { _autocompletePopupPlacementTarget = value; OnPropertyChanged(); }
+        }
+
+        private Rect _autocompletePopupPlacementRectangle;
+        public Rect AutocompletePopupPlacementRectangle
+        {
+            get { return _autocompletePopupPlacementRectangle; }
+            set
+            {
+                if (value == _autocompletePopupPlacementRectangle) return;
+                _autocompletePopupPlacementRectangle = value;
+                OnPropertyChanged();
+            }
+        }
 
         public DataGridEx()
         {
@@ -226,44 +247,51 @@ namespace SmartCmdArgs.View
 
         protected override void OnBeginningEdit(DataGridBeginningEditEventArgs e)
         {
-            curEditingCell = GetCell(e.Row, 1);
+            base.OnBeginningEdit(e);
             this.IsInEditMode = true;
         }
 
-        protected override void OnExecutedBeginEdit(ExecutedRoutedEventArgs e)
+        protected override void OnPreparingCellForEdit(DataGridPreparingCellForEditEventArgs e)
         {
-            base.OnExecutedBeginEdit(e);
-            curEditingTextBox = curEditingCell.Content as TextBox;
+            base.OnPreparingCellForEdit(e);
+            var curEditingTextBox = e.EditingElement as TextBox;
             if (curEditingTextBox != null)
             {
-                EditingTextBoxText = curEditingTextBox.Text;
-                EditingTextBoxSelectionStart = curEditingTextBox.SelectionStart;
-                curEditingTextBox.TextChanged += CurEditingTextBoxOnTextChanged;
-                curEditingTextBox.SelectionChanged += CurEditingTextBoxOnSelectionChanged;
+                AutocompletePopupPlacementTarget = curEditingTextBox;
+                UpdateFilterString(curEditingTextBox);
+                curEditingTextBox.TextChanged += CurEditingTextBoxChanged;
+                curEditingTextBox.SelectionChanged += CurEditingTextBoxChanged;
             }
-        }
-
-        private void CurEditingTextBoxOnSelectionChanged(object sender, RoutedEventArgs routedEventArgs)
-        {
-            EditingTextBoxSelectionStart = curEditingTextBox.SelectionStart;
-        }
-
-        private void CurEditingTextBoxOnTextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
-        {
-            EditingTextBoxText = curEditingTextBox.Text;
         }
 
         protected override void OnCellEditEnding(DataGridCellEditEndingEventArgs e)
         {
+            base.OnCellEditEnding(e);
+            var curEditingTextBox = e.EditingElement as TextBox;
             if (curEditingTextBox != null)
             {
-                curEditingTextBox.TextChanged -= CurEditingTextBoxOnTextChanged;
-                curEditingTextBox.SelectionChanged -= CurEditingTextBoxOnSelectionChanged;
-                EditingTextBoxSelectionStart = 0;
-                EditingTextBoxText = "";
-                curEditingTextBox = null;
+                curEditingTextBox.TextChanged -= CurEditingTextBoxChanged;
+                curEditingTextBox.SelectionChanged -= CurEditingTextBoxChanged;
+                AutocompleteSearchString = null;
+                AutocompletePopupPlacementTarget = this;
             }
             this.IsInEditMode = false;
+        }
+
+        private void CurEditingTextBoxChanged(object sender, object eventArgs)
+        {
+            UpdateFilterString((TextBox)sender);
+        }
+
+        private void UpdateFilterString(TextBox textBox)
+        {
+            var inText = textBox.Text.Substring(0, textBox.SelectionStart);
+            var match = autocompleteRegex.Match(inText);
+
+            var porpName = match.Groups["propertyName"];
+            AutocompleteSearchString = porpName.Success ? porpName.Value : null;
+            
+            AutocompletePopupPlacementRectangle = textBox.GetRectFromCharacterIndex(match.Index);
         }
 
 
@@ -345,12 +373,6 @@ namespace SmartCmdArgs.View
         public static readonly DependencyProperty IsInEditModeProperty =
             DependencyProperty.Register("IsInEditMode", typeof(bool), typeof(DataGridEx), new PropertyMetadata(false));
 
-        public static readonly DependencyProperty EditingTextBoxTextProperty =
-            DependencyProperty.Register("EditingTextBoxText", typeof(string), typeof(DataGridEx), new PropertyMetadata(""));
-
-        public static readonly DependencyProperty EditingTextBoxSelectionStartProperty =
-            DependencyProperty.Register("EditingTextBoxSelectionStart", typeof(int), typeof(DataGridEx), new PropertyMetadata(0));
-
         public static readonly DependencyProperty CopyCommandProperty =
             DependencyProperty.Register("CopyCommand", typeof(ICommand), typeof(DataGridEx), new PropertyMetadata(null));
 
@@ -360,5 +382,10 @@ namespace SmartCmdArgs.View
         public static readonly DependencyProperty CutCommandProperty =
             DependencyProperty.Register("CutCommand", typeof(ICommand), typeof(DataGridEx), new PropertyMetadata(null));
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

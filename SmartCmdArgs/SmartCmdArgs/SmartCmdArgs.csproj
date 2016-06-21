@@ -58,10 +58,13 @@
     <Compile Include="CmdArgsOptionPage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Helper\MultiValueConverterBase.cs" />
     <Compile Include="Helper\DelayExecution.cs" />
     <Compile Include="Helper\Extensions.cs" />
     <Compile Include="Helper\FileSystemWatcherDisabledContext.cs" />
     <Compile Include="Helper\MSBuildUtils.cs" />
+    <Compile Include="Helper\FilterListByStringConverter.cs" />
+    <Compile Include="Helper\NullToBoolConverter.cs" />
     <Compile Include="Helper\ObservableCollectionEx.cs" />
     <Compile Include="Helper\ProjectArguments.cs" />
     <Compile Include="Helper\TreeHelper.cs" />
