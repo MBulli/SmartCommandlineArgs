@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace SmartCmdArgs
         private EnvDTE.SolutionEvents solutionEvents;
         private EnvDTE.CommandEvents commandEvents;
 
-        private IVsSolution5 solutionService;
+        private IVsSolution2 solutionService;
         private IVsSolutionBuildManager2 solutionBuildService;
         private IVsMonitorSelection selectionMonitor;
 
@@ -67,7 +68,7 @@ namespace SmartCmdArgs
             if (!initialized)
             {
                 // Setup solution related stuff
-                this.solutionService = package.GetService<SVsSolution, IVsSolution5>();
+                this.solutionService = package.GetService<SVsSolution, IVsSolution2>();
                 this.solutionBuildService = package.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager2>();
                 this.selectionMonitor = package.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
@@ -183,6 +184,47 @@ namespace SmartCmdArgs
             package.GetService<SVsUIShell, IVsUIShell>()?.UpdateCommandUI(immediateUpdate ? 1 : 0);
         }
 
+        public IVsHierarchy HierarchyForProject(Project project)
+        {
+            IVsHierarchy hier;
+            ErrorHandler.ThrowOnFailure(solutionService.GetProjectOfUniqueName(project.UniqueName, out hier));
+            
+            return hier;
+        }
+
+        public string GetMSBuildPropertyValue(Project project, string propName)
+        {
+            var propStorage = (IVsBuildPropertyStorage) HierarchyForProject(project);
+
+            string configName = null;
+            try
+            {
+                configName = project.ConfigurationManager.ActiveConfiguration.ConfigurationName;
+            }
+            catch (Exception)
+            {
+                // TODO: logging
+                Debug.WriteLine($"Could not get active configuration name for project '{project.UniqueName}'.");
+            }
+
+            if (configName != null)
+            {
+                string value;
+                if (ErrorHandler.Failed(propStorage.GetPropertyValue(propName, configName,
+                    (int) _PersistStorageType.PST_PROJECT_FILE, out value)))
+                {
+                    // TODO: logging
+                    Debug.WriteLine($"Could not evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}'.");
+                    value = "";
+                }
+                return value;
+            }
+            else
+            {
+                return "";
+            }
+        }
+
         #region Solution Events
         private void SolutionEvents_Opened()
         {
@@ -214,7 +256,7 @@ namespace SmartCmdArgs
         private void SolutionEvents_ProjectRenamed(Project project, string oldName)
         {
             if (ProjectArguments.IsSupportedProject(project))
-                ProjectRenamed?.Invoke(this, new ProjectRenamedEventArgs {project = project, oldName = oldName});
+                ProjectRenamed?.Invoke(this, new ProjectRenamedEventArgs { project = project, oldName = oldName });
         }
 
         public class ProjectRenamedEventArgs

@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using System.Text;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
 using EnvDTE;
@@ -63,6 +64,8 @@ namespace SmartCmdArgs
         public const string PackageGuidString = "131b0c0a-5dd0-4680-b261-86ab5387b86e";
         public const string ClipboardCmdItemFormat = "SmartCommandlineArgs_D11D715E-CBF3-43F2-A1C1-168FD5C48505";
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
+
+        private readonly Regex msBuildPropertyRegex = new Regex(@"\$\((?<propertyName>(?:(?!\$\()[^)])*?)\)", RegexOptions.Compiled);
 
         private VisualStudioHelper vsHelper;
         public ViewModel.ToolWindowViewModel ToolWindowViewModel { get; } = new ViewModel.ToolWindowViewModel();
@@ -225,7 +228,8 @@ namespace SmartCmdArgs
         private void UpdateConfigurationForProject(Project project)
         {
             if (project == null) return;
-            var enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(e => e.Command);
+            var enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(
+                e => msBuildPropertyRegex.Replace(e.Command, match => vsHelper.GetMSBuildPropertyValue(project, match.Groups["propertyName"].Value)));
             string prjCmdArgs = string.Join(" ", enabledEntries);
             Helper.ProjectArguments.SetArguments(project, prjCmdArgs);
             Logger.Info($"Updated Configuration for Project: {project.UniqueName}");
