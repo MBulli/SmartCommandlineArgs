@@ -122,12 +122,13 @@ namespace SmartCmdArgs
             vsHelper.ProjectRemoved += VsHelper_ProjectRemoved;
             vsHelper.ProjectRenamed += VsHelper_ProjectRenamed;
 
+            vsHelper.Initialize();
+
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
             {
                 Logger.Info("Package.Initialize called while solution was already open.");
 
-                vsHelper.Initialize();
                 UpdateCommandsForAllProjects();
                 AttachFsWatcherToAllProjects();
                 UpdateCurrentStartupProject();
@@ -423,8 +424,6 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Solution opened.");
 
-            vsHelper.Initialize();
-            
             UpdateCurrentStartupProject();
         }
 
@@ -441,8 +440,6 @@ namespace SmartCmdArgs
 
             ToolWindowViewModel.Reset();
             toolWindowStateLoadedFromSolution = null;
-
-            vsHelper.Deinitalize();
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)
@@ -527,7 +524,20 @@ namespace SmartCmdArgs
 
         private string FullFilenameForProjectJsonFile(EnvDTE.Project project)
         {
-            return FullFilenameForProjectJsonFile(project.FullName);
+            var userFilename = vsHelper.GetMSBuildPropertyValue(project, "SmartCmdArgJsonFile");
+            
+            if (!string.IsNullOrEmpty(userFilename))
+            {
+                // It's recommended to use absolute paths for the json file in the first place...
+                userFilename = Path.GetFullPath(userFilename); // ... but make it absolute in any case.
+                
+                Logger.Info($"'SmartCmdArgJsonFile' msbuild property present in project '{project.UniqueName}' will use json file '{userFilename}'.");
+                return userFilename;
+            }
+            else
+            {
+                return FullFilenameForProjectJsonFile(project.FullName);
+            }
         }
 
         private string FullFilenameForProjectJsonFile(string projectFile)
