@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using EnvDTE;
 using EnvDTE80;
@@ -32,36 +35,77 @@ namespace SmartCmdArgsTests
         [TestProperty("VsHiveName", "14.0Exp")]
         public void CollectArgsFromExistingProjectConfigsTest()
         {
+            Project project = CreateSolutionWithProject("CollectTestSolution", "CollectTestProject");
+
+            List<string> startArgumentsForEachConfig = new List<string>();
+            foreach (Configuration config in project.ConfigurationManager)
+            {
+                string startArguments = $"args for {config.ConfigurationName}";
+                Debug.WriteLine($"Adding args '{startArguments}' to configuration '{config.ConfigurationName}'");
+                startArgumentsForEachConfig.Add(startArguments);
+                config.Properties.Item("StartArguments").Value = startArguments;
+            }
+
+            var package = Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            var argItems = ((CmdArgsPackage)package)?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            Assert.IsNotNull(argItems);
+
+            Assert.AreEqual(startArgumentsForEachConfig.Count, argItems.Count);
+
+            foreach (var startArguments in startArgumentsForEachConfig)
+            {
+                var argItem = argItems.FirstOrDefault(item => item.Command == startArguments);
+                
+                Assert.IsNotNull(argItem);
+                Assert.AreNotEqual(Guid.Empty, argItem.Id);
+            }
+        }
+
+        [TestMethod]
+        [HostType("VS IDE")]
+        [TestProperty("VsHiveName", "14.0Exp")]
+        public void CollectArgsDistinctFromExistingProjectConfigsTest()
+        {
+            const string startArguments = "same args in every config";
+
+            Project project = CreateSolutionWithProject("CollectDistinctTestSolution", "CollectDistinctTestProject");
+            
+            foreach (Configuration config in project.ConfigurationManager)
+            {
+                Debug.WriteLine($"Adding args '{startArguments}' to configuration '{config.ConfigurationName}'");
+                config.Properties.Item("StartArguments").Value = startArguments;
+            }
+
+            var package = Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            var argItems = ((CmdArgsPackage) package)?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            Assert.IsNotNull(argItems);
+
+            Assert.AreEqual(1, argItems.Count);
+
+            var argItem = argItems[0];
+            Assert.AreNotEqual(Guid.Empty, argItem.Id);
+            Assert.AreEqual(startArguments, argItem.Command);
+        }
+
+        private Project CreateSolutionWithProject(string solutionName = "TestSolution", string projectName = "TestProject")
+        {
+            Debug.WriteLine("CreateSolutionWithProject");
+
             string rootPath = Directory.GetCurrentDirectory();
-            string solutionName = "TestSolution";
-            string projectName = "TestProject";
 
             string solutionPath = Path.Combine(rootPath, solutionName);
             string projectPath = Path.Combine(solutionPath, projectName);
 
-            Solution solution = Dte.Solution;
+            if(Directory.Exists(solutionPath)) Directory.Delete(solutionPath, true);
+
+            Solution2 solution = (Solution2)Dte.Solution;
 
             solution.Create(solutionPath, solutionName);
 
-            Solution2 solution2 = (Solution2)solution;
-            var projectTemplate = solution2.GetProjectTemplate("ConsoleApplication.zip", "CSharp");
+            var projectTemplate = solution.GetProjectTemplate("ConsoleApplication.zip", "CSharp");
 
             solution.AddFromTemplate(projectTemplate, projectPath, projectName);
-            Project project = solution.Projects.Item(1);
-
-            EnvDTE.Properties properties = project.ConfigurationManager?.ActiveConfiguration?.Properties;
-            properties.Item("StartArguments").Value = "bla lol 3.Arg";
-
-            IVsPackage package = Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
-            Assert.IsNotNull(package);
-
-            solution.SaveAs(Path.Combine(solutionPath, solutionName + ".sln"));
-
-            string jsonContent = File.ReadAllText(Path.Combine(projectPath, projectName + ".args.json"));
-
-            Regex jsonRegex = new Regex("\\{\\s*\"DataCollection\":\\s*\\[\\s*\\{\\s*\"Id\":\\s*\"[^\"]*\",\\s*\"Command\":\\s*\"bla lol 3\\.Arg\"\\s*\\}\\s*\\]\\s*\\}");
-
-            Assert.IsTrue(jsonRegex.IsMatch(jsonContent));
+            return solution.Projects.Item(1);
         }
     }
 }
