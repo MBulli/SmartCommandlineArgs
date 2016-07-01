@@ -32,7 +32,8 @@ namespace SmartCmdArgsTests
 
         [TestMethod]
         [HostType("VS IDE")]
-        [TestProperty("VsHiveName", "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void CollectArgsFromExistingProjectConfigsTest()
         {
             Project project = CreateSolutionWithProject("CollectTestSolution", "CollectTestProject");
@@ -63,7 +64,8 @@ namespace SmartCmdArgsTests
 
         [TestMethod]
         [HostType("VS IDE")]
-        [TestProperty("VsHiveName", "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void CollectArgsDistinctFromExistingProjectConfigsTest()
         {
             const string startArguments = "same args in every config";
