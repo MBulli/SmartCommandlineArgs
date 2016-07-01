@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using EnvDTE;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VSSDK.Tools.VsIdeTesting;
 using SmartCmdArgs;
@@ -13,14 +14,15 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions,
+            VsIdeTestHostContants.HostRestartOptions.Before)]
         public void SaveCommandsToJsonTest()
         {
             string solutionName = "SaveCommandsToJsonTestSolution";
             string projectName = "SaveCommandsToJsonTestProject";
-            CreateSolutionWithProject(solutionName, projectName);
+            var project = CreateSolutionWithProject(solutionName, projectName);
 
-            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            var package = (CmdArgsPackage) Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
 
             InvokeInUIThread(() =>
             {
@@ -36,16 +38,62 @@ namespace SmartCmdArgsTests
 
                 Utils.ForceSaveSolution();
 
-                string jsonFile = Path.Combine(Path.Combine(Path.Combine(
-                        RootDir,
-                        solutionName),
-                        projectName),
-                        projectName + ".args.json");
+                string jsonFile = JsonFileFromProject(project);
 
                 CheckJsonFile(jsonFile, initalCommands);
             });
         }
 
+        [TestMethod]
+        [HostType("VS IDE")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
+        public void LoadCommandsFromJsonTest()
+        {
+            var project = CreateSolutionWithProject();
+            var jsonFile = JsonFileFromProject(project);
+            
+            File.WriteAllText(jsonFile, @"
+{
+  ""DataCollection"": [
+    {
+      ""Id"": ""ac3f6619-4027-4417-935c-824c3a45e604"",
+      ""Command"": ""Imported Args""
+    },
+    {
+      ""Id"": ""2a47c412-f43d-45f7-b248-6aa8cf233c30"",
+      ""Command"": ""second imported arg""
+    },
+    {
+      ""Command"": ""imported arg without id""
+    }
+  ]
+}");
+
+            var package = (CmdArgsPackage) Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+
+            var currentList = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            Assert.IsNotNull(currentList);
+            Assert.AreEqual(3, currentList.Count);
+
+            var arg1 = currentList[0];
+            Assert.AreEqual("Imported Args", arg1.Command);
+            Assert.AreEqual(new Guid("ac3f6619-4027-4417-935c-824c3a45e604"), arg1.Id);
+
+            var arg2 = currentList[1];
+            Assert.AreEqual("second imported arg", arg2.Command);
+            Assert.AreEqual(new Guid("2a47c412-f43d-45f7-b248-6aa8cf233c30"), arg2.Id);
+
+            var arg3 = currentList[2];
+            Assert.AreEqual("imported arg without id", arg3.Command);
+            Assert.AreNotEqual(Guid.Empty, arg3.Id);
+        }
+
+        private string JsonFileFromProject(Project project)
+        {
+            string filename = $"{Path.GetFileNameWithoutExtension(project.FullName)}.args.json";
+            return Path.Combine(Path.GetDirectoryName(project.FullName), filename);
+        }
 
         private void CheckJsonFile(string jsonFile, string[] commands)
         {
