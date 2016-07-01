@@ -126,7 +126,6 @@ namespace SmartCmdArgsTests
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void SaveCommandsToJsonTest()
         {
-            Regex jsonRegex = new Regex("\\{\\s*\"DataCollection\":\\s*\\[\\s*\\{\\s*\"Id\":\\s*\"[^\"]*\",\\s*\"Command\":\\s*\"arg1\"\\s*\\}\\s*,\\s*\\{\\s*\"Id\":\\s*\"[^\"]*\",\\s*\"Command\":\\s*\"Arg2\"\\s*\\}\\s*,\\s*\\{\\s*\"Id\":\\s*\"[^\"]*\",\\s*\"Command\":\\s*\"arg 3\"\\s*\\}\\s*\\]\\s*\\}");
             string solutionName = "SaveCommandsToJsonTestSolution";
             string projectName = "SaveCommandsToJsonTestProject";
             CreateSolutionWithProject(solutionName, projectName);
@@ -138,9 +137,12 @@ namespace SmartCmdArgsTests
                 var curList = package?.ToolWindowViewModel?.CurrentArgumentList;
                 Assert.IsNotNull(curList);
 
-                curList.AddNewItem("arg1");
-                curList.AddNewItem("Arg2");
-                curList.AddNewItem("arg 3");
+                var initalCommands = new[] {"arg1", "Arg2", "arg 3"};
+
+                foreach (var initalCommand in initalCommands)
+                {
+                    package.ToolWindowViewModel.CurrentArgumentList.AddNewItem(initalCommand);
+                }
 
                 Utils.ForceSaveSolution();
 
@@ -150,11 +152,7 @@ namespace SmartCmdArgsTests
                         projectName),
                         projectName + ".args.json");
 
-                Assert.IsTrue(File.Exists(jsonFile));
-
-                string jsonFileContent = File.ReadAllText(jsonFile);
-
-                Assert.IsTrue(jsonRegex.IsMatch(jsonFileContent));
+                CheckJsonFile(jsonFile, initalCommands);
             });
         }
 
@@ -176,5 +174,37 @@ namespace SmartCmdArgsTests
             solution.AddFromTemplate(projectTemplate, projectPath, projectName);
             return solution.Projects.Item(1);
         }
+
+        private void CheckJsonFile(string jsonFile, string[] commands)
+        {
+            var jsonRegex = new Regex("\\{\\s*\"DataCollection\":\\s*\\[(?:\\s*\\{\\s*\"Id\":\\s*\"(?<id>[^\"]*)\",\\s*\"Command\":\\s*\"(?<command>.*?)\"\\s*\\}\\s*,?)*\\s*\\]\\s*\\}", RegexOptions.Compiled);
+
+            Assert.IsTrue(File.Exists(jsonFile));
+
+            string jsonFileContent = File.ReadAllText(jsonFile);
+
+            var match = jsonRegex.Match(jsonFileContent);
+
+            Assert.IsNotNull(match);
+            Assert.IsTrue(match.Success);
+
+            var mathedIds = match.Groups["id"]?.Captures;
+            var matchedCommands = match.Groups["command"]?.Captures;
+
+            Assert.IsNotNull(mathedIds);
+            Assert.IsNotNull(matchedCommands);
+            Assert.AreEqual(commands.Length, mathedIds.Count);
+            Assert.AreEqual(commands.Length, matchedCommands.Count);
+
+            for (int i = 0; i < 3; i++)
+            {
+                Assert.IsFalse(string.IsNullOrEmpty(mathedIds[i].Value));
+                Assert.AreNotEqual(Guid.Empty.ToString(), mathedIds[i].Value);
+
+                Assert.IsFalse(string.IsNullOrEmpty(matchedCommands[i].Value));
+                Assert.AreEqual(commands[i], matchedCommands[i].Value);
+            }
+        }
     }
 }
+
