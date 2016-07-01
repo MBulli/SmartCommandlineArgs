@@ -48,7 +48,7 @@ namespace SmartCmdArgsTests
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void LoadCommandsFromJsonTest()
+        public void LoadCommandsFromExistingJsonTest()
         {
             var project = CreateSolutionWithProject();
             var jsonFile = JsonFileFromProject(project);
@@ -71,6 +71,53 @@ namespace SmartCmdArgsTests
 }");
 
             var package = (CmdArgsPackage) Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+
+            var currentList = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            Assert.IsNotNull(currentList);
+            Assert.AreEqual(3, currentList.Count);
+
+            var arg1 = currentList[0];
+            Assert.AreEqual("Imported Args", arg1.Command);
+            Assert.AreEqual(new Guid("ac3f6619-4027-4417-935c-824c3a45e604"), arg1.Id);
+
+            var arg2 = currentList[1];
+            Assert.AreEqual("second imported arg", arg2.Command);
+            Assert.AreEqual(new Guid("2a47c412-f43d-45f7-b248-6aa8cf233c30"), arg2.Id);
+
+            var arg3 = currentList[2];
+            Assert.AreEqual("imported arg without id", arg3.Command);
+            Assert.AreNotEqual(Guid.Empty, arg3.Id);
+        }
+
+        [TestMethod]
+        [HostType("VS IDE")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
+        public void LoadCommandsFromCreatedJsonTest()
+        {
+            var project = CreateSolutionWithProject();
+            var jsonFile = JsonFileFromProject(project);
+            
+            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+
+            File.WriteAllText(jsonFile, @"
+{
+  ""DataCollection"": [
+    {
+      ""Id"": ""ac3f6619-4027-4417-935c-824c3a45e604"",
+      ""Command"": ""Imported Args""
+    },
+    {
+      ""Id"": ""2a47c412-f43d-45f7-b248-6aa8cf233c30"",
+      ""Command"": ""second imported arg""
+    },
+    {
+      ""Command"": ""imported arg without id""
+    }
+  ]
+}");
+
+            System.Threading.Thread.Sleep(1000);
 
             var currentList = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
             Assert.IsNotNull(currentList);
