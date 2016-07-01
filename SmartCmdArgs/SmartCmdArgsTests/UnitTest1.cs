@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -47,8 +48,8 @@ namespace SmartCmdArgsTests
                 config.Properties.Item("StartArguments").Value = startArguments;
             }
 
-            var package = Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
-            var argItems = ((CmdArgsPackage)package)?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            var argItems = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
             Assert.IsNotNull(argItems);
 
             Assert.AreEqual(startArgumentsForEachConfig.Count, argItems.Count);
@@ -78,8 +79,8 @@ namespace SmartCmdArgsTests
                 config.Properties.Item("StartArguments").Value = startArguments;
             }
 
-            var package = Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
-            var argItems = ((CmdArgsPackage) package)?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            var argItems = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
             Assert.IsNotNull(argItems);
 
             Assert.AreEqual(1, argItems.Count);
@@ -87,6 +88,35 @@ namespace SmartCmdArgsTests
             var argItem = argItems[0];
             Assert.AreNotEqual(Guid.Empty, argItem.Id);
             Assert.AreEqual(startArguments, argItem.Command);
+        }
+
+        [TestMethod]
+        [HostType("VS IDE")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
+        public void AddNewArgLineViaCommandTest()
+        {
+            CreateSolutionWithProject("CollectDistinctTestSolution", "CollectDistinctTestProject");
+
+            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+
+            ICommand addCommand = package?.ToolWindowViewModel?.AddEntryCommand;
+            Assert.IsNotNull(addCommand);
+
+            InvokeInUIThread(() =>
+            {
+                Assert.IsTrue(package.ToolWindowViewModel.AddEntryCommand.CanExecute(null));
+                addCommand.Execute(null);
+
+                var argItems = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+                Assert.IsNotNull(argItems);
+
+                Assert.AreEqual(1, argItems.Count);
+
+                var argItem = argItems[0];
+                Assert.AreNotEqual(Guid.Empty, argItem.Id);
+                Assert.AreEqual("", argItem.Command);
+            });
         }
 
         private Project CreateSolutionWithProject(string solutionName = "TestSolution", string projectName = "TestProject")
