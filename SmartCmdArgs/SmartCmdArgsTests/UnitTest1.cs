@@ -21,6 +21,7 @@ namespace SmartCmdArgsTests
         private DTE Dte => VsIdeTestHostContext.Dte;
         private TestUtils Utils { get; } = new TestUtils();
 
+        private string RootDir => Directory.GetCurrentDirectory();
 
         private object InvokeInUIThread(Action method)
             => UIThreadInvoker.Invoke(method);
@@ -96,7 +97,7 @@ namespace SmartCmdArgsTests
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void AddNewArgLineViaCommandTest()
         {
-            CreateSolutionWithProject("CollectDistinctTestSolution", "CollectDistinctTestProject");
+            CreateSolutionWithProject();
 
             var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
 
@@ -119,13 +120,49 @@ namespace SmartCmdArgsTests
             });
         }
 
+        [TestMethod]
+        [HostType("VS IDE")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
+        public void SaveCommandsToJsonTest()
+        {
+            Regex jsonRegex = new Regex("\\{\\s*\"DataCollection\":\\s*\\[\\s*\\{\\s*\"Id\":\\s*\"[^\"]*\",\\s*\"Command\":\\s*\"arg1\"\\s*\\}\\s*,\\s*\\{\\s*\"Id\":\\s*\"[^\"]*\",\\s*\"Command\":\\s*\"Arg2\"\\s*\\}\\s*,\\s*\\{\\s*\"Id\":\\s*\"[^\"]*\",\\s*\"Command\":\\s*\"arg 3\"\\s*\\}\\s*\\]\\s*\\}");
+            string solutionName = "SaveCommandsToJsonTestSolution";
+            string projectName = "SaveCommandsToJsonTestProject";
+            CreateSolutionWithProject(solutionName, projectName);
+
+            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+
+            InvokeInUIThread(() =>
+            {
+                var curList = package?.ToolWindowViewModel?.CurrentArgumentList;
+                Assert.IsNotNull(curList);
+
+                curList.AddNewItem("arg1");
+                curList.AddNewItem("Arg2");
+                curList.AddNewItem("arg 3");
+
+                Utils.ForceSaveSolution();
+
+                string jsonFile = Path.Combine(Path.Combine(Path.Combine(
+                        RootDir,
+                        solutionName),
+                        projectName),
+                        projectName + ".args.json");
+
+                Assert.IsTrue(File.Exists(jsonFile));
+
+                string jsonFileContent = File.ReadAllText(jsonFile);
+
+                Assert.IsTrue(jsonRegex.IsMatch(jsonFileContent));
+            });
+        }
+
         private Project CreateSolutionWithProject(string solutionName = "TestSolution", string projectName = "TestProject")
         {
             Debug.WriteLine("CreateSolutionWithProject");
 
-            string rootPath = Directory.GetCurrentDirectory();
-
-            string solutionPath = Path.Combine(rootPath, solutionName);
+            string solutionPath = Path.Combine(RootDir, solutionName);
             string projectPath = Path.Combine(solutionPath, projectName);
 
             if(Directory.Exists(solutionPath)) Directory.Delete(solutionPath, true);
