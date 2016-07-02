@@ -114,6 +114,7 @@
     <Compile Include="TestBase.cs" />
     <Compile Include="GeneralTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SuoSavingTests.cs" />
     <Compile Include="VcsSupportTests.cs" />
   </ItemGroup>
   <ItemGroup>
