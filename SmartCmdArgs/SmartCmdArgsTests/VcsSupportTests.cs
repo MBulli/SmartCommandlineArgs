@@ -212,7 +212,7 @@ namespace SmartCmdArgsTests
 
         private void CheckJsonFile(string jsonFile, string[] commands)
         {
-            var jsonRegex = new Regex("\\{\\s*\"DataCollection\":\\s*\\[(?:\\s*\\{\\s*\"Id\":\\s*\"(?<id>[^\"]*)\",\\s*\"Command\":\\s*\"(?<command>.*?)\"\\s*\\}\\s*,?)*\\s*\\]\\s*\\}", RegexOptions.Compiled);
+            var jsonRegex = new Regex(@"\{\s*""DataCollection"":\s*\[(?:\s*\{\s*""Id"":\s*""(?<id>[^""]*)"",\s*""Command"":\s*""(?<command>.*?)""\s*\}\s*,?)*\s*\]\s*\}", RegexOptions.Compiled);
 
             Assert.IsTrue(File.Exists(jsonFile));
 
