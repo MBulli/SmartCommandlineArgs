@@ -139,8 +139,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions,
-            VsIdeTestHostContants.HostRestartOptions.Before)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void LoadChangesFromJsonTest()
         {
             var project = CreateSolutionWithProject();
@@ -203,6 +202,33 @@ namespace SmartCmdArgsTests
             Assert.AreNotEqual(Guid.Empty, arg3.Id);
 
         }
+
+        [TestMethod]
+        [HostType("VS IDE")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
+        public void DisabledVcsSupportTest()
+        {
+            var project = CreateSolutionWithProject();
+            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            var properties = (CmdArgsOptionPage)package.GetDialogPage(typeof(CmdArgsOptionPage));
+
+            properties.VcsSupport = false;
+
+            InvokeInUIThread(() =>
+            {
+                var currentList = package?.ToolWindowViewModel?.CurrentArgumentList;
+                Assert.IsNotNull(currentList);
+
+                currentList.AddNewItem("TestItem1");
+                currentList.AddNewItem("TestItem2");
+
+                Utils.ForceSaveSolution();
+
+                Assert.IsFalse(File.Exists(JsonFileFromProject(project)));
+            });
+        }
+
 
         private string JsonFileFromProject(Project project)
         {
