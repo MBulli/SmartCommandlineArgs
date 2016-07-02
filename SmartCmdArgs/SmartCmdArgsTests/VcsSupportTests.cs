@@ -207,6 +207,20 @@ namespace SmartCmdArgsTests
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
+        public void AvoidEmptyJsonFileTest()
+        {
+            var project = CreateSolutionWithProject();
+            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            
+            Utils.ForceSaveSolution();
+
+            Assert.IsFalse(File.Exists(JsonFileFromProject(project)));
+        }
+        
+        [TestMethod]
+        [HostType("VS IDE")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void DisabledVcsSupportTest()
         {
             var project = CreateSolutionWithProject();
