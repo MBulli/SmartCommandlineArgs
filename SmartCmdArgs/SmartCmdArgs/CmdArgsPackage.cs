@@ -230,7 +230,7 @@ namespace SmartCmdArgs
         {
             if (project == null) return;
             var enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(
-                e => msBuildPropertyRegex.Replace(e.Command, match => vsHelper.GetMSBuildPropertyValue(project, match.Groups["propertyName"].Value)));
+                e => msBuildPropertyRegex.Replace(e.Command, match => vsHelper.GetMSBuildPropertyValue(project, match.Groups["propertyName"].Value) ?? match.Value));
             string prjCmdArgs = string.Join(" ", enabledEntries);
             Helper.ProjectArguments.SetArguments(project, prjCmdArgs);
             Logger.Info($"Updated Configuration for Project: {project.UniqueName}");
