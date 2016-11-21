@@ -18,9 +18,7 @@ namespace SmartCmdArgsTests
             VsIdeTestHostContants.HostRestartOptions.Before)]
         public void SaveCommandsToJsonTest()
         {
-            string solutionName = "SaveCommandsToJsonTestSolution";
-            string projectName = "SaveCommandsToJsonTestProject";
-            var project = CreateSolutionWithProject(solutionName, projectName);
+            var project = CreateSolutionWithProject();
 
             var package = (CmdArgsPackage) Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
 
