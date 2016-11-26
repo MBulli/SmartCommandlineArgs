@@ -7,7 +7,7 @@
     <MoreInfo>https://github.com/MBulli/SmartCommandlineArgs</MoreInfo>
     <License>Resources\LICENSE.txt</License>
     <GettingStartedGuide>Open the window via: View → Other Windows → Commandline Arguments</GettingStartedGuide>
-    <Icon>Resources\VSMeuIcon.png</Icon>
+    <Icon>Resources\BigIcon.png</Icon>
     <PreviewImage>Resources\vsix_preview_image.png</PreviewImage>
     <Tags>Commandline Command Arguments cmd </Tags>
   </Metadata>
