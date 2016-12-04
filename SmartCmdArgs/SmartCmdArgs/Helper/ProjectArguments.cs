@@ -71,8 +71,8 @@ namespace SmartCmdArgs.Helper
             } },
             // VB.NET
             {"{F184B08F-C81C-45F6-A57F-5ABD9991F28F}", new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "CommandArguments"),
-                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "CommandArguments")
+                SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "StartArguments"),
+                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
             } },
             // C/C++
             {"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}", new ProjectArgumentsHandlers() {

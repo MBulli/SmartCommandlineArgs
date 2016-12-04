@@ -1,5 +1,17 @@
-# SmartCommandlineArgs
+# Smart Commandline Arguments 
 A Visual Studio Extension which aims to provide a better UI to manage your command line arguments
+
+## Install
+Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments "Visual Studio Marketplace").
+
+Visual Studio 2015 and 2017 and the following project types are supported:
+- C#
+- VB.Net
+- C/C++ 
+- Node.js
+- Python (requires a nightly build of PTVS)
+
+If you're using Cmake make sure to read the [Cmake support wiki page](https://github.com/MBulli/SmartCommandlineArgs/wiki/Cmake-support "Cmake").
 
 ## Usage
 Open the window via:  
