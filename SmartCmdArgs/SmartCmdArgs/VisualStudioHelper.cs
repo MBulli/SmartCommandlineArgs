@@ -201,9 +201,9 @@ namespace SmartCmdArgs
             {
                 configName = project.ConfigurationManager.ActiveConfiguration.ConfigurationName;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Logger.Warn($"Could not get active configuration name for project '{project.UniqueName}'.");
+                Logger.Warn($"Failed to get active configuration name for project '{project.UniqueName}' with error '{ex}'");
             }
 
             if (configName != null)
@@ -214,7 +214,7 @@ namespace SmartCmdArgs
                 {
                     return value;
                 }
-                Logger.Warn($"Could not evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}'.");
+                Logger.Warn($"Failed to evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}' with error '{ex}'");
             }
             return null;
         }
