@@ -199,12 +199,18 @@ namespace SmartCmdArgs
             if (configName != null)
             {
                 string value;
-                if (ErrorHandler.Succeeded(propStorage.GetPropertyValue(propName, configName,
-                    (int) _PersistStorageType.PST_PROJECT_FILE, out value)))
+
+                try
                 {
+                    ErrorHandler.ThrowOnFailure(propStorage.GetPropertyValue(propName, configName,
+                        (int)_PersistStorageType.PST_PROJECT_FILE, out value));
+
                     return value;
                 }
-                Logger.Warn($"Failed to evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}' with error '{ex}'");
+                catch (Exception ex)
+                {
+                    Logger.Warn($"Failed to evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}' with error '{ex}'");
+                }
             }
             return null;
         }
