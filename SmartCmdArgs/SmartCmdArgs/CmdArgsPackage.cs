@@ -71,6 +71,7 @@ namespace SmartCmdArgs
         public ViewModel.ToolWindowViewModel ToolWindowViewModel { get; } = new ViewModel.ToolWindowViewModel();
 
         private bool IsVcsSupportEnabled => GetDialogPage<CmdArgsOptionPage>().VcsSupport;
+        private bool IsMacroEvaluationEnabled => GetDialogPage<CmdArgsOptionPage>().MacroEvaluation;
 
         private ToolWindowStateSolutionData toolWindowStateLoadedFromSolution;
 
@@ -123,6 +124,8 @@ namespace SmartCmdArgs
             vsHelper.ProjectRenamed += VsHelper_ProjectRenamed;
 
             vsHelper.Initialize();
+
+            GetDialogPage<CmdArgsOptionPage>().MacroEvaluationChanged += OptionPage_MacroEvaluationChanged;
 
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
@@ -229,8 +232,17 @@ namespace SmartCmdArgs
         private void UpdateConfigurationForProject(Project project)
         {
             if (project == null) return;
-            var enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(
-                e => msBuildPropertyRegex.Replace(e.Command, match => vsHelper.GetMSBuildPropertyValue(project, match.Groups["propertyName"].Value) ?? match.Value));
+            IEnumerable<string> enabledEntries;
+            if (IsMacroEvaluationEnabled)
+            {
+                enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(
+                    e => msBuildPropertyRegex.Replace(e.Command,
+                        match => vsHelper.GetMSBuildPropertyValue(project, match.Groups["propertyName"].Value) ?? match.Value));
+            }
+            else
+            {
+                enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(e => e.Command);
+            }
             string prjCmdArgs = string.Join(" ", enabledEntries);
             Helper.ProjectArguments.SetArguments(project, prjCmdArgs);
             Logger.Info($"Updated Configuration for Project: {project.UniqueName}");
@@ -501,6 +513,13 @@ namespace SmartCmdArgs
                     fsWatcher.Filter = Path.GetFileName(newFileName);
                 }
             }
+        }
+        #endregion
+
+        #region OptionPage Events
+        private void OptionPage_MacroEvaluationChanged(object sender, bool newVlaue)
+        {
+            UpdateCommandsForAllProjects();
         }
         #endregion
 

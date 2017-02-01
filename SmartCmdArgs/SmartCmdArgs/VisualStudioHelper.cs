@@ -119,16 +119,6 @@ namespace SmartCmdArgs
             {
                 allProjects.Add(project);
             }
-            else if (project.Collection != null)
-            {
-                foreach (EnvDTE.Project subProject in project.Collection)
-                {
-                    if (subProject != project)
-                    {
-                        GetProjects(subProject, ref allProjects);
-                    }
-                }
-            }
             else if (project.ProjectItems != null)
             {
                 foreach (EnvDTE.ProjectItem item in project.ProjectItems)
