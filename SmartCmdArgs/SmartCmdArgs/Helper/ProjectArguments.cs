@@ -22,7 +22,7 @@ namespace SmartCmdArgs.Helper
         private static void SetSingleConfigArgument(EnvDTE.Project project, string arguments, string propertyName)
         {
             try { project.Properties.Item(propertyName).Value = arguments; }
-            catch { Logger.Error($"Could not set arguments for project: {project.UniqueName}"); }
+            catch (Exception ex) { Logger.Error($"Failed to set single config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
 
         private static void GetSingleConfigAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
@@ -35,7 +35,7 @@ namespace SmartCmdArgs.Helper
                     allArgs.Add(cmdarg);
                 }
             }
-            catch { Logger.Error($"Could not get arguments for project: {project.UniqueName}"); }
+            catch (Exception ex) { Logger.Error($"Failed to get single config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
 
         private static void SetMultiConfigArguments(EnvDTE.Project project, string arguments, string propertyName)
@@ -43,7 +43,7 @@ namespace SmartCmdArgs.Helper
             // Set the arguments only on the active configuration
             EnvDTE.Properties properties = project.ConfigurationManager?.ActiveConfiguration?.Properties;
             try { properties.Item(propertyName).Value = arguments; }
-            catch { Logger.Error($"Could not set arguments for project: {project.UniqueName}"); }
+            catch (Exception ex) { Logger.Error($"Failed to set multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
 
         private static void GetMultiConfigAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
@@ -58,7 +58,7 @@ namespace SmartCmdArgs.Helper
                         allArgs.Add(cmdarg);
                     }
                 }
-                catch { Logger.Error($"Could not get arguments for project: {project.UniqueName}"); }
+                catch (Exception ex) { Logger.Error($"Failed to get multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
             }
         }
 

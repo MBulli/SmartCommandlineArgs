@@ -119,16 +119,6 @@ namespace SmartCmdArgs
             {
                 allProjects.Add(project);
             }
-            else if (project.Collection != null)
-            {
-                foreach (EnvDTE.Project subProject in project.Collection)
-                {
-                    if (subProject != project)
-                    {
-                        GetProjects(subProject, ref allProjects);
-                    }
-                }
-            }
             else if (project.ProjectItems != null)
             {
                 foreach (EnvDTE.ProjectItem item in project.ProjectItems)
@@ -201,20 +191,26 @@ namespace SmartCmdArgs
             {
                 configName = project.ConfigurationManager.ActiveConfiguration.ConfigurationName;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Logger.Warn($"Could not get active configuration name for project '{project.UniqueName}'.");
+                Logger.Warn($"Failed to get active configuration name for project '{project.UniqueName}' with error '{ex}'");
             }
 
             if (configName != null)
             {
                 string value;
-                if (ErrorHandler.Succeeded(propStorage.GetPropertyValue(propName, configName,
-                    (int) _PersistStorageType.PST_PROJECT_FILE, out value)))
+
+                try
                 {
+                    ErrorHandler.ThrowOnFailure(propStorage.GetPropertyValue(propName, configName,
+                        (int)_PersistStorageType.PST_PROJECT_FILE, out value));
+
                     return value;
                 }
-                Logger.Warn($"Could not evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}'.");
+                catch (Exception ex)
+                {
+                    Logger.Warn($"Failed to evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}' with error '{ex}'");
+                }
             }
             return null;
         }
