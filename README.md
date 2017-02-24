@@ -1,7 +1,7 @@
 # Smart Commandline Arguments 
 A Visual Studio Extension which aims to provide a better UI to manage your command line arguments
 
-This fork added a new command that allows to copy the currently selected command line arguments to the clipboard. This is useful i.e. for testing a set of arguments outside of visual studio in the console window or for adding them to documentation as an example.
+This fork added a new command that allows to copy the currently selected command line arguments as a string to the clipboard. This is useful i.e. for testing a set of arguments outside of visual studio in the console window or for adding them to documentation as an example.
 
 ## Install
 Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=mibcoder.SmartCommandlineArguments "Visual Studio Marketplace").
@@ -31,7 +31,7 @@ Tools → Options → Smart Commandline Arguments → General → Enable version
 ![alt text](https://github.com/mibcoder/SmartCommandlineArgs/blob/master/Doc/Images/AddIcon.png "Add Button"): Add new line  
 ![alt text](https://github.com/mibcoder/SmartCommandlineArgs/blob/master/Doc/Images/RemoveIcon.png "Remove Button"): Remove selected lines  
 ![alt text](https://github.com/mibcoder/SmartCommandlineArgs/blob/master/Doc/Images/MoveUpIcon.png "Move Up Button") / ![alt text](https://github.com/mibcoder/SmartCommandlineArgs/blob/master/Doc/Images/MoveDownIcon.png "Move Down Button"): Move selected lines  
- ![alt text](https://github.com/mibcoder/SmartCommandlineArgs/blob/master/Doc/Images/CopyCommandlineIcon.png "Copy commandline to clipboard"): Copy command line to clipboard.
+ ![alt text](https://github.com/mibcoder/SmartCommandlineArgs/blob/master/Doc/Images/CopyCommandlineIcon.png "Copy commandline to clipboard"): * Copy command line to clipboard. In the example below, the string `-f input_image.png -l latest.log -o out_image.png` is copied to the clipboard.
  
 ![alt text](https://github.com/mibcoder/SmartCommandlineArgs/blob/master/Doc/Images/example.png "Commandline Arguments Window")
 
