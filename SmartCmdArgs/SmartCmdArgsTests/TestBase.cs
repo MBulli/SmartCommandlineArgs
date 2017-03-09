@@ -13,6 +13,8 @@ namespace SmartCmdArgsTests
 {
     public class TestBase
     {
+        public const string HiveName = "15.0";
+
         protected DTE Dte => VsIdeTestHostContext.Dte;
         protected TestUtils Utils { get; } = new TestUtils();
 

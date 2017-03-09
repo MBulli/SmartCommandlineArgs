@@ -20,7 +20,7 @@ namespace SmartCmdArgsTests
     {
         [TestMethod]
         [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void CollectArgsFromExistingProjectConfigsTest()
         {
@@ -52,8 +52,9 @@ namespace SmartCmdArgsTests
 
         [TestMethod]
         [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
+        [DeploymentItem("ConsoleApplicationVC.zip")]
         public void CollectArgsDistinctFromExistingProjectConfigsTest()
         {
             const string startArguments = "same args in every config";
@@ -65,6 +66,8 @@ namespace SmartCmdArgsTests
                 Debug.WriteLine($"Adding args '{startArguments}' to configuration '{config.ConfigurationName}'");
                 config.Properties.Item("StartArguments").Value = startArguments;
             }
+
+
 
             var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
             var argItems = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
@@ -79,7 +82,7 @@ namespace SmartCmdArgsTests
 
         [TestMethod]
         [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void AddNewArgLineViaCommandTest()
         {

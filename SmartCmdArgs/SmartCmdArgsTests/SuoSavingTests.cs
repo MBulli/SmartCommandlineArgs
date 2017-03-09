@@ -14,7 +14,7 @@ namespace SmartCmdArgsTests
     {
         [TestMethod]
         [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, "14.0Exp")]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void SaveAndLoadSuoTest()
         {
