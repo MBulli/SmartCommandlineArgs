@@ -6,6 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem.Properties;
+using Microsoft.VisualStudio.ProjectSystem.Debug;
 
 namespace SmartCmdArgs.Helper
 {
@@ -61,6 +64,69 @@ namespace SmartCmdArgs.Helper
                 catch (Exception ex) { Logger.Error($"Failed to get multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
             }
         }
+        
+        private static void SetCpfProjectArguments(EnvDTE.Project project, string arguments, string propertyName)
+        {
+            IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
+            if (context == null && project != null)
+            {
+                // VC implements this on their DTE.Project.Object
+                context = project.Object as IVsBrowseObjectContext;
+            }
+
+            if (context != null)
+            {
+                Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    IProjectLockService projectLockService = context.UnconfiguredProject.ProjectService.Services.ProjectLockService;
+
+                    using (await projectLockService.WriteLockAsync())
+                    {
+                        ConfiguredProject proj = await context.UnconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                        IProjectProperties props = proj.Services.UserPropertiesProvider.GetCommonProperties();
+
+                        await props.SetPropertyValueAsync(propertyName, arguments);
+                    }
+                });
+            }
+        }
+
+        private static void GetCpfProjectAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
+        {
+            IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
+            if (context == null && project != null)
+            {
+                // VC implements this on their DTE.Project.Object
+                context = project.Object as IVsBrowseObjectContext;
+            }
+
+            if (context != null)
+            {
+                Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    IProjectLockService projectLockService = context.UnconfiguredProject.ProjectService.Services.ProjectLockService;
+
+                    //using (await projectLockService.ReadLockAsync())
+                    {
+                        foreach (ConfiguredProject proj in context.UnconfiguredProject.LoadedConfiguredProjects)
+                        {
+                            try
+                            {
+                                IProjectProperties props = proj.Services.UserPropertiesProvider.GetCommonProperties();
+                                string cmdarg = await props.GetEvaluatedPropertyValueAsync(propertyName);
+                                if (!string.IsNullOrEmpty(cmdarg))
+                                {
+                                    allArgs.Add(cmdarg);
+                                }
+                            }
+                            catch (Exception ex) { Logger.Error($"Failed to get multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
+                        }
+                    }
+
+                    
+                });
+            }
+        }
 
         private static Dictionary<string, ProjectArgumentsHandlers> supportedProjects = new Dictionary<string, ProjectArgumentsHandlers>()
         {
@@ -76,8 +142,8 @@ namespace SmartCmdArgs.Helper
             } },
             // C/C++
             {"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}", new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "CommandArguments"),
-                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "CommandArguments")
+                SetArguments = (project, arguments) => SetCpfProjectArguments(project, arguments, "LocalDebuggerCommandArguments"),
+                GetAllArguments = (project, allArgs) => GetCpfProjectAllArguments(project, allArgs, "LocalDebuggerCommandArguments")
             } },
             // Python
             {"{888888a0-9f3d-457c-b088-3a5042f75d52}", new ProjectArgumentsHandlers() {
@@ -88,6 +154,11 @@ namespace SmartCmdArgs.Helper
             {"{9092aa53-fb77-4645-b42d-1ccca6bd08bd}", new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetSingleConfigArgument(project, arguments, "ScriptArguments"),
                 GetAllArguments = (project, allArgs) => GetSingleConfigAllArguments(project, allArgs, "ScriptArguments")
+            } },
+            // C# - CPF
+            {"{9A19103F-16F7-4668-BE54-9A1E7A4F7556}", new ProjectArgumentsHandlers() {
+                SetArguments = (project, arguments) => SetCpfProjectArguments(project, arguments, "LocalDebuggerCommandArguments"),
+                GetAllArguments = (project, allArgs) => GetCpfProjectAllArguments(project, allArgs, "LocalDebuggerCommandArguments")
             } },
         };
 
