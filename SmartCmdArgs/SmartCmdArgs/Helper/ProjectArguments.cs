@@ -9,6 +9,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
+using Microsoft.VisualStudio.VCProjectEngine;
 
 namespace SmartCmdArgs.Helper
 {
@@ -64,7 +65,34 @@ namespace SmartCmdArgs.Helper
                 catch (Exception ex) { Logger.Error($"Failed to get multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
             }
         }
-        
+
+        private static void SetVCProjEngineArguments(EnvDTE.Project project, string arguments)
+        {
+            // Use late binding to support VS2015 and VS2017
+            dynamic vcPrj = (dynamic)project.Object; // is VCProject
+            dynamic vcCfg = vcPrj.ActiveConfiguration; // is VCConfiguration
+            dynamic vcDbg = vcCfg.DebugSettings;  // is VCDebugSettings
+
+            vcDbg.CommandArguments = arguments;
+        }
+
+        private static void GetVCProjEngineAllArguments(EnvDTE.Project project, List<string> allArgs)
+        {
+            dynamic vcPrj = (dynamic)project.Object; // is VCProject
+            dynamic configs = vcPrj.Configurations;  // is IVCCollection
+
+            for (int index = 1; index <= configs.Count; index++)
+            {
+                dynamic cfg = configs.Item(index); // is VCConfiguration
+                dynamic dbg = cfg.DebugSettings;  // is VCDebugSettings
+
+                if (!string.IsNullOrEmpty(dbg?.CommandArguments))
+                {
+                    allArgs.Add(dbg.CommandArguments);
+                }
+            }
+        }
+
         private static void SetCpfProjectArguments(EnvDTE.Project project, string arguments, string propertyName)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
@@ -142,8 +170,11 @@ namespace SmartCmdArgs.Helper
             } },
             // C/C++
             {"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}", new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetCpfProjectArguments(project, arguments, "LocalDebuggerCommandArguments"),
-                GetAllArguments = (project, allArgs) => GetCpfProjectAllArguments(project, allArgs, "LocalDebuggerCommandArguments")
+                //SetArguments = (project, arguments) => SetCpfProjectArguments(project, arguments, "LocalDebuggerCommandArguments"),
+                //GetAllArguments = (project, allArgs) => GetCpfProjectAllArguments(project, allArgs, "LocalDebuggerCommandArguments")
+
+                SetArguments = (project, arguments) => SetVCProjEngineArguments(project, arguments),
+                GetAllArguments = (project, allArgs) => GetVCProjEngineAllArguments(project, allArgs)
             } },
             // Python
             {"{888888a0-9f3d-457c-b088-3a5042f75d52}", new ProjectArgumentsHandlers() {
