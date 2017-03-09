@@ -80,11 +80,11 @@ namespace SmartCmdArgs.Helper
                 {
                     IProjectLockService projectLockService = context.UnconfiguredProject.ProjectService.Services.ProjectLockService;
 
+                    ConfiguredProject proj = await context.UnconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                    IProjectProperties props = proj.Services.UserPropertiesProvider.GetCommonProperties();
+
                     using (await projectLockService.WriteLockAsync())
                     {
-                        ConfiguredProject proj = await context.UnconfiguredProject.GetSuggestedConfiguredProjectAsync();
-                        IProjectProperties props = proj.Services.UserPropertiesProvider.GetCommonProperties();
-
                         await props.SetPropertyValueAsync(propertyName, arguments);
                     }
                 });

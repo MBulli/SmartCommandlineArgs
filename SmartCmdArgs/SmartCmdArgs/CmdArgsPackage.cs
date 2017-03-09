@@ -437,6 +437,11 @@ namespace SmartCmdArgs
             Logger.Info("VS-Event: Solution opened.");
 
             UpdateCurrentStartupProject();
+
+            if (ToolWindowViewModel.StartupProject != null)
+            {
+                UpdateCommandsForProject(ToolWindowViewModel.StartupProject);
+            }
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
