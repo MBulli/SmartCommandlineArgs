@@ -1,8 +1,6 @@
 # Smart Commandline Arguments 
 A Visual Studio Extension which aims to provide a better UI to manage your command line arguments
 
-This fork added a new command that allows to copy the currently selected command line arguments as a string to the clipboard. This is useful i.e. for testing a set of arguments outside of visual studio in the console window or for adding them to documentation as an example.
-
 ## Install
 Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments "Visual Studio Marketplace").
 
