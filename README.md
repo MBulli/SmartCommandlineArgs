@@ -1,4 +1,5 @@
-# Smart Commandline Arguments 
+
+# <img src="Doc/SmartCommandLineIcon-Readme.svg" width="84">  Smart Commandline Arguments 
 A Visual Studio Extension which aims to provide a better UI to manage your command line arguments
 
 ## Install
@@ -26,11 +27,12 @@ If this new behavior is not welcomed one can fallback to the 'old' mode where th
 Tools → Options → Smart Commandline Arguments → General → Enable version control support
 
 ## Interface
-![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/AddIcon.png "Add Button"): Add new line  
-![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/RemoveIcon.png "Remove Button"): Remove selected lines  
-![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/MoveUpIcon.png "Move Up Button") / ![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/MoveDownIcon.png "Move Down Button"): Move selected lines  
-  
-![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/example.png "Commandline Arguments Window")
+![Add button](Doc/Images/AddIcon.png "Add Button"): Add new line  
+![Remove button](Doc/Images/RemoveIcon.png "Remove Button"): Remove selected lines  
+![Up/Down button](Doc/Images/MoveUpIcon.png "Move Up Button") / ![alt text](Doc/Images/MoveDownIcon.png "Move Down Button"): Move selected lines  
+![Copy cmd](Doc/Images/CopyCommandlineIcon.png "Copy commandline to clipboard"): Copy command line to clipboard. In the example below, the string `-f input_image.png -l latest.log -o out_image.png` is copied to the clipboard.
+ 
+![Window](Doc/Images/example.png "Commandline Arguments Window")
 
 
 ## Hotkeys

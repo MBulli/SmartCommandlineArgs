@@ -42,6 +42,12 @@ namespace SmartCmdArgs.View
             set { SetValue(MoveDownCommandProperty, value); }
         }
 
+        public ICommand CopyCommandlineCommand
+        {
+            get { return (ICommand)GetValue(CopyCommandlineCommandProperty); }
+            set { SetValue(CopyCommandlineCommandProperty, value); }
+        }
+
         public ICommand ToggleItemEnabledCommand
         {
             get { return (ICommand)GetValue(ToggleItemEnabledProperty); }
@@ -288,6 +294,9 @@ namespace SmartCmdArgs.View
 
         public static readonly DependencyProperty MoveDownCommandProperty =
             DependencyProperty.Register("MoveDownCommand", typeof(ICommand), typeof(DataGridEx), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty CopyCommandlineCommandProperty =
+            DependencyProperty.Register("CopyCommandlineCommand", typeof(ICommand), typeof(DataGridEx), new PropertyMetadata(null));
 
         public static readonly DependencyProperty SelectedItemsProperty =
             DependencyProperty.Register("SelectedItems", typeof(IList), typeof(DataGridEx), new PropertyMetadata(null));

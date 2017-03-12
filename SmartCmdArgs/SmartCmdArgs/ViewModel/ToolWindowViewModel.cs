@@ -49,6 +49,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand MoveEntriesDownCommand { get; }
 
+        public RelayCommand CopyCommandlineCommand { get; }
+
         public RelayCommand<CmdArgItem> ToggleItemEnabledCommand { get; }
         
         public RelayCommand CopySelectedItemsCommand { get; }
@@ -94,6 +96,17 @@ namespace SmartCmdArgs.ViewModel
                }, canExecute: _ =>
                {
                    return this.StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
+               });
+
+            CopyCommandlineCommand = new RelayCommand(
+               () => {
+                   IEnumerable<string> enabledEntries;
+                   enabledEntries = this.EnabledItemsForCurrentProject().Select(e => e.Command);
+                   string prjCmdArgs = string.Join(" ", enabledEntries);
+                   Clipboard.SetText(prjCmdArgs);
+               }, canExecute: _ =>
+               {
+                   return this.StartupProject != null; // && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
                });
 
             ToggleItemEnabledCommand = new RelayCommand<CmdArgItem>(

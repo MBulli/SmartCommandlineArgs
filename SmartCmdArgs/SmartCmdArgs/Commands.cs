@@ -35,7 +35,7 @@ namespace SmartCmdArgs
         public const int ToolbarRemoveCommandId = 0x1101;
         public const int ToolbarMoveUpCommandId = 0x1102;
         public const int ToolbarMoveDownCommandId = 0x1103;
-
+        public const int ToolbarCopyCommandlineCommandId = 0x1104;
 
         public static readonly Guid KeyBindingsCmdSet = new Guid("886F463E-7F96-4BA4-BA88-F36D63044A00");
 
@@ -69,6 +69,7 @@ namespace SmartCmdArgs
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, package.ToolWindowViewModel.RemoveEntriesCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, package.ToolWindowViewModel.MoveEntriesUpCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, package.ToolWindowViewModel.MoveEntriesDownCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyCommandlineCommandId, package.ToolWindowViewModel.CopyCommandlineCommand);
                 AddCommandToService(commandService, KeyBindingsCmdSet, KeyBindingAddCmdId, package.ToolWindowViewModel.AddEntryCommand);
             }
         }
