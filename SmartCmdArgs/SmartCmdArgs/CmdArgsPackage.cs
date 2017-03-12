@@ -222,7 +222,7 @@ namespace SmartCmdArgs
                     }
                 }
 
-                Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
+                toolWindowStateLoadedFromSolution = ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
             }
             Logger.Info("All Commands Saved.");
         }
@@ -410,6 +410,11 @@ namespace SmartCmdArgs
                     ReadCommandlineArgumentsFromProject(project)
                         .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData {Command = cmdLineArg}));
             }
+            else if (IsVcsSupportEnabled)
+            {
+                projectData = new ToolWindowStateProjectData();
+                Logger.Info("Will clear all data because of missing json file and enabled VCS support.");
+            }
             else
             {
                 Logger.Info($"Will use commands from suo file for project '{project.UniqueName}'.");
@@ -436,12 +441,13 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Solution opened.");
 
-            UpdateCurrentStartupProject();
-
-            if (ToolWindowViewModel.StartupProject != null)
+            foreach (var project in vsHelper.FindAllProjects())
             {
-                UpdateCommandsForProject(ToolWindowViewModel.StartupProject);
+                UpdateCommandsForProject(project);
+                AttachFsWatcherToProject(project);
             }
+
+            UpdateCurrentStartupProject();
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
@@ -475,10 +481,13 @@ namespace SmartCmdArgs
 
         private void VsHelper_ProjectAdded(object sender, Project project)
         {
-            Logger.Info("VS-Event: Project added.");
+            Logger.Info($"VS-Event: Project added. IsSolutionOpen={vsHelper.IsSolutionOpen}");
 
-            UpdateCommandsForProject(project);
-            AttachFsWatcherToProject(project);
+            if (vsHelper.IsSolutionOpen)
+            {
+                UpdateCommandsForProject(project);
+                AttachFsWatcherToProject(project);
+            }
         }
 
         private void VsHelper_ProjectRemoved(object sender, Project project)
