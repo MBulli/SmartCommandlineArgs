@@ -29,7 +29,8 @@ Tools → Options → Smart Commandline Arguments → General → Enable version
 ![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/AddIcon.png "Add Button"): Add new line  
 ![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/RemoveIcon.png "Remove Button"): Remove selected lines  
 ![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/MoveUpIcon.png "Move Up Button") / ![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/MoveDownIcon.png "Move Down Button"): Move selected lines  
-  
+ ![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/CopyCommandlineIcon.png "Copy commandline to clipboard"): * Copy command line to clipboard. In the example below, the string `-f input_image.png -l latest.log -o out_image.png` is copied to the clipboard.
+ 
 ![alt text](https://github.com/MBulli/SmartCommandlineArgs/blob/master/Doc/Images/example.png "Commandline Arguments Window")
 
 

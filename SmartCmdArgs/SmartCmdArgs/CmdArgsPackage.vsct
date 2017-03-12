@@ -48,6 +48,9 @@
       <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" priority="0x0000">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
       </Group>
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" priority="0x0000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
     </Groups>
     
     <!--Buttons section. -->
@@ -97,6 +100,13 @@
           <ButtonText>Move selected rows down</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarCopyCommandlineCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" />
+        <Icon guid="guidToolBarImages" id="bmpCopyIcon" />
+        <Strings>
+          <ButtonText>Copy whole command line to clipboard</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -106,7 +116,7 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidToolBarImages" href="Resources\ToolBarIconStrip.png" usedList="bmpAddIcon, bmpRemoveIcon, bmpUpArrowIcon, bmpDownArrowIcon"/>
+      <Bitmap guid="guidToolBarImages" href="Resources\ToolBarIconStrip.png" usedList="bmpAddIcon, bmpRemoveIcon, bmpUpArrowIcon, bmpDownArrowIcon, bmpCopyIcon"/>
       <Bitmap guid="guidImages" href="Resources\VSMeuIcon.png" usedList="bmpVSMenuIcon"/>
     </Bitmaps>
   </Commands>
@@ -133,10 +143,12 @@
       <IDSymbol name="ToolbarRemoveCommandId" value="0x1101"/>
       <IDSymbol name="ToolbarMoveUpCommandId" value="0x1102"/>
       <IDSymbol name="ToolbarMoveDownCommandId" value="0x1103"/>
+      <IDSymbol name="ToolbarCopyCommandlineCommandId" value="0x1104"/>
       
       <IDSymbol name="TWToolbar" value="0x1000" />
       <IDSymbol name="TWToolbarGroupAddRemove" value="0x1050" />
       <IDSymbol name="TWToolbarGroupMove" value="0x1051" />
+      <IDSymbol name="TWToolbarEdit" value="0x1052" />
     </GuidSymbol>
     
     
@@ -149,6 +161,7 @@
       <IDSymbol name="bmpRemoveIcon" value="2" />
       <IDSymbol name="bmpUpArrowIcon" value="3" />
       <IDSymbol name="bmpDownArrowIcon" value="4" />
+      <IDSymbol name="bmpCopyIcon" value="5" />
     </GuidSymbol>
 
     <GuidSymbol name="guidKeyBindingsCmdSet" value="{886F463E-7F96-4BA4-BA88-F36D63044A00}">
