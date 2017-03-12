@@ -436,12 +436,13 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Solution opened.");
 
-            UpdateCurrentStartupProject();
-
-            if (ToolWindowViewModel.StartupProject != null)
+            foreach (var project in vsHelper.FindAllProjects())
             {
-                UpdateCommandsForProject(ToolWindowViewModel.StartupProject);
+                UpdateCommandsForProject(project);
+                AttachFsWatcherToProject(project);
             }
+
+            UpdateCurrentStartupProject();
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
@@ -475,10 +476,13 @@ namespace SmartCmdArgs
 
         private void VsHelper_ProjectAdded(object sender, Project project)
         {
-            Logger.Info("VS-Event: Project added.");
+            Logger.Info($"VS-Event: Project added. IsSolutionOpen={vsHelper.IsSolutionOpen}");
 
-            UpdateCommandsForProject(project);
-            AttachFsWatcherToProject(project);
+            if (vsHelper.IsSolutionOpen)
+            {
+                UpdateCommandsForProject(project);
+                AttachFsWatcherToProject(project);
+            }
         }
 
         private void VsHelper_ProjectRemoved(object sender, Project project)
