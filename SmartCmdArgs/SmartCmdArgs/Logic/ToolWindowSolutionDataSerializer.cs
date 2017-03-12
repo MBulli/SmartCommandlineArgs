@@ -24,7 +24,7 @@ namespace SmartCmdArgs.Logic
             return entries;
         }
 
-        public static void Serialize(ToolWindowViewModel vm, Stream stream)
+        public static ToolWindowStateSolutionData Serialize(ToolWindowViewModel vm, Stream stream)
         {
             if (vm == null)
                 throw new ArgumentNullException(nameof(vm));
@@ -55,6 +55,8 @@ namespace SmartCmdArgs.Logic
             StreamWriter sw = new StreamWriter(stream);
             sw.Write(jsonStr);
             sw.Flush();
+
+            return data;
         }
     }
 }

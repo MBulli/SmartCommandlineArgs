@@ -222,7 +222,7 @@ namespace SmartCmdArgs
                     }
                 }
 
-                Logic.ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
+                toolWindowStateLoadedFromSolution = ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
             }
             Logger.Info("All Commands Saved.");
         }
