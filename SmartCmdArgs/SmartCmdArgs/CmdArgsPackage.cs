@@ -410,6 +410,11 @@ namespace SmartCmdArgs
                     ReadCommandlineArgumentsFromProject(project)
                         .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData {Command = cmdLineArg}));
             }
+            else if (IsVcsSupportEnabled)
+            {
+                projectData = new ToolWindowStateProjectData();
+                Logger.Info("Will clear all data because of missing json file and enabled VCS support.");
+            }
             else
             {
                 Logger.Info($"Will use commands from suo file for project '{project.UniqueName}'.");
