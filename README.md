@@ -1,5 +1,5 @@
 
-# <img src="Doc/SmartCommandLineIcon-Readme.svg" width="84">  Smart Commandline Arguments 
+# <img src="Doc/SmartCommandLineIcon-Readme.png">  Smart Commandline Arguments 
 A Visual Studio Extension which aims to provide a better UI to manage your command line arguments
 
 ## Install
