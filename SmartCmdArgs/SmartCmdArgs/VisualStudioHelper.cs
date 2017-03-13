@@ -12,7 +12,7 @@ using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs
 {
-    class VisualStudioHelper : IVsUpdateSolutionEvents2, IVsSelectionEvents
+    class VisualStudioHelper : IVsUpdateSolutionEvents2, IVsSelectionEvents, IVsSolutionEvents
     {
         /// <summary>
         /// Shortcut for Microsoft.VisualStudio.VSConstants.S_OK
@@ -30,6 +30,7 @@ namespace SmartCmdArgs
         private IVsMonitorSelection selectionMonitor;
 
         private bool initialized = false;
+        private uint solutionEventsCookie = 0;
         private uint selectionEventsCookie = 0;
         private uint updateSolutionEventsCookie = 0;
 
@@ -73,7 +74,7 @@ namespace SmartCmdArgs
                 this.selectionMonitor = package.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
                 // Set startup project
-
+                ErrorHandler.ThrowOnFailure(this.solutionService.AdviseSolutionEvents(this, out solutionEventsCookie));
                 ErrorHandler.ThrowOnFailure(this.selectionMonitor.AdviseSelectionEvents(this, out selectionEventsCookie));
                 ErrorHandler.ThrowOnFailure(this.solutionBuildService.AdviseUpdateSolutionEvents(this, out updateSolutionEventsCookie));
 
@@ -308,6 +309,28 @@ namespace SmartCmdArgs
         int IVsUpdateSolutionEvents.UpdateSolution_Done(int fSucceeded, int fModified, int fCancelCommand) { return S_OK; }
         int IVsUpdateSolutionEvents.UpdateSolution_StartUpdate(ref int pfCancelUpdate) { return S_OK; }
         int IVsUpdateSolutionEvents.UpdateSolution_Cancel() { return S_OK; }
+        #endregion
+        #endregion
+
+        #region IVsSolutionEvents Implementation
+        public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
+        {
+            pRealHierarchy.GetProperty(VSConstants.VSITEMID_ROOT,
+                                       (int)__VSHPROPID.VSHPROPID_ProjectName,
+                                       out object projectName);
+            Debug.WriteLine($"unload Project: {projectName}");
+            return S_OK;
+        }
+        #region unused
+        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) { return S_OK; }
+        public int OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel) { return S_OK; }
+        public int OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved) { return S_OK; }
+        public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) { return S_OK; }
+        public int OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel) { return S_OK; }
+        public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution) { return S_OK; }
+        public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel) { return S_OK; }
+        public int OnBeforeCloseSolution(object pUnkReserved) { return S_OK; }
+        public int OnAfterCloseSolution(object pUnkReserved) { return S_OK; }
         #endregion
         #endregion
     }
