@@ -29,12 +29,6 @@ namespace SmartCmdArgs.Helper
             return guid;
         }
 
-        public static string GetPath(this IVsHierarchy hierarchy)
-        {
-            hierarchy.GetCanonicalName(VSConstants.VSITEMID_ROOT, out var canonicalName);
-            return canonicalName.ToLower();
-        }
-
         public static bool IsLoaded(this IVsHierarchy hierarchy)
         {
             hierarchy.GetProperty(VSConstants.VSITEMID_ROOT,

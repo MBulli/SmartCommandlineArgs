@@ -23,9 +23,6 @@ namespace SmartCmdArgs
         private CmdArgsPackage package;
         private EnvDTE.DTE appObject;
 
-        private EnvDTE.SolutionEvents solutionEvents;
-        private EnvDTE.CommandEvents commandEvents;
-
         private IVsSolution2 solutionService;
         private IVsSolutionBuildManager2 solutionBuildService;
         private IVsMonitorSelection selectionMonitor;
@@ -57,12 +54,6 @@ namespace SmartCmdArgs
         {
             this.package = package;
             this.appObject = package.GetService<SDTE, EnvDTE.DTE>();
-
-            // see: https://support.microsoft.com/en-us/kb/555430
-            this.solutionEvents = this.appObject.Events.SolutionEvents;
-            this.commandEvents = this.appObject.Events.CommandEvents;
-            
-            this.solutionEvents.ProjectRenamed += SolutionEvents_ProjectRenamed;
         }
 
         public void Initialize()
@@ -195,6 +186,14 @@ namespace SmartCmdArgs
             ProjectStateMap[projectGuid] = state;
         }
 
+        private void SetProjectFilePath(IVsHierarchy hierarchy, string filePath)
+        {
+            Guid projectGuid = hierarchy.GetGuid();
+            var state = ProjectStateMap[projectGuid];
+            state.FilePath = filePath;
+            ProjectStateMap[projectGuid] = state;
+        }
+
         public string GetMSBuildPropertyValue(Project project, string propName)
         {
             var propStorage = (IVsBuildPropertyStorage) HierarchyForProject(project);
@@ -227,20 +226,6 @@ namespace SmartCmdArgs
             }
             return null;
         }
-
-        #region Solution Events
-        private void SolutionEvents_ProjectRenamed(Project project, string oldName)
-        {
-            if (ProjectArguments.IsSupportedProject(project))
-                ProjectAfterRename?.Invoke(this, new ProjectRenamedEventArgs { project = project, oldName = oldName });
-        }
-
-        public class ProjectRenamedEventArgs
-        {
-            public Project project;
-            public string oldName;
-        }
-        #endregion
 
         #region IVsSelectionEvents Implementation
         int IVsSelectionEvents.OnElementValueChanged(uint elementid, object varValueOld, object varValueNew)
@@ -293,7 +278,6 @@ namespace SmartCmdArgs
         #endregion
 
         #region IVsSolutionEvents Implementation
-
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
             SolutionAfterOpen?.Invoke(this, EventArgs.Empty);
@@ -320,7 +304,7 @@ namespace SmartCmdArgs
                 return LogIgnoringUnsupportedProjectType();
 
             Guid projectGuid = pHierarchy.GetGuid();
-            string projectPath = pHierarchy.GetPath();
+            string projectPath = project.FullName;
             bool isLoaded = pHierarchy.IsLoaded();
 
             ProjectStateMap[projectGuid] = (projectPath, isLoaded);
@@ -380,12 +364,23 @@ namespace SmartCmdArgs
 
         public int OnAfterRenameProject(IVsHierarchy pHierarchy)
         {
-            //var project = ProjectForHierarchy(pHierarchy);
+            var project = ProjectForHierarchy(pHierarchy);
+            if (!ProjectArguments.IsSupportedProject(project))
+                return LogIgnoringUnsupportedProjectType();
 
-            //if (ProjectArguments.IsSupportedProject(project))
-            //    ProjectAfterRename?.Invoke(this, project);
+            Guid projectGuid = pHierarchy.GetGuid();
+            var oldName = ProjectStateMap[projectGuid].FilePath;
+            SetProjectFilePath(pHierarchy, project.FullName);
+
+            ProjectAfterRename?.Invoke(this, new ProjectRenamedEventArgs { project = project, oldName = oldName });
 
             return S_OK;
+        }
+
+        public class ProjectRenamedEventArgs
+        {
+            public Project project;
+            public string oldName;
         }
 
         #region unused
