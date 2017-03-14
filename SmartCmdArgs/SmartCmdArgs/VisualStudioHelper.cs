@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using EnvDTE;
@@ -12,7 +13,7 @@ using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs
 {
-    class VisualStudioHelper : IVsUpdateSolutionEvents2, IVsSelectionEvents, IVsSolutionEvents
+    class VisualStudioHelper : IVsUpdateSolutionEvents2, IVsSelectionEvents, IVsSolutionEvents, IVsSolutionEvents4
     {
         /// <summary>
         /// Shortcut for Microsoft.VisualStudio.VSConstants.S_OK
@@ -37,15 +38,20 @@ namespace SmartCmdArgs
         public EnvDTE.Solution Solution { get { return appObject.Solution; } }
         public bool IsSolutionOpen { get { return appObject?.Solution?.IsOpen ?? false; } }
 
-        public event EventHandler SolutionOpend;
-        public event EventHandler SolutionWillClose;
-        public event EventHandler SolutionClosed;
         public event EventHandler StartupProjectChanged;
         public event EventHandler StartupProjectConfigurationChanged;
 
-        public event EventHandler<Project> ProjectAdded;
-        public event EventHandler<Project> ProjectRemoved;
-        public event EventHandler<ProjectRenamedEventArgs> ProjectRenamed;
+        public event EventHandler SolutionAfterOpen;
+        public event EventHandler SolutionBeforeClose;
+        public event EventHandler SolutionAfterClose;
+
+        public event EventHandler<Project> ProjectAfterOpen;
+        public event EventHandler<Project> ProjectBeforeClose;
+        public event EventHandler<Project> ProjectAfterLoad;
+        public event EventHandler<Project> ProjectBeforeUnload;
+        public event EventHandler<ProjectRenamedEventArgs> ProjectAfterRename;
+
+        private Dictionary<Guid, (string FilePath, bool IsLoaded)> ProjectStateMap = new Dictionary<Guid, ValueTuple<string, bool>>();
 
         public VisualStudioHelper(CmdArgsPackage package)
         {
@@ -55,12 +61,7 @@ namespace SmartCmdArgs
             // see: https://support.microsoft.com/en-us/kb/555430
             this.solutionEvents = this.appObject.Events.SolutionEvents;
             this.commandEvents = this.appObject.Events.CommandEvents;
-
-            this.solutionEvents.Opened += SolutionEvents_Opened;
-            this.solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
-            this.solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
-            this.solutionEvents.ProjectAdded += SolutionEvents_ProjectAdded;
-            this.solutionEvents.ProjectRemoved += SolutionEvents_ProjectRemoved;
+            
             this.solutionEvents.ProjectRenamed += SolutionEvents_ProjectRenamed;
         }
 
@@ -177,10 +178,21 @@ namespace SmartCmdArgs
 
         public IVsHierarchy HierarchyForProject(Project project)
         {
-            IVsHierarchy hier;
-            ErrorHandler.ThrowOnFailure(solutionService.GetProjectOfUniqueName(project.UniqueName, out hier));
-            
+            ErrorHandler.ThrowOnFailure(solutionService.GetProjectOfUniqueName(project.UniqueName, out IVsHierarchy hier));
             return hier;
+        }
+
+        public Project ProjectForHierarchy(IVsHierarchy hierarchy)
+        {
+            return hierarchy?.GetExtObject() as EnvDTE.Project;
+        }
+
+        private void SetProjectLoadState(IVsHierarchy hierarchy, bool isLoaded)
+        {
+            Guid projectGuid = hierarchy.GetGuid();
+            var state = ProjectStateMap[projectGuid];
+            state.IsLoaded = isLoaded;
+            ProjectStateMap[projectGuid] = state;
         }
 
         public string GetMSBuildPropertyValue(Project project, string propName)
@@ -217,37 +229,10 @@ namespace SmartCmdArgs
         }
 
         #region Solution Events
-        private void SolutionEvents_Opened()
-        {
-            SolutionOpend?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void SolutionEvents_BeforeClosing()
-        {
-            SolutionWillClose?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void SolutionEvents_AfterClosing()
-        {
-            SolutionClosed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void SolutionEvents_ProjectAdded(Project project)
-        {
-            if (ProjectArguments.IsSupportedProject(project))
-                ProjectAdded?.Invoke(this, project);
-        }
-
-        private void SolutionEvents_ProjectRemoved(Project project)
-        {
-            if (ProjectArguments.IsSupportedProject(project))
-                ProjectRemoved?.Invoke(this, project);
-        }
-
         private void SolutionEvents_ProjectRenamed(Project project, string oldName)
         {
             if (ProjectArguments.IsSupportedProject(project))
-                ProjectRenamed?.Invoke(this, new ProjectRenamedEventArgs { project = project, oldName = oldName });
+                ProjectAfterRename?.Invoke(this, new ProjectRenamedEventArgs { project = project, oldName = oldName });
         }
 
         public class ProjectRenamedEventArgs
@@ -282,12 +267,7 @@ namespace SmartCmdArgs
             // This method is called for each Hierarchy element (e.g. project and folders), thus we filter for the startup project
             // to only trigger the config changed event once.
 
-            object objProj = null;
-            pIVsHierarchy?.GetProperty(VSConstants.VSITEMID_ROOT,
-                                       (int)__VSHPROPID.VSHPROPID_ExtObject,
-                                       out objProj);
-
-            EnvDTE.Project project = objProj as EnvDTE.Project;
+            var project = ProjectForHierarchy(pIVsHierarchy);
 
             if (project?.UniqueName == StartupProjectUniqueName())
             {
@@ -313,25 +293,115 @@ namespace SmartCmdArgs
         #endregion
 
         #region IVsSolutionEvents Implementation
-        public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
+
+        public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
-            pRealHierarchy.GetProperty(VSConstants.VSITEMID_ROOT,
-                                       (int)__VSHPROPID.VSHPROPID_ProjectName,
-                                       out object projectName);
-            Debug.WriteLine($"unload Project: {projectName}");
+            SolutionAfterOpen?.Invoke(this, EventArgs.Empty);
             return S_OK;
         }
+
+        public int OnBeforeCloseSolution(object pUnkReserved)
+        {
+            SolutionBeforeClose?.Invoke(this, EventArgs.Empty);
+            return S_OK;
+        }
+
+        public int OnAfterCloseSolution(object pUnkReserved)
+        {
+            ProjectStateMap.Clear();
+            SolutionAfterClose?.Invoke(this, EventArgs.Empty);
+            return S_OK;
+        }
+
+        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded)
+        {
+            var project = ProjectForHierarchy(pHierarchy);
+            if (!ProjectArguments.IsSupportedProject(project))
+                return LogIgnoringUnsupportedProjectType();
+
+            Guid projectGuid = pHierarchy.GetGuid();
+            string projectPath = pHierarchy.GetPath();
+            bool isLoaded = pHierarchy.IsLoaded();
+
+            ProjectStateMap[projectGuid] = (projectPath, isLoaded);
+
+            ProjectAfterOpen?.Invoke(this, project);
+
+            return S_OK;
+        }
+
+        public int OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved)
+        {
+            var project = ProjectForHierarchy(pHierarchy);
+            if (!ProjectArguments.IsSupportedProject(project))
+                return LogIgnoringUnsupportedProjectType();
+
+            Guid projectGuid = pHierarchy.GetGuid();
+
+            if (!ProjectStateMap.TryGetValue(projectGuid, out var state) || !state.IsLoaded)
+            {
+                Logger.Info("OnBeforeCloseProject event was ignored because project is not open or not loaded.");
+                return S_OK;
+            }
+
+            ProjectStateMap.Remove(projectGuid);
+            
+            ProjectBeforeClose?.Invoke(this, project);
+
+            return S_OK;
+        }
+
+        public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
+        {
+            var project = ProjectForHierarchy(pRealHierarchy);
+            if (!ProjectArguments.IsSupportedProject(project))
+                return LogIgnoringUnsupportedProjectType();
+
+            SetProjectLoadState(pRealHierarchy, isLoaded: true);
+            
+            ProjectAfterLoad?.Invoke(this, project);
+
+            return S_OK;
+        }
+
+        public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
+        {
+            var project = ProjectForHierarchy(pRealHierarchy);
+            if (!ProjectArguments.IsSupportedProject(project))
+                return LogIgnoringUnsupportedProjectType();
+
+            SetProjectLoadState(pRealHierarchy, isLoaded:false);
+            
+            ProjectBeforeUnload?.Invoke(this, project);
+
+            return S_OK;
+        }
+
+
+        public int OnAfterRenameProject(IVsHierarchy pHierarchy)
+        {
+            //var project = ProjectForHierarchy(pHierarchy);
+
+            //if (ProjectArguments.IsSupportedProject(project))
+            //    ProjectAfterRename?.Invoke(this, project);
+
+            return S_OK;
+        }
+
         #region unused
-        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) { return S_OK; }
         public int OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel) { return S_OK; }
-        public int OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved) { return S_OK; }
-        public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) { return S_OK; }
         public int OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel) { return S_OK; }
-        public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution) { return S_OK; }
         public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel) { return S_OK; }
-        public int OnBeforeCloseSolution(object pUnkReserved) { return S_OK; }
-        public int OnAfterCloseSolution(object pUnkReserved) { return S_OK; }
+        public int OnQueryChangeProjectParent(IVsHierarchy pHierarchy, IVsHierarchy pNewParentHier, ref int pfCancel) { return S_OK; }
+        public int OnAfterChangeProjectParent(IVsHierarchy pHierarchy) { return S_OK; }
+        public int OnAfterAsynchOpenProject(IVsHierarchy pHierarchy, int fAdded) { return S_OK; }
         #endregion
         #endregion
+        
+        private int LogIgnoringUnsupportedProjectType([CallerMemberName] string eventName = null)
+        {
+            Logger.Info($"{eventName} event was ignored because project type is not supported.");
+            return S_OK;
+        }
     }
 }

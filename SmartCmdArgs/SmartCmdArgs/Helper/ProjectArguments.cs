@@ -195,7 +195,7 @@ namespace SmartCmdArgs.Helper
 
         public static bool IsSupportedProject(EnvDTE.Project project)
         {
-            return supportedProjects.ContainsKey(project.Kind);
+            return project != null && supportedProjects.ContainsKey(project.Kind);
         }
 
         public static void AddAllArguments(EnvDTE.Project project, List<string> allArgs)

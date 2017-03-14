@@ -113,15 +113,15 @@ namespace SmartCmdArgs
             base.Initialize();
 
             vsHelper = new VisualStudioHelper(this);
-            vsHelper.SolutionOpend += VsHelper_SolutionOpend;
-            vsHelper.SolutionWillClose += VsHelper_SolutionWillClose;
-            vsHelper.SolutionClosed += VsHelper_SolutionClosed;
+            vsHelper.SolutionAfterOpen += VsHelper_SolutionOpend;
+            vsHelper.SolutionBeforeClose += VsHelper_SolutionWillClose;
+            vsHelper.SolutionAfterClose += VsHelper_SolutionClosed;
             vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
             vsHelper.StartupProjectConfigurationChanged += VsHelper_StartupProjectConfigurationChanged;
 
-            vsHelper.ProjectAdded += VsHelper_ProjectAdded;
-            vsHelper.ProjectRemoved += VsHelper_ProjectRemoved;
-            vsHelper.ProjectRenamed += VsHelper_ProjectRenamed;
+            vsHelper.ProjectAfterOpen += VsHelper_ProjectAdded;
+            vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
+            vsHelper.ProjectAfterRename += VsHelper_ProjectRenamed;
 
             vsHelper.Initialize();
 
