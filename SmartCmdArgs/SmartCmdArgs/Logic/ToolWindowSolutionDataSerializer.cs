@@ -36,7 +36,7 @@ namespace SmartCmdArgs.Logic
             foreach (var kvp in vm.SolutionArguments)
             {
                 var list = new ToolWindowStateProjectData();
-                data.Add(kvp.Key.UniqueName, list);
+                data.Add(kvp.Key, list);
 
                 foreach (var item in kvp.Value.DataCollection)
                 {

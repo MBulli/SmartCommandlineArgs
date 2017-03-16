@@ -17,8 +17,8 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
-        private Dictionary<Project, ListViewModel> solutionArguments; 
-        public Dictionary<Project, ListViewModel> SolutionArguments => solutionArguments;
+        private Dictionary<string, ListViewModel> solutionArguments; 
+        public Dictionary<string, ListViewModel> SolutionArguments => solutionArguments;
 
         private ListViewModel _currentArgumentList;
         public ListViewModel CurrentArgumentList
@@ -27,8 +27,8 @@ namespace SmartCmdArgs.ViewModel
             set { _currentArgumentList = value; OnNotifyPropertyChanged(); }
         }
 
-        private Project _startupProject;
-        public Project StartupProject
+        private string _startupProject;
+        public string StartupProject
         {
             get { return _startupProject; }
             private set { _startupProject = value; OnNotifyPropertyChanged(); }
@@ -64,7 +64,7 @@ namespace SmartCmdArgs.ViewModel
 
         public ToolWindowViewModel()
         {
-            solutionArguments = new Dictionary<Project, ListViewModel>();
+            solutionArguments = new Dictionary<string, ListViewModel>();
 
             AddEntryCommand = new RelayCommand(
                 () => {
@@ -190,7 +190,7 @@ namespace SmartCmdArgs.ViewModel
             return CurrentArgumentList?.DataCollection.Where(item => item.Enabled) ?? new CmdArgItem[0];
         }
 
-        public void PopulateFromProjectData(Project projectName, ToolWindowStateProjectData data)
+        public void PopulateFromProjectData(string projectName, ToolWindowStateProjectData data)
         {
             var curListVM = GetListViewModel(projectName);
             curListVM.DataCollection.Clear();
@@ -204,21 +204,21 @@ namespace SmartCmdArgs.ViewModel
                     }));
         }
 
-        public ListViewModel GetListViewModel(Project project)
+        public ListViewModel GetListViewModel(string projectName)
         {
             ListViewModel listVM;
-            if (!solutionArguments.TryGetValue(project, out listVM))
+            if (!solutionArguments.TryGetValue(projectName, out listVM))
             {
                 listVM = new ListViewModel();
-                solutionArguments.Add(project, listVM);
+                solutionArguments.Add(projectName, listVM);
             }
             return listVM;
         }
 
-        public bool UpdateStartupProject(Project project)
+        public bool UpdateStartupProject(string projectName)
         {
-            if (StartupProject == project) return false;
-            if (project == null)
+            if (StartupProject == projectName) return false;
+            if (string.IsNullOrEmpty(projectName))
             {
                 UnsubscribeToChangeEvents();
 
@@ -231,12 +231,12 @@ namespace SmartCmdArgs.ViewModel
             {
                 UnsubscribeToChangeEvents();
 
-                this.StartupProject = project;
-                this.CurrentArgumentList = GetListViewModel(project);
+                this.StartupProject = projectName;
+                this.CurrentArgumentList = GetListViewModel(projectName);
 
                 SubscribeToChangeEvents();
 
-                Logger.Info($"Startup project changed to '{project.UniqueName}'.");
+                Logger.Info($"Startup project changed to '{projectName}'.");
             }
             return true;
         }

@@ -173,6 +173,12 @@ namespace SmartCmdArgs
             return hier;
         }
 
+        public IVsHierarchy HierarchyForProjectName(string projectName)
+        {
+            ErrorHandler.ThrowOnFailure(solutionService.GetProjectOfUniqueName(projectName, out IVsHierarchy hier));
+            return hier;
+        }
+
         public Project ProjectForHierarchy(IVsHierarchy hierarchy)
         {
             return hierarchy?.GetExtObject() as EnvDTE.Project;
@@ -194,9 +200,11 @@ namespace SmartCmdArgs
             ProjectStateMap[projectGuid] = state;
         }
 
-        public string GetMSBuildPropertyValue(Project project, string propName)
+        public string GetMSBuildPropertyValue(string projectName, string propName)
         {
-            var propStorage = (IVsBuildPropertyStorage) HierarchyForProject(project);
+            var hierarchy =  HierarchyForProjectName(projectName);
+            var project = ProjectForHierarchy(hierarchy);
+            var propStorage = (IVsBuildPropertyStorage)hierarchy;
 
             string configName = null;
             try
@@ -205,7 +213,7 @@ namespace SmartCmdArgs
             }
             catch (Exception ex)
             {
-                Logger.Warn($"Failed to get active configuration name for project '{project.UniqueName}' with error '{ex}'");
+                Logger.Warn($"Failed to get active configuration name for project '{projectName}' with error '{ex}'");
             }
 
             if (configName != null)
@@ -221,7 +229,7 @@ namespace SmartCmdArgs
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warn($"Failed to evaluate property '{propName}' for project '{project.UniqueName}' with configuration '{configName}' with error '{ex}'");
+                    Logger.Warn($"Failed to evaluate property '{propName}' for project '{projectName}' with configuration '{configName}' with error '{ex}'");
                 }
             }
             return null;
