@@ -185,7 +185,7 @@ namespace SmartCmdArgs
                         ViewModel.ListViewModel vm = null;
                         if (ToolWindowViewModel.SolutionArguments.TryGetValue(project.UniqueName, out vm))
                         {
-                            string filePath = FullFilenameForProjectJsonFile(project);
+                            string filePath = FullFilenameForProjectJsonFileFromProject(project);
                             FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(project.UniqueName);
 
                             if (vm.DataCollection.Count != 0)
@@ -251,7 +251,8 @@ namespace SmartCmdArgs
 
         private void AttachFsWatcherToProject(string projectName)
         {
-            string realProjectJsonFileFullName = SymbolicLinkUtils.GetRealPath(FullFilenameForProjectJsonFile(projectName));
+            Project project = vsHelper.ProjectForHierarchy(vsHelper.HierarchyForProjectName(projectName));
+            string realProjectJsonFileFullName = SymbolicLinkUtils.GetRealPath(FullFilenameForProjectJsonFileFromProject(project));
             try
             {
                 var projectJsonFileWatcher = new FileSystemWatcher();
@@ -334,7 +335,7 @@ namespace SmartCmdArgs
             ToolWindowStateProjectData projectData = null;
             if (IsVcsSupportEnabled)
             {
-                string filePath = FullFilenameForProjectJsonFile(project);
+                string filePath = FullFilenameForProjectJsonFileFromProject(project);
 
                 if (File.Exists(filePath))
                 {
@@ -513,8 +514,8 @@ namespace SmartCmdArgs
             {
                 using (fsWatcher.TemporarilyDisable())
                 {
-                    var newFileName = FullFilenameForProjectJsonFile(e.project);
-                    var oldFileName = FullFilenameForProjectJsonFile(e.oldName);
+                    var newFileName = FullFilenameForProjectJsonFileFromProject(e.project);
+                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(e.oldName);
 
                     Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
 
@@ -558,7 +559,7 @@ namespace SmartCmdArgs
         }
 
 
-        private string FullFilenameForProjectJsonFile(EnvDTE.Project project)
+        private string FullFilenameForProjectJsonFileFromProject(EnvDTE.Project project)
         {
             var userFilename = vsHelper.GetMSBuildPropertyValue(project.UniqueName, "SmartCmdArgJsonFile");
             
@@ -572,11 +573,11 @@ namespace SmartCmdArgs
             }
             else
             {
-                return FullFilenameForProjectJsonFile(project.FullName);
+                return FullFilenameForProjectJsonFileFromProjectPath(project.FullName);
             }
         }
 
-        private string FullFilenameForProjectJsonFile(string projectFile)
+        private string FullFilenameForProjectJsonFileFromProjectPath(string projectFile)
         {
             string filename = $"{Path.GetFileNameWithoutExtension(projectFile)}.args.json";
             return Path.Combine(Path.GetDirectoryName(projectFile), filename);
