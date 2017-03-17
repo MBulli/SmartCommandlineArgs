@@ -184,6 +184,11 @@ namespace SmartCmdArgs
             return hierarchy?.GetExtObject() as EnvDTE.Project;
         }
 
+        public Project ProjectForProjectName(string projectName)
+        {
+            return ProjectForHierarchy(HierarchyForProjectName(projectName));
+        }
+
         private void SetProjectLoadState(IVsHierarchy hierarchy, bool isLoaded)
         {
             Guid projectGuid = hierarchy.GetGuid();

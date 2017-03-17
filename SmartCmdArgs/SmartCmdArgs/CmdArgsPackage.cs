@@ -244,14 +244,14 @@ namespace SmartCmdArgs
                 enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(e => e.Command);
             }
             string prjCmdArgs = string.Join(" ", enabledEntries);
-            Project project = vsHelper.ProjectForHierarchy(vsHelper.HierarchyForProjectName(projectName));
+            Project project = vsHelper.ProjectForProjectName(projectName);
             ProjectArguments.SetArguments(project, prjCmdArgs);
             Logger.Info($"Updated Configuration for Project: {projectName}");
         }
 
         private void AttachFsWatcherToProject(string projectName)
         {
-            Project project = vsHelper.ProjectForHierarchy(vsHelper.HierarchyForProjectName(projectName));
+            Project project = vsHelper.ProjectForProjectName(projectName);
             string realProjectJsonFileFullName = SymbolicLinkUtils.GetRealPath(FullFilenameForProjectJsonFileFromProject(project));
             try
             {
@@ -320,7 +320,7 @@ namespace SmartCmdArgs
             if (string.IsNullOrEmpty(projectName))
                 throw new ArgumentNullException(nameof(projectName));
 
-            Project project = vsHelper.ProjectForHierarchy(vsHelper.HierarchyForProjectName(projectName));
+            Project project = vsHelper.ProjectForProjectName(projectName);
             
             Logger.Info($"Update commands for project '{projectName}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution?.Count}.");
 
