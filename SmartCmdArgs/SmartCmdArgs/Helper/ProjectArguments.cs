@@ -93,7 +93,7 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        private static void SetCpfProjectArguments(EnvDTE.Project project, string arguments, string propertyName)
+        private static void SetDotNetCoreProjectArguments(EnvDTE.Project project, string arguments)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null && project != null)
@@ -104,22 +104,21 @@ namespace SmartCmdArgs.Helper
 
             if (context != null)
             {
-                Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    IProjectLockService projectLockService = context.UnconfiguredProject.ProjectService.Services.ProjectLockService;
+                var launchSettingsProvider = context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
+                var activeLaunchProfile = launchSettingsProvider.ActiveProfile;
+                
+                if (activeLaunchProfile == null)
+                    return;
 
-                    ConfiguredProject proj = await context.UnconfiguredProject.GetSuggestedConfiguredProjectAsync();
-                    IProjectProperties props = proj.Services.UserPropertiesProvider.GetCommonProperties();
+                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(launchSettingsProvider.ActiveProfile);
+                
+                writableLaunchProfile.CommandLineArgs = arguments;
 
-                    using (await projectLockService.WriteLockAsync())
-                    {
-                        await props.SetPropertyValueAsync(propertyName, arguments);
-                    }
-                });
+                launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, false);
             }
         }
 
-        private static void GetCpfProjectAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
+        private static void GetDotNetCoreProjectAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null && project != null)
@@ -130,29 +129,13 @@ namespace SmartCmdArgs.Helper
 
             if (context != null)
             {
-                Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    IProjectLockService projectLockService = context.UnconfiguredProject.ProjectService.Services.ProjectLockService;
+                var launchSettingsProvider = context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
+                var launchProfiles = launchSettingsProvider?.CurrentSnapshot?.Profiles;
 
-                    //using (await projectLockService.ReadLockAsync())
-                    {
-                        foreach (ConfiguredProject proj in context.UnconfiguredProject.LoadedConfiguredProjects)
-                        {
-                            try
-                            {
-                                IProjectProperties props = proj.Services.UserPropertiesProvider.GetCommonProperties();
-                                string cmdarg = await props.GetEvaluatedPropertyValueAsync(propertyName);
-                                if (!string.IsNullOrEmpty(cmdarg))
-                                {
-                                    allArgs.Add(cmdarg);
-                                }
-                            }
-                            catch (Exception ex) { Logger.Error($"Failed to get multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
-                        }
-                    }
+                if (launchProfiles == null)
+                    return;
 
-                    
-                });
+                allArgs.AddRange(launchProfiles.Select(launchProfile => launchProfile.CommandLineArgs));
             }
         }
 
@@ -186,10 +169,10 @@ namespace SmartCmdArgs.Helper
                 SetArguments = (project, arguments) => SetSingleConfigArgument(project, arguments, "ScriptArguments"),
                 GetAllArguments = (project, allArgs) => GetSingleConfigAllArguments(project, allArgs, "ScriptArguments")
             } },
-            // C# - CPF
+            // C# - DotNetCore
             {"{9A19103F-16F7-4668-BE54-9A1E7A4F7556}", new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetCpfProjectArguments(project, arguments, "LocalDebuggerCommandArguments"),
-                GetAllArguments = (project, allArgs) => GetCpfProjectAllArguments(project, allArgs, "LocalDebuggerCommandArguments")
+                SetArguments = (project, arguments) => SetDotNetCoreProjectArguments(project, arguments),
+                GetAllArguments = (project, allArgs) => GetDotNetCoreProjectAllArguments(project, allArgs, "LocalDebuggerCommandArguments")
             } },
         };
 

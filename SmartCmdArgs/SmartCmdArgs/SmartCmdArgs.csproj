@@ -73,6 +73,7 @@
     <Compile Include="Helper\ProjectArguments.cs" />
     <Compile Include="Helper\SymbolicLinkUtils.cs" />
     <Compile Include="Helper\TreeHelper.cs" />
+    <Compile Include="Helper\WritableLaunchProfile.cs" />
     <Compile Include="Logic\ToolWindowProjectDataSerializer.cs" />
     <Compile Include="Logic\ToolWindowSolutionDataSerializer.cs" />
     <Compile Include="Logic\ToolWindowStateData.cs" />
