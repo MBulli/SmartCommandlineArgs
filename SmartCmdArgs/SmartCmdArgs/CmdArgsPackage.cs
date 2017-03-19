@@ -566,8 +566,8 @@ namespace SmartCmdArgs
             vsHelper.FindStartupProject(out startupProject);
 
             // update StartupProject and if it changed update the Configuration
-            if (ToolWindowViewModel.UpdateStartupProject(startupProject.UniqueName))
-                UpdateConfigurationForProject(startupProject.UniqueName);
+            if (ToolWindowViewModel.UpdateStartupProject(startupProject?.UniqueName))
+                UpdateConfigurationForProject(startupProject?.UniqueName);
         }
 
 
