@@ -209,7 +209,10 @@ namespace SmartCmdArgs
         {
             var hierarchy =  HierarchyForProjectName(projectName);
             var project = ProjectForHierarchy(hierarchy);
-            var propStorage = (IVsBuildPropertyStorage)hierarchy;
+            var propStorage = hierarchy as IVsBuildPropertyStorage;
+
+            if (propStorage == null)
+                return null;
 
             string configName = null;
             try

@@ -122,6 +122,7 @@ namespace SmartCmdArgs
             vsHelper.ProjectAfterOpen += VsHelper_ProjectAdded;
             vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
             vsHelper.ProjectAfterRename += VsHelper_ProjectRenamed;
+            vsHelper.ProjectBeforeUnload += VsHelper_ProjectUnloaded;
 
             vsHelper.Initialize();
 
@@ -180,51 +181,57 @@ namespace SmartCmdArgs
                 {
                     Logger.Info("VcsSupport is enabled.");
 
-                    foreach (EnvDTE.Project project in vsHelper.FindAllProjects())
+                    foreach (var projectName in ToolWindowViewModel.SolutionArguments.Keys)
                     {
-                        ViewModel.ListViewModel vm = null;
-                        if (ToolWindowViewModel.SolutionArguments.TryGetValue(project.UniqueName, out vm))
-                        {
-                            string filePath = FullFilenameForProjectJsonFileFromProject(project);
-                            FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(project.UniqueName);
-
-                            if (vm.DataCollection.Count != 0)
-                            {
-                                using (fsWatcher?.TemporarilyDisable())
-                                {
-                                    try
-                                    {
-                                        using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
-                                        {
-                                            Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Logger.Warn($"Failed to write to file '{filePath}' with error '{e}'.");
-                                    }
-                                }
-                            }
-                            else if (File.Exists(filePath))
-                            {
-                                Logger.Info("Deleting json file because command list is empty but json-file exists.");
-
-                                try
-                                {
-                                    File.Delete(filePath);
-                                }
-                                catch (Exception e)
-                                {
-                                    Logger.Warn($"Failed to delete file '{filePath}' with error '{e}'.");
-                                }
-                            }
-                        }
+                        var project = vsHelper.ProjectForProjectName(projectName);
+                        SaveJsonForProject(project);
                     }
                 }
 
                 toolWindowStateLoadedFromSolution = ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
             }
             Logger.Info("All Commands Saved.");
+        }
+
+        private void SaveJsonForProject(Project project)
+        {
+            if (project == null)
+                return;
+
+            ListViewModel vm = ToolWindowViewModel.SolutionArguments[project.UniqueName];
+            string filePath = FullFilenameForProjectJsonFileFromProject(project);
+            FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(project.UniqueName);
+
+            if (vm.DataCollection.Count != 0)
+            {
+                using (fsWatcher?.TemporarilyDisable())
+                {
+                    try
+                    {
+                        using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+                        {
+                            Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Warn($"Failed to write to file '{filePath}' with error '{e}'.");
+                    }
+                }
+            }
+            else if (File.Exists(filePath))
+            {
+                Logger.Info("Deleting json file because command list is empty but json-file exists.");
+
+                try
+                {
+                    File.Delete(filePath);
+                }
+                catch (Exception e)
+                {
+                    Logger.Warn($"Failed to delete file '{filePath}' with error '{e}'.");
+                }
+            }
         }
 
         #endregion
@@ -503,6 +510,11 @@ namespace SmartCmdArgs
 
             ToolWindowViewModel.SolutionArguments.Remove(project.UniqueName);
             DetachFsWatcherFromProject(project.UniqueName);
+        }
+
+        private void VsHelper_ProjectUnloaded(object sender, Project project)
+        {
+            SaveJsonForProject(project);
         }
 
         private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectRenamedEventArgs e)
