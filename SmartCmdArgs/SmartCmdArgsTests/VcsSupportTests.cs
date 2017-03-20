@@ -14,6 +14,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions,
             VsIdeTestHostContants.HostRestartOptions.Before)]
         public void SaveCommandsToJsonTest()
@@ -45,6 +46,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void LoadCommandsFromExistingJsonTest()
         {
@@ -90,6 +92,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void LoadCommandsFromCreatedJsonTest()
         {
@@ -137,6 +140,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void LoadChangesFromJsonTest()
         {
@@ -204,6 +208,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void AvoidEmptyJsonFileTest()
         {
@@ -218,6 +223,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void DisabledVcsSupportTest()
         {

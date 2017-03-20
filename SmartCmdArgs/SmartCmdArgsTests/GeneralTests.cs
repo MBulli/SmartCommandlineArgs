@@ -21,6 +21,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void CollectArgsFromExistingProjectConfigsTest()
         {
@@ -53,14 +54,15 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         [DeploymentItem("ConsoleApplicationVC.zip")]
         public void CollectArgsDistinctFromExistingProjectConfigsTest()
         {
             const string startArguments = "same args in every config";
 
-            Project project = CreateSolutionWithProject("CollectDistinctTestSolution", "CollectDistinctTestProject");
-            
+            Project project = CreateSolutionWithProject();
+
             foreach (Configuration config in project.ConfigurationManager)
             {
                 Debug.WriteLine($"Adding args '{startArguments}' to configuration '{config.ConfigurationName}'");
@@ -83,6 +85,7 @@ namespace SmartCmdArgsTests
         [TestMethod]
         [HostType("VS IDE")]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
+        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void AddNewArgLineViaCommandTest()
         {
