@@ -118,6 +118,7 @@ namespace SmartCmdArgs
             vsHelper.SolutionAfterClose += VsHelper_SolutionClosed;
             vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
             vsHelper.StartupProjectConfigurationChanged += VsHelper_StartupProjectConfigurationChanged;
+            vsHelper.BuildProcessStarted += VsHelper_BuildProcessStarted;
 
             vsHelper.ProjectAfterOpen += VsHelper_ProjectAdded;
             vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
@@ -137,14 +138,8 @@ namespace SmartCmdArgs
                 AttachFsWatcherToAllProjects();
                 UpdateCurrentStartupProject();
             }
-
-            ToolWindowViewModel.CommandLineChanged += OnCommandLineChanged;
+            
             ToolWindowViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
-        }
-
-        private void OnCommandLineChanged(object sender, EventArgs e)
-        {
-            UpdateConfigurationForProject(ToolWindowViewModel.StartupProject);
         }
 
         private void OnSelectedItemsChanged(object sender, System.Collections.IList e)
@@ -433,8 +428,6 @@ namespace SmartCmdArgs
 
             // push projectData to the ViewModel
             ToolWindowViewModel.PopulateFromProjectData(projectName, projectData);
-            if (projectName == ToolWindowViewModel.StartupProject)
-                UpdateConfigurationForProject(projectName);
 
             Logger.Info($"Updated Commands for project '{projectName}'.");
         }
@@ -486,6 +479,11 @@ namespace SmartCmdArgs
         private void VsHelper_StartupProjectConfigurationChanged(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Startup project configuration changed.");
+        }
+
+        private void VsHelper_BuildProcessStarted(object sender, EventArgs e)
+        {
+            Logger.Info("VS-Event: Startup project build begin.");
 
             UpdateConfigurationForProject(ToolWindowViewModel.StartupProject);
         }
@@ -565,9 +563,8 @@ namespace SmartCmdArgs
             Project startupProject;
             vsHelper.FindStartupProject(out startupProject);
 
-            // update StartupProject and if it changed update the Configuration
-            if (ToolWindowViewModel.UpdateStartupProject(startupProject?.UniqueName))
-                UpdateConfigurationForProject(startupProject?.UniqueName);
+            // update StartupProject
+            ToolWindowViewModel.UpdateStartupProject(startupProject?.UniqueName);
         }
 
 

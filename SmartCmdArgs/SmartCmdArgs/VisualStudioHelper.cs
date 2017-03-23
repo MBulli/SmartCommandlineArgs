@@ -13,7 +13,7 @@ using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs
 {
-    class VisualStudioHelper : IVsUpdateSolutionEvents2, IVsSelectionEvents, IVsSolutionEvents, IVsSolutionEvents4
+    class VisualStudioHelper : IVsUpdateSolutionEvents2, IVsSelectionEvents, IVsSolutionEvents, IVsSolutionEvents4, IVsBuildStatusCallback
     {
         /// <summary>
         /// Shortcut for Microsoft.VisualStudio.VSConstants.S_OK
@@ -26,14 +26,18 @@ namespace SmartCmdArgs
         private IVsSolution2 solutionService;
         private IVsSolutionBuildManager2 solutionBuildService;
         private IVsMonitorSelection selectionMonitor;
+        private IVsBuildableProjectCfg currentBuildableProjectCfg;
 
         private bool initialized = false;
         private uint solutionEventsCookie = 0;
         private uint selectionEventsCookie = 0;
         private uint updateSolutionEventsCookie = 0;
+        private uint buildStatusEventsCookie = 0;
 
         public EnvDTE.Solution Solution { get { return appObject.Solution; } }
         public bool IsSolutionOpen { get { return appObject?.Solution?.IsOpen ?? false; } }
+
+        public event EventHandler BuildProcessStarted;
 
         public event EventHandler StartupProjectChanged;
         public event EventHandler StartupProjectConfigurationChanged;
@@ -70,6 +74,10 @@ namespace SmartCmdArgs
                 ErrorHandler.ThrowOnFailure(this.selectionMonitor.AdviseSelectionEvents(this, out selectionEventsCookie));
                 ErrorHandler.ThrowOnFailure(this.solutionBuildService.AdviseUpdateSolutionEvents(this, out updateSolutionEventsCookie));
 
+                UpdateProjectBuildCallback(GetStartupProject());
+
+                // TODO: populate ProjectStateMap
+
                 initialized = true;
             }
         }
@@ -81,13 +89,17 @@ namespace SmartCmdArgs
                 ErrorHandler.ThrowOnFailure(this.selectionMonitor.UnadviseSelectionEvents(selectionEventsCookie));
             if (updateSolutionEventsCookie != 0)
                 ErrorHandler.ThrowOnFailure(this.solutionBuildService.UnadviseUpdateSolutionEvents(updateSolutionEventsCookie));
+            if (buildStatusEventsCookie != 0)
+                ErrorHandler.ThrowOnFailure(currentBuildableProjectCfg.UnadviseBuildStatusCallback(buildStatusEventsCookie));
 
+            buildStatusEventsCookie = 0;
             selectionEventsCookie = 0;
             updateSolutionEventsCookie = 0;
 
             this.solutionService = null;
             this.solutionBuildService = null;
             this.selectionMonitor = null;
+            this.currentBuildableProjectCfg = null;
 
             initialized = false;
         }
@@ -160,6 +172,12 @@ namespace SmartCmdArgs
             }
 
             return false;
+        }
+
+        private IVsHierarchy GetStartupProject()
+        {
+            selectionMonitor.GetCurrentElementValue((uint) VSConstants.VSSELELEMID.SEID_StartupProject, out object value);
+            return value as IVsHierarchy;
         }
 
         public void UpdateShellCommandUI(bool immediateUpdate = true)
@@ -243,6 +261,33 @@ namespace SmartCmdArgs
             return null;
         }
 
+        private void UpdateProjectBuildCallback(IVsHierarchy projectHierarchy)
+        {
+            if (currentBuildableProjectCfg != null)
+            {
+                // Unadvise
+                ErrorHandler.ThrowOnFailure(currentBuildableProjectCfg.UnadviseBuildStatusCallback(buildStatusEventsCookie));
+                currentBuildableProjectCfg = null;
+                buildStatusEventsCookie = 0;
+            }
+
+            if (projectHierarchy != null)
+            {
+                // Advise
+                IVsProjectCfg[] ppIVsProjectCfg = new IVsProjectCfg[1];
+                ErrorHandler.ThrowOnFailure(solutionBuildService.FindActiveProjectCfg(IntPtr.Zero, IntPtr.Zero, projectHierarchy, ppIVsProjectCfg));
+
+                ppIVsProjectCfg[0].get_BuildableProjectCfg(out currentBuildableProjectCfg);
+                ErrorHandler.ThrowOnFailure(currentBuildableProjectCfg.AdviseBuildStatusCallback(this, out buildStatusEventsCookie));
+            }
+        }
+
+        private void OnStartupProjectChanged(IVsHierarchy startupProjectHierarchy)
+        {
+            UpdateProjectBuildCallback(startupProjectHierarchy);
+            StartupProjectChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         #region IVsSelectionEvents Implementation
         int IVsSelectionEvents.OnElementValueChanged(uint elementid, object varValueOld, object varValueNew)
         {
@@ -250,7 +295,7 @@ namespace SmartCmdArgs
             {
                 if (varValueNew != null)
                 {
-                    StartupProjectChanged?.Invoke(this, EventArgs.Empty);
+                    OnStartupProjectChanged((IVsHierarchy)varValueNew);
                 }
             }
             return S_OK;
@@ -258,6 +303,17 @@ namespace SmartCmdArgs
 
         int IVsSelectionEvents.OnSelectionChanged(IVsHierarchy pHierOld, uint itemidOld, IVsMultiItemSelect pMISOld, ISelectionContainer pSCOld, IVsHierarchy pHierNew, uint itemidNew, IVsMultiItemSelect pMISNew, ISelectionContainer pSCNew) { return S_OK; }
         int IVsSelectionEvents.OnCmdUIContextChanged(uint dwCmdUICookie, int fActive) { return S_OK; }
+        #endregion
+
+        #region IVsBuildStatusCallback Implementation
+        int IVsBuildStatusCallback.BuildBegin(ref int pfContinue)
+        {
+            BuildProcessStarted?.Invoke(this, EventArgs.Empty);
+            pfContinue = 1;
+            return S_OK;
+        }
+        int IVsBuildStatusCallback.BuildEnd(int fSuccess) { return S_OK; }
+        int IVsBuildStatusCallback.Tick(ref int pfContinue) { return S_OK; }
         #endregion
 
         #region IVsUpdateSolutionEvents2 Implementation
@@ -272,6 +328,7 @@ namespace SmartCmdArgs
 
             if (project?.UniqueName == StartupProjectUniqueName())
             {
+                UpdateProjectBuildCallback(pIVsHierarchy);
                 StartupProjectConfigurationChanged?.Invoke(this, EventArgs.Empty);
             }
 
