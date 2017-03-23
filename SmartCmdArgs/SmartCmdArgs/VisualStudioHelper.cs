@@ -76,7 +76,21 @@ namespace SmartCmdArgs
 
                 UpdateProjectBuildCallback(GetStartupProject());
 
-                // TODO: populate ProjectStateMap
+                if (IsSolutionOpen)
+                {
+                    foreach (var project in FindAllProjects())
+                    {
+                        var pHierarchy = HierarchyForProject(project);
+                        if (!ProjectArguments.IsSupportedProject(project))
+                            continue;
+                        
+                        Guid projectGuid = pHierarchy.GetGuid();
+                        string projectPath = project.FullName;
+                        bool isLoaded = pHierarchy.IsLoaded();
+
+                        ProjectStateMap[projectGuid] = (projectPath, isLoaded);
+                    }
+                }
 
                 initialized = true;
             }
