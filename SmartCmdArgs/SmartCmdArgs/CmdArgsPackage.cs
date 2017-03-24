@@ -231,24 +231,23 @@ namespace SmartCmdArgs
 
         #endregion
 
-        private void UpdateConfigurationForProject(string projectName)
+        private void UpdateConfigurationForProject(Project project)
         {
-            if (projectName == null) return;
+            if (project == null) return;
             IEnumerable<string> enabledEntries;
             if (IsMacroEvaluationEnabled)
             {
                 enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(
                     e => msBuildPropertyRegex.Replace(e.Command,
-                        match => vsHelper.GetMSBuildPropertyValue(projectName, match.Groups["propertyName"].Value) ?? match.Value));
+                        match => vsHelper.GetMSBuildPropertyValue(project.UniqueName, match.Groups["propertyName"].Value) ?? match.Value));
             }
             else
             {
                 enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(e => e.Command);
             }
             string prjCmdArgs = string.Join(" ", enabledEntries);
-            Project project = vsHelper.ProjectForProjectName(projectName);
             ProjectArguments.SetArguments(project, prjCmdArgs);
-            Logger.Info($"Updated Configuration for Project: {projectName}");
+            Logger.Info($"Updated Configuration for Project: {project.UniqueName}");
         }
 
         private void AttachFsWatcherToProject(string projectName)
@@ -485,7 +484,12 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Startup project build begin.");
 
-            UpdateConfigurationForProject(ToolWindowViewModel.StartupProject);
+            if (ToolWindowViewModel.StartupProject != null)
+            {
+                var project = vsHelper.ProjectForProjectName(ToolWindowViewModel.StartupProject);
+                UpdateConfigurationForProject(project);
+                SaveJsonForProject(project);
+            }
         }
 
         private void VsHelper_ProjectAdded(object sender, Project project)
