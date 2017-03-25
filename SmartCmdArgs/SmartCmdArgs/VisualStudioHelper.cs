@@ -84,9 +84,9 @@ namespace SmartCmdArgs
 
                 if (IsSolutionOpen)
                 {
-                    foreach (var project in FindAllProjects())
+                    foreach (var pHierarchy in GetSupportedProjects())
                     {
-                        var pHierarchy = HierarchyForProject(project);
+                        var project = ProjectForHierarchy(pHierarchy);
                         if (!ProjectArguments.IsSupportedProject(project))
                             continue;
                         
@@ -130,71 +130,29 @@ namespace SmartCmdArgs
             return startupProjects?.FirstOrDefault() as string;
         }
 
-        public void GetProjects(EnvDTE.Project project, ref List<EnvDTE.Project> allProjects)
+        public IEnumerable<IVsHierarchy> GetSupportedProjects(bool includeUnloaded = false)
         {
-            // Make sure we have a valid list
-            if (allProjects == null)
-            {
-                allProjects = new List<EnvDTE.Project>();
-            }
+            __VSENUMPROJFLAGS property = includeUnloaded ? __VSENUMPROJFLAGS.EPF_ALLINSOLUTION : __VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION;
 
-            // We determine if this is an actual project by looking if it has a ConfigurationManager
-            // This could be wrong for some types of project, but it works for our needs
-            if (ProjectArguments.IsSupportedProject(project))
+            Guid guid = Guid.Empty;
+            solutionService.GetProjectEnum((uint)property, ref guid, out IEnumHierarchies enumerator);
+
+            IVsHierarchy[] hierarchy = new IVsHierarchy[1] { null };
+            uint fetched = 0;
+            for (enumerator.Reset(); enumerator.Next(1, hierarchy, out fetched) == VSConstants.S_OK && fetched == 1; /*nothing*/)
             {
-                allProjects.Add(project);
-            }
-            else if (project.ProjectItems != null)
-            {
-                foreach (EnvDTE.ProjectItem item in project.ProjectItems)
+                if (ProjectArguments.IsSupportedProject(hierarchy[0]))
                 {
-                    if (item.SubProject != null && item.SubProject != project)
-                    {
-                        GetProjects(item.SubProject, ref allProjects);
-                    }
+                    yield return hierarchy[0];
                 }
             }
         }
 
-        public IEnumerable<EnvDTE.Project> FindAllProjects()
+        public IEnumerable<string> GetSupportedProjectUniqueNames(bool includeUnloaded = false)
         {
-            List<EnvDTE.Project> allProjects = new List<EnvDTE.Project>();
-            if (this.appObject?.Solution != null)
-            {
-                foreach (EnvDTE.Project project in this.appObject?.Solution.Projects)
-                {
-                    GetProjects(project, ref allProjects);
-                }
-            }
-            return allProjects;
+            return GetSupportedProjects(includeUnloaded).Select(GetUniqueName);
         }
-
-        [Obsolete]
-        public bool FindStartupProject(out EnvDTE.Project startupProject)
-        {
-            startupProject = null;
-
-            string prjName = StartupProjectUniqueName();
-
-            if (prjName != null)
-            {
-                try
-                {
-                    var project = this.appObject?.Solution.Item(prjName);
-                    if (ProjectArguments.IsSupportedProject(project))
-                        startupProject = project;
-                }
-                catch
-                {
-                    // If we couldn't find it in the solution directly, check in the nested projects
-                    startupProject = FindAllProjects().FirstOrDefault(p => p.UniqueName == prjName);
-                }
-                return startupProject != null;
-            }
-
-            return false;
-        }
-
+        
         public Project GetStartupProject()
         {
             return ProjectForHierarchy(GetStartupProjectHierachy());
@@ -319,6 +277,7 @@ namespace SmartCmdArgs
         #region IVsBuildStatusCallback Implementation
         int IVsBuildStatusCallback.BuildBegin(ref int pfContinue)
         {
+            // TODO: Does not get called if C++ project skips build so has to be replaced (CommandEvents)
             BuildProcessStarted?.Invoke(this, EventArgs.Empty);
             pfContinue = 1;
             return S_OK;

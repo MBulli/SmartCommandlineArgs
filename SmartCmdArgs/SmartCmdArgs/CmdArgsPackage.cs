@@ -279,9 +279,9 @@ namespace SmartCmdArgs
 
         private void AttachFsWatcherToAllProjects()
         {
-            foreach (var project in vsHelper.FindAllProjects())
+            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
             {
-                AttachFsWatcherToProject(project.UniqueName);
+                AttachFsWatcherToProject(projectName);
             }
         }
 
@@ -433,9 +433,9 @@ namespace SmartCmdArgs
 
         private void UpdateCommandsForAllProjects()
         {
-            foreach (var project in vsHelper.FindAllProjects())
+            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
             {
-                UpdateCommandsForProject(project.UniqueName);
+                UpdateCommandsForProject(projectName);
             }
         }
 
@@ -444,10 +444,10 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Solution opened.");
 
-            foreach (var project in vsHelper.FindAllProjects())
+            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
             {
-                UpdateCommandsForProject(project.UniqueName);
-                AttachFsWatcherToProject(project.UniqueName);
+                UpdateCommandsForProject(projectName);
+                AttachFsWatcherToProject(projectName);
             }
 
             UpdateCurrentStartupProject();
