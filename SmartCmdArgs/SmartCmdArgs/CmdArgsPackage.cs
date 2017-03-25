@@ -564,13 +564,19 @@ namespace SmartCmdArgs
 
         private void UpdateCurrentStartupProject()
         {
-            Project startupProject;
-            vsHelper.FindStartupProject(out startupProject);
+            Project startupProject = vsHelper.GetStartupProject();
 
-            // update StartupProject
-            ToolWindowViewModel.UpdateStartupProject(startupProject?.UniqueName);
+            if (ProjectArguments.IsSupportedProject(startupProject))
+            {
+                // update StartupProject
+                ToolWindowViewModel.UpdateStartupProject(startupProject.UniqueName);
+            }
+            else
+            {
+                Logger.Info($"Unsupported startup project '{startupProject?.UniqueName}' of kind '{startupProject?.Kind}'");
+                ToolWindowViewModel.UpdateStartupProject(null);
+            }
         }
-
 
         private string FullFilenameForProjectJsonFileFromProject(EnvDTE.Project project)
         {

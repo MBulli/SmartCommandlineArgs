@@ -181,6 +181,11 @@ namespace SmartCmdArgs.Helper
             return project != null && supportedProjects.ContainsKey(project.Kind);
         }
 
+        public static bool IsSupportedProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy project)
+        {
+            return IsSupportedProject(project?.GetExtObject() as EnvDTE.Project);
+        }
+
         public static void AddAllArguments(EnvDTE.Project project, List<string> allArgs)
         {
             ProjectArgumentsHandlers handler;
