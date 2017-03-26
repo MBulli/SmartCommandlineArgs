@@ -118,7 +118,7 @@ namespace SmartCmdArgs
             vsHelper.SolutionAfterClose += VsHelper_SolutionClosed;
             vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
             vsHelper.StartupProjectConfigurationChanged += VsHelper_StartupProjectConfigurationChanged;
-            vsHelper.BuildProcessStarted += VsHelper_BuildProcessStarted;
+            vsHelper.ProjectBeforeRun += VsHelper_ProjectWillRun;
 
             vsHelper.ProjectAfterOpen += VsHelper_ProjectAdded;
             vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
@@ -480,9 +480,9 @@ namespace SmartCmdArgs
             Logger.Info("VS-Event: Startup project configuration changed.");
         }
 
-        private void VsHelper_BuildProcessStarted(object sender, EventArgs e)
+        private void VsHelper_ProjectWillRun(object sender, EventArgs e)
         {
-            Logger.Info("VS-Event: Startup project build begin.");
+            Logger.Info("VS-Event: Startup project will run.");
 
             if (ToolWindowViewModel.StartupProject != null)
             {

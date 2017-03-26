@@ -34,10 +34,14 @@ namespace SmartCmdArgs
         private uint updateSolutionEventsCookie = 0;
         private uint buildStatusEventsCookie = 0;
 
+        private CommandEvents commandEvents;
+        private readonly string _VSConstants_VSStd97CmdID_GUID;
+
         public EnvDTE.Solution Solution { get { return appObject.Solution; } }
         public bool IsSolutionOpen { get { return appObject?.Solution?.IsOpen ?? false; } }
 
         public event EventHandler BuildProcessStarted;
+        public event EventHandler ProjectBeforeRun;
 
         public event EventHandler StartupProjectChanged;
         public event EventHandler StartupProjectConfigurationChanged;
@@ -64,6 +68,7 @@ namespace SmartCmdArgs
         {
             this.package = package;
             this.appObject = package.GetService<SDTE, EnvDTE.DTE>();
+            _VSConstants_VSStd97CmdID_GUID = typeof(VSConstants.VSStd97CmdID).GUID.ToString("B").ToUpper();
         }
 
         public void Initialize()
@@ -79,6 +84,9 @@ namespace SmartCmdArgs
                 ErrorHandler.ThrowOnFailure(this.solutionService.AdviseSolutionEvents(this, out solutionEventsCookie));
                 ErrorHandler.ThrowOnFailure(this.selectionMonitor.AdviseSelectionEvents(this, out selectionEventsCookie));
                 ErrorHandler.ThrowOnFailure(this.solutionBuildService.AdviseUpdateSolutionEvents(this, out updateSolutionEventsCookie));
+
+                commandEvents = this.appObject.Events.CommandEvents;
+                commandEvents.BeforeExecute += CommandEventsOnBeforeExecute;
 
                 UpdateProjectBuildCallback(GetStartupProjectHierachy());
 
@@ -120,6 +128,8 @@ namespace SmartCmdArgs
             this.solutionBuildService = null;
             this.selectionMonitor = null;
             this.currentBuildableProjectCfg = null;
+
+            commandEvents.BeforeExecute -= CommandEventsOnBeforeExecute;
 
             initialized = false;
         }
@@ -257,6 +267,21 @@ namespace SmartCmdArgs
             StartupProjectChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        private void CommandEventsOnBeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
+        {
+            if (guid == _VSConstants_VSStd97CmdID_GUID)
+            {
+                switch ((VSConstants.VSStd97CmdID)id)
+                {
+                    case VSConstants.VSStd97CmdID.Start:
+                    case VSConstants.VSStd97CmdID.StartNoDebug:
+                    case VSConstants.VSStd97CmdID.Restart:
+                        ProjectBeforeRun?.Invoke(this, EventArgs.Empty);
+                        break;
+                }
+            }
+        }
+
         #region IVsSelectionEvents Implementation
         int IVsSelectionEvents.OnElementValueChanged(uint elementid, object varValueOld, object varValueNew)
         {
@@ -277,7 +302,6 @@ namespace SmartCmdArgs
         #region IVsBuildStatusCallback Implementation
         int IVsBuildStatusCallback.BuildBegin(ref int pfContinue)
         {
-            // TODO: Does not get called if C++ project skips build so has to be replaced (CommandEvents)
             BuildProcessStarted?.Invoke(this, EventArgs.Empty);
             pfContinue = 1;
             return S_OK;
