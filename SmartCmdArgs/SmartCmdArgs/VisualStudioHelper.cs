@@ -90,8 +90,6 @@ namespace SmartCmdArgs
                     foreach (var pHierarchy in GetSupportedProjects())
                     {
                         var project = ProjectForHierarchy(pHierarchy);
-                        if (!ProjectArguments.IsSupportedProject(project))
-                            continue;
                         
                         Guid projectGuid = pHierarchy.GetGuid();
                         string projectPath = project.FullName;
