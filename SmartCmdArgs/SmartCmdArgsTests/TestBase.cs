@@ -14,7 +14,7 @@ namespace SmartCmdArgsTests
     public class TestBase
     {
         public const string HiveName = "15.0";
-        public const string HiveStartArgs = @"/RootSuffix Exp /ResetSettings ""C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Profiles\General.vssettings""";
+        public const string HiveStartArgs = @"/RootSuffix Exp /ResetSettings";
 
         protected DTE Dte => VsIdeTestHostContext.Dte;
         protected TestUtils Utils { get; } = new TestUtils();
