@@ -57,11 +57,13 @@ namespace SmartCmdArgs
         {
             public Project Project;
             public bool IsLoadProcess;
+            public bool IsSolutionOpenProcess;
         }
         public class ProjectBeforeCloseEventArgs
         {
             public Project Project;
             public bool IsUnloadProcess;
+            public bool IsSolutionCloseProcess;
         }
         public class ProjectAfterRenameEventArgs
         {
@@ -349,7 +351,7 @@ namespace SmartCmdArgs
             bool isLoadProcess = ProjectStateMap.TryGetValue(projectGuid, out var state) && state.IsLoaded;
             ProjectStateMap[projectGuid] =  new ProjectState{ FilePath = projectPath, UniqueName = projectName, IsLoaded = isLoaded };
 
-            ProjectAfterOpen?.Invoke(this, new ProjectAfterOpenEventArgs{ Project = project, IsLoadProcess = isLoadProcess });
+            ProjectAfterOpen?.Invoke(this, new ProjectAfterOpenEventArgs{ Project = project, IsLoadProcess = isLoadProcess, IsSolutionOpenProcess = fAdded == 0 });
 
             return S_OK;
         }
@@ -369,7 +371,7 @@ namespace SmartCmdArgs
                 ProjectStateMap.Remove(projectGuid);
             }
             
-            ProjectBeforeClose?.Invoke(this, new ProjectBeforeCloseEventArgs{ Project = project, IsUnloadProcess = isUloadProcess });
+            ProjectBeforeClose?.Invoke(this, new ProjectBeforeCloseEventArgs{ Project = project, IsUnloadProcess = isUloadProcess, IsSolutionCloseProcess = fRemoved == 0});
 
             return S_OK;
         }

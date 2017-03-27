@@ -131,11 +131,8 @@ namespace SmartCmdArgs
             {
                 Logger.Info("Package.Initialize called while solution was already open.");
                 
-                foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
-                {
-                    UpdateCommandsForProject(projectName);
-                    AttachFsWatcherToProject(projectName);
-                }
+                UpdateCommandsForAllProjects();
+                AttachFsWatcherToAllProjects();
                 UpdateCurrentStartupProject();
             }
             
@@ -250,6 +247,14 @@ namespace SmartCmdArgs
             Logger.Info($"Updated Configuration for Project: {project.UniqueName}");
         }
 
+        private void AttachFsWatcherToAllProjects(bool includeUnloaded = false)
+        {
+            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames(includeUnloaded))
+            {
+                AttachFsWatcherToProject(projectName);
+            }
+        }
+
         private void AttachFsWatcherToProject(string projectName)
         {
             Project project = vsHelper.ProjectForProjectName(projectName);
@@ -277,10 +282,19 @@ namespace SmartCmdArgs
             }
         }
 
+        private void DetachFsWatcherFromAllProjects()
+        {
+            foreach (var projectFsWatcher in projectFsWatchers)
+            {
+                projectFsWatcher.Value.Dispose();
+                Logger.Info($"Detached FileSystemWatcher for project '{projectFsWatcher.Key}'.");
+            }
+            projectFsWatchers.Clear();
+        }
+
         private void DetachFsWatcherFromProject(string projectName)
         {
-            FileSystemWatcher fsWatcher;
-            if (projectFsWatchers.TryGetValue(projectName, out fsWatcher))
+            if (projectFsWatchers.TryGetValue(projectName, out FileSystemWatcher fsWatcher))
             {
                 fsWatcher.Dispose();
                 projectFsWatchers.Remove(projectName);
@@ -296,6 +310,14 @@ namespace SmartCmdArgs
                 {
                     UpdateCommandsForProject(projectName);
                 }));
+        }
+
+        private void UpdateCommandsForAllProjects(bool includeUnloaded = false)
+        {
+            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames(includeUnloaded))
+            {
+                UpdateCommandsForProject(projectName);
+            }
         }
 
         private void UpdateCommandsForProject(string projectName)
@@ -417,11 +439,17 @@ namespace SmartCmdArgs
         private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Solution opened.");
+            
+            UpdateCommandsForAllProjects();
+            AttachFsWatcherToAllProjects();
+            UpdateCurrentStartupProject();
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Solution will close.");
+
+            DetachFsWatcherFromAllProjects();
         }
 
         private void VsHelper_SolutionClosed(object sender, EventArgs e)
@@ -458,7 +486,10 @@ namespace SmartCmdArgs
 
         private void VsHelper_ProjectAdded(object sender, VisualStudioHelper.ProjectAfterOpenEventArgs e)
         {
-            Logger.Info($"VS-Event: Project '{e.Project.UniqueName}' added. (IsLoadProcess={e.IsLoadProcess})");
+            Logger.Info($"VS-Event: Project '{e.Project.UniqueName}' added. (IsLoadProcess={e.IsLoadProcess}, IsSolutionOpenProcess={e.IsSolutionOpenProcess})");
+
+            if (e.IsSolutionOpenProcess)
+                return;
 
             UpdateCommandsForProject(e.Project.UniqueName);
             AttachFsWatcherToProject(e.Project.UniqueName);
@@ -466,7 +497,10 @@ namespace SmartCmdArgs
 
         private void VsHelper_ProjectRemoved(object sender, VisualStudioHelper.ProjectBeforeCloseEventArgs e)
         {
-            Logger.Info($"VS-Event: Project '{e.Project.UniqueName}' removed. (IsUnloadProcess={e.IsUnloadProcess})");
+            Logger.Info($"VS-Event: Project '{e.Project.UniqueName}' removed. (IsUnloadProcess={e.IsUnloadProcess}, IsSolutionCloseProcess={e.IsSolutionCloseProcess})");
+
+            if (e.IsSolutionCloseProcess)
+                return;
 
             if (ToolWindowViewModel.StartupProject == e.Project.UniqueName)
                 ToolWindowViewModel.UpdateStartupProject(null);
