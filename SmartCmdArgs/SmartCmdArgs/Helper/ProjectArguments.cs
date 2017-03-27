@@ -153,9 +153,6 @@ namespace SmartCmdArgs.Helper
             } },
             // C/C++
             {"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}", new ProjectArgumentsHandlers() {
-                //SetArguments = (project, arguments) => SetCpfProjectArguments(project, arguments, "LocalDebuggerCommandArguments"),
-                //GetAllArguments = (project, allArgs) => GetCpfProjectAllArguments(project, allArgs, "LocalDebuggerCommandArguments")
-
                 SetArguments = (project, arguments) => SetVCProjEngineArguments(project, arguments),
                 GetAllArguments = (project, allArgs) => GetVCProjEngineAllArguments(project, allArgs)
             } },

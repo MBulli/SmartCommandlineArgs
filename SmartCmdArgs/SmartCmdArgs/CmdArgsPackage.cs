@@ -123,19 +123,19 @@ namespace SmartCmdArgs
             vsHelper.ProjectAfterOpen += VsHelper_ProjectAdded;
             vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
             vsHelper.ProjectAfterRename += VsHelper_ProjectRenamed;
-            vsHelper.ProjectBeforeUnload += VsHelper_ProjectUnloaded;
 
             vsHelper.Initialize();
-
-            GetDialogPage<CmdArgsOptionPage>().MacroEvaluationChanged += OptionPage_MacroEvaluationChanged;
 
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
             {
                 Logger.Info("Package.Initialize called while solution was already open.");
-
-                UpdateCommandsForAllProjects();
-                AttachFsWatcherToAllProjects();
+                
+                foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
+                {
+                    UpdateCommandsForProject(projectName);
+                    AttachFsWatcherToProject(projectName);
+                }
                 UpdateCurrentStartupProject();
             }
             
@@ -184,13 +184,13 @@ namespace SmartCmdArgs
                 }
 
                 toolWindowStateLoadedFromSolution = ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
+                Logger.Info("All Commands Saved.");
             }
-            Logger.Info("All Commands Saved.");
         }
 
         private void SaveJsonForProject(Project project)
         {
-            if (project == null)
+            if (!IsVcsSupportEnabled || project == null)
                 return;
 
             ListViewModel vm = ToolWindowViewModel.SolutionArguments[project.UniqueName];
@@ -277,14 +277,6 @@ namespace SmartCmdArgs
             }
         }
 
-        private void AttachFsWatcherToAllProjects()
-        {
-            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
-            {
-                AttachFsWatcherToProject(projectName);
-            }
-        }
-
         private void DetachFsWatcherFromProject(string projectName)
         {
             FileSystemWatcher fsWatcher;
@@ -294,16 +286,6 @@ namespace SmartCmdArgs
                 projectFsWatchers.Remove(projectName);
                 Logger.Info($"Detached FileSystemWatcher for project '{projectName}'.");
             }
-        }
-
-        private void DetachFsWatcherFromAllProjects()
-        {
-            foreach (var pair in projectFsWatchers)
-            {
-                pair.Value.Dispose();
-            }
-            projectFsWatchers.Clear();
-            Logger.Info("Detached FileSystemWatcher for all projects");
         }
 
         private void UpdateCommandsForProjectOnDispatcher(string projectName)
@@ -431,33 +413,15 @@ namespace SmartCmdArgs
             Logger.Info($"Updated Commands for project '{projectName}'.");
         }
 
-        private void UpdateCommandsForAllProjects()
-        {
-            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
-            {
-                UpdateCommandsForProject(projectName);
-            }
-        }
-
         #region VS Events
         private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Solution opened.");
-
-            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
-            {
-                UpdateCommandsForProject(projectName);
-                AttachFsWatcherToProject(projectName);
-            }
-
-            UpdateCurrentStartupProject();
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Solution will close.");
-
-            DetachFsWatcherFromAllProjects();
         }
 
         private void VsHelper_SolutionClosed(object sender, EventArgs e)
@@ -492,51 +456,47 @@ namespace SmartCmdArgs
             }
         }
 
-        private void VsHelper_ProjectAdded(object sender, Project project)
+        private void VsHelper_ProjectAdded(object sender, VisualStudioHelper.ProjectAfterOpenEventArgs e)
         {
-            Logger.Info($"VS-Event: Project added. IsSolutionOpen={vsHelper.IsSolutionOpen}");
+            Logger.Info($"VS-Event: Project '{e.Project.UniqueName}' added. (IsLoadProcess={e.IsLoadProcess})");
 
-            if (vsHelper.IsSolutionOpen)
-            {
-                UpdateCommandsForProject(project.UniqueName);
-                AttachFsWatcherToProject(project.UniqueName);
-            }
+            UpdateCommandsForProject(e.Project.UniqueName);
+            AttachFsWatcherToProject(e.Project.UniqueName);
         }
 
-        private void VsHelper_ProjectRemoved(object sender, Project project)
+        private void VsHelper_ProjectRemoved(object sender, VisualStudioHelper.ProjectBeforeCloseEventArgs e)
         {
-            Logger.Info("VS-Event: Project removed.");
+            Logger.Info($"VS-Event: Project '{e.Project.UniqueName}' removed. (IsUnloadProcess={e.IsUnloadProcess})");
 
-            if (ToolWindowViewModel.StartupProject == project.UniqueName)
+            if (ToolWindowViewModel.StartupProject == e.Project.UniqueName)
                 ToolWindowViewModel.UpdateStartupProject(null);
 
-            ToolWindowViewModel.SolutionArguments.Remove(project.UniqueName);
-            DetachFsWatcherFromProject(project.UniqueName);
+            SaveJsonForProject(e.Project);
+
+            if (!e.IsUnloadProcess)
+                ToolWindowViewModel.SolutionArguments.Remove(e.Project.UniqueName);
+
+            DetachFsWatcherFromProject(e.Project.UniqueName);
         }
 
-        private void VsHelper_ProjectUnloaded(object sender, Project project)
-        {
-            SaveJsonForProject(project);
-        }
-
-        private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectRenamedEventArgs e)
+        private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectAfterRenameEventArgs e)
         {
             Logger.Info("VS-Event: Project renamed.");
 
             FileSystemWatcher fsWatcher;
-            if (projectFsWatchers.TryGetValue(e.project.UniqueName, out fsWatcher))
+            if (projectFsWatchers.TryGetValue(e.Project.UniqueName, out fsWatcher))
             {
                 using (fsWatcher.TemporarilyDisable())
                 {
-                    var newFileName = FullFilenameForProjectJsonFileFromProject(e.project);
-                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(e.oldName);
+                    var newFileName = FullFilenameForProjectJsonFileFromProject(e.Project);
+                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(e.OldName);
 
                     Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
 
                     if (File.Exists(newFileName))
                     {
                         File.Delete(oldFileName);
-                        UpdateCommandsForProject(e.project.UniqueName);
+                        UpdateCommandsForProject(e.Project.UniqueName);
                     }
                     else if (File.Exists(oldFileName))
                     {
@@ -545,13 +505,6 @@ namespace SmartCmdArgs
                     fsWatcher.Filter = Path.GetFileName(newFileName);
                 }
             }
-        }
-        #endregion
-
-        #region OptionPage Events
-        private void OptionPage_MacroEvaluationChanged(object sender, bool newVlaue)
-        {
-            UpdateCommandsForAllProjects();
         }
         #endregion
 

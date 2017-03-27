@@ -47,11 +47,27 @@ namespace SmartCmdArgs
         public event EventHandler SolutionBeforeClose;
         public event EventHandler SolutionAfterClose;
 
-        public event EventHandler<Project> ProjectAfterOpen;
-        public event EventHandler<Project> ProjectBeforeClose;
+        public event EventHandler<ProjectAfterOpenEventArgs> ProjectAfterOpen;
+        public event EventHandler<ProjectBeforeCloseEventArgs> ProjectBeforeClose;
         public event EventHandler<Project> ProjectAfterLoad;
         public event EventHandler<Project> ProjectBeforeUnload;
-        public event EventHandler<ProjectRenamedEventArgs> ProjectAfterRename;
+        public event EventHandler<ProjectAfterRenameEventArgs> ProjectAfterRename;
+
+        public class ProjectAfterOpenEventArgs
+        {
+            public Project Project;
+            public bool IsLoadProcess;
+        }
+        public class ProjectBeforeCloseEventArgs
+        {
+            public Project Project;
+            public bool IsUnloadProcess;
+        }
+        public class ProjectAfterRenameEventArgs
+        {
+            public Project Project;
+            public string OldName;
+        }
 
         class ProjectState
         {
@@ -93,9 +109,8 @@ namespace SmartCmdArgs
                         
                         Guid projectGuid = pHierarchy.GetGuid();
                         string projectPath = project.FullName;
-                        bool isLoaded = pHierarchy.IsLoaded();
 
-                        ProjectStateMap[projectGuid] = new ProjectState{ FilePath = projectPath, IsLoaded = isLoaded };
+                        ProjectStateMap[projectGuid] = new ProjectState{ FilePath = projectPath, IsLoaded = true };
                     }
                 }
 
@@ -327,9 +342,10 @@ namespace SmartCmdArgs
             string projectPath = project.FullName;
             bool isLoaded = pHierarchy.IsLoaded();
 
+            bool isLoadProcess = ProjectStateMap.TryGetValue(projectGuid, out var state) && state.IsLoaded;
             ProjectStateMap[projectGuid] =  new ProjectState{ FilePath = projectPath, IsLoaded = isLoaded };
 
-            ProjectAfterOpen?.Invoke(this, project);
+            ProjectAfterOpen?.Invoke(this, new ProjectAfterOpenEventArgs{ Project = project, IsLoadProcess = isLoadProcess });
 
             return S_OK;
         }
@@ -339,18 +355,17 @@ namespace SmartCmdArgs
             var project = ProjectForHierarchy(pHierarchy);
             if (!ProjectArguments.IsSupportedProject(project))
                 return LogIgnoringUnsupportedProjectType();
-
+            
             Guid projectGuid = pHierarchy.GetGuid();
 
-            if (!ProjectStateMap.TryGetValue(projectGuid, out var state) || !state.IsLoaded)
-            {
-                Logger.Info("OnBeforeCloseProject event was ignored because project is not open or not loaded.");
-                return S_OK;
-            }
+            var isUloadProcess = ProjectStateMap.TryGetValue(projectGuid, out var state) && !state.IsLoaded;
 
-            ProjectStateMap.Remove(projectGuid);
+            if (!isUloadProcess)
+            {
+                ProjectStateMap.Remove(projectGuid);
+            }
             
-            ProjectBeforeClose?.Invoke(this, project);
+            ProjectBeforeClose?.Invoke(this, new ProjectBeforeCloseEventArgs{ Project = project, IsUnloadProcess = isUloadProcess });
 
             return S_OK;
         }
@@ -392,15 +407,9 @@ namespace SmartCmdArgs
             var oldName = ProjectStateMap[projectGuid].FilePath;
             ProjectStateMap[projectGuid].FilePath = project.FullName;
 
-            ProjectAfterRename?.Invoke(this, new ProjectRenamedEventArgs { project = project, oldName = oldName });
+            ProjectAfterRename?.Invoke(this, new ProjectAfterRenameEventArgs{ OldName = oldName, Project = project });
 
             return S_OK;
-        }
-
-        public class ProjectRenamedEventArgs
-        {
-            public Project project;
-            public string oldName;
         }
 
         #region unused
