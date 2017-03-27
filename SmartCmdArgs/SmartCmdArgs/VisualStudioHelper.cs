@@ -66,11 +66,13 @@ namespace SmartCmdArgs
         public class ProjectAfterRenameEventArgs
         {
             public Project Project;
-            public string OldName;
+            public string OldFilePath;
+            public string OldUniqueName;
         }
 
         class ProjectState
         {
+            public string UniqueName;
             public string FilePath;
             public bool IsLoaded;
         }
@@ -109,8 +111,9 @@ namespace SmartCmdArgs
                         
                         Guid projectGuid = pHierarchy.GetGuid();
                         string projectPath = project.FullName;
+                        string projectName = project.UniqueName;
 
-                        ProjectStateMap[projectGuid] = new ProjectState{ FilePath = projectPath, IsLoaded = true };
+                        ProjectStateMap[projectGuid] = new ProjectState{ FilePath = projectPath, UniqueName = projectName, IsLoaded = true };
                     }
                 }
 
@@ -340,10 +343,11 @@ namespace SmartCmdArgs
 
             Guid projectGuid = pHierarchy.GetGuid();
             string projectPath = project.FullName;
+            string projectName = project.UniqueName;
             bool isLoaded = pHierarchy.IsLoaded();
 
             bool isLoadProcess = ProjectStateMap.TryGetValue(projectGuid, out var state) && state.IsLoaded;
-            ProjectStateMap[projectGuid] =  new ProjectState{ FilePath = projectPath, IsLoaded = isLoaded };
+            ProjectStateMap[projectGuid] =  new ProjectState{ FilePath = projectPath, UniqueName = projectName, IsLoaded = isLoaded };
 
             ProjectAfterOpen?.Invoke(this, new ProjectAfterOpenEventArgs{ Project = project, IsLoadProcess = isLoadProcess });
 
@@ -404,10 +408,12 @@ namespace SmartCmdArgs
                 return LogIgnoringUnsupportedProjectType();
 
             Guid projectGuid = pHierarchy.GetGuid();
-            var oldName = ProjectStateMap[projectGuid].FilePath;
+            var oldFilePath = ProjectStateMap[projectGuid].FilePath;
+            var oldProjectName = ProjectStateMap[projectGuid].UniqueName;
             ProjectStateMap[projectGuid].FilePath = project.FullName;
+            ProjectStateMap[projectGuid].UniqueName = project.UniqueName;
 
-            ProjectAfterRename?.Invoke(this, new ProjectAfterRenameEventArgs{ OldName = oldName, Project = project });
+            ProjectAfterRename?.Invoke(this, new ProjectAfterRenameEventArgs{ OldFilePath = oldFilePath, OldUniqueName = oldProjectName, Project = project });
 
             return S_OK;
         }

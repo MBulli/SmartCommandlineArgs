@@ -481,15 +481,15 @@ namespace SmartCmdArgs
 
         private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectAfterRenameEventArgs e)
         {
-            Logger.Info("VS-Event: Project renamed.");
+            Logger.Info($"VS-Event: Project '{e.OldUniqueName}' renamed to '{e.Project.UniqueName}'.");
 
-            FileSystemWatcher fsWatcher;
-            if (projectFsWatchers.TryGetValue(e.Project.UniqueName, out fsWatcher))
+            if (projectFsWatchers.TryGetValue(e.OldUniqueName, out FileSystemWatcher fsWatcher))
             {
+                projectFsWatchers.Remove(e.OldUniqueName);
                 using (fsWatcher.TemporarilyDisable())
                 {
                     var newFileName = FullFilenameForProjectJsonFileFromProject(e.Project);
-                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(e.OldName);
+                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(e.OldFilePath);
 
                     Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
 
@@ -504,7 +504,9 @@ namespace SmartCmdArgs
                     }
                     fsWatcher.Filter = Path.GetFileName(newFileName);
                 }
+                projectFsWatchers.Add(e.Project.UniqueName, fsWatcher);
             }
+            ToolWindowViewModel.RenameProject(e.OldUniqueName, e.Project.UniqueName);
         }
         #endregion
 

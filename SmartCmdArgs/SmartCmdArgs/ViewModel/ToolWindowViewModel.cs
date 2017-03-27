@@ -241,6 +241,17 @@ namespace SmartCmdArgs.ViewModel
             return true;
         }
 
+        public void RenameProject(string oldName, string newName)
+        {
+            if (SolutionArguments.TryGetValue(oldName, out ListViewModel vm))
+            {
+                SolutionArguments.Remove(oldName);
+                solutionArguments.Add(newName, vm);
+            }
+            if (StartupProject == oldName)
+                StartupProject = newName;
+        }
+
         public void CancelEdit()
         {
             System.Windows.Controls.DataGrid.CancelEditCommand.Execute(null, null);
