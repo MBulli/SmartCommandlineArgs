@@ -5,8 +5,10 @@ using System.Threading;
 using EnvDTE80;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VSSDK.Tools.VsIdeTesting;
+using NUnit.Framework;
 using SmartCmdArgs;
 using SmartCmdArgsTests.Utils;
+using Assert = NUnit.Framework.Assert;
 
 namespace SmartCmdArgsTests
 {
@@ -21,7 +23,8 @@ namespace SmartCmdArgsTests
         public void SaveAndLoadSuoTest()
         {
             var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
-            var projectBefore = CreateSolutionWithProject();
+            var openSolutionSuccess = OpenSolutionWithName("DefaultProject");
+            Assert.That(openSolutionSuccess, Is.True);
             var properties = (CmdArgsOptionPage)package.GetDialogPage(typeof(CmdArgsOptionPage));
 
             properties.VcsSupport = false;
