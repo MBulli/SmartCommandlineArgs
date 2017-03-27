@@ -514,7 +514,7 @@ namespace SmartCmdArgs
         {
             List<string> prjCmdArgs = new List<string>();
             Helper.ProjectArguments.AddAllArguments(project, prjCmdArgs);
-            return prjCmdArgs.Distinct();
+            return prjCmdArgs.Where(arg => !string.IsNullOrWhiteSpace(arg)).Distinct();
         }
 
         private void UpdateCurrentStartupProject()
