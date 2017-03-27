@@ -49,12 +49,7 @@ namespace SmartCmdArgsTests
 
             Assert.IsNull(package.ToolWindowViewModel.CurrentArgumentList);
 
-            using (var waiting = new WaitUntil())
-            {
-                Dte.Events.SolutionEvents.Opened += () => waiting.Finish();
-
-                Dte.ExecuteCommand("File.OpenProject", $"\"{solutionFile}\"");
-            }
+            OpenSolutionWithPath(solutionFile);
 
             var curDataList = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
             Assert.IsNotNull(curDataList);

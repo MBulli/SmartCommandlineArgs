@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Project1": {
+      "commandName": "Project",
+      "commandLineArgs": "same args in every config"
+    },
+    "newProfile1": {
+      "commandName": "Project",
+      "commandLineArgs": "same args in every config"
+    },
+    "newProfile2": {
+      "commandName": "Project",
+      "commandLineArgs": "same args in every config"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Project1": {
+      "commandName": "Project",
+      "commandLineArgs": "args for Project1"
+    },
+    "newProfile1": {
+      "commandName": "Project",
+      "commandLineArgs": "args for newProfile1"
+    },
+    "newProfile2": {
+      "commandName": "Project",
+      "commandLineArgs": "args for newProfile2"
+    }
+  }
+}
