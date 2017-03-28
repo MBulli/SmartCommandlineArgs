@@ -19,28 +19,27 @@ namespace SmartCmdArgsTests
             VsIdeTestHostContants.HostRestartOptions.Before)]
         public void SaveCommandsToJsonTest()
         {
-            var project = CreateSolutionWithProject();
+            OpenSolutionWithName("DefaultProject");
 
-            var package = (CmdArgsPackage) Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            LoadExtension();
+
+            var curList = ExtensionPackage?.ToolWindowViewModel?.CurrentArgumentList;
+            Assert.IsNotNull(curList);
+
+            var initalCommands = new[] { "arg1", "Arg2", "arg 3" };
 
             InvokeInUIThread(() =>
             {
-                var curList = package?.ToolWindowViewModel?.CurrentArgumentList;
-                Assert.IsNotNull(curList);
-
-                var initalCommands = new[] { "arg1", "Arg2", "arg 3" };
-
                 foreach (var initalCommand in initalCommands)
                 {
-                    package.ToolWindowViewModel.CurrentArgumentList.AddNewItem(initalCommand);
+                    curList.AddNewItem(initalCommand);
                 }
-
-                Utils.ForceSaveSolution();
-
-                string jsonFile = JsonFileFromProject(project);
-
-                CheckJsonFile(jsonFile, initalCommands);
             });
+
+            Utils.ForceSaveSolution();
+            
+            string jsonFile = JsonFileFromProjectIndex(1);
+            CheckJsonFile(jsonFile, initalCommands);
         }
 
         [TestMethod]
@@ -50,8 +49,8 @@ namespace SmartCmdArgsTests
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void LoadCommandsFromExistingJsonTest()
         {
-            var project = CreateSolutionWithProject();
-            var jsonFile = JsonFileFromProject(project);
+            OpenSolutionWithName("DefaultProject");
+            var jsonFile = JsonFileFromProjectIndex(1);
             
             File.WriteAllText(jsonFile, @"
 {
@@ -70,9 +69,9 @@ namespace SmartCmdArgsTests
   ]
 }");
 
-            var package = (CmdArgsPackage) Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            LoadExtension();
 
-            var currentList = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            var currentList = ExtensionPackage?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
             Assert.IsNotNull(currentList);
             Assert.AreEqual(3, currentList.Count);
 
@@ -96,10 +95,10 @@ namespace SmartCmdArgsTests
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void LoadCommandsFromCreatedJsonTest()
         {
-            var project = CreateSolutionWithProject();
-            var jsonFile = JsonFileFromProject(project);
-            
-            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            OpenSolutionWithName("DefaultProject");
+            var jsonFile = JsonFileFromProjectIndex(1);
+
+            LoadExtension();
 
             File.WriteAllText(jsonFile, @"
 {
@@ -120,7 +119,7 @@ namespace SmartCmdArgsTests
 
             System.Threading.Thread.Sleep(1000);
 
-            var currentList = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            var currentList = ExtensionPackage?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
             Assert.IsNotNull(currentList);
             Assert.AreEqual(3, currentList.Count);
 
@@ -144,9 +143,9 @@ namespace SmartCmdArgsTests
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void LoadChangesFromJsonTest()
         {
-            var project = CreateSolutionWithProject();
-            var jsonFile = JsonFileFromProject(project);
-            
+            OpenSolutionWithName("DefaultProject");
+            var jsonFile = JsonFileFromProjectIndex(1);
+
             File.WriteAllText(jsonFile, @"
 {
   ""DataCollection"": [
@@ -164,7 +163,7 @@ namespace SmartCmdArgsTests
   ]
 }");
 
-            var package = (CmdArgsPackage) Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            LoadExtension();
 
             using (var writer = new StreamWriter(File.Open(jsonFile, FileMode.Truncate)))
             {
@@ -187,7 +186,7 @@ namespace SmartCmdArgsTests
             }
             System.Threading.Thread.Sleep(1000);
 
-            var currentList = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
+            var currentList = ExtensionPackage?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
             Assert.IsNotNull(currentList);
             Assert.AreEqual(3, currentList.Count);
 
@@ -212,12 +211,12 @@ namespace SmartCmdArgsTests
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void AvoidEmptyJsonFileTest()
         {
-            var project = CreateSolutionWithProject();
-            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
-            
+            OpenSolutionWithName("DefaultProject");
+            LoadExtension();
+
             Utils.ForceSaveSolution();
 
-            Assert.IsFalse(File.Exists(JsonFileFromProject(project)));
+            Assert.IsFalse(File.Exists(JsonFileFromProjectIndex(1)));
         }
         
         [TestMethod]
@@ -227,26 +226,28 @@ namespace SmartCmdArgsTests
         [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
         public void DisabledVcsSupportTest()
         {
-            var project = CreateSolutionWithProject();
-            var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
-            var properties = (CmdArgsOptionPage)package.GetDialogPage(typeof(CmdArgsOptionPage));
-
-            properties.VcsSupport = false;
+            OpenSolutionWithName("DefaultProject");
+            LoadExtension();
+            SetVcsSupport(false);
 
             InvokeInUIThread(() =>
             {
-                var currentList = package?.ToolWindowViewModel?.CurrentArgumentList;
+                var currentList = ExtensionPackage?.ToolWindowViewModel?.CurrentArgumentList;
                 Assert.IsNotNull(currentList);
 
                 currentList.AddNewItem("TestItem1");
                 currentList.AddNewItem("TestItem2");
-
-                Utils.ForceSaveSolution();
-
-                Assert.IsFalse(File.Exists(JsonFileFromProject(project)));
             });
+
+            Utils.ForceSaveSolution();
+
+            Assert.IsFalse(File.Exists(JsonFileFromProjectIndex(1)));
         }
 
+        private string JsonFileFromProjectIndex(int idx)
+        {
+            return JsonFileFromProject(Dte.Solution.Projects.Item(idx));
+        }
 
         private string JsonFileFromProject(Project project)
         {

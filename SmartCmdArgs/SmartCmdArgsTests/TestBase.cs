@@ -9,6 +9,7 @@ using EnvDTE80;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VsSDK.IntegrationTestLibrary;
 using Microsoft.VSSDK.Tools.VsIdeTesting;
+using SmartCmdArgs;
 using SmartCmdArgsTests.Utils;
 
 namespace SmartCmdArgsTests
@@ -26,6 +27,8 @@ namespace SmartCmdArgsTests
 
         protected object InvokeInUIThread(Action method)
             => UIThreadInvoker.Invoke(method);
+
+        protected CmdArgsPackage ExtensionPackage;
 
         protected Interface GetService<Service, Interface>()
             where Interface : class
@@ -86,5 +89,16 @@ namespace SmartCmdArgsTests
             return OpenSolutionWithPath(Path.GetFullPath(Path.Combine(solutionName, "Solution.sln")));
         }
 
+        protected void LoadExtension()
+        {
+            ExtensionPackage = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
+            SetVcsSupport(true);
+        }
+
+        protected void SetVcsSupport(bool enabled)
+        {
+            var properties = (CmdArgsOptionPage)ExtensionPackage.GetDialogPage(typeof(CmdArgsOptionPage));
+            properties.VcsSupport = enabled;
+        }
     }
 }
