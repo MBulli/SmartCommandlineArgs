@@ -130,10 +130,8 @@ namespace SmartCmdArgs
             if (vsHelper.IsSolutionOpen)
             {
                 Logger.Info("Package.Initialize called while solution was already open.");
-                
-                UpdateCommandsForAllProjects();
-                AttachFsWatcherToAllProjects();
-                UpdateCurrentStartupProject();
+
+                InitializeForSolution();
             }
             
             ToolWindowViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
@@ -247,14 +245,6 @@ namespace SmartCmdArgs
             Logger.Info($"Updated Configuration for Project: {project.UniqueName}");
         }
 
-        private void AttachFsWatcherToAllProjects(bool includeUnloaded = false)
-        {
-            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames(includeUnloaded))
-            {
-                AttachFsWatcherToProject(projectName);
-            }
-        }
-
         private void AttachFsWatcherToProject(string projectName)
         {
             Project project = vsHelper.ProjectForProjectName(projectName);
@@ -310,14 +300,6 @@ namespace SmartCmdArgs
                 {
                     UpdateCommandsForProject(projectName);
                 }));
-        }
-
-        private void UpdateCommandsForAllProjects(bool includeUnloaded = false)
-        {
-            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames(includeUnloaded))
-            {
-                UpdateCommandsForProject(projectName);
-            }
         }
 
         private void UpdateCommandsForProject(string projectName)
@@ -435,14 +417,22 @@ namespace SmartCmdArgs
             Logger.Info($"Updated Commands for project '{projectName}'.");
         }
 
+        private void InitializeForSolution()
+        {
+            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
+            {
+                UpdateCommandsForProject(projectName);
+                AttachFsWatcherToProject(projectName);
+            }
+            UpdateCurrentStartupProject();
+        }
+
         #region VS Events
         private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Solution opened.");
-            
-            UpdateCommandsForAllProjects();
-            AttachFsWatcherToAllProjects();
-            UpdateCurrentStartupProject();
+
+            InitializeForSolution();
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
