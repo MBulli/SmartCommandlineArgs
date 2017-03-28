@@ -72,6 +72,7 @@ namespace SmartCmdArgsTests
             public const string CSharpDotNetCore = "C#_.NetCore";
             public const string CPP = "C++";
             public const string VBDotNetFW = "VB_.NetFW";
+            public const string NodeJS = "Node.js";
         }
 
         protected const string BaseTestSolutionPath = @"..\..\..\TestSolutions";

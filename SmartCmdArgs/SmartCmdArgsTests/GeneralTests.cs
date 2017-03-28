@@ -34,7 +34,11 @@ namespace SmartCmdArgsTests
             var argItems = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
 
             Assert.That(argItems, Is.Not.Null);
-            Assert.That(argItems.Select(item => item.Command).Distinct().Count(), Is.GreaterThan(1));
+            if (CurrentLanguage == TestLanguages.NodeJS)
+                Assert.That(argItems.Select(item => item.Command).Distinct().Count(), Is.EqualTo(1));
+            else
+                Assert.That(argItems.Select(item => item.Command).Distinct().Count(), Is.GreaterThan(1));
+
             Assert.That(argItems, Has.All.Property("Command").StartWith("args for "));
             Assert.That(argItems, Has.All.Property("Id").Not.EqualTo(Guid.Empty));
         }
