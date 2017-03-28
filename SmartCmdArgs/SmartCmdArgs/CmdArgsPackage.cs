@@ -126,6 +126,8 @@ namespace SmartCmdArgs
 
             vsHelper.Initialize();
 
+            GetDialogPage<CmdArgsOptionPage>().VcsSupportChanged += OptionPage_VcsSupportChanged;
+
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
             {
@@ -531,6 +533,19 @@ namespace SmartCmdArgs
                 projectFsWatchers.Add(e.Project.UniqueName, fsWatcher);
             }
             ToolWindowViewModel.RenameProject(e.OldUniqueName, e.Project.UniqueName);
+        }
+        #endregion
+
+        #region OptionPage Events
+        private void OptionPage_VcsSupportChanged(object sender, bool enabled)
+        {
+            if (!enabled)
+                return;
+
+            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
+            {
+                UpdateCommandsForProject(projectName);
+            }
         }
         #endregion
 

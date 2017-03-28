@@ -18,12 +18,13 @@ namespace SmartCmdArgs
         [Description("If enabled the extension will store the commandline arguments into an json file at the same loctation as the related project file. That way the commandline arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control. The default value for this setting is True.")]
         public bool VcsSupport
         {
-            get { return _vcsSupport; }
+            get => _vcsSupport;
             set
             {
-                if (_vcsSupport != value)
-                    VcsSupportChanged?.Invoke(this, value);
+                var oldValue = _vcsSupport;
                 _vcsSupport = value;
+                if (oldValue != value)
+                    VcsSupportChanged?.Invoke(this, value);
             }
         }
 
@@ -32,12 +33,13 @@ namespace SmartCmdArgs
         [Description("If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string.")]
         public bool MacroEvaluation
         {
-            get { return _macroEvaluation; }
+            get => _macroEvaluation;
             set
             {
-                if (_macroEvaluation != value)
-                    MacroEvaluationChanged?.Invoke(this, value);
+                var oldValue = _macroEvaluation;
                 _macroEvaluation = value;
+                if (oldValue != value)
+                    MacroEvaluationChanged?.Invoke(this, value);
             }
         }
 

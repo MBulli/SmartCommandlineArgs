@@ -99,7 +99,7 @@ namespace SmartCmdArgsTests
         protected void SetVcsSupport(bool enabled)
         {
             var properties = (CmdArgsOptionPage)ExtensionPackage.GetDialogPage(typeof(CmdArgsOptionPage));
-            properties.VcsSupport = enabled;
+            InvokeInUIThread(() => properties.VcsSupport = enabled);
         }
     }
 }
