@@ -118,7 +118,7 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        private static void GetDotNetCoreProjectAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
+        private static void GetDotNetCoreProjectAllArguments(EnvDTE.Project project, List<string> allArgs)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null && project != null)
@@ -169,7 +169,12 @@ namespace SmartCmdArgs.Helper
             // C# - DotNetCore
             {"{9A19103F-16F7-4668-BE54-9A1E7A4F7556}", new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetDotNetCoreProjectArguments(project, arguments),
-                GetAllArguments = (project, allArgs) => GetDotNetCoreProjectAllArguments(project, allArgs, "LocalDebuggerCommandArguments")
+                GetAllArguments = (project, allArgs) => GetDotNetCoreProjectAllArguments(project, allArgs)
+            } },
+            // F#
+            {"{f2a71f9b-5d33-465a-a702-920d77279786}", new ProjectArgumentsHandlers() {
+                SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "StartArguments"),
+                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
             } },
         };
 
