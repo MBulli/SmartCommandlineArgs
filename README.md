@@ -6,8 +6,10 @@ A Visual Studio Extension which aims to provide a better UI to manage your comma
 Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments "Visual Studio Marketplace").
 
 Visual Studio 2015 and 2017 and the following project types are supported:
-- C#
-- VB.Net
+- C# .Net Framework
+- C# .Net Core
+- VB .Net
+- F#
 - C/C++ 
 - Node.js
 - Python (requires a nightly build of PTVS)
