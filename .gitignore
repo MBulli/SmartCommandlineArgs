@@ -194,3 +194,8 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+# include everything from test solutions
+!/SmartCmdArgs/TestSolutions/
+!/SmartCmdArgs/TestSolutions/*
+!/SmartCmdArgs/TestSolutions/**
