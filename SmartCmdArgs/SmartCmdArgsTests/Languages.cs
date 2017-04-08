@@ -27,6 +27,12 @@ namespace SmartCmdArgsTests
         [TestProperty(HiveStartFlags, HiveStartArgs)]
         [TestProperty(RestartOptions, Before)]
         public void SetCommandLineArgsViaDebug() => RunTest<SetCmdArgsTests>(_ => _.SetCommandLineArgsViaDebug(Language));
+        
+        [TestMethod, HostType("VS IDE")]
+        [TestProperty(RegistryHiveName, HiveName)]
+        [TestProperty(HiveStartFlags, HiveStartArgs)]
+        [TestProperty(RestartOptions, Before)]
+        public void SetCommandLineArgsViaResart() => RunTest<SetCmdArgsTests>(_ => _.SetCommandLineArgsViaResart(Language));
         #endregion
 
         #region General tests
