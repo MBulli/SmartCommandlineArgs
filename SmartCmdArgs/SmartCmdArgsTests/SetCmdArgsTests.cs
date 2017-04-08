@@ -15,7 +15,6 @@ namespace SmartCmdArgsTests
     {
         public void SetCommandLineArgsViaDebug(TestLanguage language)
         {
-            Assert.That(language == TestLanguage.CSharpDotNetCore);
             OpenSolutionWithName(language, "ReadCmdArgsProject");
             LoadExtension();
 
