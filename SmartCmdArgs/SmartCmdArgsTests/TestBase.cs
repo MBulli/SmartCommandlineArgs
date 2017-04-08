@@ -18,7 +18,6 @@ namespace SmartCmdArgsTests
     {
         public const string HiveName = "15.0";
         public const string HiveStartArgs = @"/RootSuffix Exp /ResetSettings";
-        public const string CurrentLanguage = TestLanguages.CSharpDotNetFW;
 
         protected DTE Dte => VsIdeTestHostContext.Dte;
         protected TestUtils Utils { get; } = new TestUtils();
@@ -66,21 +65,13 @@ namespace SmartCmdArgsTests
             return true;
         }
 
-        protected static class TestLanguages
-        {
-            public const string CSharpDotNetFW = "C#_.NetFW";
-            public const string CSharpDotNetCore = "C#_.NetCore";
-            public const string CPP = "C++";
-            public const string VBDotNetFW = "VB_.NetFW";
-            public const string NodeJS = "Node.js";
-            public const string FSharpDotNetFW = "F#_.NetFW";
-        }
-
         protected const string BaseTestSolutionPath = @"..\..\..\TestSolutions";
 
-        protected bool OpenSolutionWithName(string solutionName, bool overrideExistingTemp = true)
+        protected bool OpenSolutionWithName(TestLanguage language, string solutionName, bool overrideExistingTemp = true)
         {
-            var path = Path.GetFullPath(Path.Combine(BaseTestSolutionPath, CurrentLanguage, solutionName));
+            var langFolder = TranslateLanguageFolderName(language);
+
+            var path = Path.GetFullPath(Path.Combine(BaseTestSolutionPath, langFolder, solutionName));
             Assert.IsTrue(Directory.Exists(path), $"No Solution folder at path: {path}");
             if (overrideExistingTemp)
             {
@@ -89,6 +80,20 @@ namespace SmartCmdArgsTests
                 Helper.DirectoryCopy(path, solutionName);
             }
             return OpenSolutionWithPath(Path.GetFullPath(Path.Combine(solutionName, "Solution.sln")));
+        }
+
+        private string TranslateLanguageFolderName(TestLanguage lang)
+        {
+            switch (lang)
+            {
+                case TestLanguage.CSharpDotNetFW: return "C#_.NetFW";
+                case TestLanguage.CSharpDotNetCore: return "C#_.NetCore";
+                case TestLanguage.CPP: return "C++";
+                case TestLanguage.VBDotNetFW: return "VB_.NetFW";
+                case TestLanguage.NodeJS: return "Node.js";
+                case TestLanguage.FSharpDotNetFW: return "F#_.NetFW";
+                default: throw new ArgumentException("Unknown TestLanguage");
+            }
         }
 
         protected void LoadExtension()
@@ -102,5 +107,43 @@ namespace SmartCmdArgsTests
             var properties = (CmdArgsOptionPage)ExtensionPackage.GetDialogPage(typeof(CmdArgsOptionPage));
             InvokeInUIThread(() => properties.VcsSupport = enabled);
         }
+
+
+        /// <summary>
+        /// Helper method which is used to invoke a concrete test method on TClass
+        /// </summary>
+        public static void RunTest<TClass>(Action<TClass> test)
+            where TClass : new()
+        {
+            test(new TClass());
+        }
+    }
+
+    public enum TestLanguage
+    {
+        /// <summary>
+        /// C# project targeting .Net Framework
+        /// </summary>
+        CSharpDotNetFW,
+        /// <summary>
+        /// C# project targeting .Net Core
+        /// </summary>
+        CSharpDotNetCore,
+        /// <summary>
+        /// C++ project
+        /// </summary>
+        CPP,
+        /// <summary>
+        /// Visual Basic .Net project targeting .Net Framework
+        /// </summary>
+        VBDotNetFW,
+        /// <summary>
+        /// NodeJs project
+        /// </summary>
+        NodeJS,
+        /// <summary>
+        /// F# project targeting .Net Framework
+        /// </summary>
+        FSharpDotNetFW
     }
 }

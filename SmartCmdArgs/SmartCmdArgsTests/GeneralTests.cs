@@ -17,24 +17,18 @@ using Assert = NUnit.Framework.Assert;
 
 namespace SmartCmdArgsTests
 {
-    [TestClass]
     public class GeneralTests : TestBase
     {
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void CollectArgsFromExistingProjectConfigsTest()
+        public void CollectArgsFromExistingProjectConfigsTest(TestLanguage language)
         {
-            var openSolutionSuccess = OpenSolutionWithName("CollectArgsTest");
+            var openSolutionSuccess = OpenSolutionWithName(language, "CollectArgsTest");
             Assert.That(openSolutionSuccess, Is.True);
 
             var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
             var argItems = package?.ToolWindowViewModel?.CurrentArgumentList?.DataCollection;
 
             Assert.That(argItems, Is.Not.Null);
-            if (CurrentLanguage == TestLanguages.NodeJS)
+            if (language == TestLanguage.NodeJS)
                 Assert.That(argItems.Select(item => item.Command).Distinct().Count(), Is.EqualTo(1));
             else
                 Assert.That(argItems.Select(item => item.Command).Distinct().Count(), Is.GreaterThan(1));
@@ -43,15 +37,9 @@ namespace SmartCmdArgsTests
             Assert.That(argItems, Has.All.Property("Id").Not.EqualTo(Guid.Empty));
         }
 
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        [DeploymentItem("ConsoleApplicationVC.zip")]
-        public void CollectArgsDistinctFromExistingProjectConfigsTest()
+        public void CollectArgsDistinctFromExistingProjectConfigsTest(TestLanguage language)
         {
-            var openSolutionSuccess = OpenSolutionWithName("CollectArgsDistinctTest");
+            var openSolutionSuccess = OpenSolutionWithName(language, "CollectArgsDistinctTest");
             Assert.That(openSolutionSuccess, Is.True);
             
             var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
@@ -65,14 +53,9 @@ namespace SmartCmdArgsTests
             Assert.That(argItem, Has.Property("Command").EqualTo("same args in every config"));
         }
 
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void AddNewArgLineViaCommandTest()
+        public void AddNewArgLineViaCommandTest(TestLanguage language)
         {
-            var openSolutionSuccess = OpenSolutionWithName("DefaultProject");
+            var openSolutionSuccess = OpenSolutionWithName(language, "DefaultProject");
             Assert.That(openSolutionSuccess, Is.True);
 
             var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));

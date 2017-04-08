@@ -24,7 +24,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -193,6 +193,7 @@
     <Compile Include="IntegrationTest Library\DialogboxPurger.cs" />
     <Compile Include="IntegrationTest Library\NativeMethods.cs" />
     <Compile Include="IntegrationTest Library\Utils.cs" />
+    <Compile Include="Languages.cs" />
     <Compile Include="SetCmdArgsTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="GeneralTests.cs" />

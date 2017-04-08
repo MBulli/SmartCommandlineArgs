@@ -5,25 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VSSDK.Tools.VsIdeTesting;
-using NUnit.Framework;
 using SmartCmdArgsTests.Utils;
+using NUnit.Framework;
 using Assert = NUnit.Framework.Assert;
 
 namespace SmartCmdArgsTests
 {
-    [TestClass]
     public class SetCmdArgsTests : TestBase
     {
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void SetCommandLineArgsViaDebug()
+        public void SetCommandLineArgsViaDebug(TestLanguage language)
         {
-            OpenSolutionWithName("ReadCmdArgsProject");
+            Assert.That(language == TestLanguage.CSharpDotNetCore);
+            OpenSolutionWithName(language, "ReadCmdArgsProject");
             LoadExtension();
 
             var args = new List<(string Arg, bool Enabled)>

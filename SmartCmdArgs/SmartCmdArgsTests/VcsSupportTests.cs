@@ -8,18 +8,11 @@ using SmartCmdArgs;
 
 namespace SmartCmdArgsTests
 {
-    [TestClass]
     public class VcsSupportTests : TestBase
     {
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions,
-            VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void SaveCommandsToJsonTest()
+        public void SaveCommandsToJsonTest(TestLanguage language)
         {
-            OpenSolutionWithName("DefaultProject");
+            OpenSolutionWithName(language, "DefaultProject");
 
             LoadExtension();
 
@@ -42,14 +35,9 @@ namespace SmartCmdArgsTests
             CheckJsonFile(jsonFile, initalCommands);
         }
 
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void LoadCommandsFromExistingJsonTest()
+        public void LoadCommandsFromExistingJsonTest(TestLanguage language)
         {
-            OpenSolutionWithName("DefaultProject");
+            OpenSolutionWithName(language, "DefaultProject");
             var jsonFile = JsonFileFromProjectIndex(1);
             
             File.WriteAllText(jsonFile, @"
@@ -88,14 +76,9 @@ namespace SmartCmdArgsTests
             Assert.AreNotEqual(Guid.Empty, arg3.Id);
         }
 
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void LoadCommandsFromCreatedJsonTest()
+        public void LoadCommandsFromCreatedJsonTest(TestLanguage language)
         {
-            OpenSolutionWithName("DefaultProject");
+            OpenSolutionWithName(language, "DefaultProject");
             var jsonFile = JsonFileFromProjectIndex(1);
 
             LoadExtension();
@@ -136,14 +119,9 @@ namespace SmartCmdArgsTests
             Assert.AreNotEqual(Guid.Empty, arg3.Id);
         }
 
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void LoadChangesFromJsonTest()
+        public void LoadChangesFromJsonTest(TestLanguage language)
         {
-            OpenSolutionWithName("DefaultProject");
+            OpenSolutionWithName(language, "DefaultProject");
             var jsonFile = JsonFileFromProjectIndex(1);
 
             File.WriteAllText(jsonFile, @"
@@ -204,14 +182,9 @@ namespace SmartCmdArgsTests
 
         }
 
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void AvoidEmptyJsonFileTest()
+        public void AvoidEmptyJsonFileTest(TestLanguage language)
         {
-            OpenSolutionWithName("DefaultProject");
+            OpenSolutionWithName(language, "DefaultProject");
             LoadExtension();
 
             Utils.ForceSaveSolution();
@@ -219,14 +192,9 @@ namespace SmartCmdArgsTests
             Assert.IsFalse(File.Exists(JsonFileFromProjectIndex(1)));
         }
         
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void DisabledVcsSupportTest()
+        public void DisabledVcsSupportTest(TestLanguage language)
         {
-            OpenSolutionWithName("DefaultProject");
+            OpenSolutionWithName(language, "DefaultProject");
             LoadExtension();
             SetVcsSupport(false);
 

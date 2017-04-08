@@ -12,18 +12,12 @@ using Assert = NUnit.Framework.Assert;
 
 namespace SmartCmdArgsTests
 {
-    [TestClass]
     public class SuoSavingTests : TestBase
     {
-        [TestMethod]
-        [HostType("VS IDE")]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RegistryHiveName, HiveName)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.HiveStartFlags, HiveStartArgs)]
-        [TestProperty(VsIdeTestHostContants.TestPropertyName.RestartOptions, VsIdeTestHostContants.HostRestartOptions.Before)]
-        public void SaveAndLoadSuoTest()
+        public void SaveAndLoadSuoTest(TestLanguage language)
         {
             var package = (CmdArgsPackage)Utils.LoadPackage(new Guid(CmdArgsPackage.PackageGuidString));
-            var openSolutionSuccess = OpenSolutionWithName("DefaultProject");
+            var openSolutionSuccess = OpenSolutionWithName(language, "DefaultProject");
             Assert.That(openSolutionSuccess, Is.True);
             var properties = (CmdArgsOptionPage)package.GetDialogPage(typeof(CmdArgsOptionPage));
 
