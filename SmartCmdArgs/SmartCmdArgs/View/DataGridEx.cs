@@ -191,6 +191,12 @@ namespace SmartCmdArgs.View
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
+            
+            // get focus for empty list to be able to copy paste (ctrl+v)
+            if (Items.IsEmpty)
+            {
+                Focus();
+            }
 
             // Commit edit if user clicks data grid background
             if (IsInEditMode && e.OriginalSource is ScrollViewer)
