@@ -11,6 +11,8 @@ namespace SmartCmdArgs
     using System.Runtime.InteropServices;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
+    using System.Collections.Generic;
+    using Microsoft.VisualStudio.PlatformUI;
 
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.
@@ -29,6 +31,9 @@ namespace SmartCmdArgs
         public const string ToolWindowGuidString = "a21b35ed-5c13-4d55-a3d2-71054c4e9540";
 
         private View.ToolWindowControl view;
+
+        private List<IVsWindowSearchOption> searchOptions;
+        private WindowSearchBooleanOption matchCaseSearchOption;
 
         private new CmdArgsPackage Package
         {
@@ -58,6 +63,9 @@ namespace SmartCmdArgs
             this.Content = view;
 
             this.ToolBar = new CommandID(Commands.CmdArgsToolBarCmdSet, Commands.TWToolbar);
+
+            matchCaseSearchOption = new WindowSearchBooleanOption("Match Case", "Enable to make search case sensitive.", false);
+            searchOptions = new List<IVsWindowSearchOption> {matchCaseSearchOption};
         }
 
         public int OnShow(int fShow)
@@ -118,6 +126,8 @@ namespace SmartCmdArgs
         
         bool IVsWindowSearch.SearchEnabled => true;
 
+        IVsEnumWindowSearchOptions IVsWindowSearch.SearchOptionsEnum => new WindowSearchOptionEnumerator(searchOptions);
+
         public override IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
             if (pSearchQuery == null || pSearchCallback == null)
@@ -142,7 +152,7 @@ namespace SmartCmdArgs
 
             protected override void OnStartSearch()
             {
-                _toolWindow.Package.ToolWindowViewModel.CurrentArgumentList.SetStringFilter(SearchQuery.SearchString);
+                _toolWindow.Package.ToolWindowViewModel.CurrentArgumentList.SetStringFilter(SearchQuery.SearchString, _toolWindow.matchCaseSearchOption.Value);
 
                 // Call the implementation of this method in the base class.   
                 // This sets the task status to complete and reports task completion.   
