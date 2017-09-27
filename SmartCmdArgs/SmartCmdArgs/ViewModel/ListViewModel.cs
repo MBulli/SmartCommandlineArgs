@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using SmartCmdArgs.Helper;
 using System.Windows.Data;
 using System.IO;
+using System.Windows;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace SmartCmdArgs.ViewModel
@@ -25,7 +26,7 @@ namespace SmartCmdArgs.ViewModel
         [Newtonsoft.Json.JsonIgnore]
         public ICollectionView DataCollectionView { get; }
 
-        public event EventHandler<System.Collections.IList> SelectedItemsChanged; 
+        public event EventHandler<System.Collections.IList> SelectedItemsChanged;
 
         public ListViewModel()
         {
@@ -125,6 +126,29 @@ namespace SmartCmdArgs.ViewModel
             {
                 item.Enabled = newState;
             }
+        }
+
+        public void SetStringFilter(string filter, bool matchCase = false)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (string.IsNullOrEmpty(filter))
+                {
+                    DataCollectionView.Filter = _ => true;
+                }
+                else
+                {
+                    if (matchCase)
+                    {
+                        DataCollectionView.Filter = item => ((CmdArgItem) item).Command.Contains(filter);
+                    }
+                    else
+                    {
+                        filter = filter.ToLower();
+                        DataCollectionView.Filter = item => ((CmdArgItem) item).Command.ToLower().Contains(filter);
+                    }
+                }
+            });
         }
 
         protected virtual void OnSelectedItemsChanged()
