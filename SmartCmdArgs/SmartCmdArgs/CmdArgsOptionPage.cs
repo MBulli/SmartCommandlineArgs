@@ -12,6 +12,7 @@ namespace SmartCmdArgs
     {
         private bool _vcsSupport = true;
         private bool _macroEvaluation = true;
+        private bool _useMonospaceFont = false;
 
         [Category("General")]
         [DisplayName("Enable version control support")]
@@ -42,6 +43,21 @@ namespace SmartCmdArgs
                     MacroEvaluationChanged?.Invoke(this, value);
             }
         }
+        
+        [Category("General")]
+        [DisplayName("Use Monospace Font")]
+        [Description("If enabled the fontfamily is changed to 'Consolas'.")]
+        public bool UseMonospaceFont
+        {
+            get => _useMonospaceFont;
+            set
+            {
+                var oldValue = _useMonospaceFont;
+                _useMonospaceFont = value;
+                if (oldValue != value)
+                    UseMonospaceFontChanged?.Invoke(this, value);
+            }
+        }
 
         public override void ResetSettings()
         {
@@ -53,5 +69,6 @@ namespace SmartCmdArgs
 
         public event EventHandler<bool> VcsSupportChanged;
         public event EventHandler<bool> MacroEvaluationChanged;
+        public event EventHandler<bool> UseMonospaceFontChanged;
     }
 }

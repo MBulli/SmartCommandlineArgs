@@ -17,6 +17,9 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
+        public static readonly string DefaultFontFamily = null;
+        public static readonly string MonospaceFontFamily = "Consolas";
+
         private Dictionary<string, ListViewModel> solutionArguments; 
         public Dictionary<string, ListViewModel> SolutionArguments => solutionArguments;
 
@@ -39,6 +42,30 @@ namespace SmartCmdArgs.ViewModel
         {
             get { return _isInEditMode; }
             set { _isInEditMode = value; OnNotifyPropertyChanged(); }
+        }
+
+        private string _usedFontFamily;
+        public string UsedFontFamily
+        {
+            get => _usedFontFamily;
+            private set { _usedFontFamily = value; OnNotifyPropertyChanged(); }
+        }
+
+        private bool _useMonospaceFont;
+        public bool UseMonospaceFont
+        {
+            get => _useMonospaceFont;
+            set
+            {
+                if (value == _useMonospaceFont)
+                    return;
+
+                if (value)
+                    UsedFontFamily = MonospaceFontFamily;
+                else
+                    UsedFontFamily = DefaultFontFamily;
+                _useMonospaceFont = value;
+            }
         }
 
         public RelayCommand AddEntryCommand { get; }
@@ -65,7 +92,7 @@ namespace SmartCmdArgs.ViewModel
         public ToolWindowViewModel()
         {
             solutionArguments = new Dictionary<string, ListViewModel>();
-
+            
             AddEntryCommand = new RelayCommand(
                 () => {
                     CurrentArgumentList.AddNewItem(command: "", enabled: true);

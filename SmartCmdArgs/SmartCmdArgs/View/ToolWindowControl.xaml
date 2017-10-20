@@ -48,7 +48,18 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Value" Binding="{Binding Command}" Width="*" />
+                    <DataGridTextColumn Header="Value" Binding="{Binding Command}" Width="*" >
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontFamily" Value="{Binding DataContext.UsedFontFamily, ElementName=MyToolWindow}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                        <DataGridTextColumn.EditingElementStyle>
+                            <Style TargetType="TextBox">
+                                <Setter Property="FontFamily" Value="{Binding DataContext.UsedFontFamily, ElementName=MyToolWindow}"/>
+                            </Style>
+                        </DataGridTextColumn.EditingElementStyle>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </local:DataGridEx>
         </Grid>
