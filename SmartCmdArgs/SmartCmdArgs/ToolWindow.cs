@@ -11,6 +11,8 @@ namespace SmartCmdArgs
     using System.Runtime.InteropServices;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
+    using System.Collections.Generic;
+    using Microsoft.VisualStudio.PlatformUI;
 
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.
@@ -24,11 +26,14 @@ namespace SmartCmdArgs
     /// </para>
     /// </remarks>
     [Guid(ToolWindow.ToolWindowGuidString)]
-    public class ToolWindow : ToolWindowPane, IVsWindowFrameNotify3, IVsWindowPaneCommit, IVsWindowPaneCommitFilter
+    public class ToolWindow : ToolWindowPane, IVsWindowFrameNotify3, IVsWindowPaneCommit, IVsWindowPaneCommitFilter, IVsWindowSearch
     {
         public const string ToolWindowGuidString = "a21b35ed-5c13-4d55-a3d2-71054c4e9540";
 
         private View.ToolWindowControl view;
+
+        private List<IVsWindowSearchOption> searchOptions;
+        private WindowSearchBooleanOption matchCaseSearchOption;
 
         private new CmdArgsPackage Package
         {
@@ -58,6 +63,9 @@ namespace SmartCmdArgs
             this.Content = view;
 
             this.ToolBar = new CommandID(Commands.CmdArgsToolBarCmdSet, Commands.TWToolbar);
+
+            matchCaseSearchOption = new WindowSearchBooleanOption("Match Case", "Enable to make search case sensitive.", false);
+            searchOptions = new List<IVsWindowSearchOption> {matchCaseSearchOption};
         }
 
         public int OnShow(int fShow)
@@ -114,6 +122,47 @@ namespace SmartCmdArgs
         {
             pfCommitCommand = 1;
             return Microsoft.VisualStudio.VSConstants.S_OK;
+        }
+        
+        bool IVsWindowSearch.SearchEnabled => true;
+
+        IVsEnumWindowSearchOptions IVsWindowSearch.SearchOptionsEnum => new WindowSearchOptionEnumerator(searchOptions);
+
+        public override IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
+        {
+            if (pSearchQuery == null || pSearchCallback == null)
+                return null;
+            return new SearchTask(dwCookie, pSearchQuery, pSearchCallback, this);
+        }
+
+        public override void ClearSearch()
+        {
+            Package.ToolWindowViewModel.CurrentArgumentList.SetStringFilter(null);
+        }
+
+        internal class SearchTask : VsSearchTask
+        {
+            private ToolWindow _toolWindow;
+
+            public SearchTask(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback, ToolWindow toolwindow)
+                : base(dwCookie, pSearchQuery, pSearchCallback)
+            {
+                _toolWindow = toolwindow;
+            }
+
+            protected override void OnStartSearch()
+            {
+                _toolWindow.Package.ToolWindowViewModel.CurrentArgumentList.SetStringFilter(SearchQuery.SearchString, _toolWindow.matchCaseSearchOption.Value);
+
+                // Call the implementation of this method in the base class.   
+                // This sets the task status to complete and reports task completion.   
+                base.OnStartSearch();
+            }
+
+            protected override void OnStopSearch()
+            {
+                this.SearchResults = 0;
+            }
         }
     }
 }
