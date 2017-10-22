@@ -23,6 +23,11 @@ namespace SmartCmdArgs.ViewModel
             get { return _selectedItems; } set { _selectedItems = value; OnSelectedItemsChanged(); }
         }
 
+        public bool HasSelectedItems
+        {
+            get { return _selectedItems != null && _selectedItems.Count != 0; }
+        }
+
         [Newtonsoft.Json.JsonIgnore]
         public ICollectionView DataCollectionView { get; }
 

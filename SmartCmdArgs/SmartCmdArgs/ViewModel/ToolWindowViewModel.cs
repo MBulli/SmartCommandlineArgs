@@ -92,38 +92,26 @@ namespace SmartCmdArgs.ViewModel
         public ToolWindowViewModel()
         {
             solutionArguments = new Dictionary<string, ListViewModel>();
-            
+
             AddEntryCommand = new RelayCommand(
                 () => {
                     CurrentArgumentList.AddNewItem(command: "", enabled: true);
-                }, canExecute: _ =>
-                {
-                    return StartupProject != null;
-                });
+                }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
                () => {
                          RemoveSelectedItems();
-               }, canExecute: _ =>
-               {
-                   return StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
-               });
+               }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             MoveEntriesUpCommand = new RelayCommand(
                () => {
                        CurrentArgumentList.MoveEntriesUp(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-               }, canExecute: _ =>
-               {
-                   return this.StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
-               });
+               }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             MoveEntriesDownCommand = new RelayCommand(
                () => {
                        CurrentArgumentList.MoveEntriesDown(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-               }, canExecute: _ =>
-               {
-                   return this.StartupProject != null && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
-               });
+               }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             CopyCommandlineCommand = new RelayCommand(
                () => {
@@ -131,24 +119,18 @@ namespace SmartCmdArgs.ViewModel
                    enabledEntries = this.EnabledItemsForCurrentProject().Select(e => e.Command);
                    string prjCmdArgs = string.Join(" ", enabledEntries);
                    Clipboard.SetText(prjCmdArgs);
-               }, canExecute: _ =>
-               {
-                   return this.StartupProject != null; // && CurrentArgumentList.SelectedItems != null && CurrentArgumentList.SelectedItems.Count != 0;
-               });
+               }, canExecute: _ => HasStartupProject());
 
             ToggleItemEnabledCommand = new RelayCommand<CmdArgItem>(
                 (item) => {
                     CurrentArgumentList.ToogleEnabledForItem(item, Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt));
-                }, canExecute: _ =>
-                {
-                    return this.StartupProject != null;
-                });
+                }, canExecute: _ => HasStartupProject());
 
-            CopySelectedItemsCommand = new RelayCommand(CopySelectedItemsToClipboard, canExecute: _ => CurrentArgumentList.SelectedItems.Count != 0);
+            CopySelectedItemsCommand = new RelayCommand(CopySelectedItemsToClipboard, canExecute: _ => HasSelectedItems());
 
-            PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => StartupProject != null);
+            PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => HasStartupProject());
 
-            CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => CurrentArgumentList.SelectedItems.Count != 0);
+            CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => HasSelectedItems());
         }
 
         /// <summary>
@@ -204,6 +186,34 @@ namespace SmartCmdArgs.ViewModel
         {
             CopySelectedItemsToClipboard();
             RemoveSelectedItems();
+        }
+
+
+        /// <summary>
+        /// Helper method for CanExecute condition of the commands
+        /// </summary>
+        /// <returns>True if a valid startup project is set</returns>
+        private bool HasStartupProject()
+        {
+            return _startupProject != null;
+        }
+
+        /// <summary>
+        /// Helper method for CanExecute condition of the commands
+        /// </summary>
+        /// <returns>True if any line is selected</returns>
+        private bool HasSelectedItems()
+        {
+            return CurrentArgumentList?.HasSelectedItems == true;
+        }
+
+        /// <summary>
+        /// Helper method for CanExecute condition of the commands
+        /// </summary>
+        /// <returns>True if a valid startup project is set and any line is selected</returns>
+        private bool HasStartupProjectAndSelectedItems()
+        {
+            return HasStartupProject() && HasSelectedItems();
         }
 
         private void RemoveSelectedItems()
