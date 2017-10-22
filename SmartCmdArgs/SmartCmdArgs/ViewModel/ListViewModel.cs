@@ -149,8 +149,7 @@ namespace SmartCmdArgs.ViewModel
                     }
                     else
                     {
-                        filter = filter.ToLower();
-                        DataCollectionView.Filter = item => ((CmdArgItem) item).Command.ToLower().Contains(filter);
+                        DataCollectionView.Filter = item => ((CmdArgItem) item).Command.Contains(filter, StringComparison.CurrentCultureIgnoreCase);
                     }
                 }
             });
