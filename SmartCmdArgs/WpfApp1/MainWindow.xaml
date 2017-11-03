@@ -37,19 +37,6 @@
                                                 ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}"
                                                 EditArgumentTemplate="{StaticResource EditArgumentDataTemplate}" />
             </TreeView.ItemTemplateSelector>
-            <!--<TreeView.ItemTemplateSelector>
-                <local:GenericDataTemplateSelector>
-                    <HierarchicalDataTemplate DataType="{x:Type local:CmdProject}" ItemsSource="{Binding Items}" >
-                        <TextBlock Text="{Binding Name}" />
-                    </HierarchicalDataTemplate>
-                    <HierarchicalDataTemplate DataType="{x:Type local:CmdGroup}" ItemsSource="{Binding Items}">
-                        <TextBlock Text="{Binding Name}" />
-                    </HierarchicalDataTemplate>
-                    <DataTemplate DataType="{x:Type local:CmdItem}">
-                        <TextBlock Text="{Binding Command}" />
-                    </DataTemplate>
-                </local:GenericDataTemplateSelector>
-            </TreeView.ItemTemplateSelector>-->
         </TreeView>
     </Grid>
 </Window>
