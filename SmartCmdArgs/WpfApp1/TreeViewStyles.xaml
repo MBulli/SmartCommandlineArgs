@@ -1,0 +1,41 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+                    xmlns:local="clr-namespace:WpfApp1">
+
+    <Style x:Key="ProjectItemStyle" TargetType="TreeViewItem">
+        <Setter Property="IsExpanded" Value="True"/>
+        <Setter Property="Background" Value="Coral" />
+    </Style>
+
+    <Style x:Key="GroupItemStyle" TargetType="TreeViewItem">
+
+        <Setter Property="IsExpanded" Value="True"/>
+        <Setter Property="Background" Value="ForestGreen" />
+    </Style>
+    
+    <Style x:Key="ArgumentItemStyle" TargetType="TreeViewItem">
+        <Setter Property="Background" Value="SkyBlue" />
+    </Style>
+
+    <HierarchicalDataTemplate x:Key="ProjectDataTemplate" DataType="{x:Type local:CmdProject}" ItemsSource="{Binding Items}">
+        <TextBlock Text="{Binding Name}" />
+    </HierarchicalDataTemplate>
+
+    <HierarchicalDataTemplate x:Key="GroupDataTemplate" ItemsSource="{Binding Items}">
+        <TextBlock Text="{Binding Name}" />
+    </HierarchicalDataTemplate>
+    
+    <DataTemplate x:Key="ArgumentDataTemplate">
+        <local:ArgumentItemView IsEditing="{Binding IsEditing, Mode=TwoWay}"
+                                Command="{Binding Command, Mode=TwoWay}" />
+    </DataTemplate>
+    
+    <DataTemplate x:Key="EditArgumentDataTemplate">
+        <DockPanel>
+            <CheckBox IsChecked="{Binding Enabled}" DockPanel.Dock="Left" />
+            <TextBox Text="{Binding Command}" />
+        </DockPanel>        
+    </DataTemplate>
+    
+</ResourceDictionary>

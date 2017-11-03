@@ -1,0 +1,55 @@
+﻿<Window x:Class="WpfApp1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        xmlns:dd="urn:gong-wpf-dragdrop"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignData ListViewModel}"
+        Title="MainWindow" Height="350" Width="525">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="TreeViewStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>    
+    <Grid>
+        <TreeView x:Name="treeView"
+                  ItemsSource="{Binding Projects}"                 
+                  dd:DragDrop.IsDragSource="True"
+                  dd:DragDrop.IsDropTarget="True"
+                  dd:DragDrop.UseDefaultDragAdorner="False"
+                  dd:DragDrop.UseDefaultEffectDataTemplate="True"
+                  dd:DragDrop.DragHandler="{Binding DragHandler}"
+                  dd:DragDrop.DropHandler="{Binding DropHandler}" 
+                  PreviewKeyDown="treeView_PreviewKeyDown"
+                  >
+            <TreeView.ItemContainerStyleSelector>
+                <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
+                                             GroupItemStyle="{StaticResource GroupItemStyle}"
+                                             ArgumentItemStyle="{StaticResource ArgumentItemStyle}" />
+            </TreeView.ItemContainerStyleSelector>
+            <TreeView.ItemTemplateSelector>
+                <local:TreeDataTemplateSelector ProjectTemplate="{StaticResource ProjectDataTemplate}"
+                                                GroupItemTemplate="{StaticResource GroupDataTemplate}"
+                                                ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}"
+                                                EditArgumentTemplate="{StaticResource EditArgumentDataTemplate}" />
+            </TreeView.ItemTemplateSelector>
+            <!--<TreeView.ItemTemplateSelector>
+                <local:GenericDataTemplateSelector>
+                    <HierarchicalDataTemplate DataType="{x:Type local:CmdProject}" ItemsSource="{Binding Items}" >
+                        <TextBlock Text="{Binding Name}" />
+                    </HierarchicalDataTemplate>
+                    <HierarchicalDataTemplate DataType="{x:Type local:CmdGroup}" ItemsSource="{Binding Items}">
+                        <TextBlock Text="{Binding Name}" />
+                    </HierarchicalDataTemplate>
+                    <DataTemplate DataType="{x:Type local:CmdItem}">
+                        <TextBlock Text="{Binding Command}" />
+                    </DataTemplate>
+                </local:GenericDataTemplateSelector>
+            </TreeView.ItemTemplateSelector>-->
+        </TreeView>
+    </Grid>
+</Window>
