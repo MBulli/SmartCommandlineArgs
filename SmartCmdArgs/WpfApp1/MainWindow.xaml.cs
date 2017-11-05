@@ -58,17 +58,5 @@ namespace WpfApp1
 
             
         }
-
-        private void treeView_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (treeView.SelectedItem is IEditable)
-            {
-                if (e.Key == Key.Return || e.Key == Key.F2 || (e.Key >= Key.A && e.Key <= Key.Z))
-                {
-                    ((IEditable)treeView.SelectedItem).BeginEdit();
-                }
-                
-            }
-        }
     }
 }

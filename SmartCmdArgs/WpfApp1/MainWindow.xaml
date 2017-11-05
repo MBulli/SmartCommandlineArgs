@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfApp1"
+        xmlns:lcl="clr-namespace:WpfApp1"
         xmlns:dd="urn:gong-wpf-dragdrop"
         mc:Ignorable="d"
         d:DataContext="{d:DesignData ListViewModel}"
@@ -16,7 +16,7 @@
         </ResourceDictionary>
     </Window.Resources>    
     <Grid>
-        <TreeView x:Name="treeView"
+        <lcl:TreeViewEx x:Name="treeView"
                   ItemsSource="{Binding Projects}"                 
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="True"
@@ -24,19 +24,18 @@
                   dd:DragDrop.UseDefaultEffectDataTemplate="True"
                   dd:DragDrop.DragHandler="{Binding DragHandler}"
                   dd:DragDrop.DropHandler="{Binding DropHandler}" 
-                  PreviewKeyDown="treeView_PreviewKeyDown"
                   >
-            <TreeView.ItemContainerStyleSelector>
-                <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
-                                             GroupItemStyle="{StaticResource GroupItemStyle}"
-                                             ArgumentItemStyle="{StaticResource ArgumentItemStyle}" />
-            </TreeView.ItemContainerStyleSelector>
-            <TreeView.ItemTemplateSelector>
-                <local:TreeDataTemplateSelector ProjectTemplate="{StaticResource ProjectDataTemplate}"
-                                                GroupItemTemplate="{StaticResource GroupDataTemplate}"
-                                                ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}"
-                                                EditArgumentTemplate="{StaticResource EditArgumentDataTemplate}" />
-            </TreeView.ItemTemplateSelector>
-        </TreeView>
+            <lcl:TreeViewEx.ItemContainerStyleSelector>
+                <lcl:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
+                                           GroupItemStyle="{StaticResource GroupItemStyle}"
+                                           ArgumentItemStyle="{StaticResource ArgumentItemStyle}" />
+            </lcl:TreeViewEx.ItemContainerStyleSelector>
+            <lcl:TreeViewEx.ItemTemplateSelector>
+                <lcl:TreeDataTemplateSelector ProjectTemplate="{StaticResource ProjectDataTemplate}"
+                                              GroupItemTemplate="{StaticResource GroupDataTemplate}"
+                                              ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}"
+                                              EditArgumentTemplate="{StaticResource EditArgumentDataTemplate}" />
+            </lcl:TreeViewEx.ItemTemplateSelector>
+        </lcl:TreeViewEx>
     </Grid>
 </Window>
