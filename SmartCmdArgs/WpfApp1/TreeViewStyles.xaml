@@ -144,8 +144,7 @@
     </HierarchicalDataTemplate>
     
     <DataTemplate x:Key="ArgumentDataTemplate">
-        <local:ArgumentItemView IsEditing="{Binding IsEditing, Mode=TwoWay}"
-                                Command="{Binding Command, Mode=TwoWay}" />
+        <local:ArgumentItemView Command="{Binding Command, Mode=TwoWay}" />
     </DataTemplate>
 
     <DataTemplate x:Key="EditArgumentDataTemplate">

@@ -21,13 +21,9 @@ namespace WpfApp1
     public partial class ArgumentItemView : UserControl
     {
         private bool IsCoolEdit = false;
+        private IEditable editableItem;
 
-        public bool IsEditing
-        {
-            get { return (bool)GetValue(IsEditingProperty); }
-            set { SetValue(IsEditingProperty, value); }
-        }
-
+       
         public string Command
         {
             get { return (string)GetValue(CommandProperty); }
@@ -38,6 +34,41 @@ namespace WpfApp1
         public ArgumentItemView()
         {
             InitializeComponent();
+
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (editableItem != null)
+            {
+                editableItem.PropertyChanged -= ArgumentItemView_PropertyChanged;
+            }
+
+            editableItem = e.NewValue as IEditable;
+
+            if (editableItem != null)
+            {
+                editableItem.PropertyChanged += ArgumentItemView_PropertyChanged;
+            }
+        }
+
+        private void ArgumentItemView_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IEditable.IsInEditMode))
+            {
+                if (editableItem.IsInEditMode)
+                {
+                    textblock.Visibility = Visibility.Collapsed;
+                    textbox.Visibility = Visibility.Visible;
+                    textbox.Focus();
+                }
+                else
+                {
+                    textblock.Visibility = Visibility.Visible;
+                    textbox.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         private void StartEdit(bool resetValue = false)
@@ -46,6 +77,8 @@ namespace WpfApp1
 
             textbox.SelectAll();
             IsCoolEdit = true;
+
+            editableItem.BeginEdit(resetValue);
         }
 
         private void CommitEdit()
@@ -53,13 +86,13 @@ namespace WpfApp1
             Command = textbox.Text;
 
             IsCoolEdit = false;
-            IsEditing = false;
+            editableItem.EndEdit();
         }
 
         private void CancelEdit()
         {
             IsCoolEdit = false;
-            IsEditing = false;
+            editableItem.CancelEdit();
         }
 
         private void OnCommandChanged(DependencyPropertyChangedEventArgs e)
@@ -68,21 +101,7 @@ namespace WpfApp1
             textbox.Text = (string)e.NewValue;
         }
 
-        protected void OnIsEditingChanged(DependencyPropertyChangedEventArgs e)
-        {
-            if ((bool)e.NewValue)
-            {
-                textblock.Visibility = Visibility.Collapsed;
-                textbox.Visibility = Visibility.Visible;
-                textbox.Focus();
-            }
-            else
-            {
-                textblock.Visibility = Visibility.Visible;
-                textbox.Visibility = Visibility.Collapsed;
-            }
-        }
-
+   
         private void textbox_KeyDown(object sender, KeyEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine($" V: KEY DOWN {e.Key}");
@@ -110,21 +129,11 @@ namespace WpfApp1
             }
         }
 
-        private static void OnIsEditingDepPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((ArgumentItemView)d).OnIsEditingChanged(e);
-        }
-
         private static void OnCommandDepPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((ArgumentItemView)d).OnCommandChanged(e);
         }
-
-        public static readonly DependencyProperty IsEditingProperty =
-                DependencyProperty.Register(nameof(IsEditing), typeof(bool), typeof(ArgumentItemView),
-                    new PropertyMetadata(false, OnIsEditingDepPropertyChanged ));
-
-
+        
         public static readonly DependencyProperty CommandProperty =
             DependencyProperty.Register(nameof(Command), typeof(string), typeof(ArgumentItemView),
                 new PropertyMetadata(null, OnCommandDepPropertyChanged));

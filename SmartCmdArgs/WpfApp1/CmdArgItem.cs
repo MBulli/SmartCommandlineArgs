@@ -20,9 +20,7 @@ namespace WpfApp1
 
     public class CmdItem : PropertyChangedBase
     {
-        private bool isEditing;
-
-        public bool IsEditing { get => isEditing; set => SetAndNotify(value, ref isEditing); }
+        
     }
 
     public class CmdGroup : CmdItem
@@ -34,13 +32,44 @@ namespace WpfApp1
         public string Name { get => name; set => SetAndNotify(value, ref name); }
     }
 
-    public class CmdArgument : CmdItem
+    public class CmdArgument : CmdItem, IEditable
     {
         private bool enabled;
         private string command;
 
+        private bool isInEditMode;
+        private string oldCommand;
+
         public bool Enabled { get => enabled; set => SetAndNotify(value, ref enabled); }
         public string Command { get => command; set => SetAndNotify(value, ref command); }
+
+        bool IEditable.IsInEditMode { get => isInEditMode; }
+
+        void IEditable.BeginEdit(bool resetValue)
+        {
+            if (!isInEditMode)
+            {
+                oldCommand = command;
+                SetAndNotify(true, ref isInEditMode, nameof(IEditable.IsInEditMode));
+            }
+        }
+
+        void IEditable.CancelEdit()
+        {
+            if (isInEditMode)
+            {
+                command = oldCommand;
+                SetAndNotify(false, ref isInEditMode, nameof(IEditable.IsInEditMode));
+            }
+        }
+
+        void IEditable.EndEdit()
+        {
+            if (isInEditMode)
+            {
+                SetAndNotify(false, ref isInEditMode, nameof(IEditable.IsInEditMode));
+            }
+        }
     }
 
 
