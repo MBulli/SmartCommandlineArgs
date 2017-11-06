@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace WpfApp1
 {
@@ -30,9 +31,18 @@ namespace WpfApp1
         public override void DragOver(IDropInfo dropInfo)
         {
             // CmdArgument is not a DragTarget
-            if (!(dropInfo.TargetItem is CmdArgument))
+            base.DragOver(dropInfo);
+            if (dropInfo.TargetItem is CmdArgument)
             {
-                base.DragOver(dropInfo);
+                if (dropInfo.InsertPosition.HasFlag(RelativeInsertPosition.TargetItemCenter))
+                {
+                    dropInfo.DropTargetAdorner = null;
+                    dropInfo.Effects = DragDropEffects.None;
+                }
+                else if (dropInfo.Effects != DragDropEffects.None)
+                {
+                    dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                }
             }
         }
     }
