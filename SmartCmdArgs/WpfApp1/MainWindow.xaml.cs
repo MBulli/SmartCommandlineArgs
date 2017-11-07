@@ -49,9 +49,17 @@ namespace WpfApp1
             prj.Items.Add(new CmdGroup()
             {
                 Name = "G2rp",
-                Items = new ObservableCollection<CmdItem>(new[] {
+                Items = new ObservableCollection<CmdItem>(new CmdItem[] {
                     new CmdArgument() { Command = "Wel2t" },
-                    new CmdArgument() { Command = "Mond2" }
+                    new CmdArgument() { Command = "Mond2" },
+                    new CmdGroup()
+                    {
+                      Name = "Gr3p",
+                      Items = new ObservableCollection<CmdItem>(new[] {
+                        new CmdArgument() { Command = "Wel3t" },
+                        new CmdArgument() { Command = "Mond3" }
+                      })
+                    }
             })
             });
             lvm.Projects.Add(prj);

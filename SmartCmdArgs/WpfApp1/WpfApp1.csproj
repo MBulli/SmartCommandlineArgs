@@ -57,7 +57,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ConverterBase.cs" />
     <Compile Include="IEditable.cs" />
+    <Compile Include="TreeLevelMarginConverter.cs" />
     <Compile Include="TreeViewEx.cs" />
     <Compile Include="Utils.cs" />
     <Page Include="ArgumentItemView.xaml">

@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 
 namespace WpfApp1
@@ -36,8 +37,19 @@ namespace WpfApp1
 
     public class TreeViewItemEx : TreeViewItem
     {
-        protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx();
+        public int Level
+        {
+            get { return (int)GetValue(LevelProperty); }
+            set { SetValue(LevelProperty, value); }
+        }
+
+        protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this.Level+1);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
+
+        public TreeViewItemEx(int level = 0)
+        {
+            Level = level;
+        }
 
         protected override void OnUnselected(RoutedEventArgs e)
         {
@@ -87,6 +99,11 @@ namespace WpfApp1
 
             base.OnMouseLeftButtonDown(e);
         }
+
+
+
+        public static readonly DependencyProperty LevelProperty =
+            DependencyProperty.Register(nameof(LevelProperty), typeof(int), typeof(TreeViewItemEx), new PropertyMetadata(0));
     }
 
     static class Tree

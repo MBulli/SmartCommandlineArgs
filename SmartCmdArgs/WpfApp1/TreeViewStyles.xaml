@@ -5,8 +5,6 @@
 
     <!-- https://docs.microsoft.com/en-us/dotnet/framework/wpf/controls/treeview-styles-and-templates -->
 
-    <local:DatabindingDebugConverter x:Key="debugConverter" />
-    
     <Color x:Key="GlyphColor">#FF444444</Color>
     <Color x:Key="GlyphMouseOver">sc#1, 0.004391443, 0.002428215, 0.242281124</Color>
 
@@ -67,21 +65,40 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TreeViewItem}">
                     <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition MinWidth="19" Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
-                        <ToggleButton x:Name="Expander" ClickMode="Press" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Style="{StaticResource ExpandCollapseToggleStyle}"/>
-                        <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" Grid.ColumnSpan="2" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
-                            <ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="Stretch" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                        </Border>
-                        <ItemsPresenter x:Name="ItemsHost" Grid.ColumnSpan="2" Grid.Column="1" Grid.Row="1" Margin="-12,0,0,0"/>
-                        <!-- TODO: Border for line -->
+                        
+                        <Border x:Name="ItemBorder"
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                Background="{TemplateBinding Background}" 
+                                Padding="{TemplateBinding Padding}" 
+                                SnapsToDevicePixels="True"
+                                />
+                        <Grid Margin="{Binding Level, RelativeSource={RelativeSource TemplatedParent}, Converter={local:TreeLevelMarginConverter Ident=8}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition MinWidth="19" Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            
+                            <ToggleButton x:Name="Expander" 
+                                            Grid.Column="0" Grid.Row="0"
+                                            ClickMode="Press"
+                                            IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Style="{StaticResource ExpandCollapseToggleStyle}"
+                                            />
+                            <Border x:Name="HeaderBorder" 
+                                    Grid.Column="1" Grid.Row="0" 
+                                    SnapsToDevicePixels="true">
+                                <ContentPresenter x:Name="PART_Header" 
+                                                    ContentSource="Header" HorizontalAlignment="Stretch" 
+                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                        </Grid>
+
+                        <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" />
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsExpanded" Value="false">
@@ -91,7 +108,7 @@
                             <Setter Property="Visibility" TargetName="Expander" Value="Hidden"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="true">
-                            <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            <Setter Property="Background" TargetName="ItemBorder" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
                         </Trigger>
                         <MultiTrigger>
@@ -99,7 +116,7 @@
                                 <Condition Property="IsSelected" Value="true"/>
                                 <Condition Property="IsSelectionActive" Value="false"/>
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+                            <Setter Property="Background" TargetName="ItemBorder" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="false">
@@ -125,15 +142,21 @@
     <Style x:Key="ProjectItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource ItemBaseStyle}">
         <Setter Property="IsExpanded" Value="True"/>
         <Setter Property="Background" Value="Coral" />
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="BorderThickness" Value="0,0.5,0,0.5" />
     </Style>
 
     <Style x:Key="GroupItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource ItemBaseStyle}">
         <Setter Property="IsExpanded" Value="True"/>
         <Setter Property="Background" Value="ForestGreen" />
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="BorderThickness" Value="0,0.5,0,0.5" />
     </Style>
 
     <Style x:Key="ArgumentItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource ItemBaseStyle}">
         <Setter Property="Background" Value="SkyBlue" />
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="BorderThickness" Value="0,0.5,0,0.5" />        
     </Style>
 
     <HierarchicalDataTemplate x:Key="ProjectDataTemplate" DataType="{x:Type local:CmdProject}" ItemsSource="{Binding Items}">
