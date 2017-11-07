@@ -6,9 +6,9 @@
              xmlns:local="clr-namespace:WpfApp1"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <DockPanel>
-        <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}" DockPanel.Dock="Left" Focusable="False" />
-        <TextBlock x:Name="textblock" />
-        <TextBox x:Name="textbox" Visibility="Collapsed" KeyDown="textbox_KeyDown" />
+    <DockPanel Height="18">
+        <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}" DockPanel.Dock="Left" Focusable="False" VerticalAlignment="Center"/>
+        <TextBlock x:Name="textblock" Margin="4,0.5,0,0"/>
+        <TextBox x:Name="textbox" Visibility="Collapsed" KeyDown="textbox_KeyDown" Margin="1,-0.5,0,0"/>
     </DockPanel>
 </UserControl>
