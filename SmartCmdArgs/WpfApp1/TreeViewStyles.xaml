@@ -5,6 +5,8 @@
 
     <!-- https://docs.microsoft.com/en-us/dotnet/framework/wpf/controls/treeview-styles-and-templates -->
 
+    <local:DatabindingDebugConverter x:Key="debugConverter" />
+    
     <Color x:Key="GlyphColor">#FF444444</Color>
     <Color x:Key="GlyphMouseOver">sc#1, 0.004391443, 0.002428215, 0.242281124</Color>
 
@@ -126,7 +128,6 @@
     </Style>
 
     <Style x:Key="GroupItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource ItemBaseStyle}">
-
         <Setter Property="IsExpanded" Value="True"/>
         <Setter Property="Background" Value="ForestGreen" />
     </Style>
@@ -139,12 +140,12 @@
         <TextBlock Text="{Binding Name}" />
     </HierarchicalDataTemplate>
 
-    <HierarchicalDataTemplate x:Key="GroupDataTemplate" ItemsSource="{Binding Items}">
+    <HierarchicalDataTemplate x:Key="GroupDataTemplate" DataType="{x:Type local:CmdGroup}" ItemsSource="{Binding Items}">
         <TextBlock Text="{Binding Name}" />
     </HierarchicalDataTemplate>
-    
-    <DataTemplate x:Key="ArgumentDataTemplate">
-        <local:ArgumentItemView Command="{Binding Command, Mode=TwoWay}" />
+
+    <DataTemplate x:Key="ArgumentDataTemplate" DataType="{x:Type local:CmdArgument}">
+        <local:ArgumentItemView Argument="{Binding Command, Mode=TwoWay}" IsChecked="{Binding Enabled, Mode=TwoWay}"/>
     </DataTemplate>
 
     <DataTemplate x:Key="EditArgumentDataTemplate">

@@ -23,7 +23,8 @@ namespace WpfApp1
         /// <summary>
         /// Commits any changes and ends the edit operation
         /// </summary>
-        void EndEdit();
+        void CommitEdit();
+
         /// <summary>
         /// Cancels the edit operation and discards any changes
         /// </summary>

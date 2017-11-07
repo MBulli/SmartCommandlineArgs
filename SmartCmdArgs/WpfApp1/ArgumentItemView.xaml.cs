@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,87 +22,74 @@ namespace WpfApp1
     /// </summary>
     public partial class ArgumentItemView : UserControl
     {
-        private bool IsCoolEdit = false;
-        private IEditable editableItem;
+        private bool _isInEditMode;
 
-       
-        public string Command
+        public string EditingArgument
         {
-            get { return (string)GetValue(CommandProperty); }
-            set { SetValue(CommandProperty, value); }
+            get => textbox.Text;
+            set => textbox.Text = value;
         }
 
+        public string Argument
+        {
+            get => (string)GetValue(ArgumentProperty);
+            set => SetValue(ArgumentProperty, value);
+        }
+        
+        public string IsChecked
+        {
+            get => (string)GetValue(IsCheckedProperty);
+            set => SetValue(IsCheckedProperty, value);
+        }
 
         public ArgumentItemView()
         {
             InitializeComponent();
-
-            DataContextChanged += OnDataContextChanged;
         }
 
-        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        public bool IsInEditMode => _isInEditMode;
+
+        public void BeginEdit(bool resetValue)
         {
-            if (editableItem != null)
+            if (!IsInEditMode)
             {
-                editableItem.PropertyChanged -= ArgumentItemView_PropertyChanged;
-            }
-
-            editableItem = e.NewValue as IEditable;
-
-            if (editableItem != null)
-            {
-                editableItem.PropertyChanged += ArgumentItemView_PropertyChanged;
+                EditingArgument = resetValue ? "" : Argument;
+                EnterEditMode();
             }
         }
 
-        private void ArgumentItemView_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        public void CancelEdit()
         {
-            if (e.PropertyName == nameof(IEditable.IsInEditMode))
+            if (IsInEditMode)
             {
-                if (editableItem.IsInEditMode)
-                {
-                    textblock.Visibility = Visibility.Collapsed;
-                    textbox.Visibility = Visibility.Visible;
-                    textbox.Focus();
-                }
-                else
-                {
-                    textblock.Visibility = Visibility.Visible;
-                    textbox.Visibility = Visibility.Collapsed;
-                }
+                LeaveEditMode();
             }
         }
 
-        private void StartEdit(bool resetValue = false)
+        public void CommitEdit()
         {
-            textbox.Text = resetValue ? string.Empty : Command;
+            if (IsInEditMode)
+            {
+                Argument = EditingArgument;
+                LeaveEditMode();
+            }
+        }
 
+        private void EnterEditMode()
+        {
+            textblock.Visibility = Visibility.Collapsed;
+            textbox.Visibility = Visibility.Visible;
             textbox.SelectAll();
-            IsCoolEdit = true;
-
-            editableItem.BeginEdit(resetValue);
+            textbox.Focus();
+            _isInEditMode = true;
         }
 
-        private void CommitEdit()
+        private void LeaveEditMode()
         {
-            Command = textbox.Text;
-
-            IsCoolEdit = false;
-            editableItem.EndEdit();
+            _isInEditMode = false;
+            textblock.Visibility = Visibility.Visible;
+            textbox.Visibility = Visibility.Collapsed;
         }
-
-        private void CancelEdit()
-        {
-            IsCoolEdit = false;
-            editableItem.CancelEdit();
-        }
-
-        private void OnCommandChanged(DependencyPropertyChangedEventArgs e)
-        {
-            textblock.Text = (string)e.NewValue;
-            textbox.Text = (string)e.NewValue;
-        }
-
    
         private void textbox_KeyDown(object sender, KeyEventArgs e)
         {
@@ -112,31 +101,50 @@ namespace WpfApp1
             }
             else if (e.Key == Key.Return || e.Key == Key.F2)
             {
-                if (IsCoolEdit)
+                if (IsInEditMode)
                     CommitEdit();
                 else
-                    StartEdit(resetValue: false);
+                    BeginEdit(resetValue: false);
 
                 e.Handled = true;
             }
             else if (e.Key >= Key.A && e.Key <= Key.Z)
             {
-                if (!IsCoolEdit)
+                if (!IsInEditMode)
                 {
-                    StartEdit(resetValue: true);
+                    BeginEdit(resetValue: true);
                     e.Handled = false;
                 }
             }
         }
 
-        private static void OnCommandDepPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        protected virtual void OnArgumentProperyChanged(DependencyPropertyChangedEventArgs e)
         {
-            ((ArgumentItemView)d).OnCommandChanged(e);
+            textblock.Text = (string) e.NewValue;
+        }
+
+        private static void OnArgumentDepPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((ArgumentItemView)d).OnArgumentProperyChanged(e);
         }
         
-        public static readonly DependencyProperty CommandProperty =
-            DependencyProperty.Register(nameof(Command), typeof(string), typeof(ArgumentItemView),
-                new PropertyMetadata(null, OnCommandDepPropertyChanged));
+        public static readonly DependencyProperty ArgumentProperty =
+            DependencyProperty.Register(nameof(Argument), typeof(string), typeof(ArgumentItemView),
+                new PropertyMetadata(null, OnArgumentDepPropertyChanged));
 
+
+        protected virtual void OnIsCheckedProperyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            checkbox.IsChecked = (bool)e.NewValue;
+        }
+
+        private static void OnIsCheckedDepPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((ArgumentItemView)d).OnIsCheckedProperyChanged(e);
+        }
+
+        public static readonly DependencyProperty IsCheckedProperty =
+            DependencyProperty.Register(nameof(IsChecked), typeof(bool), typeof(ArgumentItemView),
+                new PropertyMetadata(false, OnIsCheckedDepPropertyChanged));
     }
 }

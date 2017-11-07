@@ -32,7 +32,7 @@ namespace WpfApp1
         public string Name { get => name; set => SetAndNotify(value, ref name); }
     }
 
-    public class CmdArgument : CmdItem, IEditable
+    public class CmdArgument : CmdItem
     {
         private bool enabled;
         private string command;
@@ -42,34 +42,6 @@ namespace WpfApp1
 
         public bool Enabled { get => enabled; set => SetAndNotify(value, ref enabled); }
         public string Command { get => command; set => SetAndNotify(value, ref command); }
-
-        bool IEditable.IsInEditMode { get => isInEditMode; }
-
-        void IEditable.BeginEdit(bool resetValue)
-        {
-            if (!isInEditMode)
-            {
-                oldCommand = command;
-                SetAndNotify(true, ref isInEditMode, nameof(IEditable.IsInEditMode));
-            }
-        }
-
-        void IEditable.CancelEdit()
-        {
-            if (isInEditMode)
-            {
-                command = oldCommand;
-                SetAndNotify(false, ref isInEditMode, nameof(IEditable.IsInEditMode));
-            }
-        }
-
-        void IEditable.EndEdit()
-        {
-            if (isInEditMode)
-            {
-                SetAndNotify(false, ref isInEditMode, nameof(IEditable.IsInEditMode));
-            }
-        }
     }
 
 

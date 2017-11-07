@@ -59,6 +59,7 @@
     </ApplicationDefinition>
     <Compile Include="IEditable.cs" />
     <Compile Include="TreeViewEx.cs" />
+    <Compile Include="Utils.cs" />
     <Page Include="ArgumentItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
