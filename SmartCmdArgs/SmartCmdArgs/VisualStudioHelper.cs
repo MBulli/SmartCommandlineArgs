@@ -34,6 +34,7 @@ namespace SmartCmdArgs
 
         private CommandEvents commandEvents;
         private readonly string _VSConstants_VSStd97CmdID_GUID;
+        private readonly string _VSConstants_VSStd2KCmdID_GUID;
 
         public EnvDTE.Solution Solution { get { return appObject.Solution; } }
         public bool IsSolutionOpen { get { return appObject?.Solution?.IsOpen ?? false; } }
@@ -86,6 +87,7 @@ namespace SmartCmdArgs
             this.package = package;
             this.appObject = package.GetService<SDTE, EnvDTE.DTE>();
             _VSConstants_VSStd97CmdID_GUID = typeof(VSConstants.VSStd97CmdID).GUID.ToString("B").ToUpper();
+            _VSConstants_VSStd2KCmdID_GUID = typeof(VSConstants.VSStd2KCmdID).GUID.ToString("B").ToUpper();
         }
 
         public void Initialize()
@@ -263,6 +265,16 @@ namespace SmartCmdArgs
                     case VSConstants.VSStd97CmdID.Start:
                     case VSConstants.VSStd97CmdID.StartNoDebug:
                     case VSConstants.VSStd97CmdID.Restart:
+                        ProjectBeforeRun?.Invoke(this, EventArgs.Empty);
+                        break;
+                }
+            }
+            else if (guid == _VSConstants_VSStd2KCmdID_GUID)
+            {
+                switch ((VSConstants.VSStd2KCmdID)id)
+                {
+                    case VSConstants.VSStd2KCmdID.PROJSTARTDEBUG:
+                    case VSConstants.VSStd2KCmdID.PROJSTEPINTO:
                         ProjectBeforeRun?.Invoke(this, EventArgs.Empty);
                         break;
                 }
