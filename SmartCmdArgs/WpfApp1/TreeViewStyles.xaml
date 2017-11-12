@@ -160,22 +160,15 @@
     </Style>
 
     <HierarchicalDataTemplate x:Key="ProjectDataTemplate" DataType="{x:Type local:CmdProject}" ItemsSource="{Binding Items}">
-        <local:ArgumentItemView  Argument="{Binding Name, Mode=TwoWay}" IsChecked="{Binding Enabled, Mode=TwoWay}" IsEditable="False"/>
+        <local:ArgumentItemView DataContext="{Binding}" />
     </HierarchicalDataTemplate>
 
     <HierarchicalDataTemplate x:Key="GroupDataTemplate" DataType="{x:Type local:CmdGroup}" ItemsSource="{Binding Items}">
-        <local:ArgumentItemView  Argument="{Binding Name, Mode=TwoWay}" IsChecked="{Binding Enabled, Mode=TwoWay}" IsEditable="True"/>
+        <local:ArgumentItemView DataContext="{Binding}" />
     </HierarchicalDataTemplate>
 
     <DataTemplate x:Key="ArgumentDataTemplate" DataType="{x:Type local:CmdArgument}">
-        <local:ArgumentItemView  Argument="{Binding Command, Mode=TwoWay}" IsChecked="{Binding Enabled, Mode=TwoWay}" IsEditable="True"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="EditArgumentDataTemplate">
-        <DockPanel>
-            <CheckBox IsChecked="{Binding Enabled}" DockPanel.Dock="Left" />
-            <TextBox Text="{Binding Command}" />
-        </DockPanel>
+        <local:ArgumentItemView DataContext="{Binding}" />
     </DataTemplate>
 
 </ResourceDictionary>

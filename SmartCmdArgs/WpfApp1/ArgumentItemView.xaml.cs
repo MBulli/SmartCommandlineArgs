@@ -22,139 +22,73 @@ namespace WpfApp1
     /// </summary>
     public partial class ArgumentItemView : UserControl
     {
-        private bool _isInEditMode;
-
-        public string EditingArgument
-        {
-            get => textbox.Text;
-            set => textbox.Text = value;
-        }
-
-        public string Argument
-        {
-            get => (string)GetValue(ArgumentProperty);
-            set => SetValue(ArgumentProperty, value);
-        }
-        
-        public bool IsChecked
-        {
-            get => (bool)GetValue(IsCheckedProperty);
-            set => SetValue(IsCheckedProperty, value);
-        }
-
-        public bool IsEditable
-        {
-            get => (bool)GetValue(IsEditableProperty);
-            set => SetValue(IsEditableProperty, value);
-        }
+        private CmdBase Item => (CmdBase) DataContext;
 
         public ArgumentItemView()
         {
             InitializeComponent();
+
+            DataContextChanged += OnDataContextChanged;
         }
 
-        public bool IsInEditMode => _isInEditMode;
-
-        public void BeginEdit(bool resetValue)
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (!IsInEditMode && IsEditable)
+            if (e.OldValue != null)
+                ((CmdBase)e.OldValue).EditModeChanged -= OnItemEditModeChanged;
+
+            if (e.NewValue != null)
+                ((CmdBase)e.NewValue).EditModeChanged += OnItemEditModeChanged;
+        }
+
+        private void OnItemEditModeChanged(object sender, CmdBase.EditMode e)
+        {
+            switch (e)
             {
-                EditingArgument = resetValue ? "" : Argument;
-                EnterEditMode();
+                case CmdBase.EditMode.BeganEdit:
+                    EnterEditMode(selectAll: true);
+                    break;
+                case CmdBase.EditMode.BeganEditAndReset:
+                    EnterEditMode(selectAll: false);
+                    break;
+                case CmdBase.EditMode.CanceledEdit:
+                case CmdBase.EditMode.CommitedEdit:
+                    LeaveEditMode();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(e), e, null);
             }
         }
 
-        public void CancelEdit()
-        {
-            if (IsInEditMode)
-            {
-                LeaveEditMode();
-            }
-        }
-
-        public void CommitEdit()
-        {
-            if (IsInEditMode)
-            {
-                Argument = EditingArgument;
-                LeaveEditMode();
-            }
-        }
-
-        private void EnterEditMode()
+        private void EnterEditMode(bool selectAll)
         {
             textblock.Visibility = Visibility.Collapsed;
             textbox.Visibility = Visibility.Visible;
             textbox.Focus();
-            textbox.SelectAll();
-            _isInEditMode = true;
+
+            if (selectAll)
+                textbox.SelectAll();
+            else
+                textbox.CaretIndex = textbox.Text.Length;
         }
 
         private void LeaveEditMode()
         {
-            _isInEditMode = false;
             textblock.Visibility = Visibility.Visible;
             textbox.Visibility = Visibility.Collapsed;
         }
-   
-        private void textbox_KeyDown(object sender, KeyEventArgs e)
+        
+        private void Textbox_OnKeyDown(object sender, KeyEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($" V: KEY DOWN {e.Key}");
-            if (e.Key == Key.Escape)
+            if (e.Key == Key.Escape && Item.IsInEditMode)
             {
-                CancelEdit();
+                Item.CancelEdit();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Return || e.Key == Key.F2)
+            else if (e.Key == Key.Return && Item.IsInEditMode)
             {
-                if (IsInEditMode)
-                    CommitEdit();
-                else
-                    BeginEdit(resetValue: false);
-
+                Item.CommitEdit();
                 e.Handled = true;
             }
-            else if (e.Key >= Key.A && e.Key <= Key.Z)
-            {
-                if (!IsInEditMode)
-                {
-                    BeginEdit(resetValue: true);
-                    e.Handled = false;
-                }
-            }
         }
-
-        protected virtual void OnArgumentProperyChanged(DependencyPropertyChangedEventArgs e)
-        {
-            textblock.Text = (string) e.NewValue;
-        }
-
-        private static void OnArgumentDepPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((ArgumentItemView)d).OnArgumentProperyChanged(e);
-        }
-        
-        public static readonly DependencyProperty ArgumentProperty =
-            DependencyProperty.Register(nameof(Argument), typeof(string), typeof(ArgumentItemView),
-                new PropertyMetadata(null, OnArgumentDepPropertyChanged));
-
-
-        protected virtual void OnIsCheckedProperyChanged(DependencyPropertyChangedEventArgs e)
-        {
-            checkbox.IsChecked = (bool)e.NewValue;
-        }
-
-        private static void OnIsCheckedDepPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((ArgumentItemView)d).OnIsCheckedProperyChanged(e);
-        }
-
-        public static readonly DependencyProperty IsCheckedProperty =
-            DependencyProperty.Register(nameof(IsChecked), typeof(bool), typeof(ArgumentItemView),
-                new PropertyMetadata(false, OnIsCheckedDepPropertyChanged));
-        
-
-        public static readonly DependencyProperty IsEditableProperty =
-            DependencyProperty.Register(nameof(IsEditable), typeof(bool), typeof(ArgumentItemView), new PropertyMetadata(false));
     }
 }

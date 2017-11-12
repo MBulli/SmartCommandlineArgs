@@ -9,39 +9,195 @@ using System.Threading.Tasks;
 
 namespace WpfApp1
 {
-    public class CmdProject : PropertyChangedBase
+    public class CmdBase : PropertyChangedBase
     {
-        private ObservableCollection<CmdItem> items;
-        private string name;
+        private CmdBase parent;
+        public CmdBase Parent { get => parent; set => SetAndNotify(value, ref this.parent); }
 
-        public ObservableCollection<CmdItem> Items { get => items; set => SetAndNotify(value, ref items); }
-        public string Name { get => name; set => SetAndNotify(value, ref name); }
-    }
+        private string value;
+        public string Value { get => value; set => SetAndNotify(value, ref this.value); }
 
-    public class CmdItem : PropertyChangedBase
-    {
-        
-    }
+        protected bool? isChecked;
+        public bool? IsChecked { get => isChecked; set => OnIsCheckedChanged(isChecked, value, true); }
 
-    public class CmdGroup : CmdItem
-    {
-        private ObservableCollection<CmdItem> items;
-        private string name;
+        public virtual bool IsEditable => false;
 
-        public ObservableCollection<CmdItem> Items { get => items; set => SetAndNotify(value, ref items); }
-        public string Name { get => name; set => SetAndNotify(value, ref name); }
-    }
+        public CmdBase(string value, bool? isChecked)
+        {
+            this.value = value;
+            this.isChecked = isChecked;
+        }
 
-    public class CmdArgument : CmdItem
-    {
-        private bool enabled;
-        private string command;
+        public void ToggleCheckedState()
+        {
+            if (IsChecked == null)
+                IsChecked = false;
+            else
+                IsChecked = !IsChecked;
+        }
+
+        protected virtual void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
+        {
+            SetAndNotify(newValue, ref this.isChecked, nameof(IsChecked));
+
+            if (notifyParent)
+            {
+                parent?.OnChildIsCheckedChanged(oldValue, newValue);
+            }           
+        }
+
+        protected virtual void OnChildIsCheckedChanged(bool? oldValue, bool? newValue)
+        {}
+
+        private string editBackupValue;
 
         private bool isInEditMode;
-        private string oldCommand;
+        public bool IsInEditMode { get => isInEditMode; private set => SetAndNotify(value, ref this.isInEditMode); }
 
-        public bool Enabled { get => enabled; set => SetAndNotify(value, ref enabled); }
-        public string Command { get => command; set => SetAndNotify(value, ref command); }
+        public event EventHandler<EditMode> EditModeChanged;
+        public enum EditMode
+        {
+            BeganEdit, BeganEditAndReset, CanceledEdit, CommitedEdit
+        }
+
+        public void BeginEdit(string initialValue = null)
+        {
+            ThrowIfNotEditable();
+
+            if (!IsInEditMode)
+            {
+                editBackupValue = Value;
+                if (initialValue != null) Value = initialValue;
+                IsInEditMode = true;
+                EditModeChanged?.Invoke(this, initialValue != null ? EditMode.BeganEditAndReset : EditMode.BeganEdit);
+            }
+        }
+
+        public void CancelEdit()
+        {
+            ThrowIfNotEditable();
+
+            if (IsInEditMode)
+            {
+                Value = editBackupValue;
+                editBackupValue = null;
+                IsInEditMode = false;
+                EditModeChanged?.Invoke(this, EditMode.CanceledEdit);
+            }
+        }
+
+        public void CommitEdit()
+        {
+            ThrowIfNotEditable();
+
+            if (IsInEditMode)
+            {
+                editBackupValue = null;
+                IsInEditMode = false;
+                EditModeChanged?.Invoke(this, EditMode.CommitedEdit);
+            }
+        }
+
+        private void ThrowIfNotEditable()
+        {
+            if (!IsEditable)
+                throw new InvalidOperationException("Can't execute edit operation on a not editable item!");
+        }
+    }
+
+    public interface ICmdItem
+    {
+        bool? IsChecked { get; set; }
+        CmdBase Parent { get; set; }
+
+        void SetIsCheckedWithoutNotifyingParent(bool? value);
+    }
+
+    public class CmdContainer : CmdBase
+    {
+        private ObservableCollection<ICmdItem> items;
+
+        private ReadOnlyObservableCollection<ICmdItem> readOnlyItems;
+        public ReadOnlyObservableCollection<ICmdItem> Items { get => readOnlyItems; }
+
+        public CmdContainer(string value, bool? isChecked, IEnumerable<ICmdItem> items = null) : base(value, isChecked)
+        {
+            this.items = new ObservableCollection<ICmdItem>();
+            readOnlyItems = new ReadOnlyObservableCollection<ICmdItem>(this.items);
+
+            foreach (var item in items ?? Enumerable.Empty<ICmdItem>())
+            {
+                AddItem(item);
+            }
+        }
+
+        protected override void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
+        {
+            base.OnIsCheckedChanged(oldValue, newValue, notifyParent);
+            foreach (var item in items)
+            {
+                item.SetIsCheckedWithoutNotifyingParent(newValue);
+            }
+        }
+
+        public void AddItem(ICmdItem newItem)
+        {
+            newItem.Parent = this;
+            items.Add(newItem);
+        }
+
+        protected override void OnChildIsCheckedChanged(bool? oldValue, bool? newValue)
+        {
+            if (newValue == true)
+            {
+                if (items.All(item => item.IsChecked ?? false))
+                    base.OnIsCheckedChanged(IsChecked, true, true);
+                else
+                    base.OnIsCheckedChanged(IsChecked, null, true);
+            }
+            else
+            {
+                if (items.Any(item => item.IsChecked ?? true))
+                    base.OnIsCheckedChanged(IsChecked, null, true);
+                else
+                    base.OnIsCheckedChanged(IsChecked, false, true);
+            }
+        }
+    }
+
+    public class CmdProject : CmdContainer
+    {
+        public CmdProject(string value, bool? isChecked = false, IEnumerable<ICmdItem> items = null) : base(value, isChecked, items)
+        {
+        }
+    }
+
+    public class CmdGroup : CmdContainer, ICmdItem
+    {
+        public override bool IsEditable => true;
+
+        public CmdGroup(string value, bool? isChecked = false, IEnumerable<ICmdItem> items = null) : base(value, isChecked, items)
+        {
+        }
+        
+        public void SetIsCheckedWithoutNotifyingParent(bool? value)
+        {
+            OnIsCheckedChanged(IsChecked, value, false);
+        }
+    }
+
+    public class CmdArgument : CmdBase, ICmdItem
+    {
+        public override bool IsEditable => true;
+
+        public CmdArgument(string value, bool? isChecked = false) : base(value, isChecked)
+        {
+        }
+
+        public void SetIsCheckedWithoutNotifyingParent(bool? value)
+        {
+            OnIsCheckedChanged(IsChecked, value, false);
+        }
     }
 
 

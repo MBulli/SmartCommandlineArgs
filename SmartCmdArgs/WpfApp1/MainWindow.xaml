@@ -33,8 +33,7 @@
             <lcl:TreeViewEx.ItemTemplateSelector>
                 <lcl:TreeDataTemplateSelector ProjectTemplate="{StaticResource ProjectDataTemplate}"
                                               GroupItemTemplate="{StaticResource GroupDataTemplate}"
-                                              ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}"
-                                              EditArgumentTemplate="{StaticResource EditArgumentDataTemplate}" />
+                                              ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}" />
             </lcl:TreeViewEx.ItemTemplateSelector>
         </lcl:TreeViewEx>
     </Grid>

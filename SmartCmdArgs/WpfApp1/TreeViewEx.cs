@@ -16,27 +16,12 @@ namespace WpfApp1
     {
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx();
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
-
-        //protected override void OnPreviewKeyDown(KeyEventArgs e)
-        //{
-        //    base.OnPreviewKeyDown(e);
-
-        //    if (this.SelectedItem is IEditable)
-        //    {
-        //        if (e.Key == Key.Return || e.Key == Key.F2)
-        //        {
-        //            ((IEditable)this.SelectedItem).BeginEdit();
-        //        }
-        //        else if (e.Key >= Key.A && e.Key <= Key.Z)
-        //        {
-        //            ((IEditable)this.SelectedItem).BeginEdit(resetValue: true);
-        //        }
-        //    }
-        //}
     }
 
     public class TreeViewItemEx : TreeViewItem
     {
+        private CmdBase Item => (CmdBase) DataContext;
+
         public int Level
         {
             get { return (int)GetValue(LevelProperty); }
@@ -55,46 +40,48 @@ namespace WpfApp1
         {
             base.OnUnselected(e);
 
-            Tree.FindVisualChild<ArgumentItemView>(this)?.CommitEdit();
-
-            //var obj = DataContext as IEditable;
-            //if (obj?.IsInEditMode == true)
-            //{
-            //    obj.CommitEdit();
-            //}
+            if(Item.IsEditable) Item.CommitEdit();
         }
+
+        protected override void OnTextInput(TextCompositionEventArgs e)
+        {
+            base.OnTextInput(e);
+
+            if (IsSelected && Item.IsEditable && !Item.IsInEditMode)
+            {
+                 Item.BeginEdit(initialValue: e.Text);
+            }
+        }
+
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
 
-            if (IsSelected && Tree.FindVisualChild<ArgumentItemView>(this)?.IsInEditMode == false)
+            if (IsSelected)
             {
-                if (e.Key == Key.Return || e.Key == Key.F2)
+                if (e.Key == Key.Space && !Item.IsInEditMode)
                 {
-                    Tree.FindVisualChild<ArgumentItemView>(this)?.BeginEdit(resetValue: false);
-                    
+                    Item.ToggleCheckedState();
                     e.Handled = true;
                 }
-                else if (e.Key >= Key.A && e.Key <= Key.Z)
+                else if (e.Key == Key.Return || e.Key == Key.F2)
                 {
-                    Tree.FindVisualChild<ArgumentItemView>(this)?.BeginEdit(resetValue: true);
+                    if (Item.IsEditable && !Item.IsInEditMode)
+                    {
+                        Item.BeginEdit();
+                        e.Handled = true;
+                    }
                 }
             }
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (this.IsSelected)
+            if (IsSelected && Item.IsEditable && !Item.IsInEditMode)
             {
-                Tree.FindVisualChild<ArgumentItemView>(this)?.BeginEdit(resetValue: false);
+                Item.BeginEdit();
                 e.Handled = true;
-
-                //var obj = DataContext as IEditable;
-                //if (obj != null && !obj.IsInEditMode)
-                //{
-                //    obj.BeginEdit();
-                //}
             }
 
             base.OnMouseLeftButtonDown(e);
@@ -104,26 +91,5 @@ namespace WpfApp1
 
         public static readonly DependencyProperty LevelProperty =
             DependencyProperty.Register(nameof(LevelProperty), typeof(int), typeof(TreeViewItemEx), new PropertyMetadata(0));
-    }
-
-    static class Tree
-    {
-        public static TChild FindVisualChild<TChild>(DependencyObject obj)
-            where TChild : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is TChild)
-                    return (TChild)child;
-                else
-                {
-                    TChild childOfChild = FindVisualChild<TChild>(child);
-                    if (childOfChild != null)
-                        return childOfChild;
-                }
-            }
-            return null;
-        }
     }
 }

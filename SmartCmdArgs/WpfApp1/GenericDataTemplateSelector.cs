@@ -78,7 +78,6 @@ namespace WpfApp1
         public DataTemplate ProjectTemplate { get; set; }
         public DataTemplate GroupItemTemplate { get; set; }
         public DataTemplate ArgumentItemTemplate { get; set; }
-        public DataTemplate EditArgumentTemplate { get; set; }
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
@@ -87,8 +86,6 @@ namespace WpfApp1
                 case CmdProject _: return ProjectTemplate;
                 case CmdGroup _: return GroupItemTemplate;
                 case CmdArgument _: return ArgumentItemTemplate;
-                //case CmdArgument a when !a.IsSelected: return ArgumentItemTemplate;
-                //case CmdArgument a when a.IsSelected: return EditArgumentTemplate;
                 default: return null;
             }
         }

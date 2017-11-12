@@ -28,43 +28,33 @@ namespace WpfApp1
             var lvm = new ListViewModel();
             this.DataContext = lvm;
 
-            CmdProject prj = new CmdProject() { Name = "Project1" };
-            prj.Items = new ObservableCollection<CmdItem>();
+            CmdProject prj = new CmdProject("Project1");
 
-            prj.Items.Add(new CmdArgument() { Command = "Hello" });
-            prj.Items.Add(new CmdGroup()
-            {
-                Name = "Grp",
-                Items = new ObservableCollection<CmdItem>(new[] {
-                    new CmdArgument() { Command = "Welt" },
-                    new CmdArgument() { Command = "Mond" }
-            })});
+            prj.AddItem(new CmdArgument("Hello"));
+            prj.AddItem(new CmdGroup("Grp", false, 
+                new[] {
+                    new CmdArgument("Welt"),
+                    new CmdArgument("Mond")
+            }));
             lvm.Projects.Add(prj);
 
 
-            prj = new CmdProject() { Name = "Project2" };
-            prj.Items = new ObservableCollection<CmdItem>();
+            prj = new CmdProject("Project2");
 
-            prj.Items.Add(new CmdArgument() { Command = "Hello2" });
-            prj.Items.Add(new CmdGroup()
-            {
-                Name = "G2rp",
-                Items = new ObservableCollection<CmdItem>(new CmdItem[] {
-                    new CmdArgument() { Command = "Wel2t" },
-                    new CmdArgument() { Command = "Mond2" },
-                    new CmdGroup()
-                    {
-                      Name = "Gr3p",
-                      Items = new ObservableCollection<CmdItem>(new[] {
-                        new CmdArgument() { Command = "Wel3t" },
-                        new CmdArgument() { Command = "Mond3" }
-                      })
-                    }
-            })
-            });
+            prj.AddItem(new CmdArgument("Hello2"));
+            prj.AddItem(new CmdGroup("G2rp", false,
+                new ICmdItem[]
+                {
+                    new CmdArgument("Wel2t"),
+                    new CmdArgument("Mond2"),
+                    new CmdGroup("Gr3p", false,
+                        new[]
+                        {
+                            new CmdArgument("Wel3t"),
+                            new CmdArgument("Mond3")
+                        })
+                }));
             lvm.Projects.Add(prj);
-
-            
         }
     }
 }

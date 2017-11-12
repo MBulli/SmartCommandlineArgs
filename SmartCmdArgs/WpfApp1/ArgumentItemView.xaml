@@ -6,10 +6,11 @@
              xmlns:local="clr-namespace:WpfApp1"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
+             d:DataContext="{d:DesignData CmdBase}"
              >
     <DockPanel Height="18">
-        <CheckBox x:Name="checkbox" DockPanel.Dock="Left" Focusable="False" VerticalAlignment="Center"/>
-        <TextBlock x:Name="textblock" Margin="4,0.5,0,0"/>
-        <TextBox x:Name="textbox" Visibility="Collapsed" KeyDown="textbox_KeyDown" Margin="1,-0.5,0,0"/>
+        <CheckBox x:Name="checkbox" DockPanel.Dock="Left" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
+        <TextBlock x:Name="textblock" Margin="4,0.5,0,0" Text="{Binding Value}"/>
+        <TextBox x:Name="textbox" Visibility="Collapsed" Margin="1,-0.5,0,0" Text="{Binding Value, Mode=TwoWay}" KeyDown="Textbox_OnKeyDown"/>
     </DockPanel>
 </UserControl>
