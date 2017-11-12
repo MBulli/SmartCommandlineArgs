@@ -36,10 +36,16 @@ namespace WpfApp1
             set => SetValue(ArgumentProperty, value);
         }
         
-        public string IsChecked
+        public bool IsChecked
         {
-            get => (string)GetValue(IsCheckedProperty);
+            get => (bool)GetValue(IsCheckedProperty);
             set => SetValue(IsCheckedProperty, value);
+        }
+
+        public bool IsEditable
+        {
+            get => (bool)GetValue(IsEditableProperty);
+            set => SetValue(IsEditableProperty, value);
         }
 
         public ArgumentItemView()
@@ -51,7 +57,7 @@ namespace WpfApp1
 
         public void BeginEdit(bool resetValue)
         {
-            if (!IsInEditMode)
+            if (!IsInEditMode && IsEditable)
             {
                 EditingArgument = resetValue ? "" : Argument;
                 EnterEditMode();
@@ -79,8 +85,8 @@ namespace WpfApp1
         {
             textblock.Visibility = Visibility.Collapsed;
             textbox.Visibility = Visibility.Visible;
-            textbox.SelectAll();
             textbox.Focus();
+            textbox.SelectAll();
             _isInEditMode = true;
         }
 
@@ -146,5 +152,9 @@ namespace WpfApp1
         public static readonly DependencyProperty IsCheckedProperty =
             DependencyProperty.Register(nameof(IsChecked), typeof(bool), typeof(ArgumentItemView),
                 new PropertyMetadata(false, OnIsCheckedDepPropertyChanged));
+        
+
+        public static readonly DependencyProperty IsEditableProperty =
+            DependencyProperty.Register(nameof(IsEditable), typeof(bool), typeof(ArgumentItemView), new PropertyMetadata(false));
     }
 }

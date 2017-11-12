@@ -27,7 +27,7 @@ namespace WpfApp1
         //        {
         //            ((IEditable)this.SelectedItem).BeginEdit();
         //        }
-        //        else if(e.Key >= Key.A && e.Key <= Key.Z)
+        //        else if (e.Key >= Key.A && e.Key <= Key.Z)
         //        {
         //            ((IEditable)this.SelectedItem).BeginEdit(resetValue: true);
         //        }
@@ -68,13 +68,13 @@ namespace WpfApp1
         {
             base.OnPreviewKeyDown(e);
 
-            if (IsSelected)
+            if (IsSelected && Tree.FindVisualChild<ArgumentItemView>(this)?.IsInEditMode == false)
             {
                 if (e.Key == Key.Return || e.Key == Key.F2)
                 {
                     Tree.FindVisualChild<ArgumentItemView>(this)?.BeginEdit(resetValue: false);
                     
-                    //e.Handled = true;
+                    e.Handled = true;
                 }
                 else if (e.Key >= Key.A && e.Key <= Key.Z)
                 {
@@ -88,7 +88,7 @@ namespace WpfApp1
             if (this.IsSelected)
             {
                 Tree.FindVisualChild<ArgumentItemView>(this)?.BeginEdit(resetValue: false);
-
+                e.Handled = true;
 
                 //var obj = DataContext as IEditable;
                 //if (obj != null && !obj.IsInEditMode)
