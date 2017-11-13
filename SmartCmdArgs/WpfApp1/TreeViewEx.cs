@@ -219,9 +219,14 @@ namespace WpfApp1
 
             if (IsSelected)
             {
-                if (e.Key == Key.Space && !Item.IsInEditMode)
+                var selectedItems = ParentTreeView.SelectedItems.Cast<CmdBase>().ToList();
+                if (e.Key == Key.Space && !selectedItems.Any(item => item.IsInEditMode))
                 {
-                    Item.ToggleCheckedState();
+                    bool select = selectedItems.All(item => item.IsChecked == false);
+                    foreach (var selectedItem in selectedItems)
+                    {
+                        selectedItem.IsChecked = select;
+                    }
                     e.Handled = true;
                 }
                 else if (e.Key == Key.Return || e.Key == Key.F2)
