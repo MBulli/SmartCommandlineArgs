@@ -53,6 +53,16 @@ namespace WpfApp1
         {
             return !(dragInfo.SourceItem is CmdProject);
         }
+
+        public override void StartDrag(IDragInfo dragInfo)
+        {
+            var item = dragInfo.SourceItem as CmdBase;
+
+            if (item?.IsEditable == true && item.IsInEditMode)
+                item.CommitEdit();
+
+            base.StartDrag(dragInfo);
+        }
     }
 
 }
