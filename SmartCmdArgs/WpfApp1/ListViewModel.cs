@@ -51,7 +51,7 @@ namespace WpfApp1
     {
         public override bool CanStartDrag(IDragInfo dragInfo)
         {
-            return !(dragInfo.SourceItem is CmdProject);
+            return !((TreeViewItemEx)dragInfo.VisualSourceItem).ParentTreeView.SelectedItems.Cast<CmdBase>().Any(item => item is CmdProject);
         }
 
         public override void StartDrag(IDragInfo dragInfo)
