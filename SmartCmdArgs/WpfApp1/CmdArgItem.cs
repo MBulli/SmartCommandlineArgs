@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -11,8 +12,8 @@ namespace WpfApp1
 {
     public class CmdBase : PropertyChangedBase
     {
-        private CmdBase parent;
-        public CmdBase Parent { get => parent; set => SetAndNotify(value, ref this.parent); }
+        private CmdContainer parent;
+        public CmdContainer Parent { get => parent; set => SetAndNotify(value, ref this.parent); }
 
         private string value;
         public string Value { get => value; set => SetAndNotify(value, ref this.value); }
@@ -108,61 +109,99 @@ namespace WpfApp1
     public interface ICmdItem
     {
         bool? IsChecked { get; set; }
-        CmdBase Parent { get; set; }
+        CmdContainer Parent { get; set; }
 
         void SetIsCheckedWithoutNotifyingParent(bool? value);
     }
 
     public class CmdContainer : CmdBase
     {
-        private ObservableCollection<ICmdItem> items;
-
-        private ReadOnlyObservableCollection<ICmdItem> readOnlyItems;
-        public ReadOnlyObservableCollection<ICmdItem> Items { get => readOnlyItems; }
+        public ObservableCollection<ICmdItem> Items { get; }
 
         public CmdContainer(string value, bool? isChecked, IEnumerable<ICmdItem> items = null) : base(value, isChecked)
         {
-            this.items = new ObservableCollection<ICmdItem>();
-            readOnlyItems = new ReadOnlyObservableCollection<ICmdItem>(this.items);
+            Items = new ObservableCollection<ICmdItem>();
+
+            Items.CollectionChanged += ItemsOnCollectionChanged;
 
             foreach (var item in items ?? Enumerable.Empty<ICmdItem>())
             {
-                AddItem(item);
+                Items.Add(item);
             }
+        }
+
+        private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+        {
+            switch (notifyCollectionChangedEventArgs.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (var item in notifyCollectionChangedEventArgs.NewItems.Cast<ICmdItem>())
+                    {
+                        item.Parent = this;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (var item in notifyCollectionChangedEventArgs.OldItems.Cast<ICmdItem>())
+                    {
+                        item.Parent = null;
+                    }
+                    foreach (var item in notifyCollectionChangedEventArgs.NewItems.Cast<ICmdItem>())
+                    {
+                        item.Parent = this;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (var item in notifyCollectionChangedEventArgs.OldItems.Cast<ICmdItem>())
+                    {
+                        item.Parent = null;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            if (notifyCollectionChangedEventArgs.Action != NotifyCollectionChangedAction.Move)
+            {
+                if (Items.All(item => item.IsChecked ?? false))
+                    base.OnIsCheckedChanged(IsChecked, true, true);
+                else if (Items.All(item => !item.IsChecked ?? false))
+                    base.OnIsCheckedChanged(IsChecked, false, true);
+                else
+                    base.OnIsCheckedChanged(IsChecked, null, true);
+            }
+
         }
 
         protected override void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
         {
             base.OnIsCheckedChanged(oldValue, newValue, notifyParent);
-            foreach (var item in items)
+            foreach (var item in Items)
             {
                 item.SetIsCheckedWithoutNotifyingParent(newValue);
             }
-        }
-
-        public void AddItem(ICmdItem newItem)
-        {
-            newItem.Parent = this;
-            items.Add(newItem);
         }
 
         protected override void OnChildIsCheckedChanged(bool? oldValue, bool? newValue)
         {
             if (newValue == true)
             {
-                if (items.All(item => item.IsChecked ?? false))
+                if (Items.All(item => item.IsChecked ?? false))
                     base.OnIsCheckedChanged(IsChecked, true, true);
                 else
                     base.OnIsCheckedChanged(IsChecked, null, true);
             }
             else
             {
-                if (items.Any(item => item.IsChecked ?? true))
+                if (Items.Any(item => item.IsChecked ?? true))
                     base.OnIsCheckedChanged(IsChecked, null, true);
                 else
                     base.OnIsCheckedChanged(IsChecked, false, true);
             }
         }
+
     }
 
     public class CmdProject : CmdContainer

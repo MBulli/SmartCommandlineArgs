@@ -30,8 +30,8 @@ namespace WpfApp1
 
             CmdProject prj = new CmdProject("Project1");
 
-            prj.AddItem(new CmdArgument("Hello"));
-            prj.AddItem(new CmdGroup("Grp", false, 
+            prj.Items.Add(new CmdArgument("Hello"));
+            prj.Items.Add(new CmdGroup("Grp", false, 
                 new[] {
                     new CmdArgument("Welt"),
                     new CmdArgument("Mond")
@@ -41,8 +41,8 @@ namespace WpfApp1
 
             prj = new CmdProject("Project2");
 
-            prj.AddItem(new CmdArgument("Hello2"));
-            prj.AddItem(new CmdGroup("G2rp", false,
+            prj.Items.Add(new CmdArgument("Hello2"));
+            prj.Items.Add(new CmdGroup("G2rp", false,
                 new ICmdItem[]
                 {
                     new CmdArgument("Wel2t"),

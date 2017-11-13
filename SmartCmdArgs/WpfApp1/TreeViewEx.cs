@@ -20,7 +20,7 @@ namespace WpfApp1
 
     public class TreeViewItemEx : TreeViewItem
     {
-        private CmdBase Item => (CmdBase) DataContext;
+        private CmdBase Item => DataContext as CmdBase;
 
         public int Level
         {
@@ -40,7 +40,7 @@ namespace WpfApp1
         {
             base.OnUnselected(e);
 
-            if(Item.IsEditable) Item.CommitEdit();
+            if(Item?.IsEditable == true) Item.CommitEdit();
         }
 
         protected override void OnTextInput(TextCompositionEventArgs e)
