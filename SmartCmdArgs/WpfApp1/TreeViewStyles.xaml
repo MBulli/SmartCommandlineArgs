@@ -107,13 +107,15 @@
                         <Trigger Property="HasItems" Value="false">
                             <Setter Property="Visibility" TargetName="Expander" Value="Hidden"/>
                         </Trigger>
-                        <Trigger Property="IsSelected" Value="true">
+                        <!--<Trigger Property="IsSelected" Value="true">-->
+                        <Trigger Property="local:TreeViewEx.IsItemSelected" Value="true">
                             <Setter Property="Background" TargetName="ItemBorder" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
-                                <Condition Property="IsSelected" Value="true"/>
+                                <!--<Condition Property="IsSelected" Value="true"/>-->
+                                <Condition Property="local:TreeViewEx.IsItemSelected" Value="true"/>
                                 <Condition Property="IsSelectionActive" Value="false"/>
                             </MultiTrigger.Conditions>
                             <Setter Property="Background" TargetName="ItemBorder" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
