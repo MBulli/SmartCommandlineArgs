@@ -61,6 +61,7 @@ namespace WpfApp1
         #endregion Properties
         #region Event Handlers
 
+        private TreeViewItem _lastMouseDownTargetItem;
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDown(e);
@@ -70,6 +71,30 @@ namespace WpfApp1
                 return;
 
             var item = GetTreeViewItemClicked((FrameworkElement)e.OriginalSource);
+            _lastMouseDownTargetItem = item;
+
+            if (!IsCtrlPressed && !IsShiftPressed && SelectedItems.Count > 1)
+                return;
+
+            if (item != null) SelectedItemChangedInternal(item);
+        }
+
+        protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseUp(e);
+            
+            // If clicking on a tree branch expander...
+            if (e.OriginalSource is Shape || e.OriginalSource is Grid)
+                return;
+
+            if (IsCtrlPressed || IsShiftPressed || SelectedItems.Count <= 1)
+                return;
+
+            var item = GetTreeViewItemClicked((FrameworkElement)e.OriginalSource);
+
+            if (!Equals(item, _lastMouseDownTargetItem))
+                return;
+
             if (item != null) SelectedItemChangedInternal(item);
         }
 
@@ -153,7 +178,7 @@ namespace WpfApp1
         private CmdBase Item => DataContext as CmdBase;
 
         private static bool IsCtrlPressed => (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
-        private TreeViewEx ParentTreeView { get; }
+        public TreeViewEx ParentTreeView { get; }
 
         public int Level
         {
@@ -212,7 +237,7 @@ namespace WpfApp1
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (IsSelected && Item.IsEditable && !Item.IsInEditMode && !IsCtrlPressed)
+            if (IsSelected && Item.IsEditable && !Item.IsInEditMode && !IsCtrlPressed && ParentTreeView.SelectedItems.Count == 1)
             {
                 Item.BeginEdit();
                 e.Handled = true;
