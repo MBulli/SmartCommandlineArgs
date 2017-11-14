@@ -165,7 +165,9 @@ namespace WpfApp1
 
             if (notifyCollectionChangedEventArgs.Action != NotifyCollectionChangedAction.Move)
             {
-                if (Items.All(item => item.IsChecked ?? false))
+                if (Items.Count == 0)
+                    base.OnIsCheckedChanged(IsChecked, false, true);
+                else if (Items.All(item => item.IsChecked ?? false))
                     base.OnIsCheckedChanged(IsChecked, true, true);
                 else if (Items.All(item => !item.IsChecked ?? false))
                     base.OnIsCheckedChanged(IsChecked, false, true);
