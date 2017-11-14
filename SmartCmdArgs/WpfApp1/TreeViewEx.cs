@@ -175,7 +175,11 @@ namespace WpfApp1
             if (Keyboard.IsKeyDown(Key.Up)
                 || Keyboard.IsKeyDown(Key.Down)
                 || Keyboard.IsKeyDown(Key.Left)
-                || Keyboard.IsKeyDown(Key.Right))
+                || Keyboard.IsKeyDown(Key.Right)
+                || Keyboard.IsKeyDown(Key.Prior)
+                || Keyboard.IsKeyDown(Key.Next)
+                || Keyboard.IsKeyDown(Key.End)
+                || Keyboard.IsKeyDown(Key.Home))
             {
                 SelectedItemChangedInternal(item);
             }
