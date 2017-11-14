@@ -82,7 +82,7 @@ namespace WpfApp1
         protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseUp(e);
-            
+
             // If clicking on a tree branch expander...
             if (e.OriginalSource is Shape || e.OriginalSource is Grid)
                 return;
@@ -170,6 +170,17 @@ namespace WpfApp1
             return rangeCount > 0 ? items.GetRange(rangeStart, rangeCount) : new List<TreeViewItem>();
         }
 
+        public void ChangedFocusedItem(TreeViewItem item)
+        {
+            if (Keyboard.IsKeyDown(Key.Up)
+                || Keyboard.IsKeyDown(Key.Down)
+                || Keyboard.IsKeyDown(Key.Left)
+                || Keyboard.IsKeyDown(Key.Right))
+            {
+                SelectedItemChangedInternal(item);
+            }
+        }
+
         #endregion Utility Methods
     }
 
@@ -251,6 +262,13 @@ namespace WpfApp1
             base.OnMouseLeftButtonDown(e);
         }
 
+        protected override void OnIsKeyboardFocusedChanged(DependencyPropertyChangedEventArgs e)
+        {
+            base.OnIsKeyboardFocusedChanged(e);
+
+            if ((bool) e.NewValue)
+                ParentTreeView.ChangedFocusedItem(this);
+        }
 
 
         public static readonly DependencyProperty LevelProperty =
