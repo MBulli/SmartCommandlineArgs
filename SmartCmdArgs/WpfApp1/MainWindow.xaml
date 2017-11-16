@@ -47,6 +47,7 @@
             <Button Content="Toggle prj2 startup" Click="Button_Click_1"  />
             <Button Content="Add project" Click="Button_AddPrjClick" />
             <Button Content="Add startup prj" Click="Button_AddSprjClick" />
+            <Button Content="Select first item" Click="Button_Click_2" />
         </StackPanel>
     </Grid>
 </Window>

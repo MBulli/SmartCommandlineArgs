@@ -21,6 +21,9 @@ namespace WpfApp1
         protected bool? isChecked;
         public bool? IsChecked { get => isChecked; set => OnIsCheckedChanged(isChecked, value, true); }
 
+        protected bool isSelected;
+        public bool IsSelected { get => isSelected; set => SetAndNotify(value, ref isSelected); }
+
         public virtual bool IsEditable => false;
 
         public CmdBase(string value, bool? isChecked)
@@ -44,7 +47,7 @@ namespace WpfApp1
             if (notifyParent)
             {
                 parent?.OnChildIsCheckedChanged(oldValue, newValue);
-            }           
+            }
         }
 
         protected virtual void OnChildIsCheckedChanged(bool? oldValue, bool? newValue)
@@ -188,6 +191,17 @@ namespace WpfApp1
             }
         }
 
+        public void SetIsSelectedOnChildren(bool areSelected)
+        {
+            foreach (var item in Items)
+            {
+                item.IsSelected = areSelected;
+                if (item is CmdContainer container)
+                {
+                    container.SetIsSelectedOnChildren(areSelected);
+                }
+            }
+        }
     }
 
     public class CmdProject : CmdContainer

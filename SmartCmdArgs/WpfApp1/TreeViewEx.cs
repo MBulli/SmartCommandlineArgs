@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -208,6 +209,22 @@ namespace WpfApp1
         {
             ParentTreeView = parentTreeView;
             Level = level;
+
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            BindingOperations.ClearBinding(this, TreeViewEx.IsItemSelectedProperty);
+
+            if (e.NewValue is CmdBase)
+            {
+                Binding bind = new Binding();
+                bind.Source = e.NewValue;
+                bind.Path = new PropertyPath(nameof(CmdBase.IsSelected));
+                bind.Mode = BindingMode.TwoWay;
+                SetBinding(TreeViewEx.IsItemSelectedProperty, bind);
+            }
         }
 
         protected override void OnUnselected(RoutedEventArgs e)
@@ -274,6 +291,13 @@ namespace WpfApp1
                 ParentTreeView.ChangedFocusedItem(this);
         }
 
+        protected override void OnCollapsed(RoutedEventArgs e)
+        {
+            base.OnCollapsed(e);
+
+            var container = (CmdContainer)Item;
+            container.SetIsSelectedOnChildren(false);
+        }
 
         public static readonly DependencyProperty LevelProperty =
             DependencyProperty.Register(nameof(LevelProperty), typeof(int), typeof(TreeViewItemEx), new PropertyMetadata(0));

@@ -99,5 +99,10 @@ namespace WpfApp1
             lvm.Projects.Add(prj);
             lvm.StartupProjects.Add(prj);
         }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            lvm.Projects[0].Items[0].IsSelected = true;
+        }
     }
 }
