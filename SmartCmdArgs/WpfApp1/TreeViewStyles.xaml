@@ -13,7 +13,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
-                    <Grid Width="15" Height="13" Background="Transparent">
+                    <Grid Background="Transparent">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
@@ -35,22 +35,22 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Path x:Name="Collapsed"
-                                HorizontalAlignment="Left"
+                                HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
-                                Margin="1,1,1,1"
+                                Margin="1,1,4,1"
                                 Data="M 4 0 L 8 4 L 4 8 Z">
                             <Path.Fill>
-                                <SolidColorBrush Color="{DynamicResource GlyphColor}" />
+                                <SolidColorBrush Color="{StaticResource GlyphColor}" />
                             </Path.Fill>
                         </Path>
                         <Path x:Name="Expanded"
-                                HorizontalAlignment="Left"
+                                HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
-                                Margin="1,1,1,1"
+                                Margin="1,1,4,1"
                                 Data="M 0 4 L 8 4 L 4 8 Z"
                                 Visibility="Hidden">
                             <Path.Fill>
-                                <SolidColorBrush Color="{DynamicResource GlyphColor}" />
+                                <SolidColorBrush Color="{StaticResource GlyphColor}" />
                             </Path.Fill>
                         </Path>
                     </Grid>
@@ -88,6 +88,7 @@
                                             ClickMode="Press"
                                             IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
                                             Style="{StaticResource ExpandCollapseToggleStyle}"
+                                            Margin="{Binding Level, RelativeSource={RelativeSource TemplatedParent}, Converter={local:TreeLevelMarginConverter Ident=-8}}"
                                             />
                             <Border x:Name="HeaderBorder" 
                                     Grid.Column="1" Grid.Row="0" 
