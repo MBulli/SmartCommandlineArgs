@@ -154,8 +154,12 @@ namespace WpfApp1
             }
             
             var destinationList = dropInfo.TargetCollection.TryGetList();
-            var data = (dropInfo.DragInfo.VisualSource as TreeViewEx)?.SelectedItems.Cast<CmdBase>().ToList();
-            
+
+            var selectedItems = (dropInfo.DragInfo.VisualSource as TreeViewEx)?.SelectedItems.Cast<CmdBase>().ToList();
+            var set = new HashSet<CmdBase>(selectedItems);
+            var data = selectedItems.Where(x => !set.Contains(x.Parent)).ToList();
+
+
             if (data == null)
               return;
 
