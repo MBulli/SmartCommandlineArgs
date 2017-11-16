@@ -48,16 +48,8 @@ namespace WpfApp1
 
         private static bool IsShiftPressed => (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 
-        public IList SelectedItems
-        {
-            get
-            {
-                var selectedTreeViewItems = GetTreeViewItems(this, true).Where(GetIsItemSelected);
-                var selectedModelItems = selectedTreeViewItems.Select(treeViewItem => treeViewItem.Header);
-
-                return selectedModelItems.ToList();
-            }
-        }
+        public IEnumerable<TreeViewItem> SelectedTreeViewItems => GetTreeViewItems(this, true).Where(GetIsItemSelected);
+        public IList SelectedItems => SelectedTreeViewItems.Select(treeViewItem => treeViewItem.Header).ToList();
 
         #endregion Properties
         #region Event Handlers
@@ -298,9 +290,14 @@ namespace WpfApp1
             var container = (CmdContainer)Item;
 
             // If any child change its state and no other item is selected; select this container
-            if (container.SetIsSelectedOnChildren(false) && ParentTreeView.SelectedItems.Count == 0)
+            if (container.SetIsSelectedOnChildren(false) && !ParentTreeView.SelectedTreeViewItems.Any())
             {
                 Item.IsSelected = true;
+            }
+            else
+            {
+                // Give focus to any other selected item
+                ParentTreeView.SelectedTreeViewItems.First().Focus();
             }
         }
 
