@@ -125,6 +125,13 @@
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
                         </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsFocused" Value="true" />
+                                <Condition Property="local:TreeViewEx.IsItemSelected" Value="false" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" Value="Red" />
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

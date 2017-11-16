@@ -42,7 +42,7 @@
         </lcl:TreeViewEx>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <CheckBox Content="Show all" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" />
+            <CheckBox Content="Show all" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" IsChecked="True" />
             <Button Content="Toggle prj1 startup" Click="Button_Click" />
             <Button Content="Toggle prj2 startup" Click="Button_Click_1"  />
             <Button Content="Add project" Click="Button_AddPrjClick" />

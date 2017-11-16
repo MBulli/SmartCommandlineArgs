@@ -296,7 +296,12 @@ namespace WpfApp1
             base.OnCollapsed(e);
 
             var container = (CmdContainer)Item;
-            container.SetIsSelectedOnChildren(false);
+
+            // If any child change its state and no other item is selected; select this container
+            if (container.SetIsSelectedOnChildren(false) && ParentTreeView.SelectedItems.Count == 0)
+            {
+                Item.IsSelected = true;
+            }
         }
 
         public static readonly DependencyProperty LevelProperty =

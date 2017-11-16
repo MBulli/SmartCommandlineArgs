@@ -191,16 +191,30 @@ namespace WpfApp1
             }
         }
 
-        public void SetIsSelectedOnChildren(bool areSelected)
+
+        /// <summary>
+        /// Sets the IsSelected property for every child to areSelected.
+        /// </summary>
+        /// <returns>True if any child changed its state.</returns>
+        public bool SetIsSelectedOnChildren(bool areSelected)
         {
+            bool result = false;
             foreach (var item in Items)
             {
-                item.IsSelected = areSelected;
+                if (item.IsSelected != areSelected)
+                {
+                    item.IsSelected = areSelected;
+                    result = true;
+                }
+                
                 if (item is CmdContainer container)
                 {
-                    container.SetIsSelectedOnChildren(areSelected);
+                    if (container.SetIsSelectedOnChildren(areSelected))
+                        result = true;
                 }
             }
+
+            return result;
         }
     }
 

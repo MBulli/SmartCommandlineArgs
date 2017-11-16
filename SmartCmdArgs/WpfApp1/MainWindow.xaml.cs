@@ -56,9 +56,7 @@ namespace WpfApp1
                         })
                 }));
             lvm.Projects.Add(prj2);
-
-
-            lvm.ShowAllProjects = false;
+            
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
