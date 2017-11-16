@@ -50,6 +50,11 @@ namespace WpfApp1
         protected virtual void OnChildIsCheckedChanged(bool? oldValue, bool? newValue)
         {}
 
+        public void SetIsCheckedWithoutNotifyingParent(bool? value)
+        {
+            OnIsCheckedChanged(IsChecked, value, false);
+        }
+
         private string editBackupValue;
 
         private bool isInEditMode;
@@ -105,65 +110,45 @@ namespace WpfApp1
                 throw new InvalidOperationException("Can't execute edit operation on a not editable item!");
         }
     }
-
-    public interface ICmdItem
-    {
-        bool? IsChecked { get; set; }
-        CmdContainer Parent { get; set; }
-
-        void SetIsCheckedWithoutNotifyingParent(bool? value);
-    }
-
+    
     public class CmdContainer : CmdBase
     {
-        public ObservableCollection<ICmdItem> Items { get; }
+        public ObservableCollection<CmdBase> Items { get; }
 
-        public CmdContainer(string value, bool? isChecked, IEnumerable<ICmdItem> items = null) : base(value, isChecked)
+        public CmdContainer(string value, bool? isChecked, IEnumerable<CmdBase> items = null)
+            : base(value, isChecked)
         {
-            Items = new ObservableCollection<ICmdItem>();
+            Items = new ObservableCollection<CmdBase>();
 
             Items.CollectionChanged += ItemsOnCollectionChanged;
 
-            foreach (var item in items ?? Enumerable.Empty<ICmdItem>())
+            foreach (var item in items ?? Enumerable.Empty<CmdBase>())
             {
                 Items.Add(item);
             }
         }
 
-        private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+        private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            switch (notifyCollectionChangedEventArgs.Action)
+            if (e.Action == NotifyCollectionChangedAction.Remove
+                || e.Action == NotifyCollectionChangedAction.Replace
+                || e.Action == NotifyCollectionChangedAction.Reset)
             {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (var item in notifyCollectionChangedEventArgs.NewItems.Cast<ICmdItem>())
-                    {
-                        item.Parent = this;
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    foreach (var item in notifyCollectionChangedEventArgs.OldItems.Cast<ICmdItem>())
-                    {
-                        item.Parent = null;
-                    }
-                    foreach (var item in notifyCollectionChangedEventArgs.NewItems.Cast<ICmdItem>())
-                    {
-                        item.Parent = this;
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (var item in notifyCollectionChangedEventArgs.OldItems.Cast<ICmdItem>())
-                    {
-                        item.Parent = null;
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                foreach (var item in e.OldItems.Cast<CmdBase>())
+                {
+                    item.Parent = null;
+                }
             }
 
-            if (notifyCollectionChangedEventArgs.Action != NotifyCollectionChangedAction.Move)
+            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
+            {
+                foreach (var item in e.NewItems.Cast<CmdBase>())
+                {
+                    item.Parent = this;
+                }
+            }
+            
+            if (e.Action != NotifyCollectionChangedAction.Move)
             {
                 if (Items.Count == 0)
                     base.OnIsCheckedChanged(IsChecked, false, true);
@@ -174,7 +159,6 @@ namespace WpfApp1
                 else
                     base.OnIsCheckedChanged(IsChecked, null, true);
             }
-
         }
 
         protected override void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
@@ -208,36 +192,31 @@ namespace WpfApp1
 
     public class CmdProject : CmdContainer
     {
-        public CmdProject(string value, bool? isChecked = false, IEnumerable<ICmdItem> items = null) : base(value, isChecked, items)
+        private bool isStartupProject = false;
+        public bool IsStartupProject { get => isStartupProject; set => SetAndNotify(value, ref isStartupProject); }
+
+        public CmdProject(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
+            : base(value, isChecked, items)
         {
         }
     }
 
-    public class CmdGroup : CmdContainer, ICmdItem
-    {
+    public class CmdGroup : CmdContainer
+    { 
         public override bool IsEditable => true;
 
-        public CmdGroup(string value, bool? isChecked = false, IEnumerable<ICmdItem> items = null) : base(value, isChecked, items)
+        public CmdGroup(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
+            : base(value, isChecked, items)
         {
-        }
-        
-        public void SetIsCheckedWithoutNotifyingParent(bool? value)
-        {
-            OnIsCheckedChanged(IsChecked, value, false);
         }
     }
 
-    public class CmdArgument : CmdBase, ICmdItem
+    public class CmdArgument : CmdBase
     {
         public override bool IsEditable => true;
 
         public CmdArgument(string value, bool? isChecked = false) : base(value, isChecked)
         {
-        }
-
-        public void SetIsCheckedWithoutNotifyingParent(bool? value)
-        {
-            OnIsCheckedChanged(IsChecked, value, false);
         }
     }
 

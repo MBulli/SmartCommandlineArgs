@@ -14,16 +14,20 @@
                 <ResourceDictionary Source="TreeViewStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </Window.Resources>    
+    </Window.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
         <lcl:TreeViewEx x:Name="treeView"
-                  ItemsSource="{Binding Projects}"                 
+                  ItemsSource="{Binding TreeItems}"                 
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="True"
                   dd:DragDrop.UseDefaultDragAdorner="False"
                   dd:DragDrop.UseDefaultEffectDataTemplate="True"
                   dd:DragDrop.DragHandler="{Binding DragHandler}"
-                  dd:DragDrop.DropHandler="{Binding DropHandler}" 
+                  dd:DragDrop.DropHandler="{Binding DropHandler}"
                   >
             <lcl:TreeViewEx.ItemContainerStyleSelector>
                 <lcl:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
@@ -36,5 +40,13 @@
                                               ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}" />
             </lcl:TreeViewEx.ItemTemplateSelector>
         </lcl:TreeViewEx>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <CheckBox Content="Show all" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" />
+            <Button Content="Toggle prj1 startup" Click="Button_Click" />
+            <Button Content="Toggle prj2 startup" Click="Button_Click_1"  />
+            <Button Content="Add project" Click="Button_AddPrjClick" />
+            <Button Content="Add startup prj" Click="Button_AddSprjClick" />
+        </StackPanel>
     </Grid>
 </Window>

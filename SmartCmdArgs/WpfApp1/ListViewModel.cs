@@ -9,28 +9,108 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using GongSolutions.Wpf.DragDrop.Utilities;
+using System.Windows.Data;
+using System.Collections.Specialized;
 
 namespace WpfApp1
 {
     public class ListViewModel : PropertyChangedBase
     {
         private ObservableCollection<CmdProject> projects;
+        private ObservableCollection<CmdProject> startupProjects;
+        private object treeitems;
+        private bool showAllProjects;       
 
         public ObservableCollection<CmdProject> Projects { get => projects; }
+        public object TreeItems
+        {
+            get => treeitems;
+            private set => SetAndNotify(value, ref treeitems);
+        }
 
-        public IDropTarget DropHandler { get; } = new DropHandler();
-        public IDragSource DragHandler { get; } = new DragHandler();
+        public bool ShowAllProjects
+        {
+            get => showAllProjects;
+            set
+            {
+                if (showAllProjects != value)
+                {
+                    SetAndNotify(value, ref showAllProjects);
+                    UpdateTree();
+                }
+            }
+        }
+        public ObservableCollection<CmdProject> StartupProjects { get => startupProjects; }
+
+        public IDropTarget DropHandler { get; private set; }
+        public IDragSource DragHandler { get; private set; }
 
 
         public ListViewModel()
         {
+            DropHandler = new DropHandler(this);
+            DragHandler = new DragHandler(this);
+
             projects = new ObservableCollection<CmdProject>();
+            treeitems = null;
+            
+            startupProjects = new ObservableCollection<CmdProject>();
+            startupProjects.CollectionChanged += OnStartupProjectsChanged;
         }
 
-    }
+        private void OnStartupProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Remove 
+                || e.Action == NotifyCollectionChangedAction.Replace 
+                || e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                foreach (var item in e.OldItems.Cast<CmdProject>())
+                {
+                    item.IsStartupProject = false;
+                }
+            }
 
+            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
+            {
+                foreach (var item in e.NewItems.Cast<CmdProject>())
+                {
+                    item.IsStartupProject = true;
+                }
+            }
+
+            UpdateTree();
+        }
+
+        private void UpdateTree()
+        {
+            if (ShowAllProjects)
+            {
+                TreeItems = projects;
+            }
+            else
+            {
+                if (startupProjects.Count == 1)
+                {
+                    TreeItems = startupProjects[0].Items;
+                }
+                else
+                {
+                    // Fixes a strange potential bug in WPF. If ToList() is missing the project will be shown twice.
+                    TreeItems = startupProjects.ToList();
+                }
+            }
+        }
+    }
+    
     class DropHandler : DefaultDropHandler
     {
+        private readonly ListViewModel lvm;
+
+        public DropHandler(ListViewModel lvm)
+        {
+            this.lvm = lvm;
+        }
+
         public override void DragOver(IDropInfo dropInfo)
         {
             // CmdArgument is not a DragTarget
@@ -72,9 +152,9 @@ namespace WpfApp1
                     --insertIndex;
                 }
             }
-
+            
             var destinationList = dropInfo.TargetCollection.TryGetList();
-            var data = (dropInfo.DragInfo.VisualSource as TreeViewEx)?.SelectedItems.Cast<ICmdItem>().ToList();
+            var data = (dropInfo.DragInfo.VisualSource as TreeViewEx)?.SelectedItems.Cast<CmdBase>().ToList();
             
             if (data == null)
               return;
@@ -111,7 +191,7 @@ namespace WpfApp1
                         var cloneable = o as ICloneable;
                         if (cloneable != null)
                         {
-                            obj2Insert = cloneable.Clone() as ICmdItem;
+                            obj2Insert = cloneable.Clone() as CmdBase;
                         }
                     }
 
@@ -123,6 +203,13 @@ namespace WpfApp1
 
     class DragHandler : DefaultDragHandler
     {
+        private readonly ListViewModel lvm;
+
+        public DragHandler(ListViewModel lvm)
+        {
+            this.lvm = lvm;
+        }
+
         public override bool CanStartDrag(IDragInfo dragInfo)
         {
             return !((TreeViewItemEx)dragInfo.VisualSourceItem).ParentTreeView.SelectedItems.Cast<CmdBase>().Any(item => item is CmdProject);
