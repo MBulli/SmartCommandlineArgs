@@ -66,7 +66,7 @@ namespace WpfApp1
             var item = GetTreeViewItemClicked((FrameworkElement)e.OriginalSource);
             _lastMouseDownTargetItem = item;
 
-            if (!IsCtrlPressed && !IsShiftPressed && SelectedItems.Count > 1)
+            if (!IsCtrlPressed && !IsShiftPressed && SelectedItems.Count > 1 && GetIsItemSelected(item))
                 return;
 
             if (item != null) SelectedItemChangedInternal(item);
