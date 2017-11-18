@@ -73,7 +73,14 @@ namespace SmartCmdArgs.Helper
             dynamic vcCfg = vcPrj.ActiveConfiguration; // is VCConfiguration
             dynamic vcDbg = vcCfg.DebugSettings;  // is VCDebugSettings
 
+            // apply it first using the old way, in case the new way doesn't work for this type of projects (platforms other than Windows, for example)
             vcDbg.CommandArguments = arguments;
+
+            dynamic windowsLocalDebugger = vcCfg.Rules.Item("WindowsLocalDebugger"); // is IVCRulePropertyStorage
+            windowsLocalDebugger.SetPropertyValue("LocalDebuggerCommandArguments", arguments);
+
+            dynamic windowsRemoteDebugger = vcCfg.Rules.Item("WindowsRemoteDebugger"); // is IVCRulePropertyStorage
+            windowsRemoteDebugger.SetPropertyValue("RemoteDebuggerCommandArguments", arguments);
         }
 
         private static void GetVCProjEngineAllArguments(EnvDTE.Project project, List<string> allArgs)
@@ -89,6 +96,20 @@ namespace SmartCmdArgs.Helper
                 if (!string.IsNullOrEmpty(dbg?.CommandArguments))
                 {
                     allArgs.Add(dbg.CommandArguments);
+                }
+
+                dynamic windowsLocalDebugger = cfg.Rules.Item("WindowsLocalDebugger"); // is IVCRulePropertyStorage
+                var localArguments = windowsLocalDebugger.GetUnevaluatedPropertyValue("LocalDebuggerCommandArguments");
+                if (!string.IsNullOrEmpty(localArguments))
+                {
+                    allArgs.Add(localArguments);
+                }
+
+                dynamic windowsRemoteDebugger = cfg.Rules.Item("WindowsRemoteDebugger"); // is IVCRulePropertyStorage
+                var remoteArguments = windowsRemoteDebugger.GetUnevaluatedPropertyValue("RemoteDebuggerCommandArguments");
+                if (!string.IsNullOrEmpty(remoteArguments))
+                {
+                    allArgs.Add(remoteArguments);
                 }
             }
         }
