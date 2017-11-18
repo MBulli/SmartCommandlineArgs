@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using GongSolutions.Wpf.DragDrop.Utilities;
 using System.Windows.Data;
 using System.Collections.Specialized;
+using System.Windows.Input;
 
 namespace WpfApp1
 {
@@ -136,6 +137,8 @@ namespace WpfApp1
                 return;
             }
 
+            var focusedItem = (Keyboard.FocusedElement as TreeViewItemEx)?.Header;
+
             var insertIndex = dropInfo.InsertIndex != dropInfo.UnfilteredInsertIndex ? dropInfo.UnfilteredInsertIndex : dropInfo.InsertIndex;
 
             var itemsControl = dropInfo.VisualTarget as ItemsControl;
@@ -201,6 +204,35 @@ namespace WpfApp1
 
                     destinationList.Insert(insertIndex++, obj2Insert);
                 }
+            }
+
+            // focus and selection handling after an item has ben droped
+            if (dropInfo.InsertPosition.HasFlag(RelativeInsertPosition.TargetItemCenter)
+                && dropInfo.TargetItem is CmdContainer
+                && !((TreeViewItemEx)dropInfo.VisualTargetItem).IsExpanded)
+            {
+                dropInfo.VisualTargetItem.Focus();
+                var container = (CmdContainer)dropInfo.TargetItem;
+                container.IsSelected = true;
+                container.SetIsSelectedOnChildren(false);
+            }
+            else
+            {
+                var selectedTreeViewItems = (dropInfo.DragInfo.VisualSource as TreeViewEx)?.SelectedTreeViewItems.Cast<TreeViewItemEx>().ToList();
+                bool nothingFocused = true;
+                if (selectedTreeViewItems != null)
+                {
+                    foreach (var selectedTreeViewItem in selectedTreeViewItems)
+                    {
+                        if (selectedTreeViewItem.Header == focusedItem)
+                        {
+                            selectedTreeViewItem.Focus();
+                            nothingFocused = false;
+                        }
+                    }
+                }
+                if (nothingFocused)
+                    selectedTreeViewItems.FirstOrDefault()?.Focus();
             }
         }
     }
