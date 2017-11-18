@@ -297,7 +297,7 @@ namespace WpfApp1
             else
             {
                 // Give focus to any other selected item
-                ParentTreeView.SelectedTreeViewItems.First().Focus();
+                ParentTreeView.SelectedTreeViewItems.FirstOrDefault()?.Focus();
             }
         }
 
