@@ -77,18 +77,29 @@ namespace WpfApp1
             base.OnPreviewMouseUp(e);
 
             // If clicking on a tree branch expander...
-            if (e.OriginalSource is Shape || e.OriginalSource is Grid)
+            if (e.OriginalSource is Shape)
                 return;
+            
+            var item = GetTreeViewItemClicked((FrameworkElement)e.OriginalSource);
+
+            if (item == null)
+            {
+                foreach (var treeViewItem in GetTreeViewItems(this, false))
+                {
+                    var cmdItem = (CmdBase)treeViewItem.Header;
+                    if (cmdItem.IsInEditMode)
+                        cmdItem.CommitEdit();
+                }
+                return;
+            }
 
             if (IsCtrlPressed || IsShiftPressed || SelectedItems.Count <= 1)
                 return;
 
-            var item = GetTreeViewItemClicked((FrameworkElement)e.OriginalSource);
-
             if (!Equals(item, _lastMouseDownTargetItem))
                 return;
 
-            if (item != null) SelectedItemChangedInternal(item);
+            SelectedItemChangedInternal(item);
         }
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
