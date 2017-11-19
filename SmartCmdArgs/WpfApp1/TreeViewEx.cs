@@ -24,7 +24,7 @@ namespace WpfApp1
         #region Fields
 
         // Used in shift selections
-        private TreeViewItem _lastItemSelected;
+        private TreeViewItemEx _lastItemSelected;
 
         #endregion Fields
         #region Dependency Properties
@@ -48,13 +48,13 @@ namespace WpfApp1
 
         private static bool IsShiftPressed => (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 
-        public IEnumerable<TreeViewItem> SelectedTreeViewItems => GetTreeViewItems(this, true).Where(GetIsItemSelected);
+        public IEnumerable<TreeViewItemEx> SelectedTreeViewItems => GetTreeViewItems(this, true).Where(GetIsItemSelected);
         public IList SelectedItems => SelectedTreeViewItems.Select(treeViewItem => treeViewItem.Header).ToList();
 
         #endregion Properties
         #region Event Handlers
 
-        private TreeViewItem _lastMouseDownTargetItem;
+        private TreeViewItemEx _lastMouseDownTargetItem;
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDown(e);
@@ -119,7 +119,7 @@ namespace WpfApp1
         #endregion Event Handlers
         #region Utility Methods
 
-        private void SelectedItemChangedInternal(TreeViewItem tvItem)
+        private void SelectedItemChangedInternal(TreeViewItemEx tvItem)
         {
             // Clear all previous selected item states if ctrl is NOT being held down
             if (!IsCtrlPressed)
@@ -148,20 +148,20 @@ namespace WpfApp1
                 _lastItemSelected = tvItem;
             }
         }
-        private static TreeViewItem GetTreeViewItemClicked(DependencyObject sender)
+        private static TreeViewItemEx GetTreeViewItemClicked(DependencyObject sender)
         {
-            while (sender != null && !(sender is TreeViewItem))
+            while (sender != null && !(sender is TreeViewItemEx))
                 sender = VisualTreeHelper.GetParent(sender);
-            return sender as TreeViewItem;
+            return sender as TreeViewItemEx;
         }
-        private static List<TreeViewItem> GetTreeViewItems(ItemsControl parentItem, bool includeCollapsedItems, List<TreeViewItem> itemList = null)
+        private static List<TreeViewItemEx> GetTreeViewItems(ItemsControl parentItem, bool includeCollapsedItems, List<TreeViewItemEx> itemList = null)
         {
             if (itemList == null)
-                itemList = new List<TreeViewItem>();
+                itemList = new List<TreeViewItemEx>();
 
             for (var index = 0; index < parentItem.Items.Count; index++)
             {
-                var tvItem = parentItem.ItemContainerGenerator.ContainerFromIndex(index) as TreeViewItem;
+                var tvItem = parentItem.ItemContainerGenerator.ContainerFromIndex(index) as TreeViewItemEx;
                 if (tvItem == null) continue;
 
                 itemList.Add(tvItem);
@@ -170,7 +170,7 @@ namespace WpfApp1
             }
             return itemList;
         }
-        private List<TreeViewItem> GetTreeViewItemRange(TreeViewItem start, TreeViewItem end)
+        private List<TreeViewItemEx> GetTreeViewItemRange(TreeViewItemEx start, TreeViewItemEx end)
         {
             var items = GetTreeViewItems(this, false);
 
@@ -185,10 +185,10 @@ namespace WpfApp1
             else if (startIndex == -1 || endIndex == -1)
                 rangeCount = 1;
 
-            return rangeCount > 0 ? items.GetRange(rangeStart, rangeCount) : new List<TreeViewItem>();
+            return rangeCount > 0 ? items.GetRange(rangeStart, rangeCount) : new List<TreeViewItemEx>();
         }
 
-        public void ChangedFocusedItem(TreeViewItem item)
+        public void ChangedFocusedItem(TreeViewItemEx item)
         {
             if (Keyboard.IsKeyDown(Key.Up)
                 || Keyboard.IsKeyDown(Key.Down)
