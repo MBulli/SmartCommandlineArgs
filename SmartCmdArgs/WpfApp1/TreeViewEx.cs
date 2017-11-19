@@ -91,6 +91,20 @@ namespace WpfApp1
             if (item != null) SelectedItemChangedInternal(item);
         }
 
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            base.OnPreviewKeyDown(e);
+
+            if (e.Key == Key.A && e.IsDown && IsCtrlPressed)
+            {
+                foreach (var treeViewItem in GetTreeViewItems(this, false))
+                {
+                    SetIsItemSelected(treeViewItem, true);
+                }
+                e.Handled = true;
+            }
+        }
+
         #endregion Event Handlers
         #region Utility Methods
 
