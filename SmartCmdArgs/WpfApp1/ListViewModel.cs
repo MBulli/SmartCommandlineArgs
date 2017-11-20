@@ -152,7 +152,7 @@ namespace WpfApp1
                 return;
             }
 
-            var focusedItem = (Keyboard.FocusedElement as TreeViewItemEx)?.Header;
+            var focusedItem = (Keyboard.FocusedElement as TreeViewItemEx)?.Item;
 
             var insertIndex = dropInfo.InsertIndex != dropInfo.UnfilteredInsertIndex ? dropInfo.UnfilteredInsertIndex : dropInfo.InsertIndex;
 
@@ -173,7 +173,7 @@ namespace WpfApp1
             
             var destinationList = dropInfo.TargetCollection.TryGetList();
 
-            var data = lvm.DragedTreeViewItems.Select(tvItem => tvItem.Header).Cast<CmdBase>().ToList();
+            var data = lvm.DragedTreeViewItems.Select(tvItem => tvItem.Item).ToList();
             
             if (data.Count == 0)
               return;
@@ -236,7 +236,7 @@ namespace WpfApp1
                 {
                     foreach (var selectedTreeViewItem in selectedTreeViewItems)
                     {
-                        if (selectedTreeViewItem.Header == focusedItem)
+                        if (selectedTreeViewItem.Item == focusedItem)
                         {
                             selectedTreeViewItem.Focus();
                             nothingFocused = false;
@@ -260,7 +260,7 @@ namespace WpfApp1
 
         public override bool CanStartDrag(IDragInfo dragInfo)
         {
-            return !((TreeViewEx)dragInfo.VisualSource).SelectedItems.Cast<CmdBase>().Any(item => item is CmdProject);
+            return !((TreeViewEx)dragInfo.VisualSource).SelectedItems.Any(item => item is CmdProject);
         }
 
         public override void StartDrag(IDragInfo dragInfo)
@@ -273,8 +273,8 @@ namespace WpfApp1
             lvm.DragedTreeViewItems.Clear();
 
             var selectedTreeViewItems = ((TreeViewEx)dragInfo.VisualSource).SelectedTreeViewItems.ToList();
-            var set = new HashSet<CmdBase>(selectedTreeViewItems.Select(x => x.Header).Cast<CmdBase>());
-            var data = selectedTreeViewItems.Where(x => !set.Contains(((CmdBase)x.Header).Parent));
+            var set = new HashSet<CmdBase>(selectedTreeViewItems.Select(x => x.Item));
+            var data = selectedTreeViewItems.Where(x => !set.Contains(x.Item.Parent));
             lvm.DragedTreeViewItems.AddRange(data);
 
             base.StartDrag(dragInfo);

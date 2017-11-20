@@ -49,7 +49,7 @@ namespace WpfApp1
         private static bool IsShiftPressed => (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 
         public IEnumerable<TreeViewItemEx> SelectedTreeViewItems => GetTreeViewItems(this, true).Where(GetIsItemSelected);
-        public IList SelectedItems => SelectedTreeViewItems.Select(treeViewItem => treeViewItem.Header).ToList();
+        public IEnumerable<CmdBase> SelectedItems => SelectedTreeViewItems.Select(treeViewItem => treeViewItem.Item);
 
         #endregion Properties
         #region Event Handlers
@@ -66,7 +66,7 @@ namespace WpfApp1
             var item = GetTreeViewItemClicked((FrameworkElement)e.OriginalSource);
             _lastMouseDownTargetItem = item;
 
-            if (!IsCtrlPressed && !IsShiftPressed && SelectedItems.Count > 1 && GetIsItemSelected(item))
+            if (!IsCtrlPressed && !IsShiftPressed && SelectedItems.Skip(1).Any() && GetIsItemSelected(item))
                 return;
 
             if (item != null) SelectedItemChangedInternal(item);
@@ -86,14 +86,14 @@ namespace WpfApp1
             {
                 foreach (var treeViewItem in GetTreeViewItems(this, false))
                 {
-                    var cmdItem = (CmdBase)treeViewItem.Header;
+                    var cmdItem = treeViewItem.Item;
                     if (cmdItem.IsInEditMode)
                         cmdItem.CommitEdit();
                 }
                 return;
             }
 
-            if (IsCtrlPressed || IsShiftPressed || SelectedItems.Count <= 1)
+            if (IsCtrlPressed || IsShiftPressed || !SelectedItems.Skip(1).Any())
                 return;
 
             if (!Equals(item, _lastMouseDownTargetItem))
@@ -124,8 +124,7 @@ namespace WpfApp1
             // Clear all previous selected item states if ctrl is NOT being held down
             if (!IsCtrlPressed)
             {
-                var items = GetTreeViewItems(this, true);
-                foreach (var treeViewItem in items)
+                foreach (var treeViewItem in GetTreeViewItems(this, true))
                     SetIsItemSelected(treeViewItem, false);
             }
             
@@ -154,7 +153,7 @@ namespace WpfApp1
                 sender = VisualTreeHelper.GetParent(sender);
             return sender as TreeViewItemEx;
         }
-        private static List<TreeViewItemEx> GetTreeViewItems(ItemsControl parentItem, bool includeCollapsedItems, List<TreeViewItemEx> itemList = null)
+        private static IEnumerable<TreeViewItemEx> GetTreeViewItems(ItemsControl parentItem, bool includeCollapsedItems, List<TreeViewItemEx> itemList = null)
         {
             if (itemList == null)
                 itemList = new List<TreeViewItemEx>();
@@ -164,15 +163,17 @@ namespace WpfApp1
                 var tvItem = parentItem.ItemContainerGenerator.ContainerFromIndex(index) as TreeViewItemEx;
                 if (tvItem == null) continue;
 
-                itemList.Add(tvItem);
+                yield return tvItem;
                 if (includeCollapsedItems || tvItem.IsExpanded)
-                    GetTreeViewItems(tvItem, includeCollapsedItems, itemList);
+                {
+                    foreach (var item in GetTreeViewItems(tvItem, includeCollapsedItems, itemList))
+                        yield return item;
+                }
             }
-            return itemList;
         }
         private List<TreeViewItemEx> GetTreeViewItemRange(TreeViewItemEx start, TreeViewItemEx end)
         {
-            var items = GetTreeViewItems(this, false);
+            var items = GetTreeViewItems(this, false).ToList();
 
             var startIndex = items.IndexOf(start);
             var endIndex = items.IndexOf(end);
@@ -208,7 +209,7 @@ namespace WpfApp1
 
     public class TreeViewItemEx : TreeViewItem
     {
-        private CmdBase Item => DataContext as CmdBase;
+        public CmdBase Item => DataContext as CmdBase;
 
         private static bool IsCtrlPressed => (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
         public TreeViewEx ParentTreeView { get; }
@@ -268,7 +269,7 @@ namespace WpfApp1
 
             if (IsSelected)
             {
-                var selectedItems = ParentTreeView.SelectedItems.Cast<CmdBase>().ToList();
+                var selectedItems = ParentTreeView.SelectedItems.ToList();
                 if (e.Key == Key.Space && !selectedItems.Any(item => item.IsInEditMode))
                 {
                     bool select = selectedItems.All(item => item.IsChecked == false);
@@ -291,7 +292,7 @@ namespace WpfApp1
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (IsSelected && Item.IsEditable && !Item.IsInEditMode && !IsCtrlPressed && ParentTreeView.SelectedItems.Count == 1)
+            if (IsSelected && Item.IsEditable && !Item.IsInEditMode && !IsCtrlPressed && ParentTreeView.SelectedItems.Take(2).Count() == 1)
             {
                 Item.BeginEdit();
                 e.Handled = true;
@@ -308,21 +309,33 @@ namespace WpfApp1
                 ParentTreeView.ChangedFocusedItem(this);
         }
 
+        protected override void OnExpanded(RoutedEventArgs e)
+        {
+            base.OnExpanded(e);
+
+            if (Item.IsEditable && Item.IsInEditMode)
+                Item.CommitEdit();
+        }
+
         protected override void OnCollapsed(RoutedEventArgs e)
         {
             base.OnCollapsed(e);
 
-            var container = (CmdContainer)Item;
+            if (Item.IsEditable && Item.IsInEditMode)
+                Item.CommitEdit();
 
-            // If any child change its state and no other item is selected; select this container
-            if (container.SetIsSelectedOnChildren(false) && !ParentTreeView.SelectedTreeViewItems.Any())
+            if (Item is CmdContainer container)
             {
-                Item.IsSelected = true;
-            }
-            else
-            {
-                // Give focus to any other selected item
-                ParentTreeView.SelectedTreeViewItems.FirstOrDefault()?.Focus();
+                // If any child change its state and no other item is selected; select this container
+                if (container.SetIsSelectedOnChildren(false) && !ParentTreeView.SelectedTreeViewItems.Any())
+                {
+                    Item.IsSelected = true;
+                }
+                else
+                {
+                    // Give focus to any other selected item
+                    ParentTreeView.SelectedTreeViewItems.FirstOrDefault()?.Focus();
+                }
             }
         }
 
