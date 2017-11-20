@@ -46,6 +46,7 @@ namespace WpfApp1
         public IDropTarget DropHandler { get; private set; }
         public IDragSource DragHandler { get; private set; }
 
+        public List<TreeViewItemEx> DragedTreeViewItems { get; }
 
         public ListViewModel()
         {
@@ -57,6 +58,8 @@ namespace WpfApp1
             
             startupProjects = new ObservableCollection<CmdProject>();
             startupProjects.CollectionChanged += OnStartupProjectsChanged;
+
+            DragedTreeViewItems = new List<TreeViewItemEx>();
         }
 
         private void OnStartupProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -112,20 +115,32 @@ namespace WpfApp1
             this.lvm = lvm;
         }
 
+        public new bool CanAcceptData(IDropInfo dropInfo)
+        {
+            if (!DefaultDropHandler.CanAcceptData(dropInfo))
+                return false;
+
+            foreach (var dragedTreeViewItem in lvm.DragedTreeViewItems)
+            {
+                if (dropInfo.VisualTargetItem is TreeViewItemEx 
+                    && (dropInfo.VisualTargetItem == dragedTreeViewItem 
+                        || IsChildOf(dropInfo.VisualTargetItem, dragedTreeViewItem)))
+                    return false;
+            }
+            return true;
+        }
+
         public override void DragOver(IDropInfo dropInfo)
         {
             // CmdArgument is not a DragTarget
-            base.DragOver(dropInfo);
-            if (dropInfo.TargetItem is CmdArgument)
+            if (CanAcceptData(dropInfo))
             {
-                if (dropInfo.InsertPosition.HasFlag(RelativeInsertPosition.TargetItemCenter))
+                if (!(dropInfo.TargetItem is CmdArgument)
+                    || !dropInfo.InsertPosition.HasFlag(RelativeInsertPosition.TargetItemCenter))
                 {
-                    dropInfo.DropTargetAdorner = null;
-                    dropInfo.Effects = DragDropEffects.None;
-                }
-                else if (dropInfo.Effects != DragDropEffects.None)
-                {
-                    dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                    dropInfo.Effects = ShouldCopyData(dropInfo) ? DragDropEffects.Copy : DragDropEffects.Move;
+                    var isTreeViewItem = dropInfo.InsertPosition.HasFlag(RelativeInsertPosition.TargetItemCenter) && dropInfo.VisualTargetItem is TreeViewItem;
+                    dropInfo.DropTargetAdorner = isTreeViewItem ? DropTargetAdorners.Highlight : DropTargetAdorners.Insert;
                 }
             }
         }
@@ -158,12 +173,9 @@ namespace WpfApp1
             
             var destinationList = dropInfo.TargetCollection.TryGetList();
 
-            var selectedItems = (dropInfo.DragInfo.VisualSource as TreeViewEx)?.SelectedItems.Cast<CmdBase>().ToList();
-            var set = new HashSet<CmdBase>(selectedItems);
-            var data = selectedItems.Where(x => !set.Contains(x.Parent)).ToList();
-
-
-            if (data == null)
+            var data = lvm.DragedTreeViewItems.Select(tvItem => tvItem.Header).Cast<CmdBase>().ToList();
+            
+            if (data.Count == 0)
               return;
 
             var copyData = ShouldCopyData(dropInfo);
@@ -218,7 +230,7 @@ namespace WpfApp1
             }
             else
             {
-                var selectedTreeViewItems = (dropInfo.DragInfo.VisualSource as TreeViewEx)?.SelectedTreeViewItems.Cast<TreeViewItemEx>().ToList();
+                var selectedTreeViewItems = (dropInfo.DragInfo.VisualSource as TreeViewEx)?.SelectedTreeViewItems.ToList();
                 bool nothingFocused = true;
                 if (selectedTreeViewItems != null)
                 {
@@ -230,9 +242,9 @@ namespace WpfApp1
                             nothingFocused = false;
                         }
                     }
+                    if (nothingFocused)
+                        selectedTreeViewItems.FirstOrDefault()?.Focus();
                 }
-                if (nothingFocused)
-                    selectedTreeViewItems.FirstOrDefault()?.Focus();
             }
         }
     }
@@ -248,7 +260,7 @@ namespace WpfApp1
 
         public override bool CanStartDrag(IDragInfo dragInfo)
         {
-            return !((TreeViewItemEx)dragInfo.VisualSourceItem).ParentTreeView.SelectedItems.Cast<CmdBase>().Any(item => item is CmdProject);
+            return !((TreeViewEx)dragInfo.VisualSource).SelectedItems.Cast<CmdBase>().Any(item => item is CmdProject);
         }
 
         public override void StartDrag(IDragInfo dragInfo)
@@ -257,6 +269,13 @@ namespace WpfApp1
 
             if (item?.IsEditable == true && item.IsInEditMode)
                 item.CommitEdit();
+
+            lvm.DragedTreeViewItems.Clear();
+
+            var selectedTreeViewItems = ((TreeViewEx)dragInfo.VisualSource).SelectedTreeViewItems.ToList();
+            var set = new HashSet<CmdBase>(selectedTreeViewItems.Select(x => x.Header).Cast<CmdBase>());
+            var data = selectedTreeViewItems.Where(x => !set.Contains(((CmdBase)x.Header).Parent));
+            lvm.DragedTreeViewItems.AddRange(data);
 
             base.StartDrag(dragInfo);
         }
