@@ -53,59 +53,58 @@ namespace WpfApp1
 
         #endregion Properties
         #region Event Handlers
-
-        private TreeViewItemEx _lastMouseDownTargetItem;
-        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+        
+        public void ChangedFocusedItem(TreeViewItemEx item)
         {
-            base.OnPreviewMouseDown(e);
-
-            // If clicking on a tree branch expander...
-            if (e.OriginalSource is Shape || e.OriginalSource is Grid)
-                return;
-
-            var item = GetTreeViewItemClicked((FrameworkElement)e.OriginalSource);
-            _lastMouseDownTargetItem = item;
-
-            if (!IsCtrlPressed && !IsShiftPressed && SelectedItems.Skip(1).Any() && GetIsItemSelected(item))
-                return;
-
-            if (item != null) SelectedItemChangedInternal(item);
+            if (Keyboard.IsKeyDown(Key.Up)
+                || Keyboard.IsKeyDown(Key.Down)
+                || Keyboard.IsKeyDown(Key.Left)
+                || Keyboard.IsKeyDown(Key.Right)
+                || Keyboard.IsKeyDown(Key.Prior)
+                || Keyboard.IsKeyDown(Key.Next)
+                || Keyboard.IsKeyDown(Key.End)
+                || Keyboard.IsKeyDown(Key.Home))
+            {
+                SelectedItemChangedInternal(item);
+            }
         }
 
-        protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
+        private TreeViewItemEx _lastMouseDownTargetItem;
+        public void MouseLeftButtonDownOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
         {
-            base.OnPreviewMouseUp(e);
-
-            // If clicking on a tree branch expander...
-            if (e.OriginalSource is Shape)
-                return;
-            
-            var item = GetTreeViewItemClicked((FrameworkElement)e.OriginalSource);
-
-            if (item == null)
+            _lastMouseDownTargetItem = tvItem;
+            if (IsCtrlPressed || IsShiftPressed || !SelectedItems.Skip(1).Any() || !GetIsItemSelected(tvItem))
             {
-                foreach (var treeViewItem in GetTreeViewItems(this, false))
-                {
-                    var cmdItem = treeViewItem.Item;
-                    if (cmdItem.IsInEditMode)
-                        cmdItem.CommitEdit();
-                }
-                return;
+                SelectedItemChangedInternal(tvItem);
             }
+        }
 
+        public void MouseLeftButtonUpOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
+        {
             if (IsCtrlPressed || IsShiftPressed || !SelectedItems.Skip(1).Any())
                 return;
 
-            if (!Equals(item, _lastMouseDownTargetItem))
+            if (!Equals(tvItem, _lastMouseDownTargetItem))
                 return;
 
-            SelectedItemChangedInternal(item);
+            SelectedItemChangedInternal(tvItem);
+        }
+
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            foreach (var treeViewItem in GetTreeViewItems(this, false))
+            {
+                var cmdItem = treeViewItem.Item;
+                if (cmdItem.IsInEditMode)
+                {
+                    cmdItem.CommitEdit();
+                    e.Handled = true;
+                }
+            }
         }
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            base.OnPreviewKeyDown(e);
-
             if (e.Key == Key.A && e.IsDown && IsCtrlPressed)
             {
                 foreach (var treeViewItem in GetTreeViewItems(this, false))
@@ -147,12 +146,6 @@ namespace WpfApp1
                 _lastItemSelected = tvItem;
             }
         }
-        private static TreeViewItemEx GetTreeViewItemClicked(DependencyObject sender)
-        {
-            while (sender != null && !(sender is TreeViewItemEx))
-                sender = VisualTreeHelper.GetParent(sender);
-            return sender as TreeViewItemEx;
-        }
         private static IEnumerable<TreeViewItemEx> GetTreeViewItems(ItemsControl parentItem, bool includeCollapsedItems, List<TreeViewItemEx> itemList = null)
         {
             if (itemList == null)
@@ -189,21 +182,6 @@ namespace WpfApp1
             return rangeCount > 0 ? items.GetRange(rangeStart, rangeCount) : new List<TreeViewItemEx>();
         }
 
-        public void ChangedFocusedItem(TreeViewItemEx item)
-        {
-            if (Keyboard.IsKeyDown(Key.Up)
-                || Keyboard.IsKeyDown(Key.Down)
-                || Keyboard.IsKeyDown(Key.Left)
-                || Keyboard.IsKeyDown(Key.Right)
-                || Keyboard.IsKeyDown(Key.Prior)
-                || Keyboard.IsKeyDown(Key.Next)
-                || Keyboard.IsKeyDown(Key.End)
-                || Keyboard.IsKeyDown(Key.Home))
-            {
-                SelectedItemChangedInternal(item);
-            }
-        }
-
         #endregion Utility Methods
     }
 
@@ -212,6 +190,7 @@ namespace WpfApp1
         public CmdBase Item => DataContext as CmdBase;
 
         private static bool IsCtrlPressed => (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
+        private static bool IsShiftPressed => (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
         public TreeViewEx ParentTreeView { get; }
 
         public int Level
@@ -247,26 +226,24 @@ namespace WpfApp1
 
         protected override void OnUnselected(RoutedEventArgs e)
         {
-            base.OnUnselected(e);
-
             if(Item?.IsEditable == true) Item.CommitEdit();
+
+            base.OnUnselected(e);
         }
 
         protected override void OnTextInput(TextCompositionEventArgs e)
         {
-            base.OnTextInput(e);
-
             if (IsSelected && Item.IsEditable && !Item.IsInEditMode)
             {
                  Item.BeginEdit(initialValue: e.Text);
             }
+
+            base.OnTextInput(e);
         }
 
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            base.OnPreviewKeyDown(e);
-
             if (IsSelected)
             {
                 var selectedItems = ParentTreeView.SelectedItems.ToList();
@@ -292,35 +269,51 @@ namespace WpfApp1
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (IsSelected && Item.IsEditable && !Item.IsInEditMode && !IsCtrlPressed && ParentTreeView.SelectedItems.Take(2).Count() == 1)
+            ParentTreeView.MouseLeftButtonDownOnItem(this, e);
+
+            if (IsFocused 
+                && Item.IsEditable 
+                && !Item.IsInEditMode 
+                && !IsCtrlPressed 
+                && ParentTreeView.SelectedItems.Take(2).Count() == 1 
+                && (e.ClickCount % 2 == 1 || !(Item is CmdContainer)))
             {
                 Item.BeginEdit();
-                e.Handled = true;
             }
+            else
+            {
+                if (e.ClickCount % 2 == 0 && Item is CmdContainer)
+                    IsExpanded = !IsExpanded;
+
+                Focus();
+            }
+            e.Handled = true;
 
             base.OnMouseLeftButtonDown(e);
         }
 
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            ParentTreeView.MouseLeftButtonUpOnItem(this, e);
+            e.Handled = true;
+        }
+
         protected override void OnIsKeyboardFocusedChanged(DependencyPropertyChangedEventArgs e)
         {
-            base.OnIsKeyboardFocusedChanged(e);
-
             if ((bool) e.NewValue)
                 ParentTreeView.ChangedFocusedItem(this);
         }
 
         protected override void OnExpanded(RoutedEventArgs e)
         {
-            base.OnExpanded(e);
-
             if (Item.IsEditable && Item.IsInEditMode)
                 Item.CommitEdit();
+
+            base.OnExpanded(e);
         }
 
         protected override void OnCollapsed(RoutedEventArgs e)
         {
-            base.OnCollapsed(e);
-
             if (Item.IsEditable && Item.IsInEditMode)
                 Item.CommitEdit();
 
@@ -337,6 +330,8 @@ namespace WpfApp1
                     ParentTreeView.SelectedTreeViewItems.FirstOrDefault()?.Focus();
                 }
             }
+
+            base.OnCollapsed(e);
         }
 
         public static readonly DependencyProperty LevelProperty =
