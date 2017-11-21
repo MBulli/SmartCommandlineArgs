@@ -233,7 +233,11 @@ namespace WpfApp1
 
         protected override void OnTextInput(TextCompositionEventArgs e)
         {
-            if (IsSelected && Item.IsEditable && !Item.IsInEditMode)
+            if (IsFocused 
+                && Item.IsEditable 
+                && !Item.IsInEditMode 
+                && !string.IsNullOrEmpty(e.Text)
+                && !char.IsControl(e.Text[0]))
             {
                  Item.BeginEdit(initialValue: e.Text);
             }
@@ -244,7 +248,7 @@ namespace WpfApp1
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            if (IsSelected)
+            if (IsFocused)
             {
                 var selectedItems = ParentTreeView.SelectedItems.ToList();
                 if (e.Key == Key.Space && !selectedItems.Any(item => item.IsInEditMode))
