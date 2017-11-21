@@ -90,5 +90,13 @@ namespace WpfApp1
                 e.Handled = true;
             }
         }
+
+        private void textbox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (Item.IsInEditMode)
+            {
+                Item.CommitEdit();
+            }
+        }
     }
 }

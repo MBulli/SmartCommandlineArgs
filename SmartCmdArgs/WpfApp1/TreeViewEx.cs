@@ -223,14 +223,7 @@ namespace WpfApp1
                 SetBinding(TreeViewEx.IsItemSelectedProperty, bind);
             }
         }
-
-        protected override void OnUnselected(RoutedEventArgs e)
-        {
-            if(Item?.IsEditable == true) Item.CommitEdit();
-
-            base.OnUnselected(e);
-        }
-
+        
         protected override void OnTextInput(TextCompositionEventArgs e)
         {
             if (IsFocused 
