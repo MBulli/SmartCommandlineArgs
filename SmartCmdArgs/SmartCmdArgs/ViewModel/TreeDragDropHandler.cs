@@ -1,116 +1,25 @@
-﻿using GongSolutions.Wpf.DragDrop;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
+
+using GongSolutions.Wpf.DragDrop;
 using GongSolutions.Wpf.DragDrop.Utilities;
-using System.Windows.Data;
-using System.Collections.Specialized;
+
+using SmartCmdArgs.View;
 using System.Windows.Input;
+using System.Windows.Controls;
+using System.ComponentModel;
 
-namespace WpfApp1
+namespace SmartCmdArgs.ViewModel
 {
-    public class ListViewModel : PropertyChangedBase
-    {
-        private ObservableCollection<CmdProject> projects;
-        private ObservableCollection<CmdProject> startupProjects;
-        private object treeitems;
-        private bool showAllProjects;       
-
-        public ObservableCollection<CmdProject> Projects { get => projects; }
-        public object TreeItems
-        {
-            get => treeitems;
-            private set => SetAndNotify(value, ref treeitems);
-        }
-
-        public bool ShowAllProjects
-        {
-            get => showAllProjects;
-            set
-            {
-                if (showAllProjects != value)
-                {
-                    SetAndNotify(value, ref showAllProjects);
-                    UpdateTree();
-                }
-            }
-        }
-        public ObservableCollection<CmdProject> StartupProjects { get => startupProjects; }
-
-        public IDropTarget DropHandler { get; private set; }
-        public IDragSource DragHandler { get; private set; }
-
-        public List<TreeViewItemEx> DragedTreeViewItems { get; }
-
-        public ListViewModel()
-        {
-            DropHandler = new DropHandler(this);
-            DragHandler = new DragHandler(this);
-
-            projects = new ObservableCollection<CmdProject>();
-            treeitems = null;
-            
-            startupProjects = new ObservableCollection<CmdProject>();
-            startupProjects.CollectionChanged += OnStartupProjectsChanged;
-
-            DragedTreeViewItems = new List<TreeViewItemEx>();
-        }
-
-        private void OnStartupProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == NotifyCollectionChangedAction.Remove 
-                || e.Action == NotifyCollectionChangedAction.Replace 
-                || e.Action == NotifyCollectionChangedAction.Reset)
-            {
-                foreach (var item in e.OldItems.Cast<CmdProject>())
-                {
-                    item.IsStartupProject = false;
-                }
-            }
-
-            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
-            {
-                foreach (var item in e.NewItems.Cast<CmdProject>())
-                {
-                    item.IsStartupProject = true;
-                }
-            }
-
-            UpdateTree();
-        }
-
-        private void UpdateTree()
-        {
-            if (ShowAllProjects)
-            {
-                TreeItems = projects;
-            }
-            else
-            {
-                if (startupProjects.Count == 1)
-                {
-                    TreeItems = startupProjects[0].Items;
-                }
-                else
-                {
-                    // Fixes a strange potential bug in WPF. If ToList() is missing the project will be shown twice.
-                    TreeItems = startupProjects.ToList();
-                }
-            }
-        }
-    }
-    
     class DropHandler : DefaultDropHandler
     {
-        private readonly ListViewModel lvm;
+        private readonly TreeViewModel lvm;
 
-        public DropHandler(ListViewModel lvm)
+        public DropHandler(TreeViewModel lvm)
         {
             this.lvm = lvm;
         }
@@ -122,8 +31,8 @@ namespace WpfApp1
 
             foreach (var dragedTreeViewItem in lvm.DragedTreeViewItems)
             {
-                if (dropInfo.VisualTargetItem is TreeViewItemEx 
-                    && (dropInfo.VisualTargetItem == dragedTreeViewItem 
+                if (dropInfo.VisualTargetItem is TreeViewItemEx
+                    && (dropInfo.VisualTargetItem == dragedTreeViewItem
                         || IsChildOf(dropInfo.VisualTargetItem, dragedTreeViewItem)))
                     return false;
             }
@@ -170,13 +79,13 @@ namespace WpfApp1
                     --insertIndex;
                 }
             }
-            
+
             var destinationList = dropInfo.TargetCollection.TryGetList();
 
             var data = lvm.DragedTreeViewItems.Select(tvItem => tvItem.Item).ToList();
-            
+
             if (data.Count == 0)
-              return;
+                return;
 
             var copyData = ShouldCopyData(dropInfo);
             if (!copyData)
@@ -251,9 +160,9 @@ namespace WpfApp1
 
     class DragHandler : DefaultDragHandler
     {
-        private readonly ListViewModel lvm;
+        private readonly TreeViewModel lvm;
 
-        public DragHandler(ListViewModel lvm)
+        public DragHandler(TreeViewModel lvm)
         {
             this.lvm = lvm;
         }
@@ -280,5 +189,4 @@ namespace WpfApp1
             base.StartDrag(dragInfo);
         }
     }
-
 }

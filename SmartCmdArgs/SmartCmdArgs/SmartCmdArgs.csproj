@@ -80,19 +80,29 @@
     <Compile Include="ToolWindow.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Helper\BindingListEx.cs" />
-    <Compile Include="Helper\ConverterBase.cs" />
-    <Compile Include="Helper\NullToVisibilityConverter.cs" />
+    <Compile Include="ViewModel\CmdArgItem_new.cs" />
+    <Compile Include="ViewModel\TreeDragDropHandler.cs" />
+    <Compile Include="ViewModel\TreeViewModel.cs" />
+    <Compile Include="View\Converter\BooleanBoldFontConverter.cs" />
+    <Compile Include="View\Converter\ConverterBase.cs" />
+    <Compile Include="View\Converter\NullToVisibilityConverter.cs" />
     <Compile Include="Helper\RelayCommand.cs" />
     <Compile Include="ViewModel\CmdArgItem.cs" />
     <Compile Include="ViewModel\ListViewModel.cs" />
     <Compile Include="ViewModel\ToolWindowViewModel.cs" />
     <Compile Include="Helper\PropertyChangedBase.cs" />
+    <Compile Include="View\ArgumentItemView.xaml.cs">
+      <DependentUpon>ArgumentItemView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Converter\TreeLevelMarginConverter.cs" />
     <Compile Include="View\DataGridEx.cs" />
     <Compile Include="View\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="CmdArgsPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="View\TreeItemStyleSelector.cs" />
+    <Compile Include="View\TreeViewEx.cs" />
     <Compile Include="VisualStudioHelper.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +116,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="View\ArgumentItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="View\DataGridStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -113,6 +127,10 @@
     <Page Include="View\ToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\TreeViewStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>

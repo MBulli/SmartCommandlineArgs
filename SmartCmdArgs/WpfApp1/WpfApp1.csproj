@@ -59,6 +59,7 @@
     </ApplicationDefinition>
     <Compile Include="ConverterBase.cs" />
     <Compile Include="IEditable.cs" />
+    <Compile Include="TreeDragDropHandler.cs" />
     <Compile Include="TreeLevelMarginConverter.cs" />
     <Compile Include="TreeViewEx.cs" />
     <Compile Include="Utils.cs" />
@@ -78,8 +79,8 @@
       <DependentUpon>ArgumentItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="CmdArgItem.cs" />
-    <Compile Include="GenericDataTemplateSelector.cs" />
-    <Compile Include="ListViewModel.cs" />
+    <Compile Include="TreeItemStyleSelector.cs" />
+    <Compile Include="TreeViewModel.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

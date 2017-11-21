@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
-             xmlns:c="clr-namespace:SmartCmdArgs.Helper"
+             xmlns:c="clr-namespace:SmartCmdArgs.View.Converter"
              x:Class="SmartCmdArgs.View.ToolWindowControl"
              mc:Ignorable="d"
              Background="{DynamicResource vs:EnvironmentColors.ToolWindowBackgroundBrushKey}"

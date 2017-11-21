@@ -21,7 +21,7 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ListViewModel lvm = new ListViewModel();
+        private TreeViewModel lvm = new TreeViewModel();
 
         public MainWindow()
         {

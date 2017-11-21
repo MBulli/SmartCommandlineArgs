@@ -7,12 +7,15 @@ namespace SmartCmdArgs.Helper
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        protected void SetAndNotify<T>(T newValue, ref T field, [CallerMemberName]string propertyName = null)
+        {
+            field = newValue;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         protected void OnNotifyPropertyChanged([CallerMemberName]string propertyName = null)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

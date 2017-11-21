@@ -7,6 +7,7 @@ using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs.ViewModel
 {
+    [Obsolete]
     public class CmdArgItem : PropertyChangedBase
     {
         private Guid id;
