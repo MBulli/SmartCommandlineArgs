@@ -343,7 +343,7 @@ namespace SmartCmdArgs
                         {
                             projectData = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
                         }
-                        Logger.Info($"Read {projectData?.DataCollection?.Count} commands for project '{projectName}' from json-file '{filePath}'.");
+                        Logger.Info($"Read {projectData?.Items?.Count} commands for project '{projectName}' from json-file '{filePath}'.");
                     }
                     catch (Exception e)
                     {
@@ -360,24 +360,37 @@ namespace SmartCmdArgs
             // project json overrides if it exists
             if (projectData != null)
             {
-                Logger.Info($"Setting {projectData?.DataCollection?.Count} commands for project '{projectName}' from json-file.");
+                Logger.Info($"Setting {projectData?.Items?.Count} commands for project '{projectName}' from json-file.");
                 
                 var projectListViewModel = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(projectName);
                 
                 // update enabled state of the project json data (source prio: ViewModel > suo file)
-                var dataCollectionFromProject = projectData?.DataCollection;
-                if (dataCollectionFromProject != null)
+                if (projectData.Items != null)
                 {
-                    var dataCollectionFromLVM = projectListViewModel?.AllArguments.ToList();
-                    foreach (var dataFromProject in dataCollectionFromProject)
+                    var argumentDataFromProject = projectData.AllArguments;
+                    var argumentDataFromLVM = projectListViewModel?.AllArguments.ToDictionary(arg => arg.Id, arg => arg);
+                    foreach (var dataFromProject in argumentDataFromProject)
                     {
-                        var dataFromVM = dataCollectionFromLVM?.FirstOrDefault(data => data.Id == dataFromProject.Id);
-
-                        if (dataFromVM != null)
-                            dataFromProject.Enabled = dataFromVM.IsChecked == true;
+                        if (argumentDataFromLVM != null && argumentDataFromLVM.TryGetValue(dataFromProject.Id, out CmdArgument argFromVM))
+                            dataFromProject.Enabled = argFromVM.IsChecked;
                         else
                             dataFromProject.Enabled = solutionData.CheckedArguments.Contains(dataFromProject.Id);
                     }
+
+                    var containerDataFromProject = projectData.AllContainer;
+                    var containerDataFromLVM = projectListViewModel?.AllContainer.ToDictionary(con => con.Id, con => con);
+                    foreach (var dataFromProject in containerDataFromProject)
+                    {
+                        if (containerDataFromLVM != null && containerDataFromLVM.TryGetValue(dataFromProject.Id, out CmdContainer conFromVM))
+                            dataFromProject.Expanded = conFromVM.IsExpanded;
+                        else
+                            dataFromProject.Expanded = solutionData.ExpandedContainer.Contains(dataFromProject.Id);
+                    }
+                    
+                    if (projectListViewModel != null)
+                        projectData.Expanded = projectListViewModel.IsExpanded;
+                    else
+                        projectData.Expanded = solutionData.ExpandedContainer.Contains(projectData.Id);
                 }
                 else
                 {
@@ -399,19 +412,28 @@ namespace SmartCmdArgs
             else if (solutionData.ProjectArguments.TryGetValue(projectName, out projectData))
             {
                 Logger.Info($"Will use commands from suo file for project '{projectName}'.");
-                foreach (var item in projectData.DataCollection)
+                var argumentDataFromProject = projectData.AllArguments;
+                foreach (var arg in argumentDataFromProject)
                 {
-                    item.Enabled = solutionData.CheckedArguments.Contains(item.Id);
+                    arg.Enabled = solutionData.CheckedArguments.Contains(arg.Id);
                 }
+
+                var containerDataFromProject = projectData.AllContainer;
+                foreach (var con in containerDataFromProject)
+                {
+                    con.Expanded = solutionData.ExpandedContainer.Contains(con.Id);
+                }
+
+                projectData.Expanded = solutionData.ExpandedContainer.Contains(projectData.Id);
             }
             else
             {
                 Logger.Info($"Gathering commands from configurations for project '{projectName}'.");
                 // if we don't have suo file data we read cmd args from the project configs
                 projectData = new ToolWindowStateProjectData();
-                projectData.DataCollection.AddRange(
+                projectData.Items.AddRange(
                     ReadCommandlineArgumentsFromProject(project)
-                        .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData { Command = cmdLineArg }));
+                        .Select(cmdLineArg => new ListEntryData { Command = cmdLineArg }));
             }
 
             // push projectData to the ViewModel

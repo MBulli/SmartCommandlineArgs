@@ -14,31 +14,46 @@ namespace SmartCmdArgs.Logic
     public class ToolWindowStateSolutionData
     {
         public HashSet<Guid> CheckedArguments = new HashSet<Guid>();
+        public HashSet<Guid> ExpandedContainer = new HashSet<Guid>();
         public Dictionary<string, ToolWindowStateProjectData> ProjectArguments = new Dictionary<string, ToolWindowStateProjectData>();
     }
 
-    public class ToolWindowStateProjectData
+    public class ToolWindowStateProjectData : ListEntryData
     {
-        public List<ListEntryData> DataCollection = new List<ListEntryData>();
 
-        public class ListEntryData
+        public ToolWindowStateProjectData()
         {
-            public Guid Id = Guid.NewGuid();
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public string Command = null;
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public List<ListEntryData> Items = null;
+            Items = new List<ListEntryData>();
+        }
+    }
+    
+    public class ListEntryData
+    {
+        public Guid Id = Guid.NewGuid();
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Command = null;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<ListEntryData> Items = null;
 
-            [JsonIgnore]
-            public bool Enabled = false;
+        [JsonIgnore]
+        public bool Enabled = false;
+        [JsonIgnore]
+        public bool Expanded = false;
 
-            [OnError]
-            public void OnError(StreamingContext context, ErrorContext errorContext)
+        [JsonIgnore]
+        public IEnumerable<ListEntryData> AllArguments => Items.Where(item => item.Items == null)
+            .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllArguments));
+
+        [JsonIgnore]
+        public IEnumerable<ListEntryData> AllContainer => Items.Where(item => item.Items != null)
+            .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllContainer));
+
+        [OnError]
+        public void OnError(StreamingContext context, ErrorContext errorContext)
+        {
+            if (errorContext?.Member?.ToString() == nameof(Id))
             {
-                if (errorContext?.Member?.ToString() == nameof(Id))
-                {
-                    errorContext.Handled = true;
-                }
+                errorContext.Handled = true;
             }
         }
     }

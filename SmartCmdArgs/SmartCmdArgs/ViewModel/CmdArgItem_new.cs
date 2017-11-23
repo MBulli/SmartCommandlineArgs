@@ -12,6 +12,8 @@ namespace SmartCmdArgs.ViewModel
 {
     public class CmdBase : PropertyChangedBase
     {
+        public Guid Id { get; }
+
         private CmdContainer parent;
         public CmdContainer Parent { get => parent; set => SetAndNotify(value, ref this.parent); }
 
@@ -26,8 +28,11 @@ namespace SmartCmdArgs.ViewModel
 
         public virtual bool IsEditable => false;
 
-        public CmdBase(string value, bool? isChecked = false)
+        public CmdBase(Guid id, string value, bool? isChecked = false)
         {
+            if (id == Guid.Empty)
+                id = Guid.NewGuid();
+            Id = id;
             this.value = value;
             this.isChecked = isChecked;
         }
@@ -121,8 +126,11 @@ namespace SmartCmdArgs.ViewModel
 
         public ObservableCollectionEx<CmdBase> Items { get; }
 
-        public IEnumerable<CmdArgument> AllArguments => Items.Where(item => item is CmdArgument)
-            .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllArguments)).Cast<CmdArgument>();
+        public IEnumerable<CmdContainer> AllContainer => Items.Where(item => item is CmdContainer).Cast<CmdContainer>()
+            .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllContainer));
+
+        public IEnumerable<CmdArgument> AllArguments => Items.Where(item => item is CmdArgument).Cast<CmdArgument>()
+            .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllArguments));
 
         public IEnumerable<CmdBase> SelectedItems =>
             Items.Where(item => item is CmdArgument && item.IsSelected)
@@ -133,12 +141,18 @@ namespace SmartCmdArgs.ViewModel
                 .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.SelectedArguments));
 
         public IEnumerable<CmdArgument> CheckedArguments =>
-            Items.Where(item => item is CmdArgument).Cast<CmdArgument>().Where(arg => arg.IsChecked == true)
+            Items.Where(item => item is CmdArgument).Cast<CmdArgument>().Where(arg => arg.IsChecked)
                 .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.CheckedArguments));
+        
+        public IEnumerable<CmdContainer> ExpandedContainer =>
+            Items.Where(item => item is CmdContainer).Cast<CmdContainer>().Where(arg => arg.IsExpanded)
+                .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.ExpandedContainer));
 
-        public CmdContainer(string value, IEnumerable<CmdBase> items = null)
-            : base(value)
+        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
+            : base(id, value)
         {
+            this.isExpanded = isExpanded;
+
             Items = new ObservableCollectionEx<CmdBase>();
 
             foreach (var item in items ?? Enumerable.Empty<CmdBase>())
@@ -150,6 +164,10 @@ namespace SmartCmdArgs.ViewModel
 
             Items.CollectionChanged += ItemsOnCollectionChanged;
         }
+
+        public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+            : this(Guid.NewGuid(), value, items, isExpanded)
+        { }
 
         private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -274,24 +292,30 @@ namespace SmartCmdArgs.ViewModel
         public bool isFocusedProject = false;
         public bool IsFocusedProject { get => isFocusedProject; set => SetAndNotify(value, ref isFocusedProject); }
         
-        public CmdProject(string value, IEnumerable<CmdBase> items = null) 
-            : base(value, items)
-        {  }
+        public CmdProject(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+            : base(id, value, items, isExpanded)
+        { }
+
+        public CmdProject(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+            : this(Guid.NewGuid(), value, items, isExpanded)
+        { }
     }
 
     public class CmdGroup : CmdContainer
     { 
         public override bool IsEditable => true;
 
-        public CmdGroup(string value, IEnumerable<CmdBase> items = null) 
-            : base(value, items)
+        public CmdGroup(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+            : base(id, value, items, isExpanded)
+        { }
+
+        public CmdGroup(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+            : this(Guid.NewGuid(), value, items, isExpanded)
         { }
     }
 
     public class CmdArgument : CmdBase
     {
-        public Guid Id { get; }
-
         public override bool IsEditable => true;
 
         public new bool IsChecked
@@ -301,12 +325,8 @@ namespace SmartCmdArgs.ViewModel
         }
 
         public CmdArgument(Guid id, string value, bool isChecked = false)
-            : base(value, isChecked)
-        {
-            if (id == Guid.Empty)
-                id = Guid.NewGuid();
-            Id = id;
-        }
+            : base(id, value, isChecked)
+        { }
         
         public CmdArgument(string value, bool isChecked = false) 
             : this(Guid.NewGuid(), value, isChecked)

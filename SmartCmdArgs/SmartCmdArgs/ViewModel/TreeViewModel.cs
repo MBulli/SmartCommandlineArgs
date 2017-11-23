@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
 using GongSolutions.Wpf.DragDrop;
-using JB.Collections.Reactive;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.View;
 

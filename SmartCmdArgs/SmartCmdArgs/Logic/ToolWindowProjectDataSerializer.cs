@@ -18,10 +18,12 @@ namespace SmartCmdArgs.Logic
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            var data = new ToolWindowStateProjectData();
-            
-            data.DataCollection = TransformCmdList(prj.Items);
-                
+            var data = new ToolWindowStateProjectData
+            {
+                Id = prj.Id,
+                Items = TransformCmdList(prj.Items)
+            };
+
             string jsonStr = JsonConvert.SerializeObject(data, Formatting.Indented);
 
             StreamWriter sw = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

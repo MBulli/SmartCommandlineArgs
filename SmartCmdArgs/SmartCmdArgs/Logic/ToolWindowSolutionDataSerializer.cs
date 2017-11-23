@@ -35,11 +35,16 @@ namespace SmartCmdArgs.Logic
             var data = new ToolWindowStateSolutionData();
 
             data.CheckedArguments = new HashSet<Guid>(vm.TreeViewModel.Projects.Values.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
+            data.ExpandedContainer = new HashSet<Guid>(vm.TreeViewModel.Projects.Values.SelectMany(p  => p.ExpandedContainer).Select(con => con.Id)
+                                               .Concat(vm.TreeViewModel.Projects.Values.Where(p => p.IsExpanded).Select(p => p.Id)));
 
             foreach (var kvPair in vm.TreeViewModel.Projects)
             {
-                var list = new ToolWindowStateProjectData();
-                list.DataCollection = TransformCmdList(kvPair.Value.Items);
+                var list = new ToolWindowStateProjectData
+                {
+                    Id = kvPair.Value.Id,
+                    Items = TransformCmdList(kvPair.Value.Items)
+                };
                 data.ProjectArguments.Add(kvPair.Key, list);
             }
 

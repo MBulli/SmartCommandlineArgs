@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using EnvDTE;
-using JB.Collections.Reactive;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
@@ -125,14 +124,9 @@ namespace SmartCmdArgs.ViewModel
 
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => HasSelectedItems());
 
-            TreeViewModel.Projects.DictionaryItemChanges.Subscribe(OnArgumentListItemChanged);
+            TreeViewModel.Projects.ItemPropertyChanged += OnArgumentListItemChanged;
             TreeViewModel.Projects.CollectionChanged += OnArgumentListChanged;
             TreeViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
-        }
-
-        private void OnNext(IObservableDictionaryChange<string, CmdProject> observableDictionaryChange)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -229,18 +223,20 @@ namespace SmartCmdArgs.ViewModel
         {
             var cmdProject = GetCmdProject(projectName);
             cmdProject.Items.Clear();
-            cmdProject.Items.AddRange(ListEntriesToCmdObjects(data.DataCollection));
+            cmdProject.Items.AddRange(ListEntriesToCmdObjects(data.Items));
 
-            IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ToolWindowStateProjectData.ListEntryData> list)
+            IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
             {
                 foreach (var item in list)
                 {
                     if (item.Items == null)
                         yield return new CmdArgument(item.Id, item.Command, item.Enabled);
                     else
-                        yield return new CmdGroup(item.Command, ListEntriesToCmdObjects(item.Items));
+                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded);
                 }
             }
+            
+            cmdProject.IsExpanded = data.Expanded;
         }
 
         public CmdProject GetCmdProject(string projectName)
@@ -269,7 +265,7 @@ namespace SmartCmdArgs.ViewModel
             System.Windows.Controls.DataGrid.CancelEditCommand.Execute(null, null);
         }
 
-        private void OnArgumentListItemChanged(IObservableDictionaryChange<string, CmdProject> change)
+        private void OnArgumentListItemChanged(object sender, CollectionItemPropertyChangedEventArgs<CmdProject> args)
         {
             OnCommandLineChanged();
         }
