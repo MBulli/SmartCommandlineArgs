@@ -320,7 +320,7 @@ namespace SmartCmdArgs
 
             Project project = vsHelper.ProjectForProjectName(projectName);
             
-            Logger.Info($"Update commands for project '{projectName}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution?.Count}.");
+            Logger.Info($"Update commands for project '{projectName}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution.ProjectArguments?.Count}.");
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
 
@@ -361,40 +361,28 @@ namespace SmartCmdArgs
             if (projectData != null)
             {
                 Logger.Info($"Setting {projectData?.DataCollection?.Count} commands for project '{projectName}' from json-file.");
-
-                ToolWindowStateProjectData curSolutionProjectData = solutionData.GetValueOrDefault(projectName);
+                
                 var projectListViewModel = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(projectName);
-
-                // check if we have data in the suo file or the ViewModel
-                if (curSolutionProjectData != null || projectListViewModel != null)
+                
+                // update enabled state of the project json data (source prio: ViewModel > suo file)
+                var dataCollectionFromProject = projectData?.DataCollection;
+                if (dataCollectionFromProject != null)
                 {
-                    // update enabled state of the project json data (source prio: ViewModel > suo file)
-                    var dataCollectionFromProject = projectData?.DataCollection;
-                    if (dataCollectionFromProject != null)
+                    var dataCollectionFromLVM = projectListViewModel?.AllArguments.ToList();
+                    foreach (var dataFromProject in dataCollectionFromProject)
                     {
-                        var dataCollectionFromSolution = curSolutionProjectData?.DataCollection;
-                        var dataCollectionFromLVM = projectListViewModel?.Items;
-                        foreach (var dataFromProject in dataCollectionFromProject)
-                        {
-                            var dataFromVM = dataCollectionFromLVM?.FirstOrDefault(data => data.Value == dataFromProject.Command);
+                        var dataFromVM = dataCollectionFromLVM?.FirstOrDefault(data => data.Id == dataFromProject.Id);
 
-                            if (dataFromVM != null)
-                                dataFromProject.Enabled = dataFromVM.IsChecked == true;
-                            else
-                            {
-                                var dataFromSolution =
-                                    dataCollectionFromSolution?.Find(data => data.Id == dataFromProject.Id);
-
-                                if (dataFromSolution != null)
-                                    dataFromProject.Enabled = dataFromSolution.Enabled;
-                            }
-                        }
+                        if (dataFromVM != null)
+                            dataFromProject.Enabled = dataFromVM.IsChecked == true;
+                        else
+                            dataFromProject.Enabled = solutionData.CheckedArguments.Contains(dataFromProject.Id);
                     }
-                    else
-                    {
-                        projectData = new ToolWindowStateProjectData();
-                        Logger.Info($"DataCollection for project '{projectName}' is null.");
-                    }
+                }
+                else
+                {
+                    projectData = new ToolWindowStateProjectData();
+                    Logger.Info($"DataCollection for project '{projectName}' is null.");
                 }
             }
             // if we have data in the ViewModel we keep it
@@ -402,24 +390,28 @@ namespace SmartCmdArgs
             {
                 return;
             }
+            else if (IsVcsSupportEnabled)
+            {
+                projectData = new ToolWindowStateProjectData();
+                Logger.Info("Will clear all data because of missing json file and enabled VCS support.");
+            }
             // we try to read the suo file data
-            else if (!solutionData.TryGetValue(projectName, out projectData))
+            else if (solutionData.ProjectArguments.TryGetValue(projectName, out projectData))
+            {
+                Logger.Info($"Will use commands from suo file for project '{projectName}'.");
+                foreach (var item in projectData.DataCollection)
+                {
+                    item.Enabled = solutionData.CheckedArguments.Contains(item.Id);
+                }
+            }
+            else
             {
                 Logger.Info($"Gathering commands from configurations for project '{projectName}'.");
                 // if we don't have suo file data we read cmd args from the project configs
                 projectData = new ToolWindowStateProjectData();
                 projectData.DataCollection.AddRange(
                     ReadCommandlineArgumentsFromProject(project)
-                        .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData {Command = cmdLineArg}));
-            }
-            else if (IsVcsSupportEnabled)
-            {
-                projectData = new ToolWindowStateProjectData();
-                Logger.Info("Will clear all data because of missing json file and enabled VCS support.");
-            }
-            else
-            {
-                Logger.Info($"Will use commands from suo file for project '{projectName}'.");
+                        .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData { Command = cmdLineArg }));
             }
 
             // push projectData to the ViewModel

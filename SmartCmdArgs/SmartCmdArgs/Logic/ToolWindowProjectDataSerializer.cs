@@ -9,7 +9,7 @@ using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.Logic
 {
-    class ToolWindowProjectDataSerializer
+    class ToolWindowProjectDataSerializer : ToolWindowDataSerializer
     {
         public static void Serialize(CmdProject prj, Stream stream)
         {
@@ -19,18 +19,9 @@ namespace SmartCmdArgs.Logic
                 throw new ArgumentNullException(nameof(stream));
 
             var data = new ToolWindowStateProjectData();
-
-            foreach (var item in prj.Items)
-            {
-                data.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
-                {
-                    Id = item.Id,
-                    Command = item.Value,
-                    //Project = item.Project,   // deprecated
-                    //Enabled = item.Enabled
-                });
-            }
-
+            
+            data.DataCollection = TransformCmdList(prj.Items);
+                
             string jsonStr = JsonConvert.SerializeObject(data, Formatting.Indented);
 
             StreamWriter sw = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

@@ -11,8 +11,11 @@ using Newtonsoft.Json.Serialization;
 
 namespace SmartCmdArgs.Logic
 {
-    public class ToolWindowStateSolutionData : Dictionary<string, ToolWindowStateProjectData>
-    {}
+    public class ToolWindowStateSolutionData
+    {
+        public HashSet<Guid> CheckedArguments = new HashSet<Guid>();
+        public Dictionary<string, ToolWindowStateProjectData> ProjectArguments = new Dictionary<string, ToolWindowStateProjectData>();
+    }
 
     public class ToolWindowStateProjectData
     {
@@ -24,9 +27,9 @@ namespace SmartCmdArgs.Logic
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string Command = null;
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            [Obsolete]
-            public string Project = null; // this one is useles
-            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public List<ListEntryData> Items = null;
+
+            [JsonIgnore]
             public bool Enabled = false;
 
             [OnError]

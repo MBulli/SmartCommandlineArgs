@@ -6,10 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace SmartCmdArgs.Logic
 {
-    public class ToolWindowSolutionDataSerializer
+    public class ToolWindowSolutionDataSerializer : ToolWindowDataSerializer
     {
         public static ToolWindowStateSolutionData Deserialize(Stream stream)
         {
@@ -33,21 +34,13 @@ namespace SmartCmdArgs.Logic
 
             var data = new ToolWindowStateSolutionData();
 
+            data.CheckedArguments = new HashSet<Guid>(vm.TreeViewModel.Projects.Values.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
+
             foreach (var kvPair in vm.TreeViewModel.Projects)
             {
                 var list = new ToolWindowStateProjectData();
-                data.Add(kvPair.Key, list);
-
-                foreach (var item in kvPair.Value.Items)
-                {
-                    list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
-                    {
-                        Id = item.Id,
-                        Command = item.Value,
-                        //Project = item.Project,   // deprecated
-                        Enabled = item.IsChecked == true
-                    });
-                }
+                list.DataCollection = TransformCmdList(kvPair.Value.Items);
+                data.ProjectArguments.Add(kvPair.Key, list);
             }
 
             string jsonStr = JsonConvert.SerializeObject(data);

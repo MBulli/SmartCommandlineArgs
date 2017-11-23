@@ -126,7 +126,10 @@ namespace SmartCmdArgs.ViewModel
     public class CmdContainer : CmdBase
     {
         public ObservableCollectionEx<CmdBase> Items { get; }
-        
+
+        public IEnumerable<CmdArgument> AllArguments => Items.Where(item => item is CmdArgument)
+            .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllArguments)).Cast<CmdArgument>();
+
         public IEnumerable<CmdBase> SelectedItems =>
             Items.Where(item => item is CmdArgument && item.IsSelected)
                 .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.SelectedItems));
