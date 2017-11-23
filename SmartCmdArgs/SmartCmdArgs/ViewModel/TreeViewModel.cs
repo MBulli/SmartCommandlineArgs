@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -13,14 +14,15 @@ using SmartCmdArgs.View;
 
 namespace SmartCmdArgs.ViewModel
 {
-    class TreeViewModel : PropertyChangedBase
+    public class TreeViewModel : PropertyChangedBase
     {
-        private ObservableCollection<CmdProject> projects;
-        private ObservableCollection<CmdProject> startupProjects;
+        private ObservableCollectionEx<CmdProject> projects;
+        private ObservableCollectionEx<CmdProject> startupProjects;
         private object treeitems;
         private bool showAllProjects;
 
-        public ObservableCollection<CmdProject> Projects { get => projects; }
+        public ObservableCollectionEx<CmdProject> Projects => projects;
+
         public object TreeItems
         {
             get => treeitems;
@@ -39,7 +41,10 @@ namespace SmartCmdArgs.ViewModel
                 }
             }
         }
-        public ObservableCollection<CmdProject> StartupProjects { get => startupProjects; }
+
+        public CmdProject FocusedProject => projects.FirstOrDefault(project => project.IsFocusedProject) ?? startupProjects.FirstOrDefault();
+
+        public ObservableCollectionEx<CmdProject> StartupProjects => startupProjects;
 
         public IDropTarget DropHandler { get; private set; }
         public IDragSource DragHandler { get; private set; }
@@ -51,35 +56,72 @@ namespace SmartCmdArgs.ViewModel
             DropHandler = new DropHandler(this);
             DragHandler = new DragHandler(this);
 
-            projects = new ObservableCollection<CmdProject>();
+            projects = new ObservableCollectionEx<CmdProject>();
+            projects.CollectionChanged += OnProjectsChanged;
             treeitems = null;
 
-            startupProjects = new ObservableCollection<CmdProject>();
+            startupProjects = new ObservableCollectionEx<CmdProject>();
             startupProjects.CollectionChanged += OnStartupProjectsChanged;
 
             DragedTreeViewItems = new List<TreeViewItemEx>();
         }
 
-        private void OnStartupProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Remove
-                || e.Action == NotifyCollectionChangedAction.Replace
-                || e.Action == NotifyCollectionChangedAction.Reset)
+            if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                foreach (var item in e.OldItems.Cast<CmdProject>())
+                foreach (var cmdProject in startupProjects.Except(projects).ToList())
                 {
-                    item.IsStartupProject = false;
+                    startupProjects.Remove(cmdProject);
                 }
             }
-
-            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
+            else
             {
-                foreach (var item in e.NewItems.Cast<CmdProject>())
+                if (e.Action == NotifyCollectionChangedAction.Remove
+                    || e.Action == NotifyCollectionChangedAction.Replace)
+                {
+                    foreach (var item in e.OldItems.Cast<CmdProject>())
+                    {
+                        startupProjects.Remove(item);
+                    }
+                }
+            }
+        }
+
+        private void OnStartupProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                foreach (var cmdProject in projects)
+                {
+                    cmdProject.IsStartupProject = false;
+                }
+
+                foreach (var item in startupProjects)
                 {
                     item.IsStartupProject = true;
                 }
             }
+            else
+            {
+                if (e.Action == NotifyCollectionChangedAction.Remove
+                    || e.Action == NotifyCollectionChangedAction.Replace)
+                {
+                    foreach (var item in e.OldItems.Cast<CmdProject>())
+                    {
+                        item.IsStartupProject = false;
+                    }
+                }
 
+                if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
+                {
+                    foreach (var item in e.NewItems.Cast<CmdProject>())
+                    {
+                        item.IsStartupProject = true;
+                    }
+                }
+            }
+            
             UpdateTree();
         }
 
@@ -102,5 +144,7 @@ namespace SmartCmdArgs.ViewModel
                 }
             }
         }
+        
+        public event EventHandler<IList> SelectedItemsChanged;
     }
 }

@@ -137,7 +137,7 @@ namespace SmartCmdArgs
 
         public override void ClearSearch()
         {
-            Package.ToolWindowViewModel.CurrentArgumentList.SetStringFilter(null);
+            //Package.ToolWindowViewModel.CurrentArgumentList.SetStringFilter(null);
         }
 
         internal class SearchTask : VsSearchTask
@@ -152,7 +152,7 @@ namespace SmartCmdArgs
 
             protected override void OnStartSearch()
             {
-                _toolWindow.Package.ToolWindowViewModel.CurrentArgumentList.SetStringFilter(SearchQuery.SearchString, _toolWindow.matchCaseSearchOption.Value);
+                //_toolWindow.Package.ToolWindowViewModel.CurrentArgumentList.SetStringFilter(SearchQuery.SearchString, _toolWindow.matchCaseSearchOption.Value);
 
                 // Call the implementation of this method in the base class.   
                 // This sets the task status to complete and reports task completion.   

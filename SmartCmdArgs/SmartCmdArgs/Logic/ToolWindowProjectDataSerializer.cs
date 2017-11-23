@@ -11,21 +11,20 @@ namespace SmartCmdArgs.Logic
 {
     class ToolWindowProjectDataSerializer
     {
-        public static void Serialize(ListViewModel vm, Stream stream)
+        public static void Serialize(CmdProject prj, Stream stream)
         {
-            if (vm == null)
-                throw new ArgumentNullException(nameof(vm));
+            if (prj == null)
+                throw new ArgumentNullException(nameof(prj));
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
             var data = new ToolWindowStateProjectData();
 
-            foreach (var item in vm.DataCollection)
+            foreach (var item in prj.Items)
             {
                 data.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
                 {
-                    Id = item.Id,
-                    Command = item.Command,
+                    Command = item.Value,
                     //Project = item.Project,   // deprecated
                     //Enabled = item.Enabled
                 });

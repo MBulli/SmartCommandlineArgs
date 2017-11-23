@@ -38,7 +38,7 @@ namespace SmartCmdArgs.View
 
         private void CheckboxCellOnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            CmdArgListControl.CheckboxCellOnMouseDown(sender, e);
+            //CmdArgListControl.CheckboxCellOnMouseDown(sender, e);
         }
     }
 }

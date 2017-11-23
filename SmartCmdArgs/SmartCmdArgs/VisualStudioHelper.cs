@@ -148,6 +148,10 @@ namespace SmartCmdArgs
             var startupProjects = this.appObject?.Solution?.SolutionBuild?.StartupProjects as object[];
             return startupProjects?.FirstOrDefault() as string;
         }
+        public IEnumerable<string> StartupProjectUniqueNames()
+        {
+            return (this.appObject?.Solution?.SolutionBuild?.StartupProjects as object[])?.Cast<string>() ?? Enumerable.Empty<string>();
+        }
 
         public IEnumerable<IVsHierarchy> GetSupportedProjects(bool includeUnloaded = false)
         {

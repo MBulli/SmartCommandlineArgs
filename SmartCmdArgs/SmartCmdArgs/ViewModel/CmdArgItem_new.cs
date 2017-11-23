@@ -118,12 +118,24 @@ namespace SmartCmdArgs.ViewModel
     
     public class CmdContainer : CmdBase
     {
-        public ObservableCollection<CmdBase> Items { get; }
+        public ObservableCollectionEx<CmdBase> Items { get; }
+        
+        public IEnumerable<CmdBase> SelectedItems =>
+            Items.Where(item => item is CmdArgument && item.IsSelected)
+                .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.SelectedItems));
+
+        public IEnumerable<CmdArgument> SelectedArguments =>
+            Items.Where(item => item is CmdArgument).Cast<CmdArgument>().Where(arg => arg.IsSelected)
+                .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.SelectedArguments));
+
+        public IEnumerable<CmdArgument> CheckedArguments =>
+            Items.Where(item => item is CmdArgument).Cast<CmdArgument>().Where(arg => arg.IsChecked == true)
+                .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.CheckedArguments));
 
         public CmdContainer(string value, bool? isChecked, IEnumerable<CmdBase> items = null)
             : base(value, isChecked)
         {
-            Items = new ObservableCollection<CmdBase>();
+            Items = new ObservableCollectionEx<CmdBase>();
 
             Items.CollectionChanged += ItemsOnCollectionChanged;
 
@@ -139,25 +151,28 @@ namespace SmartCmdArgs.ViewModel
             {
                 foreach (var item in Items)
                 {
-                    item.Parent = null;
-                }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace)
-            {
-                foreach (var item in e.OldItems.Cast<CmdBase>())
-                {
-                    item.Parent = null;
-                }
-            }
-
-            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
-            {
-                foreach (var item in e.NewItems.Cast<CmdBase>())
-                {
                     item.Parent = this;
                 }
             }
-            
+            else
+            {
+                if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace)
+                {
+                    foreach (var item in e.OldItems.Cast<CmdBase>())
+                    {
+                        item.Parent = null;
+                    }
+                }
+
+                if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
+                {
+                    foreach (var item in e.NewItems.Cast<CmdBase>())
+                    {
+                        item.Parent = this;
+                    }
+                }
+            }
+
             if (e.Action != NotifyCollectionChangedAction.Move)
             {
                 if (Items.Count == 0)
@@ -223,12 +238,29 @@ namespace SmartCmdArgs.ViewModel
 
             return result;
         }
+
+        public CmdArgument AddNewArgument(string command, bool enabled = true)
+        {
+            var item = new CmdArgument(command, enabled);
+            Items.Add(item);
+            return item;
+        }
+
+        public CmdGroup AddNewGroup(string command)
+        {
+            var group = new CmdGroup(command);
+            Items.Add(group);
+            return group;
+        }
     }
 
     public class CmdProject : CmdContainer
     {
         private bool isStartupProject = false;
         public bool IsStartupProject { get => isStartupProject; set => SetAndNotify(value, ref isStartupProject); }
+
+        public bool isFocusedProject = false;
+        public bool IsFocusedProject { get => isFocusedProject; set => SetAndNotify(value, ref isFocusedProject); }
 
         public CmdProject(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
             : base(value, isChecked, items)

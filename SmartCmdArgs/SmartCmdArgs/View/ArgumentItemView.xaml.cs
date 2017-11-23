@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using EnvDTE80;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View
@@ -99,6 +99,21 @@ namespace SmartCmdArgs.View
             {
                 Item.CommitEdit();
             }
+        }
+
+        protected override void OnIsKeyboardFocusWithinChanged(DependencyPropertyChangedEventArgs e)
+        {
+            IsFocusedItem = (bool)e.NewValue;
+            base.OnIsKeyboardFocusWithinChanged(e);
+        }
+
+        public static readonly DependencyProperty IsFocusedItemProperty = DependencyProperty.Register(
+            "IsFocusedItem", typeof(bool), typeof(ArgumentItemView), new PropertyMetadata(default(bool)));
+
+        public bool IsFocusedItem
+        {
+            get => (bool) GetValue(IsFocusedItemProperty);
+            set => SetValue(IsFocusedItemProperty, value);
         }
     }
 }

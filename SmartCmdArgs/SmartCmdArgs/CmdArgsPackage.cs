@@ -178,7 +178,7 @@ namespace SmartCmdArgs
                 {
                     Logger.Info("VcsSupport is enabled.");
 
-                    foreach (var projectName in ToolWindowViewModel.SolutionArguments.Keys)
+                    foreach (var projectName in ToolWindowViewModel.TreeViewModel.Projects.Select(p => p.Value))
                     {
                         var project = vsHelper.ProjectForProjectName(projectName);
                         SaveJsonForProject(project);
@@ -195,11 +195,11 @@ namespace SmartCmdArgs
             if (!IsVcsSupportEnabled || project == null)
                 return;
 
-            ListViewModel vm = ToolWindowViewModel.SolutionArguments[project.UniqueName];
+            var vm = ToolWindowViewModel.TreeViewModel.Projects.FirstOrDefault(p => p.Value == project.UniqueName);
             string filePath = FullFilenameForProjectJsonFileFromProject(project);
             FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(project.UniqueName);
 
-            if (vm.DataCollection.Count != 0)
+            if (vm != null && vm.Items.Any())
             {
                 using (fsWatcher?.TemporarilyDisable())
                 {
@@ -236,16 +236,20 @@ namespace SmartCmdArgs
         private void UpdateConfigurationForProject(Project project)
         {
             if (project == null) return;
+            IEnumerable<CmdArgument> checkedArgs = ToolWindowViewModel.TreeViewModel.Projects.FirstOrDefault(x => x.Value == project.UniqueName)?.CheckedArguments;
+            if (checkedArgs == null)
+                return;
+
             IEnumerable<string> enabledEntries;
             if (IsMacroEvaluationEnabled)
             {
-                enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(
-                    e => msBuildPropertyRegex.Replace(e.Command,
+                enabledEntries = checkedArgs.Select(
+                    e => msBuildPropertyRegex.Replace(e.Value,
                         match => vsHelper.GetMSBuildPropertyValue(project.UniqueName, match.Groups["propertyName"].Value) ?? match.Value));
             }
             else
             {
-                enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(e => e.Command);
+                enabledEntries = checkedArgs.Select(e => e.Value);
             }
             string prjCmdArgs = string.Join(" ", enabledEntries);
             ProjectArguments.SetArguments(project, prjCmdArgs);
@@ -359,7 +363,7 @@ namespace SmartCmdArgs
                 Logger.Info($"Setting {projectData?.DataCollection?.Count} commands for project '{projectName}' from json-file.");
 
                 ToolWindowStateProjectData curSolutionProjectData = solutionData.GetValueOrDefault(projectName);
-                ListViewModel projectListViewModel = ToolWindowViewModel.SolutionArguments.GetValueOrDefault(projectName);
+                var projectListViewModel = ToolWindowViewModel.TreeViewModel.Projects.FirstOrDefault(p => p.Value == projectName);
 
                 // check if we have data in the suo file or the ViewModel
                 if (curSolutionProjectData != null || projectListViewModel != null)
@@ -369,13 +373,13 @@ namespace SmartCmdArgs
                     if (dataCollectionFromProject != null)
                     {
                         var dataCollectionFromSolution = curSolutionProjectData?.DataCollection;
-                        var dataCollectionFromLVM = projectListViewModel?.DataCollection;
+                        var dataCollectionFromLVM = projectListViewModel?.Items;
                         foreach (var dataFromProject in dataCollectionFromProject)
                         {
-                            var dataFromVM = dataCollectionFromLVM?.FirstOrDefault(data => data.Id == dataFromProject.Id);
+                            var dataFromVM = dataCollectionFromLVM?.FirstOrDefault(data => data.Value == dataFromProject.Command);
 
                             if (dataFromVM != null)
-                                dataFromProject.Enabled = dataFromVM.Enabled;
+                                dataFromProject.Enabled = dataFromVM.IsChecked == true;
                             else
                             {
                                 var dataFromSolution =
@@ -394,7 +398,7 @@ namespace SmartCmdArgs
                 }
             }
             // if we have data in the ViewModel we keep it
-            else if (ToolWindowViewModel.SolutionArguments.ContainsKey(projectName))
+            else if (ToolWindowViewModel.TreeViewModel.Projects.Any(p => p.Value == projectName))
             {
                 return;
             }
@@ -472,10 +476,10 @@ namespace SmartCmdArgs
         private void VsHelper_ProjectWillRun(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Startup project will run.");
-
-            if (ToolWindowViewModel.StartupProject != null)
+            
+            foreach (var startupProject in ToolWindowViewModel.TreeViewModel.StartupProjects)
             {
-                var project = vsHelper.ProjectForProjectName(ToolWindowViewModel.StartupProject);
+                var project = vsHelper.ProjectForProjectName(startupProject.Value);
                 UpdateConfigurationForProject(project);
                 SaveJsonForProject(project);
             }
@@ -499,13 +503,10 @@ namespace SmartCmdArgs
             if (e.IsSolutionCloseProcess)
                 return;
 
-            if (ToolWindowViewModel.StartupProject == e.Project.UniqueName)
-                ToolWindowViewModel.UpdateStartupProject(null);
-
             SaveJsonForProject(e.Project);
 
             if (!e.IsUnloadProcess)
-                ToolWindowViewModel.SolutionArguments.Remove(e.Project.UniqueName);
+                ToolWindowViewModel.TreeViewModel.Projects.Remove(ToolWindowViewModel.TreeViewModel.Projects.FirstOrDefault(p => p.Value == e.Project.UniqueName));
 
             DetachFsWatcherFromProject(e.Project.UniqueName);
         }
@@ -568,18 +569,12 @@ namespace SmartCmdArgs
 
         private void UpdateCurrentStartupProject()
         {
-            Project startupProject = vsHelper.GetStartupProject();
+            ToolWindowViewModel.TreeViewModel.StartupProjects.Clear();
 
-            if (ProjectArguments.IsSupportedProject(startupProject))
-            {
-                // update StartupProject
-                ToolWindowViewModel.UpdateStartupProject(startupProject.UniqueName);
-            }
-            else
-            {
-                Logger.Info($"Unsupported startup project '{startupProject?.UniqueName}' of kind '{startupProject?.Kind}'");
-                ToolWindowViewModel.UpdateStartupProject(null);
-            }
+            vsHelper.StartupProjectUniqueNames()
+                .Select(name => ToolWindowViewModel.TreeViewModel.Projects.FirstOrDefault(project => project.Value == name))
+                .Where(p => p != null)
+                .ForEach(ToolWindowViewModel.TreeViewModel.StartupProjects.Add);
         }
 
         private string FullFilenameForProjectJsonFileFromProject(EnvDTE.Project project)

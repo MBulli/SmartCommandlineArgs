@@ -33,19 +33,19 @@ namespace SmartCmdArgs.Logic
 
             var data = new ToolWindowStateSolutionData();
 
-            foreach (var kvp in vm.SolutionArguments)
+            foreach (var cmdProject in vm.TreeViewModel.Projects)
             {
                 var list = new ToolWindowStateProjectData();
-                data.Add(kvp.Key, list);
+                data.Add(cmdProject.Value, list);
 
-                foreach (var item in kvp.Value.DataCollection)
+                foreach (var item in cmdProject.Items)
                 {
                     list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
                     {
-                        Id = item.Id,
-                        Command = item.Command,
+                        //Id = item.Id,
+                        Command = item.Value,
                         //Project = item.Project,   // deprecated
-                        Enabled = item.Enabled
+                        Enabled = item.IsChecked == true
                     });
                 }
             }
