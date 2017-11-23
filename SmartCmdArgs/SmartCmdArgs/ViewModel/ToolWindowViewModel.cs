@@ -220,12 +220,23 @@ namespace SmartCmdArgs.ViewModel
 
         public void PopulateFromProjectData(string projectName, ToolWindowStateProjectData data)
         {
-            var curListVM = GetCmdProject(projectName);
-            curListVM.Items.Clear();
-            curListVM.Items.AddRange(
-                data.DataCollection.Select(
-                    // TODO check dup key
-                    item => new CmdArgument(item.Id, item.Command, item.Enabled)));
+            var cmdProject = GetCmdProject(projectName);
+            using (cmdProject.Items.SuppressResetNotifications())
+            {
+                cmdProject.Items.Clear();
+                cmdProject.Items.AddRange(ListEntriesToCmdObjects(data.DataCollection));
+            }
+
+            IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ToolWindowStateProjectData.ListEntryData> list)
+            {
+                foreach (var item in list)
+                {
+                    if (item.Items == null)
+                        yield return new CmdArgument(item.Id, item.Command, item.Enabled);
+                    else
+                        yield return new CmdGroup(item.Command, ListEntriesToCmdObjects(item.Items));
+                }
+            }
         }
 
         public CmdProject GetCmdProject(string projectName)

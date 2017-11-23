@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-
+using JB.Collections.Reactive;
 using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs.ViewModel
 {
     public class CmdBase : PropertyChangedBase
     {
-        public Guid Id { get; set; }
-
         private CmdContainer parent;
         public CmdContainer Parent { get => parent; set => SetAndNotify(value, ref this.parent); }
 
@@ -30,16 +27,11 @@ namespace SmartCmdArgs.ViewModel
 
         public virtual bool IsEditable => false;
 
-        public CmdBase(Guid id, string value, bool? isChecked)
+        public CmdBase(string value, bool? isChecked = false)
         {
-            Id = id;
             this.value = value;
             this.isChecked = isChecked;
         }
-
-        public CmdBase(string value, bool? isChecked) 
-            : this(Guid.NewGuid(), value, isChecked)
-        {}
 
         public void ToggleCheckedState()
         {
@@ -125,7 +117,7 @@ namespace SmartCmdArgs.ViewModel
     
     public class CmdContainer : CmdBase
     {
-        public ObservableCollectionEx<CmdBase> Items { get; }
+        public ObservableList<CmdBase> Items { get; }
 
         public IEnumerable<CmdArgument> AllArguments => Items.Where(item => item is CmdArgument)
             .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllArguments)).Cast<CmdArgument>();
@@ -142,22 +134,20 @@ namespace SmartCmdArgs.ViewModel
             Items.Where(item => item is CmdArgument).Cast<CmdArgument>().Where(arg => arg.IsChecked == true)
                 .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.CheckedArguments));
 
-        public CmdContainer(Guid id, string value, bool? isChecked, IEnumerable<CmdBase> items = null)
-            : base(id, value, isChecked)
+        public CmdContainer(string value, IEnumerable<CmdBase> items = null)
+            : base(value)
         {
-            Items = new ObservableCollectionEx<CmdBase>();
-
-            Items.CollectionChanged += ItemsOnCollectionChanged;
+            Items = new ObservableList<CmdBase>();
 
             foreach (var item in items ?? Enumerable.Empty<CmdBase>())
             {
                 Items.Add(item);
+                item.Parent = this;
             }
+            UpdateCheckedState();
+            
+            Items.CollectionChanged += ItemsOnCollectionChanged;
         }
-        
-        public CmdContainer(string value, bool? isChecked, IEnumerable<CmdBase> items = null) 
-            : this(Guid.NewGuid(), value, isChecked, items)
-        { }
 
         private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -189,15 +179,21 @@ namespace SmartCmdArgs.ViewModel
 
             if (e.Action != NotifyCollectionChangedAction.Move)
             {
-                if (Items.Count == 0)
-                    base.OnIsCheckedChanged(IsChecked, false, true);
-                else if (Items.All(item => item.IsChecked ?? false))
-                    base.OnIsCheckedChanged(IsChecked, true, true);
-                else if (Items.All(item => !item.IsChecked ?? false))
-                    base.OnIsCheckedChanged(IsChecked, false, true);
-                else
-                    base.OnIsCheckedChanged(IsChecked, null, true);
+                UpdateCheckedState();
             }
+        }
+
+        public bool? UpdateCheckedState()
+        {
+            if (Items.Count == 0)
+                base.OnIsCheckedChanged(IsChecked, false, true);
+            else if (Items.All(item => item.IsChecked ?? false))
+                base.OnIsCheckedChanged(IsChecked, true, true);
+            else if (Items.All(item => !item.IsChecked ?? false))
+                base.OnIsCheckedChanged(IsChecked, false, true);
+            else
+                base.OnIsCheckedChanged(IsChecked, null, true);
+            return IsChecked;
         }
 
         protected override void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
@@ -275,13 +271,9 @@ namespace SmartCmdArgs.ViewModel
 
         public bool isFocusedProject = false;
         public bool IsFocusedProject { get => isFocusedProject; set => SetAndNotify(value, ref isFocusedProject); }
-
-        public CmdProject(Guid id, string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
-            : base(id, value, isChecked, items)
-        { }
         
-        public CmdProject(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null) 
-            : this(Guid.NewGuid(), value, isChecked, items)
+        public CmdProject(string value, IEnumerable<CmdBase> items = null) 
+            : base(value, items)
         {  }
     }
 
@@ -289,24 +281,32 @@ namespace SmartCmdArgs.ViewModel
     { 
         public override bool IsEditable => true;
 
-        public CmdGroup(Guid id, string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
-            : base(id, value, isChecked, items)
-        { }
-        
-        public CmdGroup(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null) 
-            : this(Guid.NewGuid(), value, isChecked, items)
+        public CmdGroup(string value, IEnumerable<CmdBase> items = null) 
+            : base(value, items)
         { }
     }
 
     public class CmdArgument : CmdBase
     {
+        public Guid Id { get; }
+
         public override bool IsEditable => true;
 
-        public CmdArgument(Guid id, string value, bool? isChecked = false) 
-            : base(id, value, isChecked)
-        { }
+        public new bool IsChecked
+        {
+            get => base.IsChecked == true;
+            set => base.IsChecked = value;
+        }
+
+        public CmdArgument(Guid id, string value, bool isChecked = false)
+            : base(value, isChecked)
+        {
+            if (id == Guid.Empty)
+                id = Guid.NewGuid();
+            Id = id;
+        }
         
-        public CmdArgument(string value, bool? isChecked = false) 
+        public CmdArgument(string value, bool isChecked = false) 
             : this(Guid.NewGuid(), value, isChecked)
         { }
     }

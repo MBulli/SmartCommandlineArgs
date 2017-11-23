@@ -14,16 +14,12 @@ namespace SmartCmdArgs.Logic
             var result = new List<ToolWindowStateProjectData.ListEntryData>(items.Count);
             foreach (var item in items)
             {
-                var newElement = new ToolWindowStateProjectData.ListEntryData()
-                {
-                    Id = item.Id,
-                    Command = item.Value,
-                };
+                var newElement = new ToolWindowStateProjectData.ListEntryData{ Command = item.Value };
 
-                if (item is CmdContainer container)
-                {
+                if (item is CmdArgument argument)
+                    newElement.Id = argument.Id;
+                else if (item is CmdContainer container)
                     newElement.Items = TransformCmdList(container.Items);
-                }
 
                 result.Add(newElement);
             }
