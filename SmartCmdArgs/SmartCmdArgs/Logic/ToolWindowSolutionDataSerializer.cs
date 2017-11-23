@@ -42,7 +42,7 @@ namespace SmartCmdArgs.Logic
                 {
                     list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
                     {
-                        //Id = item.Id,
+                        Id = item.Id,
                         Command = item.Value,
                         //Project = item.Project,   // deprecated
                         Enabled = item.IsChecked == true

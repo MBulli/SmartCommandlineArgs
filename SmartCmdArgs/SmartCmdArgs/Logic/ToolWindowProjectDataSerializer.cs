@@ -24,6 +24,7 @@ namespace SmartCmdArgs.Logic
             {
                 data.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
                 {
+                    Id = item.Id,
                     Command = item.Value,
                     //Project = item.Project,   // deprecated
                     //Enabled = item.Enabled

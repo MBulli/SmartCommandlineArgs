@@ -14,6 +14,8 @@ namespace SmartCmdArgs.ViewModel
 {
     public class CmdBase : PropertyChangedBase
     {
+        public Guid Id { get; set; }
+
         private CmdContainer parent;
         public CmdContainer Parent { get => parent; set => SetAndNotify(value, ref this.parent); }
 
@@ -28,11 +30,16 @@ namespace SmartCmdArgs.ViewModel
 
         public virtual bool IsEditable => false;
 
-        public CmdBase(string value, bool? isChecked)
+        public CmdBase(Guid id, string value, bool? isChecked)
         {
+            Id = id;
             this.value = value;
             this.isChecked = isChecked;
         }
+
+        public CmdBase(string value, bool? isChecked) 
+            : this(Guid.NewGuid(), value, isChecked)
+        {}
 
         public void ToggleCheckedState()
         {
@@ -132,8 +139,8 @@ namespace SmartCmdArgs.ViewModel
             Items.Where(item => item is CmdArgument).Cast<CmdArgument>().Where(arg => arg.IsChecked == true)
                 .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.CheckedArguments));
 
-        public CmdContainer(string value, bool? isChecked, IEnumerable<CmdBase> items = null)
-            : base(value, isChecked)
+        public CmdContainer(Guid id, string value, bool? isChecked, IEnumerable<CmdBase> items = null)
+            : base(id, value, isChecked)
         {
             Items = new ObservableCollectionEx<CmdBase>();
 
@@ -144,6 +151,10 @@ namespace SmartCmdArgs.ViewModel
                 Items.Add(item);
             }
         }
+        
+        public CmdContainer(string value, bool? isChecked, IEnumerable<CmdBase> items = null) 
+            : this(Guid.NewGuid(), value, isChecked, items)
+        { }
 
         private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -262,28 +273,38 @@ namespace SmartCmdArgs.ViewModel
         public bool isFocusedProject = false;
         public bool IsFocusedProject { get => isFocusedProject; set => SetAndNotify(value, ref isFocusedProject); }
 
-        public CmdProject(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
-            : base(value, isChecked, items)
-        {
-        }
+        public CmdProject(Guid id, string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
+            : base(id, value, isChecked, items)
+        { }
+        
+        public CmdProject(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null) 
+            : this(Guid.NewGuid(), value, isChecked, items)
+        {  }
     }
 
     public class CmdGroup : CmdContainer
     { 
         public override bool IsEditable => true;
 
-        public CmdGroup(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
-            : base(value, isChecked, items)
-        {
-        }
+        public CmdGroup(Guid id, string value, bool? isChecked = false, IEnumerable<CmdBase> items = null)
+            : base(id, value, isChecked, items)
+        { }
+        
+        public CmdGroup(string value, bool? isChecked = false, IEnumerable<CmdBase> items = null) 
+            : this(Guid.NewGuid(), value, isChecked, items)
+        { }
     }
 
     public class CmdArgument : CmdBase
     {
         public override bool IsEditable => true;
 
-        public CmdArgument(string value, bool? isChecked = false) : base(value, isChecked)
-        {
-        }
+        public CmdArgument(Guid id, string value, bool? isChecked = false) 
+            : base(id, value, isChecked)
+        { }
+        
+        public CmdArgument(string value, bool? isChecked = false) 
+            : this(Guid.NewGuid(), value, isChecked)
+        { }
     }
 }

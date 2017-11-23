@@ -225,7 +225,7 @@ namespace SmartCmdArgs.ViewModel
             curListVM.Items.AddRange(
                 data.DataCollection.Select(
                     // TODO check dup key
-                    item => new CmdArgument(item.Command, item.Enabled)));
+                    item => new CmdArgument(item.Id, item.Command, item.Enabled)));
         }
 
         public CmdProject GetCmdProject(string projectName)
