@@ -56,6 +56,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand AddEntryCommand { get; }
 
+        public RelayCommand AddGroupCommand { get; }
+
         public RelayCommand RemoveEntriesCommand { get; }
 
         public RelayCommand MoveEntriesUpCommand { get; }
@@ -82,6 +84,11 @@ namespace SmartCmdArgs.ViewModel
             AddEntryCommand = new RelayCommand(
                 () => {
                     TreeViewModel.FocusedProject?.AddNewArgument(command: "", enabled: true);
+                }, canExecute: _ => HasStartupProject());
+
+            AddGroupCommand = new RelayCommand(
+                () => {
+                    TreeViewModel.FocusedProject?.AddNewGroup(command: "");
                 }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
@@ -221,11 +228,8 @@ namespace SmartCmdArgs.ViewModel
         public void PopulateFromProjectData(string projectName, ToolWindowStateProjectData data)
         {
             var cmdProject = GetCmdProject(projectName);
-            using (cmdProject.Items.SuppressResetNotifications())
-            {
-                cmdProject.Items.Clear();
-                cmdProject.Items.AddRange(ListEntriesToCmdObjects(data.DataCollection));
-            }
+            cmdProject.Items.Clear();
+            cmdProject.Items.AddRange(ListEntriesToCmdObjects(data.DataCollection));
 
             IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ToolWindowStateProjectData.ListEntryData> list)
             {

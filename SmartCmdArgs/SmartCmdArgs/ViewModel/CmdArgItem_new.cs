@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using JB.Collections.Reactive;
 using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs.ViewModel
@@ -117,7 +116,7 @@ namespace SmartCmdArgs.ViewModel
     
     public class CmdContainer : CmdBase
     {
-        public ObservableList<CmdBase> Items { get; }
+        public ObservableCollectionEx<CmdBase> Items { get; }
 
         public IEnumerable<CmdArgument> AllArguments => Items.Where(item => item is CmdArgument)
             .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllArguments)).Cast<CmdArgument>();
@@ -137,7 +136,7 @@ namespace SmartCmdArgs.ViewModel
         public CmdContainer(string value, IEnumerable<CmdBase> items = null)
             : base(value)
         {
-            Items = new ObservableList<CmdBase>();
+            Items = new ObservableCollectionEx<CmdBase>();
 
             foreach (var item in items ?? Enumerable.Empty<CmdBase>())
             {
@@ -145,7 +144,7 @@ namespace SmartCmdArgs.ViewModel
                 item.Parent = this;
             }
             UpdateCheckedState();
-            
+
             Items.CollectionChanged += ItemsOnCollectionChanged;
         }
 

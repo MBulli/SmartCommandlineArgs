@@ -79,6 +79,13 @@
           <ButtonText>Add new row</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
+        <Icon guid="guidToolBarImages" id="bmpAddIcon" />
+        <Strings>
+          <ButtonText>Add new group</ButtonText>
+        </Strings>
+      </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="guidToolBarImages" id="bmpRemoveIcon" />
@@ -144,6 +151,7 @@
       <IDSymbol name="ToolbarMoveUpCommandId" value="0x1102"/>
       <IDSymbol name="ToolbarMoveDownCommandId" value="0x1103"/>
       <IDSymbol name="ToolbarCopyCommandlineCommandId" value="0x1104"/>
+      <IDSymbol name="ToolbarAddGroupId" value="0x1105"/>
       
       <IDSymbol name="TWToolbar" value="0x1000" />
       <IDSymbol name="TWToolbarGroupAddRemove" value="0x1050" />
