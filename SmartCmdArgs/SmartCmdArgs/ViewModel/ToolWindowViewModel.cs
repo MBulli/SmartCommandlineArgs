@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using EnvDTE;
+using JB.Collections.Reactive;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
@@ -117,9 +118,14 @@ namespace SmartCmdArgs.ViewModel
 
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => HasSelectedItems());
 
-            TreeViewModel.Projects.ItemPropertyChanged += OnArgumentListItemChanged;
+            TreeViewModel.Projects.DictionaryItemChanges.Subscribe(OnArgumentListItemChanged);
             TreeViewModel.Projects.CollectionChanged += OnArgumentListChanged;
             TreeViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
+        }
+
+        private void OnNext(IObservableDictionaryChange<string, CmdProject> observableDictionaryChange)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -136,11 +142,11 @@ namespace SmartCmdArgs.ViewModel
 
             var selectedItemsText = string.Join(
                                         Environment.NewLine,
-                                        from x in TreeViewModel.Projects.SelectMany(p => p.SelectedArguments) select x.Value);
+                                        from x in TreeViewModel.Projects.Values.SelectMany(p => p.SelectedArguments) select x.Value);
             dataObject.SetText(selectedItemsText);
 
             var selectedItemsJson = JsonConvert.SerializeObject(
-                from x in TreeViewModel.Projects.SelectMany(p => p.SelectedArguments)
+                from x in TreeViewModel.Projects.Values.SelectMany(p => p.SelectedArguments)
                 select new CmdArgClipboardItem { Enabled = x.IsChecked == true, Command = x.Value });
             dataObject.SetData(CmdArgsPackage.ClipboardCmdItemFormat, selectedItemsJson);
 
@@ -191,7 +197,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if any line is selected</returns>
         private bool HasSelectedItems()
         {
-            return TreeViewModel.Projects.SelectMany(p => p.SelectedItems).Any();
+            return TreeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).Any();
         }
 
         /// <summary>
@@ -206,7 +212,7 @@ namespace SmartCmdArgs.ViewModel
         private void RemoveSelectedItems()
         {
             // This will eventually bubble down to the DataGridView
-            foreach (var item in TreeViewModel.Projects.SelectMany(p => p.SelectedItems).ToList())
+            foreach (var item in TreeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).ToList())
             {
                 item.Parent.Items.Remove(item);
             }
@@ -225,19 +231,22 @@ namespace SmartCmdArgs.ViewModel
         public CmdProject GetCmdProject(string projectName)
         {
             CmdProject cmdProject;
-            if ((cmdProject = TreeViewModel.Projects.FirstOrDefault(p => p.Value == projectName)) == null)
+            if (!TreeViewModel.Projects.TryGetValue(projectName, out cmdProject))
             {
                 cmdProject = new CmdProject(projectName);
-                TreeViewModel.Projects.Add(cmdProject);
+                TreeViewModel.Projects.Add(projectName, cmdProject);
             }
             return cmdProject;
         }
 
         public void RenameProject(string oldName, string newName)
         {
-            var proj = TreeViewModel.Projects.FirstOrDefault(p => p.Value == oldName);
-            if (proj != null)
-                proj.Value = newName;
+            if (TreeViewModel.Projects.TryGetValue(oldName, out CmdProject cmdProject))
+            {
+                TreeViewModel.Projects.Remove(oldName);
+                cmdProject.Value = newName;
+                TreeViewModel.Projects.Add(newName, cmdProject);
+            }
         }
 
         public void CancelEdit()
@@ -245,7 +254,7 @@ namespace SmartCmdArgs.ViewModel
             System.Windows.Controls.DataGrid.CancelEditCommand.Execute(null, null);
         }
 
-        private void OnArgumentListItemChanged(object sender, CollectionItemPropertyChangedEventArgs<CmdProject> args)
+        private void OnArgumentListItemChanged(IObservableDictionaryChange<string, CmdProject> change)
         {
             OnCommandLineChanged();
         }

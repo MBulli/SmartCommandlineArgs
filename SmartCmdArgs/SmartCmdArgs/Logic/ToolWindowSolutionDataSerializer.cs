@@ -33,12 +33,12 @@ namespace SmartCmdArgs.Logic
 
             var data = new ToolWindowStateSolutionData();
 
-            foreach (var cmdProject in vm.TreeViewModel.Projects)
+            foreach (var kvPair in vm.TreeViewModel.Projects)
             {
                 var list = new ToolWindowStateProjectData();
-                data.Add(cmdProject.Value, list);
+                data.Add(kvPair.Key, list);
 
-                foreach (var item in cmdProject.Items)
+                foreach (var item in kvPair.Value.Items)
                 {
                     list.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
                     {

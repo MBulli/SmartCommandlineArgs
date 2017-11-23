@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using GongSolutions.Wpf.DragDrop;
-
+using JB.Collections.Reactive;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.View;
 
@@ -16,12 +13,12 @@ namespace SmartCmdArgs.ViewModel
 {
     public class TreeViewModel : PropertyChangedBase
     {
-        private ObservableCollectionEx<CmdProject> projects;
-        private ObservableCollectionEx<CmdProject> startupProjects;
+        private ObservableDictionary<string, CmdProject> projects;
+        private ObservableCollection<CmdProject> startupProjects;
         private object treeitems;
         private bool showAllProjects;
 
-        public ObservableCollectionEx<CmdProject> Projects => projects;
+        public ObservableDictionary<string, CmdProject> Projects => projects;
 
         public object TreeItems
         {
@@ -42,9 +39,9 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public CmdProject FocusedProject => projects.FirstOrDefault(project => project.IsFocusedProject) ?? startupProjects.FirstOrDefault();
+        public CmdProject FocusedProject => projects.Values.FirstOrDefault(project => project.IsFocusedProject) ?? startupProjects.FirstOrDefault();
 
-        public ObservableCollectionEx<CmdProject> StartupProjects => startupProjects;
+        public ObservableCollection<CmdProject> StartupProjects => startupProjects;
 
         public IDropTarget DropHandler { get; private set; }
         public IDragSource DragHandler { get; private set; }
@@ -56,11 +53,11 @@ namespace SmartCmdArgs.ViewModel
             DropHandler = new DropHandler(this);
             DragHandler = new DragHandler(this);
 
-            projects = new ObservableCollectionEx<CmdProject>();
+            projects = new ObservableDictionary<string, CmdProject>();
             projects.CollectionChanged += OnProjectsChanged;
             treeitems = null;
 
-            startupProjects = new ObservableCollectionEx<CmdProject>();
+            startupProjects = new ObservableCollection<CmdProject>();
             startupProjects.CollectionChanged += OnStartupProjectsChanged;
 
             DragedTreeViewItems = new List<TreeViewItemEx>();
@@ -70,7 +67,7 @@ namespace SmartCmdArgs.ViewModel
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                foreach (var cmdProject in startupProjects.Except(projects).ToList())
+                foreach (var cmdProject in startupProjects.Except(projects.Values).ToList())
                 {
                     startupProjects.Remove(cmdProject);
                 }
@@ -92,7 +89,7 @@ namespace SmartCmdArgs.ViewModel
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                foreach (var cmdProject in projects)
+                foreach (var cmdProject in projects.Values)
                 {
                     cmdProject.IsStartupProject = false;
                 }
@@ -135,7 +132,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 if (startupProjects.Count == 1)
                 {
-                    TreeItems = startupProjects[0].Items;
+                    TreeItems = startupProjects.First().Items;
                 }
                 else
                 {
