@@ -202,14 +202,28 @@ namespace SmartCmdArgs.View
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             BindingOperations.ClearBinding(this, TreeViewEx.IsItemSelectedProperty);
+            BindingOperations.ClearBinding(this, TreeViewEx.IsItemSelectedProperty);
 
             if (e.NewValue is CmdBase)
             {
-                Binding bind = new Binding();
-                bind.Source = e.NewValue;
-                bind.Path = new PropertyPath(nameof(CmdBase.IsSelected));
-                bind.Mode = BindingMode.TwoWay;
+                Binding bind = new Binding
+                {
+                    Source = e.NewValue,
+                    Path = new PropertyPath(nameof(CmdBase.IsSelected)),
+                    Mode = BindingMode.TwoWay
+                };
                 SetBinding(TreeViewEx.IsItemSelectedProperty, bind);
+            }
+
+            if (e.NewValue is CmdContainer)
+            {
+                Binding bind = new Binding
+                {
+                    Source = e.NewValue,
+                    Path = new PropertyPath(nameof(CmdContainer.IsExpanded)),
+                    Mode = BindingMode.TwoWay
+                };
+                SetBinding(IsExpandedProperty, bind);
             }
         }
         

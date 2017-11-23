@@ -116,6 +116,9 @@ namespace SmartCmdArgs.ViewModel
     
     public class CmdContainer : CmdBase
     {
+        protected bool isExpanded;
+        public bool IsExpanded { get => isExpanded; set => SetAndNotify(value, ref isExpanded); }
+
         public ObservableCollectionEx<CmdBase> Items { get; }
 
         public IEnumerable<CmdArgument> AllArguments => Items.Where(item => item is CmdArgument)
