@@ -130,6 +130,7 @@ namespace SmartCmdArgs.ViewModel
                 }
             }
             
+            OnNotifyPropertyChanged(nameof(StartupProjects));
             UpdateTree();
         }
 
