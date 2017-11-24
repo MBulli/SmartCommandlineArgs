@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:SmartCmdArgs.View"
-             xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              xmlns:c="clr-namespace:SmartCmdArgs.View.Converter"
              xmlns:dd="urn:gong-wpf-dragdrop"
@@ -18,16 +17,16 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="DataGridStyle.xaml" />
                 <ResourceDictionary Source="TreeViewStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
-        <Grid DataContext="{Binding TreeViewModel}" Visibility="{Binding StartupProjects, Converter={c:NullToVisibilityConverter Inverted=False}}">
+    <Grid DataContext="{Binding TreeViewModel}">
+        <Grid Visibility="{Binding StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=False}}">
             <local:TreeViewEx
                             x:Name="treeView"
-                            ItemsSource="{Binding TreeItems}"                 
+                            ItemsSource="{Binding TreeItems}"
+                            Style="{StaticResource TreeViewVS}"
                             dd:DragDrop.IsDragSource="True"
                             dd:DragDrop.IsDropTarget="True"
                             dd:DragDrop.UseDefaultDragAdorner="False"
@@ -48,9 +47,8 @@
             </local:TreeViewEx>
         </Grid>
 
-        <Grid Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">
+        <Grid Visibility="{Binding StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=True}}">
             <TextBlock Text="No supported startup project found." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource {x:Static vs:ThemedDialogColors.ListItemDisabledTextBrushKey}}"  />
         </Grid>
-
     </Grid>
 </UserControl>
