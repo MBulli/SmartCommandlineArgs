@@ -74,12 +74,23 @@ namespace SmartCmdArgs.ViewModel
             }
             else
             {
+                var removedKeys = new HashSet<string>();
                 if (e.Action == NotifyCollectionChangedAction.Remove
                     || e.Action == NotifyCollectionChangedAction.Replace)
                 {
-                    foreach (var item in e.OldItems.Cast<CmdProject>())
+                    foreach (var item in e.OldItems.Cast<KeyValuePair<string, CmdProject>>())
                     {
-                        startupProjects.Remove(item);
+                        if (startupProjects.Remove(item.Value) && e.Action == NotifyCollectionChangedAction.Replace)
+                            removedKeys.Add(item.Key);
+                    }
+                }
+
+                if (e.Action == NotifyCollectionChangedAction.Replace)
+                {
+                    foreach (var item in e.NewItems.Cast<KeyValuePair<string, CmdProject>>())
+                    {
+                        if (removedKeys.Contains(item.Key))
+                            startupProjects.Add(item.Value);
                     }
                 }
             }

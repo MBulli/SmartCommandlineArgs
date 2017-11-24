@@ -221,9 +221,7 @@ namespace SmartCmdArgs.ViewModel
 
         public void PopulateFromProjectData(string projectName, ToolWindowStateProjectData data)
         {
-            var cmdProject = GetCmdProject(projectName);
-            cmdProject.Items.Clear();
-            cmdProject.Items.AddRange(ListEntriesToCmdObjects(data.Items));
+            TreeViewModel.Projects[projectName] = new CmdProject(data.Id, data.Command, ListEntriesToCmdObjects(data.Items));
 
             IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
             {
@@ -235,8 +233,6 @@ namespace SmartCmdArgs.ViewModel
                         yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded);
                 }
             }
-            
-            cmdProject.IsExpanded = data.Expanded;
         }
 
         public CmdProject GetCmdProject(string projectName)
