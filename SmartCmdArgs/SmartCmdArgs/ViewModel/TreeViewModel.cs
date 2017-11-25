@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
-
+using System.Windows;
+using System.Windows.Data;
 using GongSolutions.Wpf.DragDrop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.View;
@@ -23,7 +25,18 @@ namespace SmartCmdArgs.ViewModel
         public object TreeItems
         {
             get => treeitems;
-            private set => SetAndNotify(value, ref treeitems);
+            private set
+            {
+                SetAndNotify(value, ref treeitems);
+                TreeItemsView = CollectionViewSource.GetDefaultView(treeitems);
+            }
+        }
+
+        private ICollectionView treeItemsView;
+        public ICollectionView TreeItemsView
+        {
+            get => treeItemsView;
+            private set => SetAndNotify(value, ref treeItemsView);
         }
 
         public bool ShowAllProjects
@@ -153,7 +166,29 @@ namespace SmartCmdArgs.ViewModel
                 }
             }
         }
-        
+
+        public void SetStringFilter(string filterString, bool matchCase = false)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Predicate<CmdBase> filter = null;
+                if (!string.IsNullOrEmpty(filterString))
+                {
+                    filter = item => 
+                           item is CmdArgument && item.Value.Contains(filterString, matchCase ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase) 
+                        || item is CmdContainer && !((CmdContainer)item).ItemsView.IsEmpty;
+                }
+
+                foreach (var project in projects.Values)
+                {
+                    project.Filter = filter;
+                }
+
+                TreeItemsView.Refresh();
+            });
+        }
+
         public event EventHandler<IList> SelectedItemsChanged;
+
     }
 }

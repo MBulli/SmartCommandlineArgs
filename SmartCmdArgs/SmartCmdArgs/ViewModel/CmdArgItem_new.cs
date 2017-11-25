@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs.ViewModel
@@ -117,6 +118,11 @@ namespace SmartCmdArgs.ViewModel
             if (!IsEditable)
                 throw new InvalidOperationException("Can't execute edit operation on a not editable item!");
         }
+
+        public override string ToString()
+        {
+            return $"{this.GetType().Name}{{{Value}:{(IsChecked == null ? "▄" : (IsChecked.Value ? "✓" : "❌"))}:{(IsSelected ? "█" : "-")}}}";
+        }
     }
     
     public class CmdContainer : CmdBase
@@ -125,6 +131,14 @@ namespace SmartCmdArgs.ViewModel
         public bool IsExpanded { get => isExpanded; set => SetAndNotify(value, ref isExpanded); }
 
         public ObservableCollectionEx<CmdBase> Items { get; }
+        public ICollectionView ItemsView { get; }
+        protected virtual Predicate<CmdBase> FilterPredicate => Parent?.FilterPredicate;
+
+        protected void RefreshFilters()
+        {
+            Items.OfType<CmdContainer>().ForEach(container => container.RefreshFilters());
+            ItemsView.Refresh();
+        }
 
         public IEnumerable<CmdContainer> AllContainer => Items.Where(item => item is CmdContainer).Cast<CmdContainer>()
             .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllContainer));
@@ -147,7 +161,7 @@ namespace SmartCmdArgs.ViewModel
         public IEnumerable<CmdContainer> ExpandedContainer =>
             Items.Where(item => item is CmdContainer).Cast<CmdContainer>().Where(arg => arg.IsExpanded)
                 .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.ExpandedContainer));
-
+        
         public CmdContainer(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
             : base(id, value)
         {
@@ -163,6 +177,15 @@ namespace SmartCmdArgs.ViewModel
             UpdateCheckedState();
 
             Items.CollectionChanged += ItemsOnCollectionChanged;
+
+            ItemsView = CollectionViewSource.GetDefaultView(Items);
+
+            ItemsView.Filter = o =>
+            {
+                if (FilterPredicate != null && o is CmdBase item)
+                    return FilterPredicate(item);
+                return true;
+            };
         }
 
         public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
@@ -291,6 +314,13 @@ namespace SmartCmdArgs.ViewModel
 
         public bool isFocusedProject = false;
         public bool IsFocusedProject { get => isFocusedProject; set => SetAndNotify(value, ref isFocusedProject); }
+
+        protected override Predicate<CmdBase> FilterPredicate => Filter;
+        private Predicate<CmdBase> filter;
+        public Predicate<CmdBase> Filter
+        {
+            get => filter; set { filter = value; RefreshFilters(); }
+        }
         
         public CmdProject(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
             : base(id, value, items, isExpanded)

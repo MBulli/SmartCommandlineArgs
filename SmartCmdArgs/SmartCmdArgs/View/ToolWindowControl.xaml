@@ -25,7 +25,7 @@
         <Grid Visibility="{Binding StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=False}}">
             <local:TreeViewEx
                             x:Name="treeView"
-                            ItemsSource="{Binding TreeItems}"
+                            ItemsSource="{Binding TreeItemsView}"
                             Style="{StaticResource TreeViewVS}"
                             dd:DragDrop.IsDragSource="True"
                             dd:DragDrop.IsDropTarget="True"
