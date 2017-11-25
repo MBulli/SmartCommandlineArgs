@@ -437,7 +437,7 @@ namespace SmartCmdArgs
             }
 
             // push projectData to the ViewModel
-            ToolWindowViewModel.PopulateFromProjectData(projectName, projectData);
+            ToolWindowViewModel.PopulateFromProjectData(project, projectData);
 
             Logger.Info($"Updated Commands for project '{projectName}'.");
         }

@@ -219,9 +219,9 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public void PopulateFromProjectData(string projectName, ToolWindowStateProjectData data)
+        public void PopulateFromProjectData(Project project, ToolWindowStateProjectData data)
         {
-            TreeViewModel.Projects[projectName] = new CmdProject(data.Id, data.Command, ListEntriesToCmdObjects(data.Items));
+            TreeViewModel.Projects[project.UniqueName] = new CmdProject(data.Id, project.Name, ListEntriesToCmdObjects(data.Items));
 
             IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
             {
