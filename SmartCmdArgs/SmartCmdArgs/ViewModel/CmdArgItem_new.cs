@@ -140,27 +140,23 @@ namespace SmartCmdArgs.ViewModel
             ItemsView.Refresh();
         }
 
-        public IEnumerable<CmdContainer> AllContainer => Items.Where(item => item is CmdContainer).Cast<CmdContainer>()
-            .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllContainer));
+        public IEnumerable<CmdContainer> AllContainer => Items.OfType<CmdContainer>()
+            .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.AllContainer));
 
-        public IEnumerable<CmdArgument> AllArguments => Items.Where(item => item is CmdArgument).Cast<CmdArgument>()
-            .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.AllArguments));
+        public IEnumerable<CmdArgument> AllArguments => Items.OfType<CmdArgument>()
+            .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.AllArguments));
 
-        public IEnumerable<CmdBase> SelectedItems =>
-            Items.Where(item => item is CmdArgument && item.IsSelected)
-                .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.SelectedItems));
+        public IEnumerable<CmdBase> SelectedItems => Items.Where(item => item.IsSelected)
+                .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.SelectedItems));
 
-        public IEnumerable<CmdArgument> SelectedArguments =>
-            Items.Where(item => item is CmdArgument).Cast<CmdArgument>().Where(arg => arg.IsSelected)
-                .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.SelectedArguments));
+        public IEnumerable<CmdArgument> SelectedArguments => Items.OfType<CmdArgument>().Where(arg => arg.IsSelected)
+                .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.SelectedArguments));
 
-        public IEnumerable<CmdArgument> CheckedArguments =>
-            Items.Where(item => item is CmdArgument).Cast<CmdArgument>().Where(arg => arg.IsChecked)
-                .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.CheckedArguments));
+        public IEnumerable<CmdArgument> CheckedArguments => Items.OfType<CmdArgument>().Where(arg => arg.IsChecked)
+                .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.CheckedArguments));
         
-        public IEnumerable<CmdContainer> ExpandedContainer =>
-            Items.Where(item => item is CmdContainer).Cast<CmdContainer>().Where(arg => arg.IsExpanded)
-                .Concat(Items.Where(item => item is CmdContainer).Cast<CmdContainer>().SelectMany(container => container.ExpandedContainer));
+        public IEnumerable<CmdContainer> ExpandedContainer => Items.OfType<CmdContainer>().Where(arg => arg.IsExpanded)
+                .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.ExpandedContainer));
         
         public CmdContainer(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
             : base(id, value)
