@@ -6,7 +6,6 @@
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              xmlns:c="clr-namespace:SmartCmdArgs.View.Converter"
-             xmlns:dd="urn:gong-wpf-dragdrop"
              x:Class="SmartCmdArgs.View.ToolWindowControl"
              mc:Ignorable="d"
              Background="{DynamicResource vs:EnvironmentColors.ToolWindowBackgroundBrushKey}"
@@ -27,12 +26,7 @@
                             x:Name="treeView"
                             ItemsSource="{Binding TreeItemsView}"
                             Style="{StaticResource TreeViewVS}"
-                            dd:DragDrop.IsDragSource="True"
-                            dd:DragDrop.IsDropTarget="True"
-                            dd:DragDrop.UseDefaultDragAdorner="False"
-                            dd:DragDrop.UseDefaultEffectDataTemplate="True"
-                            dd:DragDrop.DragHandler="{Binding DragHandler}"
-                            dd:DragDrop.DropHandler="{Binding DropHandler}"
+
             >
                 <local:TreeViewEx.ItemContainerStyleSelector>
                     <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"

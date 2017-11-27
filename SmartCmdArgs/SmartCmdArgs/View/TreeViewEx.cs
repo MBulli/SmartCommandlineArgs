@@ -176,6 +176,8 @@ namespace SmartCmdArgs.View
 
     public class TreeViewItemEx : TreeViewItem
     {
+        private readonly Lazy<FrameworkElement> headerBorder;
+        
         public CmdBase Item => DataContext as CmdBase;
 
         private static bool IsCtrlPressed => (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
@@ -195,6 +197,8 @@ namespace SmartCmdArgs.View
         {
             ParentTreeView = parentTreeView;
             Level = level;
+
+            headerBorder = new Lazy<FrameworkElement>(() => (FrameworkElement)GetTemplateChild("HeaderBorder"));
 
             DataContextChanged += OnDataContextChanged;
         }
@@ -332,6 +336,87 @@ namespace SmartCmdArgs.View
             }
 
             base.OnCollapsed(e);
+        }
+
+        static DropTargetAdorner dropTargetAdorner;
+        internal static DropTargetAdorner DropTargetAdorner {
+            get => dropTargetAdorner;
+            set
+            {
+                dropTargetAdorner?.Detach();
+                dropTargetAdorner = value;
+            }
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var selectedTreeViewItems = ParentTreeView.SelectedTreeViewItems.ToList();
+                var set = new HashSet<CmdBase>(selectedTreeViewItems.Select(x => x.Item));
+                var data = selectedTreeViewItems.Where(x => !set.Contains(x.Item.Parent));
+
+                var dataObject = new DataObject();
+
+                dataObject.SetData(CmdArgsPackage.ClipboardCmdItemFormat, 123);
+                
+
+                DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Move);
+            }
+        }
+
+        protected override void OnDragEnter(DragEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"DragEnter: {Item.ToString()}");
+
+            if (e.Data.GetDataPresent(CmdArgsPackage.ClipboardCmdItemFormat))
+            {
+                e.Effects = DragDropEffects.Move;
+                e.Handled = true;
+                DropTargetAdorner = new DropTargetAdorner(this);
+                DropTargetAdorner.MousePosition = e.GetPosition(GetHeaderBorder());
+                DropTargetAdorner.InvalidateVisual();
+            }
+        }
+        protected override void OnQueryContinueDrag(QueryContinueDragEventArgs e)
+        {
+            if (e.Action == DragAction.Cancel || e.EscapePressed)
+                DropTargetAdorner = null;
+
+            base.OnQueryContinueDrag(e);
+        }
+        protected override void OnDragOver(DragEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"DragOver: {Item.ToString()}");
+
+            if (e.Data.GetDataPresent(CmdArgsPackage.ClipboardCmdItemFormat))
+            {
+                DropTargetAdorner.MousePosition = e.GetPosition(GetHeaderBorder());
+                DropTargetAdorner.InvalidateVisual();
+                e.Effects = DragDropEffects.Move;
+                e.Handled = true;
+            }
+        }
+
+        protected override void OnDragLeave(DragEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"DragLeave: {Item.ToString()}");
+
+            DropTargetAdorner = null;
+        }
+        
+        protected override void OnDrop(DragEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"OnDrop: {Item.ToString()}");
+            DropTargetAdorner = null;
+            e.Handled = true;
+        }
+
+        public FrameworkElement GetHeaderBorder()
+        {
+            return headerBorder.Value;
         }
 
         public static readonly DependencyProperty LevelProperty =

@@ -99,6 +99,7 @@
     </Compile>
     <Compile Include="View\Converter\TreeLevelMarginConverter.cs" />
     <Compile Include="View\DataGridEx.cs" />
+    <Compile Include="View\DropTargetAdorner.cs" />
     <Compile Include="View\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>

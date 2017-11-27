@@ -70,6 +70,7 @@
         <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vs:EnvironmentColors.ToolWindowContentGridBrushKey}}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="AllowDrop" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TreeViewItem}">
@@ -86,7 +87,7 @@
                                 Padding="{TemplateBinding Padding}" 
                                 SnapsToDevicePixels="True"
                                 />
-                        <Grid Margin="{Binding Level, RelativeSource={RelativeSource TemplatedParent}, Converter={c:TreeLevelMarginConverter Ident=8}}">
+                        <Grid Name="ItemGrid" Margin="{Binding Level, RelativeSource={RelativeSource TemplatedParent}, Converter={c:TreeLevelMarginConverter Ident=8}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition MinWidth="19" Width="Auto"></ColumnDefinition>
                                 <ColumnDefinition Width="*"></ColumnDefinition>
