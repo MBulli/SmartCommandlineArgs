@@ -26,7 +26,15 @@ namespace SmartCmdArgs.ViewModel
 
         public new bool CanAcceptData(IDropInfo dropInfo)
         {
-            if (!DefaultDropHandler.CanAcceptData(dropInfo))
+            if (dropInfo?.DragInfo == null 
+                || !dropInfo.IsSameDragDropContextAsSource 
+                || dropInfo.InsertPosition.HasFlag(RelativeInsertPosition.TargetItemCenter) && !(dropInfo.VisualTargetItem is TreeViewItem) && dropInfo.VisualTargetItem == dropInfo.DragInfo.VisualSourceItem)
+                return false;
+            if (dropInfo.DragInfo.SourceCollection == dropInfo.TargetCollection)
+                return dropInfo.TargetCollection.TryGetList() != null;
+            if (dropInfo.TargetCollection == null || !TestCompatibleTypes(dropInfo.TargetCollection.TryGetList(), dropInfo.Data))
+                return false;
+            if (IsChildOf(dropInfo.VisualTargetItem, dropInfo.DragInfo.VisualSourceItem))
                 return false;
 
             foreach (var dragedTreeViewItem in lvm.DragedTreeViewItems)
