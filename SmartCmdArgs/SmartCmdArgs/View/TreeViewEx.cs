@@ -608,7 +608,7 @@ namespace SmartCmdArgs.View
                 var itemHeight = TargetItem.HeaderBorder.RenderSize.Height;
                 if (TargetItem.Item is CmdContainer)
                 {
-                    if (mousePosition.Y < itemHeight * 0.25)
+                    if (mousePosition.Y < itemHeight * 0.25 && !(TargetItem.Item is CmdProject))
                         InsertPosition = RelativInsertPosition.BeforeTargetItem;
                     else if (mousePosition.Y < itemHeight * 0.75)
                         InsertPosition = RelativInsertPosition.IntoTargetItem;
