@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,8 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
-
+using GongSolutions.Wpf.DragDrop.Utilities;
+using Microsoft.VisualStudio.Composition.Tasks;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View
@@ -172,12 +174,15 @@ namespace SmartCmdArgs.View
 
             return rangeCount > 0 ? items.GetRange(rangeStart, rangeCount) : new List<TreeViewItemEx>();
         }
+        
+        protected override void OnMouseMove(MouseEventArgs e) => DragDrop.OnMouseMove(this, e);
     }
 
     public class TreeViewItemEx : TreeViewItem
     {
         private readonly Lazy<FrameworkElement> headerBorder;
-        
+        public FrameworkElement HeaderBorder => headerBorder.Value;
+
         public CmdBase Item => DataContext as CmdBase;
 
         private static bool IsCtrlPressed => (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
@@ -338,88 +343,330 @@ namespace SmartCmdArgs.View
             base.OnCollapsed(e);
         }
 
-        static DropTargetAdorner dropTargetAdorner;
-        internal static DropTargetAdorner DropTargetAdorner {
+        protected override void OnMouseDown(MouseButtonEventArgs e) => DragDrop.OnMouseDown(this, e);
+        protected override void OnDragEnter(DragEventArgs e) => DragDrop.OnDragEnter(this, e);
+        protected override void OnQueryContinueDrag(QueryContinueDragEventArgs e) => DragDrop.OnQueryContinueDrag(this, e);
+        protected override void OnDragOver(DragEventArgs e) => DragDrop.OnDragOver(this, e);
+        protected override void OnDragLeave(DragEventArgs e) => DragDrop.OnDragLeave(this, e);
+        protected override void OnDrop(DragEventArgs e) => DragDrop.HandleDropForTarget(this, e);
+
+        public static readonly DependencyProperty LevelProperty =
+            DependencyProperty.Register(nameof(LevelProperty), typeof(int), typeof(TreeViewItemEx), new PropertyMetadata(0));
+    }
+
+    public static class DragDrop
+    {
+        private static DragInfo dragInfo;
+        private static DropInfo dropInfo;
+        
+        public static void OnMouseDown(TreeViewItemEx tvItem, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed
+                && (e.ChangedButton == MouseButton.Left || e.ChangedButton == MouseButton.Right))
+            {
+                dragInfo = new DragInfo(tvItem, e);
+            }
+        }
+
+        public static void OnMouseMove(TreeViewEx treeView, MouseEventArgs e)
+        {
+            if (dragInfo == null)
+                return;
+
+            if (dragInfo.ShouldCancel(e))
+            {
+                dragInfo = null;
+            }
+            else if (dragInfo.SouldStartDrag(e))
+            {
+                dragInfo.GatherSelectedItems(treeView);
+                if (dragInfo.CanStartDrag())
+                {
+                    var dataObject = new DataObject();
+                    dataObject.SetData(CmdArgsPackage.ClipboardCmdItemFormat, dragInfo.SourceItems);
+
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"StartDrag: {dragInfo.DirectVisualSourceItem.Item}");
+                        dragInfo.IsDragInProgress = true;
+                        var result = System.Windows.DragDrop.DoDragDrop(treeView, dataObject, DragDropEffects.Move);
+                        dragInfo.IsDragInProgress = false;
+                        if (result != DragDropEffects.None)
+                            HandleDropForSource(result);
+                    }
+                    finally
+                    {
+                        Cancel();
+                    }
+                }
+            }
+        }
+
+        public static void OnDragEnter(TreeViewItemEx tvItem, DragEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"DragEnter: {tvItem.Item}");
+
+            if (dropInfo == null)
+                dropInfo = new DropInfo();
+
+            if (dropInfo.CanHadleDrop(e))
+            {
+                dropInfo.TargetItem = tvItem;
+                e.Handled = true;
+            }
+            OnDragOver(tvItem, e);
+        }
+
+        public static void OnQueryContinueDrag(TreeViewItemEx tvItem, QueryContinueDragEventArgs e)
+        {
+            if (e.Action == DragAction.Cancel || e.EscapePressed)
+            {
+                Cancel();
+                e.Handled = true;
+            }
+        }
+
+        public static void OnDragOver(TreeViewItemEx tvItem, DragEventArgs e)
+        {
+            //System.Diagnostics.Debug.WriteLine($"DragOver: {tvItem.Item}");
+
+            if (dropInfo!= null && dropInfo.CanHadleDrop(e))
+            {
+                dropInfo.UpdateInsertPosition(e);
+                dropInfo.UpdateTargetCollectionAndIndex();
+                if (dragInfo.SourceItems.OfType<CmdContainer>().Any(container => Equals(container.Items, dropInfo.TargetCollection)))
+                    e.Effects = DragDropEffects.None;
+                else
+                    e.Effects = DragDropEffects.Move;
+                dropInfo.Effects = e.Effects;
+                e.Handled = true;
+            }
+        }
+
+        public static void OnDragLeave(TreeViewItemEx tvItem, DragEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"DragLeave: {tvItem.Item}");
+            if (dropInfo != null)
+                dropInfo.TargetItem = null;
+        }
+
+        public static void HandleDropForTarget(TreeViewItemEx tvItem, DragEventArgs e)
+        {
+            e.Handled = true;
+            if (dragInfo?.IsDragInProgress == true)
+                return;
+
+            dropInfo.UpdateTargetCollectionAndIndex();
+
+            HandleDropForTarget(e.Effects);
+        }
+
+        public static void HandleDropForTarget(DragDropEffects result)
+        {
+            System.Diagnostics.Debug.WriteLine($"HandleDropForTarget: {dropInfo.TargetItem.Item}");
+
+            if (result.HasFlag(DragDropEffects.Move))
+            {
+                var idx = dropInfo.InsertIndex;
+                foreach (var sourceItem in dragInfo.SourceItems)
+                {
+                    dropInfo.TargetCollection.Insert(idx++, sourceItem);
+                }
+            }
+
+            dropInfo?.DropTargetAdorner?.Detach();
+            dropInfo = null;
+        }
+
+        private static void HandleDropForSource(DragDropEffects result)
+        {
+            System.Diagnostics.Debug.WriteLine($"HandleDropForSource: {result}");
+
+            dropInfo?.UpdateTargetCollectionAndIndex();
+
+            if (result.HasFlag(DragDropEffects.Move))
+            {
+                foreach (var sourceItem in dragInfo.SourceItems)
+                {
+                    var sourceCol = sourceItem.Parent.Items;
+                    var idx = sourceCol.IndexOf(sourceItem);
+                    if (Equals(sourceCol, dropInfo?.TargetCollection) && idx < dropInfo.InsertIndex)
+                        dropInfo.InsertIndex--;
+                    sourceItem.Parent.Items.RemoveAt(idx);
+                }
+            }
+
+            if (dropInfo != null)
+                HandleDropForTarget(result);
+        }
+
+        private static void Cancel()
+        {
+            dropInfo?.DropTargetAdorner?.Detach();
+            dropInfo = null;
+            dragInfo = null;
+        }
+    }
+
+    public class DragInfo
+    {
+        public Point DragStartPoint { get; }
+        public MouseButton DragMouseButton { get; }
+        public TreeViewItemEx DirectVisualSourceItem { get; }
+        public TreeViewEx VisualSource { get; }
+
+        public List<TreeViewItemEx> VisualSourceItems { get; private set; }
+        public List<CmdBase> SourceItems { get; private set; }
+
+        public bool IsDragInProgress { get; set; }
+
+        public DragInfo(TreeViewItemEx directVisualSourceItem, MouseButtonEventArgs e)
+        {
+            DragStartPoint = e.GetPosition(directVisualSourceItem);
+            DragMouseButton = e.ChangedButton;
+            DirectVisualSourceItem = directVisualSourceItem;
+            VisualSource = directVisualSourceItem.ParentTreeView;
+        }
+
+        public void GatherSelectedItems(TreeViewEx treeView)
+        {
+            var selectedTreeViewItems = treeView.SelectedTreeViewItems.ToList();
+            var set = new HashSet<CmdBase>(selectedTreeViewItems.Select(x => x.Item));
+            VisualSourceItems = selectedTreeViewItems.Where(x => !set.Contains(x.Item.Parent)).ToList();
+            SourceItems = VisualSourceItems.Select(tvItem => tvItem.Item).ToList();
+        }
+
+        public bool ShouldCancel(MouseEventArgs e)
+        {
+            if (DragMouseButton == MouseButton.Left && e.LeftButton == MouseButtonState.Released)
+                return true;
+            if (DragMouseButton == MouseButton.Right && e.LeftButton == MouseButtonState.Released)
+                return true;
+            return false;
+        }
+
+        public bool SouldStartDrag(MouseEventArgs e)
+        {
+            Point curPos = e.GetPosition(DirectVisualSourceItem);
+            return Math.Abs(curPos.X - DragStartPoint.X) > SystemParameters.MinimumHorizontalDragDistance
+                   || Math.Abs(curPos.Y - DragStartPoint.Y) > SystemParameters.MinimumVerticalDragDistance;
+        }
+
+        public bool CanStartDrag()
+        {
+            return !SourceItems.OfType<CmdProject>().Any();
+        }
+    }
+
+    public class DropInfo
+    {
+        private DropTargetAdorner dropTargetAdorner;
+        private TreeViewItemEx targetItem;
+        private RelativInsertPosition insertPosition;
+
+        public IList<CmdBase> TargetCollection { get; private set; }
+        public int InsertIndex { get; set; }
+        public DragDropEffects Effects { get; set; }
+
+        public DropTargetAdorner DropTargetAdorner
+        {
             get => dropTargetAdorner;
-            set
+            private set
             {
                 dropTargetAdorner?.Detach();
                 dropTargetAdorner = value;
             }
         }
 
-        protected override void OnMouseMove(MouseEventArgs e)
+        public TreeViewItemEx TargetItem
         {
-            base.OnMouseMove(e);
-            
-            if (e.LeftButton == MouseButtonState.Pressed)
+            get => targetItem;
+            set
             {
-                var selectedTreeViewItems = ParentTreeView.SelectedTreeViewItems.ToList();
-                var set = new HashSet<CmdBase>(selectedTreeViewItems.Select(x => x.Item));
-                var data = selectedTreeViewItems.Where(x => !set.Contains(x.Item.Parent));
+                targetItem = value;
+                DropTargetAdorner = value != null ? new DropTargetAdorner(value, this) : null;
 
-                var dataObject = new DataObject();
-
-                dataObject.SetData(CmdArgsPackage.ClipboardCmdItemFormat, 123);
-                
-
-                DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Move);
+                System.Diagnostics.Debug.WriteLine($"Updated TargetItem: {targetItem}");
             }
         }
 
-        protected override void OnDragEnter(DragEventArgs e)
+        public RelativInsertPosition InsertPosition
         {
-            System.Diagnostics.Debug.WriteLine($"DragEnter: {Item.ToString()}");
-
-            if (e.Data.GetDataPresent(CmdArgsPackage.ClipboardCmdItemFormat))
+            get => insertPosition;
+            private set
             {
-                e.Effects = DragDropEffects.Move;
-                e.Handled = true;
-                DropTargetAdorner = new DropTargetAdorner(this);
-                DropTargetAdorner.MousePosition = e.GetPosition(GetHeaderBorder());
-                DropTargetAdorner.InvalidateVisual();
-            }
-        }
-        protected override void OnQueryContinueDrag(QueryContinueDragEventArgs e)
-        {
-            if (e.Action == DragAction.Cancel || e.EscapePressed)
-                DropTargetAdorner = null;
-
-            base.OnQueryContinueDrag(e);
-        }
-        protected override void OnDragOver(DragEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"DragOver: {Item.ToString()}");
-
-            if (e.Data.GetDataPresent(CmdArgsPackage.ClipboardCmdItemFormat))
-            {
-                DropTargetAdorner.MousePosition = e.GetPosition(GetHeaderBorder());
-                DropTargetAdorner.InvalidateVisual();
-                e.Effects = DragDropEffects.Move;
-                e.Handled = true;
+                insertPosition = value;
+                DropTargetAdorner?.InvalidateVisual();
             }
         }
 
-        protected override void OnDragLeave(DragEventArgs e)
+        public void UpdateInsertPosition(DragEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"DragLeave: {Item.ToString()}");
-
-            DropTargetAdorner = null;
+            if (TargetItem != null)
+            {
+                var mousePosition = e.GetPosition(TargetItem.HeaderBorder);
+                var itemHeight = TargetItem.HeaderBorder.RenderSize.Height;
+                if (TargetItem.Item is CmdContainer)
+                {
+                    if (mousePosition.Y < itemHeight * 0.25)
+                        InsertPosition = RelativInsertPosition.BeforeTargetItem;
+                    else if (mousePosition.Y < itemHeight * 0.75)
+                        InsertPosition = RelativInsertPosition.IntoTargetItem;
+                    else
+                    {
+                        InsertPosition = RelativInsertPosition.AfterTargetItem;
+                        if (TargetItem.IsExpanded && TargetItem.HasItems)
+                            InsertPosition |= RelativInsertPosition.IntoTargetItem;
+                    }
+                }
+                else
+                {
+                    if (mousePosition.Y < itemHeight * 0.5)
+                        InsertPosition = RelativInsertPosition.BeforeTargetItem;
+                    else
+                        InsertPosition = RelativInsertPosition.AfterTargetItem;
+                }
+            }
         }
-        
-        protected override void OnDrop(DragEventArgs e)
+
+        public void UpdateTargetCollectionAndIndex()
         {
-            System.Diagnostics.Debug.WriteLine($"OnDrop: {Item.ToString()}");
-            DropTargetAdorner = null;
-            e.Handled = true;
+            if (TargetItem == null || InsertPosition == RelativInsertPosition.None)
+            {
+                TargetCollection = null;
+                InsertIndex = 0;
+            }
+            else
+            {
+                if (InsertPosition.HasFlag(RelativInsertPosition.IntoTargetItem) && TargetItem.Item is CmdContainer con)
+                {
+                    TargetCollection = con.Items;
+                    InsertIndex = InsertPosition.HasFlag(RelativInsertPosition.AfterTargetItem) ? 0 : TargetCollection.Count;
+                }
+                else
+                {
+                    TargetCollection = TargetItem.Item.Parent.Items;
+                    InsertIndex = TargetCollection.IndexOf(TargetItem.Item);
+                    if (InsertPosition == RelativInsertPosition.AfterTargetItem)
+                        InsertIndex++;
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"UpdateTargetCollectionAndIndex: TargetCollection={TargetCollection}, InsertIndex={InsertIndex}");
         }
 
-        public FrameworkElement GetHeaderBorder()
+        public bool CanHadleDrop(DragEventArgs e)
         {
-            return headerBorder.Value;
+            return e.Data.GetDataPresent(CmdArgsPackage.ClipboardCmdItemFormat);
         }
 
-        public static readonly DependencyProperty LevelProperty =
-            DependencyProperty.Register(nameof(LevelProperty), typeof(int), typeof(TreeViewItemEx), new PropertyMetadata(0));
+        [Flags]
+        public enum RelativInsertPosition
+        {
+            None = 0,
+            BeforeTargetItem = 1,
+            AfterTargetItem = 2,
+            IntoTargetItem = 4
+        }
     }
 }
