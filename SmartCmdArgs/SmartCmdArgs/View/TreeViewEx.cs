@@ -176,6 +176,30 @@ namespace SmartCmdArgs.View
         }
         
         protected override void OnMouseMove(MouseEventArgs e) => DragDrop.OnMouseMove(this, e);
+
+        protected override void OnDragEnter(DragEventArgs e)
+        {
+            if (HasItems)
+                DragDrop.OnDragEnter((TreeViewItemEx)ItemContainerGenerator.ContainerFromIndex(Items.Count - 1), e);
+        }
+
+        protected override void OnDragOver(DragEventArgs e)
+        {
+            if (HasItems)
+                DragDrop.OnDragOver((TreeViewItemEx)ItemContainerGenerator.ContainerFromIndex(Items.Count - 1), e);
+        }
+
+        protected override void OnDragLeave(DragEventArgs e)
+        {
+            if (HasItems)
+                DragDrop.OnDragLeave((TreeViewItemEx)ItemContainerGenerator.ContainerFromIndex(Items.Count - 1), e);
+        }
+
+        protected override void OnDrop(DragEventArgs e)
+        {
+            if (HasItems)
+                DragDrop.HandleDropForTarget((TreeViewItemEx)ItemContainerGenerator.ContainerFromIndex(Items.Count - 1), e);
+        }
     }
 
     public class TreeViewItemEx : TreeViewItem
@@ -211,7 +235,7 @@ namespace SmartCmdArgs.View
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             BindingOperations.ClearBinding(this, TreeViewEx.IsItemSelectedProperty);
-            BindingOperations.ClearBinding(this, TreeViewEx.IsItemSelectedProperty);
+            BindingOperations.ClearBinding(this, IsExpandedProperty);
 
             if (e.NewValue is CmdBase)
             {
@@ -606,11 +630,19 @@ namespace SmartCmdArgs.View
             {
                 var mousePosition = e.GetPosition(TargetItem.HeaderBorder);
                 var itemHeight = TargetItem.HeaderBorder.RenderSize.Height;
-                if (TargetItem.Item is CmdContainer)
+                if (TargetItem.Item is CmdProject prj)
                 {
-                    if (mousePosition.Y < itemHeight * 0.25 && !(TargetItem.Item is CmdProject))
+                    InsertPosition = RelativInsertPosition.IntoTargetItem;
+                    if (prj.IsExpanded && mousePosition.Y > itemHeight * 0.75 && mousePosition.Y <= itemHeight)
+                        InsertPosition |= RelativInsertPosition.AfterTargetItem;
+                }
+                else if (TargetItem.Item is CmdContainer)
+                {
+                    if (mousePosition.Y < itemHeight * 0.25)
                         InsertPosition = RelativInsertPosition.BeforeTargetItem;
-                    else if (mousePosition.Y < itemHeight * 0.75)
+                    else if (mousePosition.Y < itemHeight * 0.75
+                            || mousePosition.Y < 0
+                            || mousePosition.Y > itemHeight)
                         InsertPosition = RelativInsertPosition.IntoTargetItem;
                     else
                     {
