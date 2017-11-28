@@ -433,7 +433,7 @@ namespace SmartCmdArgs.View
             if (dropInfo == null)
                 dropInfo = new DropInfo();
 
-            if (dropInfo.CanHadleDrop(e))
+            if (dropInfo.CouldHadleDrop(e))
             {
                 dropInfo.TargetItem = tvItem;
                 e.Handled = true;
@@ -454,14 +454,14 @@ namespace SmartCmdArgs.View
         {
             //System.Diagnostics.Debug.WriteLine($"DragOver: {tvItem.Item}");
 
-            if (dropInfo!= null && dropInfo.CanHadleDrop(e))
+            if (dropInfo!= null && dropInfo.CouldHadleDrop(e))
             {
                 dropInfo.UpdateInsertPosition(e);
                 dropInfo.UpdateTargetCollectionAndIndex();
-                if (dragInfo.SourceItems.OfType<CmdContainer>().Any(container => Equals(container.Items, dropInfo.TargetCollection)))
-                    e.Effects = DragDropEffects.None;
-                else
+                if (dropInfo.CanAcceptData(DropInfo.ExtractDropData(dragInfo, e)))
                     e.Effects = DragDropEffects.Move;
+                else
+                    e.Effects = DragDropEffects.None;
                 dropInfo.Effects = e.Effects;
                 e.Handled = true;
             }
@@ -482,20 +482,24 @@ namespace SmartCmdArgs.View
 
             dropInfo.UpdateTargetCollectionAndIndex();
 
-            HandleDropForTarget(e.Effects);
+            HandleDropForTarget(e.Effects, e);
         }
 
-        public static void HandleDropForTarget(DragDropEffects result)
+        public static void HandleDropForTarget(DragDropEffects result, DragEventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine($"HandleDropForTarget: {dropInfo.TargetItem.Item}");
-
-            if (result.HasFlag(DragDropEffects.Move))
+            var data = DropInfo.ExtractDropData(dragInfo, e);
+            if (dropInfo.CanAcceptData(data) && result.HasFlag(DragDropEffects.Move))
             {
                 var idx = dropInfo.InsertIndex;
-                foreach (var sourceItem in dragInfo.SourceItems)
+                foreach (var sourceItem in data)
                 {
                     dropInfo.TargetCollection.Insert(idx++, sourceItem);
                 }
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
             }
 
             dropInfo?.DropTargetAdorner?.Detach();
@@ -687,9 +691,27 @@ namespace SmartCmdArgs.View
             System.Diagnostics.Debug.WriteLine($"UpdateTargetCollectionAndIndex: TargetCollection={TargetCollection}, InsertIndex={InsertIndex}");
         }
 
-        public bool CanHadleDrop(DragEventArgs e)
+        public bool CouldHadleDrop(DragEventArgs e)
         {
             return e.Data.GetDataPresent(CmdArgsPackage.ClipboardCmdItemFormat);
+        }
+
+        public bool CanAcceptData(IEnumerable<CmdBase> data)
+        {
+            if (data == null)
+                return false;
+
+            var sourceContainerItems = data.OfType<CmdContainer>().ToList();
+            if (sourceContainerItems.Concat(sourceContainerItems.SelectMany(container => container.AllContainer))
+                .Any(container => Equals(container.Items, TargetCollection)))
+                return false;
+
+            return true;
+        }
+
+        public static List<CmdBase> ExtractDropData(DragInfo dragInfo, DragEventArgs e)
+        {
+            return e?.Data.GetData(CmdArgsPackage.ClipboardCmdItemFormat) as List<CmdBase> ?? dragInfo?.SourceItems;
         }
 
         [Flags]
