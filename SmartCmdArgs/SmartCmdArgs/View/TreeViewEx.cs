@@ -40,18 +40,8 @@ namespace SmartCmdArgs.View
             "CopyCommand", typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public static readonly DependencyProperty PasteCommandProperty = DependencyProperty.Register(
             "PasteCommand", typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
-
-        public ICommand CopyCommand
-        {
-            get => (ICommand) GetValue(CopyCommandProperty);
-            set => SetValue(CopyCommandProperty, value);
-        }
-
-        public ICommand PasteCommand
-        {
-            get => (ICommand)GetValue(PasteCommandProperty);
-            set => SetValue(PasteCommandProperty, value);
-        }
+        public ICommand CopyCommand { get => (ICommand)GetValue(CopyCommandProperty); set => SetValue(CopyCommandProperty, value); }
+        public ICommand PasteCommand { get => (ICommand)GetValue(PasteCommandProperty); set => SetValue(PasteCommandProperty, value); }
 
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;

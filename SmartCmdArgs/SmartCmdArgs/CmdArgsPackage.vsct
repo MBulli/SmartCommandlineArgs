@@ -131,6 +131,10 @@
   <KeyBindings>
     <!-- sould work with guidKeyBindingsCmdSet and KeyBindingAddCmdId but doesn't -->
     <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddCommandId" editor="guidToolWindow" key1="VK_INSERT"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupId" editor="guidToolWindow" key1="VK_INSERT" mod1="CONTROL"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" editor="guidToolWindow" key1="VK_DELETE"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" editor="guidToolWindow" key1="VK_UP" mod1="CONTROL"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" editor="guidToolWindow" key1="VK_DOWN" mod1="CONTROL"/>
   </KeyBindings>
 
   <Symbols>

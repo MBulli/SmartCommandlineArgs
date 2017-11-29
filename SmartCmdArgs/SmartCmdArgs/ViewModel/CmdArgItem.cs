@@ -306,6 +306,25 @@ namespace SmartCmdArgs.ViewModel
             Items.Add(group);
             return group;
         }
+        
+        internal void MoveEntries(HashSet<CmdBase> items, int moveDirection)
+        {
+            var itemIndexList = Items.Where(items.Contains).Select(item => new KeyValuePair<CmdBase, int>(item, Items.IndexOf(item))).ToList();
+
+            if (itemIndexList.Any()
+                && (moveDirection == -1 && itemIndexList.Min(pair => pair.Value) > 0
+                    || moveDirection == 1 && itemIndexList.Max(pair => pair.Value) < Items.Count - 1))
+            {
+                itemIndexList.Sort((pairA, pairB) => pairB.Value.CompareTo(pairA.Value) * moveDirection);
+
+                foreach (var itemIndexPair in itemIndexList)
+                {
+                    Items.Move(itemIndexPair.Key, itemIndexPair.Value + moveDirection);
+                }
+            }
+
+            Items.OfType<CmdContainer>().Where(item => !items.Contains(item)).ForEach(container => container.MoveEntries(items, moveDirection));
+        }
     }
 
     public class CmdProject : CmdContainer

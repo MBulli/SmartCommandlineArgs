@@ -91,27 +91,27 @@ namespace SmartCmdArgs.ViewModel
                 }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
-               () => {
-                         RemoveSelectedItems();
-               }, canExecute: _ => HasStartupProjectAndSelectedItems());
+                () => {
+                    RemoveSelectedItems();
+                }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             MoveEntriesUpCommand = new RelayCommand(
-               () => {
-                       //CurrentArgumentList.MoveEntriesUp(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-               }, canExecute: _ => HasStartupProjectAndSelectedItems());
+                () => {
+                    TreeViewModel.MoveSelectedEntries(moveDirection: -1);
+                }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             MoveEntriesDownCommand = new RelayCommand(
-               () => {
-                       //CurrentArgumentList.MoveEntriesDown(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-               }, canExecute: _ => HasStartupProjectAndSelectedItems());
+                () => {
+                    TreeViewModel.MoveSelectedEntries(moveDirection: 1);
+                }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             CopyCommandlineCommand = new RelayCommand(
-               () => {
-                   IEnumerable<string> enabledEntries;
-                   enabledEntries = TreeViewModel.FocusedProject.CheckedArguments.Select(e => e.Value);
-                   string prjCmdArgs = string.Join(" ", enabledEntries);
-                   Clipboard.SetText(prjCmdArgs);
-               }, canExecute: _ => HasStartupProject());
+                () => {
+                    IEnumerable<string> enabledEntries;
+                    enabledEntries = TreeViewModel.FocusedProject.CheckedArguments.Select(e => e.Value);
+                    string prjCmdArgs = string.Join(" ", enabledEntries);
+                    Clipboard.SetText(prjCmdArgs);
+                }, canExecute: _ => HasStartupProject());
 
             ToggleItemEnabledCommand = new RelayCommand<CmdBase>(
                 (item) => {

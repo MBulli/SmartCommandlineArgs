@@ -188,6 +188,12 @@ namespace SmartCmdArgs.ViewModel
             });
         }
 
+        public void MoveSelectedEntries(int moveDirection)
+        {
+            var set = new HashSet<CmdBase>(Projects.Values.SelectMany(project => project.SelectedItems));
+            Projects.Values.ForEach(project => project.MoveEntries(set, moveDirection));
+        }
+
         public event EventHandler<IList> SelectedItemsChanged;
 
     }
