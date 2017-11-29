@@ -96,15 +96,21 @@ namespace SmartCmdArgs.ViewModel
             groupStack.Push(rootGroup);
             foreach (var item in strings)
             {
-                var readLevel = item.TakeWhile(c => c == '\t').Count();
+                var level = Math.Min(groupStack.Count-1, item.TakeWhile(c => c == '\t').Count());
 
-                while (readLevel < groupStack.Count-1)
+                while (level < groupStack.Count-1)
                     groupStack.Pop();
 
-                if (item.EndsWith(":"))
-                    groupStack.Push(new CmdGroup(item));
+                var trimmedItem = item.Substring(level);
+
+                if (trimmedItem.EndsWith(":"))
+                {
+                    var group = new CmdGroup(trimmedItem.Substring(0, trimmedItem.Length-1));
+                    groupStack.Peek().Items.Add(group);
+                    groupStack.Push(group);
+                }
                 else
-                    groupStack.Peek().Items.Add(new CmdArgument(item));
+                    groupStack.Peek().Items.Add(new CmdArgument(trimmedItem));
             }
             return rootGroup.Items;
         }
