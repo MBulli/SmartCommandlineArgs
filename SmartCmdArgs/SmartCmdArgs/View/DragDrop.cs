@@ -37,7 +37,7 @@ namespace SmartCmdArgs.View
                 dragInfo.GatherSelectedItems(treeView);
                 if (dragInfo.CanStartDrag())
                 {
-                    var dataObject = DataObjectGenerator.Genrate(dragInfo.SourceItems);
+                    var dataObject = DataObjectGenerator.Genrate(dragInfo.SourceItems, includeObject: true);
 
                     if (dragInfo.DirectVisualSourceItem.Item.IsInEditMode)
                         dragInfo.DirectVisualSourceItem.Item.CommitEdit();
@@ -353,7 +353,7 @@ namespace SmartCmdArgs.View
 
         public static List<CmdBase> ExtractDropData(DragInfo dragInfo, DragEventArgs e)
         {
-            return DataObjectGenerator.Extract(e?.Data)?.ToList() ?? dragInfo?.SourceItems;
+            return dragInfo?.SourceItems ?? DataObjectGenerator.Extract(e?.Data, includeObject: true)?.ToList();
         }
 
         [Flags]

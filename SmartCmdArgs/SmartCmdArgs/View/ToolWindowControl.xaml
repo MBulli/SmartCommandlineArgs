@@ -20,14 +20,13 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid DataContext="{Binding TreeViewModel}">
-        <Grid Visibility="{Binding StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=False}}">
-            <local:TreeViewEx
-                            x:Name="treeView"
-                            ItemsSource="{Binding TreeItemsView}"
-                            Style="{StaticResource TreeViewVS}"
-
-            >
+    <Grid>
+        <Grid Visibility="{Binding TreeViewModel.StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=False}}">
+            <local:TreeViewEx x:Name="treeView"
+                              ItemsSource="{Binding TreeViewModel.TreeItemsView}"
+                              Style="{StaticResource TreeViewVS}"
+                              CopyCommand="{Binding CopySelectedItemsCommand}"
+                              PasteCommand="{Binding PasteItemsCommand}">
                 <local:TreeViewEx.ItemContainerStyleSelector>
                     <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
                                                GroupItemStyle="{StaticResource GroupItemStyle}"
@@ -41,7 +40,7 @@
             </local:TreeViewEx>
         </Grid>
 
-        <Grid Visibility="{Binding StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=True}}">
+        <Grid Visibility="{Binding TreeViewModel.StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=True}}">
             <TextBlock Text="No supported startup project found." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource {x:Static vs:ThemedDialogColors.ListItemDisabledTextBrushKey}}"  />
         </Grid>
     </Grid>

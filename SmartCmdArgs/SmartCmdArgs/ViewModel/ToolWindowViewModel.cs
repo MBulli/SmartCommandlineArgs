@@ -141,12 +141,14 @@ namespace SmartCmdArgs.ViewModel
         {
             var selectedItems = TreeViewModel.Projects.Values.SelectMany(prj => prj.SelectedItems).ToList();
             var set = new HashSet<CmdBase>(selectedItems.OfType<CmdContainer>());
-            Clipboard.SetDataObject(DataObjectGenerator.Genrate(selectedItems.Except(set)));
+            var itemsToCopy = selectedItems.Where(x => !set.Contains(x.Parent)).ToList();
+
+            Clipboard.SetDataObject(DataObjectGenerator.Genrate(itemsToCopy, includeObject: false));
         }
 
         private void PasteItemsFromClipboard()
         {
-            var pastedItems = DataObjectGenerator.Extract(Clipboard.GetDataObject());
+            var pastedItems = DataObjectGenerator.Extract(Clipboard.GetDataObject(), includeObject: false);
             TreeViewModel.FocusedProject.Items.AddRange(pastedItems);
         }
 

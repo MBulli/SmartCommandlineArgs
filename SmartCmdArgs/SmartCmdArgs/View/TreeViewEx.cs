@@ -21,6 +21,38 @@ namespace SmartCmdArgs.View
 {
     public class TreeViewEx : TreeView
     {
+        static TreeViewEx()
+        {
+            RegisterCommand(ApplicationCommands.Copy, CopyCommandProperty);
+            RegisterCommand(ApplicationCommands.Paste, PasteCommandProperty);
+
+            void RegisterCommand(RoutedUICommand routedUiCommand, DependencyProperty commandProperty)
+            {
+                CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx), 
+                    new CommandBinding(
+                        routedUiCommand, 
+                        (sender, args) => ((ICommand)((DependencyObject)sender).GetValue(commandProperty))?.Execute(args.Parameter), 
+                        (sender, args) => args.CanExecute = ((ICommand)((DependencyObject)sender).GetValue(commandProperty)).CanExecute(args.Parameter)));
+            }
+        }
+
+        public static readonly DependencyProperty CopyCommandProperty = DependencyProperty.Register(
+            "CopyCommand", typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public static readonly DependencyProperty PasteCommandProperty = DependencyProperty.Register(
+            "PasteCommand", typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+
+        public ICommand CopyCommand
+        {
+            get => (ICommand) GetValue(CopyCommandProperty);
+            set => SetValue(CopyCommandProperty, value);
+        }
+
+        public ICommand PasteCommand
+        {
+            get => (ICommand)GetValue(PasteCommandProperty);
+            set => SetValue(PasteCommandProperty, value);
+        }
+
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -40,8 +72,8 @@ namespace SmartCmdArgs.View
         {
             return (bool)element.GetValue(IsItemSelectedProperty);
         }
-        
 
+        
         private static bool IsCtrlPressed => (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
 
         private static bool IsShiftPressed => (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
@@ -110,7 +142,7 @@ namespace SmartCmdArgs.View
                 e.Handled = true;
             }
         }
-        
+
         private void SelectedItemChangedInternal(TreeViewItemEx tvItem)
         {
             // Clear all previous selected item states if ctrl is NOT being held down

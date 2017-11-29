@@ -11,7 +11,7 @@ namespace SmartCmdArgs.ViewModel
 {
     static class DataObjectGenerator
     {
-        public static DataObject Genrate(IEnumerable<CmdBase> data)
+        public static DataObject Genrate(IEnumerable<CmdBase> data, bool includeObject)
         {
             var dataObject = new DataObject();
 
@@ -20,9 +20,11 @@ namespace SmartCmdArgs.ViewModel
 
             var dataList = data.ToList();
 
-            dataObject.SetData(CmdArgsPackage.DataObjectCmdListFormat, dataList);
+            if (includeObject)
+                dataObject.SetData(CmdArgsPackage.DataObjectCmdListFormat, dataList);
+
             dataObject.SetData(CmdArgsPackage.DataObjectCmdJsonFormat, SerializeToJson(dataList));
-            dataObject.SetText(string.Join(Environment.NewLine, SerializeToStringList(dataList)));
+            dataObject.SetData(DataFormats.UnicodeText, string.Join(Environment.NewLine, SerializeToStringList(dataList)));
 
             return dataObject;
         }
@@ -63,18 +65,18 @@ namespace SmartCmdArgs.ViewModel
                    || dataObject.GetDataPresent(DataFormats.Text);
         }
 
-        public static IEnumerable<CmdBase> Extract(IDataObject dataObject)
+        public static IEnumerable<CmdBase> Extract(IDataObject dataObject, bool includeObject)
         {
             if (dataObject == null)
                 return null;
 
             IEnumerable<CmdBase> result = null;
-            if (dataObject.GetDataPresent(CmdArgsPackage.DataObjectCmdListFormat))
+            if (includeObject && dataObject.GetDataPresent(CmdArgsPackage.DataObjectCmdListFormat))
                 result = dataObject.GetData(CmdArgsPackage.DataObjectCmdListFormat) as List<CmdBase>;
             if (result == null && dataObject.GetDataPresent(CmdArgsPackage.DataObjectCmdJsonFormat))
                 result = DeserializeFromJson(dataObject.GetData(CmdArgsPackage.DataObjectCmdJsonFormat) as string);
-            if (result == null && dataObject.GetDataPresent(DataFormats.Text))
-                result = DeserializeFromStringList((dataObject.GetData(DataFormats.Text) as string)?.Split(new []{Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries));
+            if (result == null && dataObject.GetDataPresent(DataFormats.UnicodeText))
+                result = DeserializeFromStringList((dataObject.GetData(DataFormats.UnicodeText) as string)?.Split(new []{Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries));
             return result;
         }
 
