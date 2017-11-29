@@ -82,7 +82,8 @@
     <Compile Include="ToolWindow.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Helper\BindingListEx.cs" />
-    <Compile Include="ViewModel\CmdArgItem_new.cs" />
+    <Compile Include="ViewModel\CmdArgItem.cs" />
+    <Compile Include="ViewModel\DataObjectGenerator.cs" />
     <Compile Include="ViewModel\TreeDragDropHandler.cs" />
     <Compile Include="ViewModel\TreeViewModel.cs" />
     <Compile Include="View\Converter\BooleanBoldFontConverter.cs" />
@@ -90,8 +91,6 @@
     <Compile Include="View\Converter\EmptyToVisibilityConverter.cs" />
     <Compile Include="View\Converter\NullToVisibilityConverter.cs" />
     <Compile Include="Helper\RelayCommand.cs" />
-    <Compile Include="ViewModel\CmdArgItem.cs" />
-    <Compile Include="ViewModel\ListViewModel.cs" />
     <Compile Include="ViewModel\ToolWindowViewModel.cs" />
     <Compile Include="Helper\PropertyChangedBase.cs" />
     <Compile Include="View\ArgumentItemView.xaml.cs">
@@ -99,6 +98,7 @@
     </Compile>
     <Compile Include="View\Converter\TreeLevelMarginConverter.cs" />
     <Compile Include="View\DataGridEx.cs" />
+    <Compile Include="View\DragDrop.cs" />
     <Compile Include="View\DropTargetAdorner.cs" />
     <Compile Include="View\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>

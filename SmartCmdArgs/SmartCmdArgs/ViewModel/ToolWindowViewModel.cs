@@ -65,7 +65,7 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand CopyCommandlineCommand { get; }
 
-        public RelayCommand<CmdArgItem> ToggleItemEnabledCommand { get; }
+        public RelayCommand<CmdBase> ToggleItemEnabledCommand { get; }
         
         public RelayCommand CopySelectedItemsCommand { get; }
         
@@ -113,7 +113,7 @@ namespace SmartCmdArgs.ViewModel
                    Clipboard.SetText(prjCmdArgs);
                }, canExecute: _ => HasStartupProject());
 
-            ToggleItemEnabledCommand = new RelayCommand<CmdArgItem>(
+            ToggleItemEnabledCommand = new RelayCommand<CmdBase>(
                 (item) => {
                     //CurrentArgumentList.ToogleEnabledForItem(item, Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt));
                 }, canExecute: _ => HasStartupProject());
@@ -139,41 +139,15 @@ namespace SmartCmdArgs.ViewModel
 
         private void CopySelectedItemsToClipboard()
         {
-            var dataObject = new DataObject();
-
-            var selectedItemsText = string.Join(
-                                        Environment.NewLine,
-                                        from x in TreeViewModel.Projects.Values.SelectMany(p => p.SelectedArguments) select x.Value);
-            dataObject.SetText(selectedItemsText);
-
-            var selectedItemsJson = JsonConvert.SerializeObject(
-                from x in TreeViewModel.Projects.Values.SelectMany(p => p.SelectedArguments)
-                select new CmdArgClipboardItem { Enabled = x.IsChecked == true, Command = x.Value });
-            dataObject.SetData(CmdArgsPackage.ClipboardCmdItemFormat, selectedItemsJson);
-
-            Clipboard.SetDataObject(dataObject);
+            var selectedItems = TreeViewModel.Projects.Values.SelectMany(prj => prj.SelectedItems).ToList();
+            var set = new HashSet<CmdBase>(selectedItems.OfType<CmdContainer>());
+            Clipboard.SetDataObject(DataObjectGenerator.Genrate(selectedItems.Except(set)));
         }
 
         private void PasteItemsFromClipboard()
         {
-            var pastedItemsJson = Clipboard.GetDataObject()?.GetData(CmdArgsPackage.ClipboardCmdItemFormat) as string;
-
-            if (pastedItemsJson != null)
-            {
-                var pastedItems = JsonConvert.DeserializeObject<CmdArgClipboardItem[]>(pastedItemsJson);
-                foreach (var item in pastedItems)
-                {
-                    TreeViewModel.FocusedProject?.AddNewArgument(item.Command, item.Enabled);
-                }
-            }
-            else if (Clipboard.ContainsText())
-            {
-                var pastedItems = Clipboard.GetText().Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var s in pastedItems)
-                {
-                    TreeViewModel.FocusedProject?.AddNewArgument(s);
-                }
-            }
+            var pastedItems = DataObjectGenerator.Extract(Clipboard.GetDataObject());
+            TreeViewModel.FocusedProject.Items.AddRange(pastedItems);
         }
 
         private void CutItemsToClipboard()

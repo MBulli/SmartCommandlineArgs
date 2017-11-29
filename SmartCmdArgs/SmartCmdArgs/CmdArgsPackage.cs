@@ -62,7 +62,8 @@ namespace SmartCmdArgs
         /// CmdArgsPackage GUID string.
         /// </summary>
         public const string PackageGuidString = "131b0c0a-5dd0-4680-b261-86ab5387b86e";
-        public const string ClipboardCmdItemFormat = "SmartCommandlineArgs_D11D715E-CBF3-43F2-A1C1-168FD5C48505";
+        public const string DataObjectCmdJsonFormat = "SmartCommandlineArgs_D11D715E-CBF3-43F2-A1C1-168FD5C48505";
+        public const string DataObjectCmdListFormat = "SmartCommandlineArgs_35AD7E71-E0BC-4440-97D9-2E6DA3085BE4";
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
 
         private readonly Regex msBuildPropertyRegex = new Regex(@"\$\((?<propertyName>(?:(?!\$\()[^)])*?)\)", RegexOptions.Compiled);
