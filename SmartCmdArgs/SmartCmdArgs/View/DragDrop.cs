@@ -39,6 +39,9 @@ namespace SmartCmdArgs.View
                 {
                     var dataObject = DataObjectGenerator.Genrate(dragInfo.SourceItems);
 
+                    if (dragInfo.DirectVisualSourceItem.Item.IsInEditMode)
+                        dragInfo.DirectVisualSourceItem.Item.CommitEdit();
+
                     try
                     {
                         System.Diagnostics.Debug.WriteLine($"StartDrag: {dragInfo.DirectVisualSourceItem.Item}");
