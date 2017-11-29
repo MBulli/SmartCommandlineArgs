@@ -43,7 +43,7 @@ namespace SmartCmdArgs.View
                     {
                         System.Diagnostics.Debug.WriteLine($"StartDrag: {dragInfo.DirectVisualSourceItem.Item}");
                         dragInfo.IsDragInProgress = true;
-                        var result = System.Windows.DragDrop.DoDragDrop(treeView, dataObject, DragDropEffects.Move);
+                        var result = System.Windows.DragDrop.DoDragDrop(treeView, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
                         dragInfo.IsDragInProgress = false;
                         if (result != DragDropEffects.None)
                             HandleDropForSource(result);
@@ -89,7 +89,12 @@ namespace SmartCmdArgs.View
                 dropInfo.UpdateInsertPosition(e);
                 dropInfo.UpdateTargetCollectionAndIndex();
                 if (dropInfo.CanAcceptData(DropInfo.ExtractDropData(dragInfo, e)))
-                    e.Effects = DragDropEffects.Move;
+                {
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                        e.Effects = DragDropEffects.Copy;
+                    else
+                        e.Effects = DragDropEffects.Move;
+                }
                 else
                     e.Effects = DragDropEffects.None;
                 dropInfo.Effects = e.Effects;
@@ -106,11 +111,9 @@ namespace SmartCmdArgs.View
 
         public static void HandleDropForTarget(TreeViewItemEx tvItem, DragEventArgs e)
         {
-            e.Handled = true;
+            OnDragOver(tvItem, e);
             if (dragInfo?.IsDragInProgress == true)
                 return;
-
-            dropInfo.UpdateTargetCollectionAndIndex();
 
             HandleDropForTarget(e.Effects, e);
         }
@@ -118,10 +121,14 @@ namespace SmartCmdArgs.View
         public static void HandleDropForTarget(DragDropEffects result, DragEventArgs e = null)
         {
             System.Diagnostics.Debug.WriteLine($"HandleDropForTarget: {dropInfo.TargetItem.Item}");
-            var data = DropInfo.ExtractDropData(dragInfo, e);
-            if (dropInfo.CanAcceptData(data) && result.HasFlag(DragDropEffects.Move))
+            IEnumerable<CmdBase> data = DropInfo.ExtractDropData(dragInfo, e);
+            if (dropInfo.CanAcceptData(data)
+                && (result.HasFlag(DragDropEffects.Move) || result.HasFlag(DragDropEffects.Copy)))
             {
                 var idx = dropInfo.InsertIndex;
+                if (result.HasFlag(DragDropEffects.Copy))
+                    data = data.Select(cmd => cmd.Copy());
+
                 foreach (var sourceItem in data)
                 {
                     dropInfo.TargetCollection.Insert(idx++, sourceItem);
@@ -129,7 +136,7 @@ namespace SmartCmdArgs.View
             }
             else
             {
-                e.Effects = DragDropEffects.None;
+                if (e != null) e.Effects = DragDropEffects.None;
             }
 
             dropInfo?.DropTargetAdorner?.Detach();
@@ -293,6 +300,8 @@ namespace SmartCmdArgs.View
                         InsertPosition = RelativInsertPosition.AfterTargetItem;
                 }
             }
+            else
+                InsertPosition = RelativInsertPosition.None;
         }
 
         public void UpdateTargetCollectionAndIndex()

@@ -119,6 +119,11 @@ namespace SmartCmdArgs.ViewModel
                 throw new InvalidOperationException("Can't execute edit operation on a not editable item!");
         }
 
+        public virtual CmdBase Copy()
+        {
+            return null;
+        }
+
         public override string ToString()
         {
             return $"{this.GetType().Name}{{{Value}:{(IsChecked == null ? "▄" : (IsChecked.Value ? "✓" : "❌"))}:{(IsSelected ? "█" : "-")}}}";
@@ -325,6 +330,11 @@ namespace SmartCmdArgs.ViewModel
         public CmdProject(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
             : this(Guid.NewGuid(), value, items, isExpanded)
         { }
+
+        public override CmdBase Copy()
+        {
+            return new CmdProject(Value, Items.Select(cmd => cmd.Copy())) {isExpanded = isExpanded, Filter = Filter};
+        }
     }
 
     public class CmdGroup : CmdContainer
@@ -338,6 +348,11 @@ namespace SmartCmdArgs.ViewModel
         public CmdGroup(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
             : this(Guid.NewGuid(), value, items, isExpanded)
         { }
+
+        public override CmdBase Copy()
+        {
+            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy())) {isExpanded = isExpanded};
+        }
     }
 
     public class CmdArgument : CmdBase
@@ -357,5 +372,10 @@ namespace SmartCmdArgs.ViewModel
         public CmdArgument(string value, bool isChecked = false) 
             : this(Guid.NewGuid(), value, isChecked)
         { }
+
+        public override CmdBase Copy()
+        {
+            return new CmdArgument(Value, IsChecked);
+        }
     }
 }
