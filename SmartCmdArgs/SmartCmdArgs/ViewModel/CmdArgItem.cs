@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Input;
 using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs.ViewModel
@@ -23,7 +24,17 @@ namespace SmartCmdArgs.ViewModel
         public string Value { get => value; set => SetAndNotify(value, ref this.value); }
 
         protected bool? isChecked;
-        public bool? IsChecked { get => isChecked; set => OnIsCheckedChanged(isChecked, value, true); }
+        public bool? IsChecked
+        {
+            get => isChecked;
+            set
+            {
+                if ((Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+                    ExclusiveChecked();
+                else
+                    OnIsCheckedChanged(isChecked, value, true);
+            }
+        }
 
         protected bool isSelected;
         public bool IsSelected {
@@ -52,6 +63,14 @@ namespace SmartCmdArgs.ViewModel
                 IsChecked = false;
             else
                 IsChecked = !IsChecked;
+        }
+
+        private void ExclusiveChecked()
+        {
+            var checkedItems = Parent.Items.Where(item => item.IsChecked != false).ToList();
+            var checkState = checkedItems.Count != 1 || isChecked != true;
+            checkedItems.ForEach(item => item.OnIsCheckedChanged(item.IsChecked, false, false));
+            OnIsCheckedChanged(isChecked, checkState, true);
         }
 
         protected virtual void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
@@ -171,7 +190,7 @@ namespace SmartCmdArgs.ViewModel
         public IEnumerable<CmdBase> SelectedItems => this.Where(item => item.IsSelected);
 
         public IEnumerable<CmdArgument> CheckedArguments => this.OfType<CmdArgument>().Where(arg => arg.IsChecked);
-        
+
         public IEnumerable<CmdContainer> ExpandedContainer => this.OfType<CmdContainer>().Where(arg => arg.IsExpanded);
 
         public CmdContainer(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
