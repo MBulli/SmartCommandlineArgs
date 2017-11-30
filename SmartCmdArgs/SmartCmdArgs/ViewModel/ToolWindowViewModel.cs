@@ -196,7 +196,7 @@ namespace SmartCmdArgs.ViewModel
 
         public void PopulateFromProjectData(Project project, ToolWindowStateProjectData data)
         {
-            TreeViewModel.Projects[project.UniqueName] = new CmdProject(data.Id, project.Name, ListEntriesToCmdObjects(data.Items));
+            TreeViewModel.Projects[project.UniqueName] = new CmdProject(data.Id, project.UniqueName, project.Name, ListEntriesToCmdObjects(data.Items));
 
             IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
             {
@@ -210,12 +210,13 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public void RenameProject(string oldName, string newName)
+        public void RenameProject(string oldName, string newName, string newDisplayName)
         {
             if (TreeViewModel.Projects.TryGetValue(oldName, out CmdProject cmdProject))
             {
                 TreeViewModel.Projects.Remove(oldName);
-                cmdProject.Value = newName;
+                cmdProject.UniqueName = newName;
+                cmdProject.Value = newDisplayName;
                 TreeViewModel.Projects.Add(newName, cmdProject);
             }
         }

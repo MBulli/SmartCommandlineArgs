@@ -494,7 +494,7 @@ namespace SmartCmdArgs
             
             foreach (var startupProject in ToolWindowViewModel.TreeViewModel.StartupProjects)
             {
-                var project = vsHelper.ProjectForProjectName(startupProject.Value);
+                var project = vsHelper.ProjectForProjectName(startupProject.UniqueName);
                 UpdateConfigurationForProject(project);
                 SaveJsonForProject(project);
             }
@@ -553,7 +553,7 @@ namespace SmartCmdArgs
                 }
                 projectFsWatchers.Add(e.Project.UniqueName, fsWatcher);
             }
-            ToolWindowViewModel.RenameProject(e.OldUniqueName, e.Project.UniqueName);
+            ToolWindowViewModel.RenameProject(e.OldUniqueName, e.Project.UniqueName, e.Project.Name);
         }
         #endregion
 
