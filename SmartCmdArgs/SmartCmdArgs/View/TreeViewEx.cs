@@ -25,6 +25,9 @@ namespace SmartCmdArgs.View
             RegisterCommand(ApplicationCommands.Copy, CopyCommandProperty);
             RegisterCommand(ApplicationCommands.Paste, PasteCommandProperty);
 
+            CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx), new CommandBinding(ApplicationCommands.SelectAll, 
+                (sender, args) => ((TreeViewEx)sender).SelectAllItems(args), (sender, args) => args.CanExecute = ((TreeViewEx)sender).HasItems));
+
             void RegisterCommand(RoutedUICommand routedUiCommand, DependencyProperty commandProperty)
             {
                 CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx), 
@@ -129,18 +132,6 @@ namespace SmartCmdArgs.View
             }
         }
 
-        protected override void OnPreviewKeyDown(KeyEventArgs e)
-        {
-           if (e.Key == Key.A && e.IsDown && IsCtrlPressed)
-            {
-                foreach (var treeViewItem in GetTreeViewItems(this, false))
-                {
-                    SetIsItemSelected(treeViewItem, true);
-                }
-                e.Handled = true;
-            }
-        }
-
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.Key == Key.Space && ToggleSelectedCommand?.CanExecute(null) == true)
@@ -213,6 +204,15 @@ namespace SmartCmdArgs.View
                 rangeCount = 1;
 
             return rangeCount > 0 ? items.GetRange(rangeStart, rangeCount) : new List<TreeViewItemEx>();
+        }
+
+        private void SelectAllItems(ExecutedRoutedEventArgs args)
+        {
+            foreach (var treeViewItem in GetTreeViewItems(this, false))
+            {
+                SetIsItemSelected(treeViewItem, true);
+            }
+            args.Handled = true;
         }
         
         protected override void OnMouseMove(MouseEventArgs e) => DragDrop.OnMouseMove(this, e);
