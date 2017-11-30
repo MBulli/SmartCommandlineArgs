@@ -42,6 +42,10 @@ namespace SmartCmdArgs.View
         public ICommand CopyCommand { get => (ICommand)GetValue(CopyCommandProperty); set => SetValue(CopyCommandProperty, value); }
         public ICommand PasteCommand { get => (ICommand)GetValue(PasteCommandProperty); set => SetValue(PasteCommandProperty, value); }
 
+        public static readonly DependencyProperty ToggleSelectedCommandProperty = DependencyProperty.Register(
+            "ToggleSelectedCommand", typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public ICommand ToggleSelectedCommand { get => (ICommand)GetValue(ToggleSelectedCommandProperty); set => SetValue(ToggleSelectedCommandProperty, value); }
+
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -61,15 +65,11 @@ namespace SmartCmdArgs.View
         {
             return (bool)element.GetValue(IsItemSelectedProperty);
         }
-
         
         private static bool IsCtrlPressed => (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
-
         private static bool IsShiftPressed => (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 
         public IEnumerable<TreeViewItemEx> SelectedTreeViewItems => GetTreeViewItems(this, true).Where(GetIsItemSelected);
-        public IEnumerable<CmdBase> SelectedItems => SelectedTreeViewItems.Select(treeViewItem => treeViewItem.Item);
-        
         
         public void ChangedFocusedItem(TreeViewItemEx item)
         {
@@ -99,7 +99,7 @@ namespace SmartCmdArgs.View
         public void MouseLeftButtonDownOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
         {
             _lastMouseDownTargetItem = tvItem;
-            if (IsCtrlPressed || IsShiftPressed || !SelectedItems.Skip(1).Any() || !GetIsItemSelected(tvItem))
+            if (IsCtrlPressed || IsShiftPressed || !SelectedTreeViewItems.Skip(1).Any() || !GetIsItemSelected(tvItem))
             {
                 SelectedItemChangedInternal(tvItem);
             }
@@ -107,7 +107,7 @@ namespace SmartCmdArgs.View
 
         public void MouseLeftButtonUpOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
         {
-            if (IsCtrlPressed || IsShiftPressed || !SelectedItems.Skip(1).Any())
+            if (IsCtrlPressed || IsShiftPressed || !SelectedTreeViewItems.Skip(1).Any())
                 return;
 
             if (!Equals(tvItem, _lastMouseDownTargetItem))
@@ -131,7 +131,7 @@ namespace SmartCmdArgs.View
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.A && e.IsDown && IsCtrlPressed)
+           if (e.Key == Key.A && e.IsDown && IsCtrlPressed)
             {
                 foreach (var treeViewItem in GetTreeViewItems(this, false))
                 {
@@ -139,6 +139,16 @@ namespace SmartCmdArgs.View
                 }
                 e.Handled = true;
             }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Space && ToggleSelectedCommand?.CanExecute(null) == true)
+            {
+                ToggleSelectedCommand.Execute(null);
+                e.Handled = true;
+            }
+            base.OnKeyDown(e);
         }
 
         private void SelectedItemChangedInternal(TreeViewItemEx tvItem)
@@ -309,17 +319,7 @@ namespace SmartCmdArgs.View
         {
             if (IsFocused)
             {
-                var selectedItems = ParentTreeView.SelectedItems.ToList();
-                if (e.Key == Key.Space && !selectedItems.Any(item => item.IsInEditMode))
-                {
-                    bool select = selectedItems.All(item => item.IsChecked == false);
-                    foreach (var selectedItem in selectedItems)
-                    {
-                        selectedItem.IsChecked = select;
-                    }
-                    e.Handled = true;
-                }
-                else if (e.Key == Key.Return || e.Key == Key.F2)
+                if (e.Key == Key.Return || e.Key == Key.F2)
                 {
                     if (Item.IsEditable && !Item.IsInEditMode)
                     {
@@ -338,7 +338,7 @@ namespace SmartCmdArgs.View
                 && Item.IsEditable 
                 && !Item.IsInEditMode 
                 && !IsCtrlPressed 
-                && ParentTreeView.SelectedItems.Take(2).Count() == 1 
+                && ParentTreeView.SelectedTreeViewItems.Take(2).Count() == 1 
                 && (e.ClickCount % 2 == 1 || !(Item is CmdContainer)))
             {
                 Item.BeginEdit();

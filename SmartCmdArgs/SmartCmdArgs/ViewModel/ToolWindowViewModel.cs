@@ -65,7 +65,7 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand CopyCommandlineCommand { get; }
 
-        public RelayCommand<CmdBase> ToggleItemEnabledCommand { get; }
+        public RelayCommand ToggleSelectedCommand { get; }
         
         public RelayCommand CopySelectedItemsCommand { get; }
         
@@ -112,9 +112,9 @@ namespace SmartCmdArgs.ViewModel
                     Clipboard.SetText(prjCmdArgs);
                 }, canExecute: _ => HasStartupProject());
 
-            ToggleItemEnabledCommand = new RelayCommand<CmdBase>(
-                (item) => {
-                    //CurrentArgumentList.ToogleEnabledForItem(item, Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt));
+            ToggleSelectedCommand = new RelayCommand(
+                () => {
+                    TreeViewModel.ToggleSelected();
                 }, canExecute: _ => HasStartupProject());
 
             CopySelectedItemsCommand = new RelayCommand(CopySelectedItemsToClipboard, canExecute: _ => HasSelectedItems());

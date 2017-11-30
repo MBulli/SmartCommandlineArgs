@@ -198,6 +198,17 @@ namespace SmartCmdArgs.ViewModel
             Projects.Values.ForEach(project => project.MoveEntries(SelectedItems, moveDirection));
         }
 
+        public void ToggleSelected()
+        {
+            var itemsToToggle = SelectedItems.Where(x => !SelectedItems.Contains(x.Parent)).ToList();
+
+            var checkState = itemsToToggle.All(item => item.IsChecked == false);
+            foreach (var selectedItem in itemsToToggle)
+            {
+                selectedItem.IsChecked = checkState;
+            }
+        }
+
         public event EventHandler<CmdBase> ItemSelectionChanged;
 
         public virtual void OnItemSelectionChanged(CmdBase item)
