@@ -74,7 +74,6 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand CutItemsCommand { get; }
 
         public event EventHandler CommandLineChanged;
-        public event EventHandler<IList> SelectedItemsChanged;
 
         public ToolWindowViewModel()
         {
@@ -126,7 +125,6 @@ namespace SmartCmdArgs.ViewModel
 
             TreeViewModel.Projects.ItemPropertyChanged += OnArgumentListItemChanged;
             TreeViewModel.Projects.CollectionChanged += OnArgumentListChanged;
-            TreeViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
         }
 
         /// <summary>
@@ -174,7 +172,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if any line is selected</returns>
         private bool HasSelectedItems()
         {
-            return TreeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).Any();
+            return TreeViewModel.SelectedItems.Count > 0;
         }
 
         /// <summary>
@@ -189,10 +187,11 @@ namespace SmartCmdArgs.ViewModel
         private void RemoveSelectedItems()
         {
             // This will eventually bubble down to the DataGridView
-            foreach (var item in TreeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).ToList())
+            foreach (var item in TreeViewModel.SelectedItems.ToList())
             {
                 item.Parent.Items.Remove(item);
             }
+            TreeViewModel.SelectedItems.Clear();
         }
 
         public void PopulateFromProjectData(Project project, ToolWindowStateProjectData data)
@@ -209,17 +208,6 @@ namespace SmartCmdArgs.ViewModel
                         yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded);
                 }
             }
-        }
-
-        public CmdProject GetCmdProject(string projectName)
-        {
-            CmdProject cmdProject;
-            if (!TreeViewModel.Projects.TryGetValue(projectName, out cmdProject))
-            {
-                cmdProject = new CmdProject(projectName);
-                TreeViewModel.Projects.Add(projectName, cmdProject);
-            }
-            return cmdProject;
         }
 
         public void RenameProject(string oldName, string newName)
@@ -250,11 +238,6 @@ namespace SmartCmdArgs.ViewModel
         protected virtual void OnCommandLineChanged()
         {
             CommandLineChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected virtual void OnSelectedItemsChanged(object obj, IList e)
-        {
-            SelectedItemsChanged?.Invoke(this, e);
         }
     }
 }

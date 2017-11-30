@@ -61,6 +61,8 @@ namespace SmartCmdArgs.ViewModel
 
         public List<TreeViewItemEx> DragedTreeViewItems { get; }
 
+        public HashSet<CmdBase> SelectedItems { get; }
+
         public TreeViewModel()
         {
             DropHandler = new DropHandler(this);
@@ -74,6 +76,8 @@ namespace SmartCmdArgs.ViewModel
             startupProjects.CollectionChanged += OnStartupProjectsChanged;
 
             DragedTreeViewItems = new List<TreeViewItemEx>();
+
+            SelectedItems = new HashSet<CmdBase>();
         }
 
         private void OnProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -84,6 +88,11 @@ namespace SmartCmdArgs.ViewModel
                 {
                     startupProjects.Remove(cmdProject);
                 }
+
+                foreach (var project in projects.Values)
+                {
+                    project.ParentTreeViewModel = this;
+                }
             }
             else
             {
@@ -93,16 +102,19 @@ namespace SmartCmdArgs.ViewModel
                 {
                     foreach (var item in e.OldItems.Cast<KeyValuePair<string, CmdProject>>())
                     {
+                        item.Value.ParentTreeViewModel = null;
                         if (startupProjects.Remove(item.Value) && e.Action == NotifyCollectionChangedAction.Replace)
                             removedKeys.Add(item.Key);
                     }
                 }
 
-                if (e.Action == NotifyCollectionChangedAction.Replace)
+                if (e.Action == NotifyCollectionChangedAction.Replace
+                    || e.Action == NotifyCollectionChangedAction.Add)
                 {
                     foreach (var item in e.NewItems.Cast<KeyValuePair<string, CmdProject>>())
                     {
-                        if (removedKeys.Contains(item.Key))
+                        item.Value.ParentTreeViewModel = this;
+                        if (e.Action == NotifyCollectionChangedAction.Replace && removedKeys.Contains(item.Key))
                             startupProjects.Add(item.Value);
                     }
                 }
@@ -190,11 +202,18 @@ namespace SmartCmdArgs.ViewModel
 
         public void MoveSelectedEntries(int moveDirection)
         {
-            var set = new HashSet<CmdBase>(Projects.Values.SelectMany(project => project.SelectedItems));
-            Projects.Values.ForEach(project => project.MoveEntries(set, moveDirection));
+            Projects.Values.ForEach(project => project.MoveEntries(SelectedItems, moveDirection));
         }
 
-        public event EventHandler<IList> SelectedItemsChanged;
+        public event EventHandler<CmdBase> ItemSelectionChanged;
 
+        public virtual void OnItemSelectionChanged(CmdBase item)
+        {
+            if (item.IsSelected)
+                SelectedItems.Add(item);
+            else
+                SelectedItems.Remove(item);
+            ItemSelectionChanged?.Invoke(this, item);
+        }
     }
 }

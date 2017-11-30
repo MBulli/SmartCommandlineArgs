@@ -140,14 +140,14 @@ namespace SmartCmdArgs
                 InitializeForSolution();
             }
             
-            ToolWindowViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
+            ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
             
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
         }
 
-        private void OnSelectedItemsChanged(object sender, System.Collections.IList e)
+        private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
         {
-            vsHelper.UpdateShellCommandUI();
+            vsHelper.UpdateShellCommandUI(false);
         }
 
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)

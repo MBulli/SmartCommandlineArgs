@@ -25,7 +25,14 @@ namespace SmartCmdArgs.ViewModel
         public bool? IsChecked { get => isChecked; set => OnIsCheckedChanged(isChecked, value, true); }
 
         protected bool isSelected;
-        public bool IsSelected { get => isSelected; set => SetAndNotify(value, ref isSelected); }
+        public bool IsSelected {
+            get => isSelected;
+            set
+            {
+                SetAndNotify(value, ref isSelected);
+                Parent?.OnChildSelectionChanged(this);
+            }
+        }
 
         public virtual bool IsEditable => false;
 
@@ -162,7 +169,7 @@ namespace SmartCmdArgs.ViewModel
         
         public IEnumerable<CmdContainer> ExpandedContainer => Items.OfType<CmdContainer>().Where(arg => arg.IsExpanded)
                 .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.ExpandedContainer));
-        
+
         public CmdContainer(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
             : base(id, value)
         {
@@ -325,10 +332,17 @@ namespace SmartCmdArgs.ViewModel
 
             Items.OfType<CmdContainer>().Where(item => !items.Contains(item)).ForEach(container => container.MoveEntries(items, moveDirection));
         }
-    }
 
+        public virtual void OnChildSelectionChanged(CmdBase e)
+        {
+            Parent?.OnChildSelectionChanged(e);
+        }
+    }
+    
     public class CmdProject : CmdContainer
     {
+        public TreeViewModel ParentTreeViewModel { get; set; }
+
         private bool isStartupProject = false;
         public bool IsStartupProject { get => isStartupProject; set => SetAndNotify(value, ref isStartupProject); }
 
@@ -341,18 +355,23 @@ namespace SmartCmdArgs.ViewModel
         {
             get => filter; set { filter = value; RefreshFilters(); }
         }
-        
-        public CmdProject(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+
+        public CmdProject(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
             : base(id, value, items, isExpanded)
         { }
 
-        public CmdProject(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+        public CmdProject(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
             : this(Guid.NewGuid(), value, items, isExpanded)
         { }
 
         public override CmdBase Copy()
         {
             return new CmdProject(Value, Items.Select(cmd => cmd.Copy())) {isExpanded = isExpanded, Filter = Filter};
+        }
+
+        public override void OnChildSelectionChanged(CmdBase e)
+        {
+            ParentTreeViewModel?.OnItemSelectionChanged(e);
         }
     }
 
