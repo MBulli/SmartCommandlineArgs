@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -137,7 +138,7 @@ namespace SmartCmdArgs.ViewModel
         }
     }
     
-    public class CmdContainer : CmdBase
+    public class CmdContainer : CmdBase, IEnumerable<CmdBase>
     {
         protected bool isExpanded;
         public bool IsExpanded { get => isExpanded; set => SetAndNotify(value, ref isExpanded); }
@@ -152,23 +153,15 @@ namespace SmartCmdArgs.ViewModel
             ItemsView.Refresh();
         }
 
-        public IEnumerable<CmdContainer> AllContainer => Items.OfType<CmdContainer>()
-            .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.AllContainer));
+        public IEnumerable<CmdContainer> AllContainer => this.OfType<CmdContainer>();
 
-        public IEnumerable<CmdArgument> AllArguments => Items.OfType<CmdArgument>()
-            .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.AllArguments));
+        public IEnumerable<CmdArgument> AllArguments => this.OfType<CmdArgument>();
 
-        public IEnumerable<CmdBase> SelectedItems => Items.Where(item => item.IsSelected)
-                .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.SelectedItems));
+        public IEnumerable<CmdBase> SelectedItems => this.Where(item => item.IsSelected);
 
-        public IEnumerable<CmdArgument> SelectedArguments => Items.OfType<CmdArgument>().Where(arg => arg.IsSelected)
-                .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.SelectedArguments));
-
-        public IEnumerable<CmdArgument> CheckedArguments => Items.OfType<CmdArgument>().Where(arg => arg.IsChecked)
-                .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.CheckedArguments));
+        public IEnumerable<CmdArgument> CheckedArguments => this.OfType<CmdArgument>().Where(arg => arg.IsChecked);
         
-        public IEnumerable<CmdContainer> ExpandedContainer => Items.OfType<CmdContainer>().Where(arg => arg.IsExpanded)
-                .Concat(Items.OfType<CmdContainer>().SelectMany(container => container.ExpandedContainer));
+        public IEnumerable<CmdContainer> ExpandedContainer => this.OfType<CmdContainer>().Where(arg => arg.IsExpanded);
 
         public CmdContainer(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
             : base(id, value)
@@ -336,6 +329,24 @@ namespace SmartCmdArgs.ViewModel
         public virtual void OnChildSelectionChanged(CmdBase e)
         {
             Parent?.OnChildSelectionChanged(e);
+        }
+        
+        public IEnumerator<CmdBase> GetEnumerator()
+        {
+            foreach (var item in Items)
+            {
+                yield return item;
+                if (item is CmdContainer con)
+                {
+                    foreach (var conItem in con)
+                        yield return conItem;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
     
