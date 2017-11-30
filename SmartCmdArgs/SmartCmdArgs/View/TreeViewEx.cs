@@ -24,6 +24,7 @@ namespace SmartCmdArgs.View
         {
             RegisterCommand(ApplicationCommands.Copy, CopyCommandProperty);
             RegisterCommand(ApplicationCommands.Paste, PasteCommandProperty);
+            RegisterCommand(ApplicationCommands.Cut, CutCommandProperty);
 
             CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx), new CommandBinding(ApplicationCommands.SelectAll, 
                 (sender, args) => ((TreeViewEx)sender).SelectAllItems(args), (sender, args) => args.CanExecute = ((TreeViewEx)sender).HasItems));
@@ -39,14 +40,17 @@ namespace SmartCmdArgs.View
         }
 
         public static readonly DependencyProperty CopyCommandProperty = DependencyProperty.Register(
-            "CopyCommand", typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+            nameof(CopyCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public static readonly DependencyProperty PasteCommandProperty = DependencyProperty.Register(
-            "PasteCommand", typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+            nameof(PasteCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public static readonly DependencyProperty CutCommandProperty = DependencyProperty.Register(
+            nameof(CutCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand CopyCommand { get => (ICommand)GetValue(CopyCommandProperty); set => SetValue(CopyCommandProperty, value); }
         public ICommand PasteCommand { get => (ICommand)GetValue(PasteCommandProperty); set => SetValue(PasteCommandProperty, value); }
-
+        public ICommand CutCommand { get => (ICommand)GetValue(CutCommandProperty); set => SetValue(CutCommandProperty, value); }
+        
         public static readonly DependencyProperty ToggleSelectedCommandProperty = DependencyProperty.Register(
-            "ToggleSelectedCommand", typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+            nameof(ToggleSelectedCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand ToggleSelectedCommand { get => (ICommand)GetValue(ToggleSelectedCommandProperty); set => SetValue(ToggleSelectedCommandProperty, value); }
 
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
