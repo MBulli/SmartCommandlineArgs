@@ -141,7 +141,18 @@ namespace SmartCmdArgs.ViewModel
     public class CmdContainer : CmdBase, IEnumerable<CmdBase>
     {
         protected bool isExpanded;
-        public bool IsExpanded { get => isExpanded; set => SetAndNotify(value, ref isExpanded); }
+        public bool IsExpanded
+        {
+            get => isExpanded;
+            set
+            {
+                SetAndNotify(value, ref isExpanded);
+                if (IsInEditMode)
+                    CommitEdit();
+                if (!isExpanded)
+                    SetIsSelectedOnChildren(false);
+            }
+        }
 
         public ObservableCollectionEx<CmdBase> Items { get; }
         public ICollectionView ItemsView { get; }

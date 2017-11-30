@@ -84,6 +84,15 @@ namespace SmartCmdArgs.View
             {
                 SelectedItemChangedInternal(item);
             }
+
+            if (!GetIsItemSelected(item))
+            {
+                var aSelectedItem = SelectedTreeViewItems.FirstOrDefault();
+                if (aSelectedItem != null)
+                    aSelectedItem.Focus();
+                else
+                    SetIsItemSelected(item, true);
+            }
         }
 
         private TreeViewItemEx _lastMouseDownTargetItem;
@@ -356,36 +365,6 @@ namespace SmartCmdArgs.View
         {
             if ((bool) e.NewValue)
                 ParentTreeView.ChangedFocusedItem(this);
-        }
-
-        protected override void OnExpanded(RoutedEventArgs e)
-        {
-            if (Item.IsEditable && Item.IsInEditMode)
-                Item.CommitEdit();
-
-            base.OnExpanded(e);
-        }
-
-        protected override void OnCollapsed(RoutedEventArgs e)
-        {
-            if (Item.IsEditable && Item.IsInEditMode)
-                Item.CommitEdit();
-
-            if (Item is CmdContainer container)
-            {
-                // If any child change its state and no other item is selected; select this container
-                if (container.SetIsSelectedOnChildren(false) && !ParentTreeView.SelectedTreeViewItems.Any())
-                {
-                    Item.IsSelected = true;
-                }
-                else
-                {
-                    // Give focus to any other selected item
-                    ParentTreeView.SelectedTreeViewItems.FirstOrDefault()?.Focus();
-                }
-            }
-
-            base.OnCollapsed(e);
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e) => DragDrop.OnMouseDown(this, e);
