@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
-using GongSolutions.Wpf.DragDrop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.View;
 
@@ -56,18 +55,12 @@ namespace SmartCmdArgs.ViewModel
 
         public ObservableCollection<CmdProject> StartupProjects => startupProjects;
 
-        public IDropTarget DropHandler { get; private set; }
-        public IDragSource DragHandler { get; private set; }
-
         public List<TreeViewItemEx> DragedTreeViewItems { get; }
 
         public HashSet<CmdBase> SelectedItems { get; }
 
         public TreeViewModel()
         {
-            DropHandler = new DropHandler(this);
-            DragHandler = new DragHandler(this);
-
             projects = new ObservableDictionary<string, CmdProject>();
             projects.CollectionChanged += OnProjectsChanged;
             treeitems = null;

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
-using GongSolutions.Wpf.DragDrop.Utilities;
 
 namespace SmartCmdArgs.View
 {

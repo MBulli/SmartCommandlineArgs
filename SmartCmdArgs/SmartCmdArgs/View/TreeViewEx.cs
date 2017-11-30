@@ -13,7 +13,6 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using GongSolutions.Wpf.DragDrop.Utilities;
 using Microsoft.VisualStudio.Composition.Tasks;
 using SmartCmdArgs.ViewModel;
 
