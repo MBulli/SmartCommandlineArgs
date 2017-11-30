@@ -151,9 +151,7 @@ namespace SmartCmdArgs.Helper
             public void Dispose()
             {
                 this.owner.raiseEvents = true;
-                // HACK: Totaly stupid. Reset would mess up focus of DataGrid
-                this.owner.OnItemPropertyChanged(null, new PropertyChangedEventArgs(""));
-                //this.owner.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                this.owner.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
     }

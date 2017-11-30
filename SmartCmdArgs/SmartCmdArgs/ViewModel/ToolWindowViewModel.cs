@@ -81,12 +81,12 @@ namespace SmartCmdArgs.ViewModel
 
             AddEntryCommand = new RelayCommand(
                 () => {
-                    TreeViewModel.FocusedProject?.AddNewArgument(command: "", enabled: true);
+                    TreeViewModel.AddItemAtFocusedItem(new CmdArgument(arg: "", isChecked: true));
                 }, canExecute: _ => HasStartupProject());
 
             AddGroupCommand = new RelayCommand(
                 () => {
-                    TreeViewModel.FocusedProject?.AddNewGroup(command: "");
+                    TreeViewModel.AddItemAtFocusedItem(new CmdGroup(name: ""));
                 }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
@@ -147,7 +147,7 @@ namespace SmartCmdArgs.ViewModel
         private void PasteItemsFromClipboard()
         {
             var pastedItems = DataObjectGenerator.Extract(Clipboard.GetDataObject(), includeObject: false);
-            TreeViewModel.FocusedProject.Items.AddRange(pastedItems);
+            TreeViewModel.AddItemsAtFocusedItem(pastedItems);
         }
 
         private void CutItemsToClipboard()

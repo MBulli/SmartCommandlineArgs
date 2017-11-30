@@ -174,8 +174,7 @@
 
     <HierarchicalDataTemplate x:Key="ProjectDataTemplate" DataType="{x:Type vm:CmdProject}" ItemsSource="{Binding ItemsView}">
         <local:ArgumentItemView DataContext="{Binding}" 
-                                FontWeight="{Binding IsStartupProject, Converter={c:BooleanBoldFontConverter}}"
-                                IsFocusedItem="{Binding IsFocusedProject, Mode=OneWayToSource}"/>
+                                FontWeight="{Binding IsStartupProject, Converter={c:BooleanBoldFontConverter}}"/>
     </HierarchicalDataTemplate>
 
     <HierarchicalDataTemplate x:Key="GroupDataTemplate" DataType="{x:Type vm:CmdGroup}" ItemsSource="{Binding ItemsView}">

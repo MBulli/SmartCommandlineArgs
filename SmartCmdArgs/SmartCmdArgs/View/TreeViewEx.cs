@@ -367,6 +367,14 @@ namespace SmartCmdArgs.View
                 ParentTreeView.ChangedFocusedItem(this);
         }
 
+        protected override void OnIsKeyboardFocusWithinChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (DataContext is CmdBase item)
+            {
+                item.IsFocusedItem = (bool)e.NewValue;
+            }
+        }
+
         protected override void OnMouseDown(MouseButtonEventArgs e) => DragDrop.OnMouseDown(this, e);
         protected override void OnDragEnter(DragEventArgs e) => DragDrop.OnDragEnter(this, e);
         protected override void OnQueryContinueDrag(QueryContinueDragEventArgs e) => DragDrop.OnQueryContinueDrag(this, e);

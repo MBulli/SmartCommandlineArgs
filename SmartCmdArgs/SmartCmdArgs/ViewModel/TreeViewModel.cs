@@ -51,7 +51,9 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public CmdProject FocusedProject => projects.Values.FirstOrDefault(project => project.IsFocusedProject) ?? startupProjects.FirstOrDefault();
+        public CmdProject FocusedProject => projects.Values.FirstOrDefault(project => project.IsFocusedItem) ?? startupProjects.FirstOrDefault();
+
+        public CmdBase FocusedItem => projects.Values.Concat(projects.Values.SelectMany(prj => prj)).LastOrDefault(prj => prj.IsFocusedItem) ?? startupProjects.FirstOrDefault();
 
         public ObservableCollection<CmdProject> StartupProjects => startupProjects;
 
@@ -168,6 +170,30 @@ namespace SmartCmdArgs.ViewModel
                 {
                     // Fixes a strange potential bug in WPF. If ToList() is missing the project will be shown twice.
                     TreeItems = startupProjects.ToList();
+                }
+            }
+        }
+
+        public void AddItemAtFocusedItem(CmdBase item)
+        {
+            AddItemsAtFocusedItem(new[] {item});
+        }
+
+        public void AddItemsAtFocusedItem(IEnumerable<CmdBase> items)
+        {
+            var focusedItem = FocusedItem;
+            if (focusedItem is CmdContainer con)
+                con.Items.AddRange(items);
+            else if (focusedItem is CmdArgument arg)
+            {
+                var insertIdx = arg.Parent.Items.IndexOf(arg) + 1;
+                var collection = arg.Parent.Items;
+                using (collection.OpenBulkChange())
+                {
+                    foreach (var item in items)
+                    {
+                        collection.Insert(insertIdx++, item);
+                    }
                 }
             }
         }

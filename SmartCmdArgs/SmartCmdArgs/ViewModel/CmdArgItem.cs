@@ -45,6 +45,8 @@ namespace SmartCmdArgs.ViewModel
                 Parent?.OnChildSelectionChanged(this);
             }
         }
+        
+        public bool IsFocusedItem { get; set; }
 
         public virtual bool IsEditable => false;
 
@@ -323,20 +325,6 @@ namespace SmartCmdArgs.ViewModel
             return result;
         }
 
-        public CmdArgument AddNewArgument(string command, bool enabled = true)
-        {
-            var item = new CmdArgument(command, enabled);
-            Items.Add(item);
-            return item;
-        }
-
-        public CmdGroup AddNewGroup(string command)
-        {
-            var group = new CmdGroup(command);
-            Items.Add(group);
-            return group;
-        }
-        
         internal void MoveEntries(HashSet<CmdBase> items, int moveDirection)
         {
             var itemIndexList = Items.Where(items.Contains).Select(item => new KeyValuePair<CmdBase, int>(item, Items.IndexOf(item))).ToList();
@@ -387,9 +375,6 @@ namespace SmartCmdArgs.ViewModel
         private bool isStartupProject = false;
         public bool IsStartupProject { get => isStartupProject; set => SetAndNotify(value, ref isStartupProject); }
 
-        public bool isFocusedProject = false;
-        public bool IsFocusedProject { get => isFocusedProject; set => SetAndNotify(value, ref isFocusedProject); }
-
         protected override Predicate<CmdBase> FilterPredicate => Filter;
         private Predicate<CmdBase> filter;
         public Predicate<CmdBase> Filter
@@ -424,12 +409,12 @@ namespace SmartCmdArgs.ViewModel
     { 
         public override bool IsEditable => true;
 
-        public CmdGroup(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
-            : base(id, value, items, isExpanded)
+        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+            : base(id, name, items, isExpanded)
         { }
 
-        public CmdGroup(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
-            : this(Guid.NewGuid(), value, items, isExpanded)
+        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
+            : this(Guid.NewGuid(), name, items, isExpanded)
         { }
 
         public override CmdBase Copy()
@@ -448,12 +433,12 @@ namespace SmartCmdArgs.ViewModel
             set => base.IsChecked = value;
         }
 
-        public CmdArgument(Guid id, string value, bool isChecked = false)
-            : base(id, value, isChecked)
+        public CmdArgument(Guid id, string arg, bool isChecked = false)
+            : base(id, arg, isChecked)
         { }
         
-        public CmdArgument(string value, bool isChecked = false) 
-            : this(Guid.NewGuid(), value, isChecked)
+        public CmdArgument(string arg, bool isChecked = false) 
+            : this(Guid.NewGuid(), arg, isChecked)
         { }
 
         public override CmdBase Copy()
