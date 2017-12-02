@@ -25,6 +25,7 @@
             <local:TreeViewEx x:Name="treeView"
                               ItemsSource="{Binding TreeViewModel.TreeItemsView}"
                               SelectIndexCommand="{Binding SelectIndexCommand, Mode=OneWayToSource}"
+                              SelectItemCommand="{Binding SelectItemCommand, Mode=OneWayToSource}"
                               Style="{StaticResource TreeViewVS}"
                               CopyCommand="{Binding CopySelectedItemsCommand}"
                               PasteCommand="{Binding PasteItemsCommand}"

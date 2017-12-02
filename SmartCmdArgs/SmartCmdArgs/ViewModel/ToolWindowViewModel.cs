@@ -75,6 +75,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand<int> SelectIndexCommand { get; set; }
 
+        public RelayCommand<object> SelectItemCommand { get; set; }
+
         public event EventHandler CommandLineChanged;
 
         public ToolWindowViewModel()
@@ -83,12 +85,18 @@ namespace SmartCmdArgs.ViewModel
 
             AddEntryCommand = new RelayCommand(
                 () => {
-                    TreeViewModel.AddItemAtFocusedItem(new CmdArgument(arg: "", isChecked: true));
+                    var newArg = new CmdArgument(arg: "", isChecked: true);
+                    TreeViewModel.AddItemAtFocusedItem(newArg);
+                    if (SelectItemCommand.CanExecute(newArg))
+                        SelectItemCommand.Execute(newArg);
                 }, canExecute: _ => HasStartupProject());
 
             AddGroupCommand = new RelayCommand(
                 () => {
-                    TreeViewModel.AddItemAtFocusedItem(new CmdGroup(name: ""));
+                    var newGrp = new CmdGroup(name: "");
+                    TreeViewModel.AddItemAtFocusedItem(newGrp);
+                    if (SelectItemCommand.CanExecute(newGrp))
+                        SelectItemCommand.Execute(newGrp);
                 }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(

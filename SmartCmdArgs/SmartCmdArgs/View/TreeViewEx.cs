@@ -59,6 +59,10 @@ namespace SmartCmdArgs.View
             nameof(SelectIndexCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand SelectIndexCommand { get => (ICommand)GetValue(SelectIndexCommandProperty); set => SetValue(SelectIndexCommandProperty, value); }
 
+        public static readonly DependencyProperty SelectItemCommandProperty = DependencyProperty.Register(
+            nameof(SelectItemCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public ICommand SelectItemCommand { get => (ICommand)GetValue(SelectItemCommandProperty); set => SetValue(SelectItemCommandProperty, value); }
+
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -100,6 +104,17 @@ namespace SmartCmdArgs.View
                     if (idx == curIdx)
                         treeViewItem.Focus();
                     curIdx++;
+                }
+            });
+
+            SelectItemCommand = new RelayCommand<object>(item =>
+            {
+                foreach (var treeViewItem in GetTreeViewItems(this, false))
+                {
+                    var curItem = treeViewItem.Item;
+                    SetIsItemSelected(treeViewItem, item == curItem);
+                    if (item == curItem)
+                        treeViewItem.Focus();
                 }
             });
         }
