@@ -156,8 +156,16 @@ namespace SmartCmdArgs.ViewModel
 
         private void PasteItemsFromClipboard()
         {
-            var pastedItems = DataObjectGenerator.Extract(Clipboard.GetDataObject(), includeObject: false);
-            TreeViewModel.AddItemsAtFocusedItem(pastedItems);
+            var pastedItems = DataObjectGenerator.Extract(Clipboard.GetDataObject(), includeObject: false)?.ToList();
+            if (pastedItems != null && pastedItems.Count > 0)
+            {
+                TreeViewModel.AddItemsAtFocusedItem(pastedItems);
+                SelectItemCommand.Execute(pastedItems.First());
+                foreach (var pastedItem in pastedItems.Skip(1))
+                {
+                    pastedItem.IsSelected = true;
+                }
+            }
         }
 
         private void CutItemsToClipboard()
