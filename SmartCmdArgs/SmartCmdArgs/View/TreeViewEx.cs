@@ -93,30 +93,30 @@ namespace SmartCmdArgs.View
             DataContextChanged += OnDataContextChanged;            
         }
 
-        private void OnDataContextChanged(object o, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+        private void OnDataContextChanged(object tv, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
             SelectIndexCommand = new RelayCommand<int>(idx =>
             {
                 var curIdx = 0;
                 foreach (var treeViewItem in GetTreeViewItems(this, false))
                 {
-                    SetIsItemSelected(treeViewItem, idx == curIdx);
+                    SetIsItemSelected(treeViewItem, false);
                     if (idx == curIdx)
                         treeViewItem.Focus();
                     curIdx++;
                 }
-            });
+            }, i => i >= 0);
 
             SelectItemCommand = new RelayCommand<object>(item =>
             {
                 foreach (var treeViewItem in GetTreeViewItems(this, false))
                 {
                     var curItem = treeViewItem.Item;
-                    SetIsItemSelected(treeViewItem, item == curItem);
+                    SetIsItemSelected(treeViewItem, false);
                     if (item == curItem)
                         treeViewItem.Focus();
                 }
-            });
+            }, o => o != null);
         }
 
 
@@ -138,9 +138,15 @@ namespace SmartCmdArgs.View
             {
                 var aSelectedItem = SelectedTreeViewItems.FirstOrDefault();
                 if (aSelectedItem != null)
+                {
+                    _lastItemSelected = aSelectedItem;
                     aSelectedItem.Focus();
+                }
                 else
+                {
                     SetIsItemSelected(item, true);
+                    _lastItemSelected = item;
+                }
             }
         }
 

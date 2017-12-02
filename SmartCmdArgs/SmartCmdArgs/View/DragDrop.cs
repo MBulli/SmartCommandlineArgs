@@ -131,10 +131,30 @@ namespace SmartCmdArgs.View
                 var idx = dropInfo.InsertIndex;
                 if (result.HasFlag(DragDropEffects.Copy))
                     data = data.Select(cmd => cmd.Copy());
+                
+                var souldDeselctItem = dropInfo.InsertPosition.HasFlag(DropInfo.RelativInsertPosition.IntoTargetItem) 
+                    && dropInfo.TargetItem.Item is CmdContainer con 
+                    && !con.IsExpanded;
 
                 foreach (var sourceItem in data)
                 {
+                    if (souldDeselctItem)
+                        sourceItem.IsSelected = false;
                     dropInfo.TargetCollection.Insert(idx++, sourceItem);
+                }
+
+                var focusItem = dragInfo?.DirectSourceItem ?? data.FirstOrDefault();
+
+                var selectItemCommand = dropInfo.TargetItem.ParentTreeView.SelectItemCommand;
+                if (souldDeselctItem && selectItemCommand.CanExecute(dropInfo.TargetItem.Item))
+                    selectItemCommand.Execute(dropInfo.TargetItem.Item);
+                else if (selectItemCommand.CanExecute(focusItem))
+                {
+                    selectItemCommand.Execute(focusItem);
+                    foreach (var sourceItem in data)
+                    {
+                        sourceItem.IsSelected = true;
+                    }
                 }
             }
             else
@@ -180,8 +200,10 @@ namespace SmartCmdArgs.View
     {
         public Point DragStartPoint { get; }
         public MouseButton DragMouseButton { get; }
-        public TreeViewItemEx DirectVisualSourceItem { get; }
         public TreeViewEx VisualSource { get; }
+
+        public TreeViewItemEx DirectVisualSourceItem { get; }
+        public CmdBase DirectSourceItem { get; }
 
         public List<TreeViewItemEx> VisualSourceItems { get; private set; }
         public List<CmdBase> SourceItems { get; private set; }
@@ -193,6 +215,7 @@ namespace SmartCmdArgs.View
             DragStartPoint = e.GetPosition(directVisualSourceItem);
             DragMouseButton = e.ChangedButton;
             DirectVisualSourceItem = directVisualSourceItem;
+            DirectSourceItem = directVisualSourceItem.Item;
             VisualSource = directVisualSourceItem.ParentTreeView;
         }
 
