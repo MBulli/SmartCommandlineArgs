@@ -285,13 +285,12 @@ namespace SmartCmdArgs.View
                     if (mousePosition.Y < itemHeight * 0.25)
                         InsertPosition = RelativInsertPosition.BeforeTargetItem;
                     else if (mousePosition.Y < itemHeight * 0.75
-                             || mousePosition.Y < 0
-                             || mousePosition.Y > itemHeight)
+                             || mousePosition.Y < 0)
                         InsertPosition = RelativInsertPosition.IntoTargetItem;
                     else
                     {
                         InsertPosition = RelativInsertPosition.AfterTargetItem;
-                        if (TargetItem.IsExpanded && TargetItem.HasItems)
+                        if (TargetItem.IsExpanded && TargetItem.HasItems && mousePosition.Y <= itemHeight)
                             InsertPosition |= RelativInsertPosition.IntoTargetItem;
                     }
                 }
