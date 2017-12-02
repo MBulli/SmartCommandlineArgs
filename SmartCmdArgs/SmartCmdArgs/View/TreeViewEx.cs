@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Microsoft.VisualStudio.Composition.Tasks;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View
@@ -53,6 +55,10 @@ namespace SmartCmdArgs.View
             nameof(ToggleSelectedCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand ToggleSelectedCommand { get => (ICommand)GetValue(ToggleSelectedCommandProperty); set => SetValue(ToggleSelectedCommandProperty, value); }
 
+        public static readonly DependencyProperty SelectIndexCommandProperty = DependencyProperty.Register(
+            nameof(SelectIndexCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public ICommand SelectIndexCommand { get => (ICommand)GetValue(SelectIndexCommandProperty); set => SetValue(SelectIndexCommandProperty, value); }
+
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -77,7 +83,28 @@ namespace SmartCmdArgs.View
         private static bool IsShiftPressed => (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 
         public IEnumerable<TreeViewItemEx> SelectedTreeViewItems => GetTreeViewItems(this, true).Where(GetIsItemSelected);
-        
+
+        public TreeViewEx()
+        {
+            DataContextChanged += OnDataContextChanged;            
+        }
+
+        private void OnDataContextChanged(object o, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+        {
+            SelectIndexCommand = new RelayCommand<int>(idx =>
+            {
+                var curIdx = 0;
+                foreach (var treeViewItem in GetTreeViewItems(this, false))
+                {
+                    SetIsItemSelected(treeViewItem, idx == curIdx);
+                    if (idx == curIdx)
+                        treeViewItem.Focus();
+                    curIdx++;
+                }
+            });
+        }
+
+
         public void ChangedFocusedItem(TreeViewItemEx item)
         {
             if (Keyboard.IsKeyDown(Key.Up)
@@ -174,11 +201,8 @@ namespace SmartCmdArgs.View
                 _lastItemSelected = tvItem;
             }
         }
-        private static IEnumerable<TreeViewItemEx> GetTreeViewItems(ItemsControl parentItem, bool includeCollapsedItems, List<TreeViewItemEx> itemList = null)
+        private static IEnumerable<TreeViewItemEx> GetTreeViewItems(ItemsControl parentItem, bool includeCollapsedItems)
         {
-            if (itemList == null)
-                itemList = new List<TreeViewItemEx>();
-
             for (var index = 0; index < parentItem.Items.Count; index++)
             {
                 var tvItem = parentItem.ItemContainerGenerator.ContainerFromIndex(index) as TreeViewItemEx;
@@ -187,7 +211,7 @@ namespace SmartCmdArgs.View
                 yield return tvItem;
                 if (includeCollapsedItems || tvItem.IsExpanded)
                 {
-                    foreach (var item in GetTreeViewItems(tvItem, includeCollapsedItems, itemList))
+                    foreach (var item in GetTreeViewItems(tvItem, includeCollapsedItems))
                         yield return item;
                 }
             }
@@ -218,7 +242,7 @@ namespace SmartCmdArgs.View
             }
             args.Handled = true;
         }
-        
+
         protected override void OnMouseMove(MouseEventArgs e) => DragDrop.OnMouseMove(this, e);
 
         protected override void OnDragEnter(DragEventArgs e)

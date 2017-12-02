@@ -349,17 +349,24 @@ namespace SmartCmdArgs.ViewModel
             Parent?.OnChildSelectionChanged(e);
         }
         
-        public IEnumerator<CmdBase> GetEnumerator()
+        public IEnumerable<CmdBase> GetEnumerable(bool useView = false, bool includeSelf = false, bool includeCollapsed = true)
         {
-            foreach (var item in Items)
+            if (includeSelf)
+                yield return this;
+            foreach (var item in useView ? ItemsView.Cast<CmdBase>() : Items)
             {
                 yield return item;
-                if (item is CmdContainer con)
+                if (item is CmdContainer con && (con.IsExpanded || includeCollapsed))
                 {
-                    foreach (var conItem in con)
+                    foreach (var conItem in con.GetEnumerable(useView, false, includeCollapsed))
                         yield return conItem;
                 }
             }
+        }
+
+        public IEnumerator<CmdBase> GetEnumerator()
+        {
+            return GetEnumerable().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

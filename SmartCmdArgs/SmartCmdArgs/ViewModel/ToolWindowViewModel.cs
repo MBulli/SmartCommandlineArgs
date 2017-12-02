@@ -73,6 +73,8 @@ namespace SmartCmdArgs.ViewModel
         
         public RelayCommand CutItemsCommand { get; }
 
+        public RelayCommand<int> SelectIndexCommand { get; set; }
+
         public event EventHandler CommandLineChanged;
 
         public ToolWindowViewModel()
@@ -186,12 +188,16 @@ namespace SmartCmdArgs.ViewModel
 
         private void RemoveSelectedItems()
         {
-            // This will eventually bubble down to the DataGridView
+            var indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
+                .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
+                .TakeWhile(item => !item.IsSelected).Count();
             foreach (var item in TreeViewModel.SelectedItems.ToList())
             {
                 item.Parent.Items.Remove(item);
             }
             TreeViewModel.SelectedItems.Clear();
+            if (SelectIndexCommand.CanExecute(indexToSelect))
+                SelectIndexCommand.Execute(indexToSelect);
         }
 
         public void PopulateFromProjectData(Project project, ToolWindowStateProjectData data)

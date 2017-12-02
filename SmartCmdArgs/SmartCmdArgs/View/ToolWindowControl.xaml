@@ -24,6 +24,7 @@
         <Grid Visibility="{Binding TreeViewModel.StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=False}}">
             <local:TreeViewEx x:Name="treeView"
                               ItemsSource="{Binding TreeViewModel.TreeItemsView}"
+                              SelectIndexCommand="{Binding SelectIndexCommand, Mode=OneWayToSource}"
                               Style="{StaticResource TreeViewVS}"
                               CopyCommand="{Binding CopySelectedItemsCommand}"
                               PasteCommand="{Binding PasteItemsCommand}"
