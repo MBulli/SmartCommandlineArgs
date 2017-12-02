@@ -199,11 +199,16 @@ namespace SmartCmdArgs.ViewModel
             var indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
                 .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
                 .TakeWhile(item => !item.IsSelected).Count();
+
             foreach (var item in TreeViewModel.SelectedItems.ToList())
             {
                 item.Parent.Items.Remove(item);
             }
             TreeViewModel.SelectedItems.Clear();
+
+            indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
+                .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
+                .Take(indexToSelect + 1).Count() - 1;
             if (SelectIndexCommand.CanExecute(indexToSelect))
                 SelectIndexCommand.Execute(indexToSelect);
         }
