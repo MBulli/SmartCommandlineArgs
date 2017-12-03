@@ -15,7 +15,7 @@ namespace SmartCmdArgs.Logic
     {
         public HashSet<Guid> CheckedArguments = new HashSet<Guid>();
         public HashSet<Guid> ExpandedContainer = new HashSet<Guid>();
-        public Dictionary<string, ToolWindowStateProjectData> ProjectArguments = new Dictionary<string, ToolWindowStateProjectData>();
+        public Dictionary<Guid, ToolWindowStateProjectData> ProjectArguments = new Dictionary<Guid, ToolWindowStateProjectData>();
     }
 
     public class ToolWindowStateProjectData : ListEntryData

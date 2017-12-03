@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
@@ -221,9 +222,10 @@ namespace SmartCmdArgs.ViewModel
                 SelectIndexCommand.Execute(indexToSelect);
         }
 
-        public void PopulateFromProjectData(Project project, ToolWindowStateProjectData data)
+        public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)
         {
-            TreeViewModel.Projects[project.UniqueName] = new CmdProject(data.Id, Guid.Parse(project.Kind), project.UniqueName, project.Name, ListEntriesToCmdObjects(data.Items));
+            var guid = project.GetGuid();
+            TreeViewModel.Projects[guid] = new CmdProject(guid, project.GetKind(), project.GetDisplayName(), ListEntriesToCmdObjects(data.Items));
 
             IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
             {
@@ -237,14 +239,11 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public void RenameProject(string oldName, string newName, string newDisplayName)
+        public void RenameProject(IVsHierarchy project)
         {
-            if (TreeViewModel.Projects.TryGetValue(oldName, out CmdProject cmdProject))
+            if (TreeViewModel.Projects.TryGetValue(project.GetGuid(), out CmdProject cmdProject))
             {
-                TreeViewModel.Projects.Remove(oldName);
-                cmdProject.UniqueName = newName;
-                cmdProject.Value = newDisplayName;
-                TreeViewModel.Projects.Add(newName, cmdProject);
+                cmdProject.Value = project.GetDisplayName();
             }
         }
 

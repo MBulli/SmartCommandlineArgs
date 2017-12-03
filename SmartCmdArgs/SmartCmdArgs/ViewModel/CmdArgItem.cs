@@ -388,24 +388,22 @@ namespace SmartCmdArgs.ViewModel
         {
             get => filter; set { filter = value; RefreshFilters(); }
         }
-
-        public string UniqueName { get; set; }
+        
         public Guid Kind { get; set; }
         
-        public CmdProject(Guid id, Guid kind, string uniqueName, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
+        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
             : base(id, displayName, items, isExpanded)
         {
-            UniqueName = uniqueName;
             Kind = kind;
         }
 
-        public CmdProject(Guid kind, string uniqueName, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
-            : this(Guid.NewGuid(), kind, uniqueName, displayName, items, isExpanded)
+        public CmdProject(Guid kind, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
+            : this(Guid.NewGuid(), kind, displayName, items, isExpanded)
         { }
 
         public override CmdBase Copy()
         {
-            return new CmdProject(Kind, UniqueName, Value, Items.Select(cmd => cmd.Copy())) {isExpanded = isExpanded, Filter = Filter};
+            throw new NotImplementedException();
         }
 
         public override void OnChildSelectionChanged(CmdBase e)

@@ -14,12 +14,12 @@ namespace SmartCmdArgs.ViewModel
 {
     public class TreeViewModel : PropertyChangedBase
     {
-        private ObservableDictionary<string, CmdProject> projects;
+        private ObservableDictionary<Guid, CmdProject> projects;
         private ObservableCollection<CmdProject> startupProjects;
         private object treeitems;
         private bool showAllProjects;
 
-        public ObservableDictionary<string, CmdProject> Projects => projects;
+        public ObservableDictionary<Guid, CmdProject> Projects => projects;
 
         public object TreeItems
         {
@@ -63,7 +63,7 @@ namespace SmartCmdArgs.ViewModel
 
         public TreeViewModel()
         {
-            projects = new ObservableDictionary<string, CmdProject>();
+            projects = new ObservableDictionary<Guid, CmdProject>();
             projects.CollectionChanged += OnProjectsChanged;
             treeitems = null;
 
@@ -91,11 +91,11 @@ namespace SmartCmdArgs.ViewModel
             }
             else
             {
-                var removedKeys = new HashSet<string>();
+                var removedKeys = new HashSet<Guid>();
                 if (e.Action == NotifyCollectionChangedAction.Remove
                     || e.Action == NotifyCollectionChangedAction.Replace)
                 {
-                    foreach (var item in e.OldItems.Cast<KeyValuePair<string, CmdProject>>())
+                    foreach (var item in e.OldItems.Cast<KeyValuePair<Guid, CmdProject>>())
                     {
                         item.Value.ParentTreeViewModel = null;
                         if (startupProjects.Remove(item.Value) && e.Action == NotifyCollectionChangedAction.Replace)
@@ -106,7 +106,7 @@ namespace SmartCmdArgs.ViewModel
                 if (e.Action == NotifyCollectionChangedAction.Replace
                     || e.Action == NotifyCollectionChangedAction.Add)
                 {
-                    foreach (var item in e.NewItems.Cast<KeyValuePair<string, CmdProject>>())
+                    foreach (var item in e.NewItems.Cast<KeyValuePair<Guid, CmdProject>>())
                     {
                         item.Value.ParentTreeViewModel = this;
                         if (e.Action == NotifyCollectionChangedAction.Replace && removedKeys.Contains(item.Key))

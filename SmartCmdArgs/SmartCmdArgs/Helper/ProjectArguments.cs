@@ -9,6 +9,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.VCProjectEngine;
 
 namespace SmartCmdArgs.Helper
@@ -178,31 +179,26 @@ namespace SmartCmdArgs.Helper
             } },
         };
 
-        public static bool IsSupportedProject(EnvDTE.Project project)
-        {
-            return project != null && supportedProjects.ContainsKey(Guid.Parse(project.Kind));
-        }
-
         public static bool IsSupportedProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy project)
         {
-            return IsSupportedProject(project?.GetExtObject() as EnvDTE.Project);
+            return project != null && supportedProjects.ContainsKey(project.GetKind());
         }
 
-        public static void AddAllArguments(EnvDTE.Project project, List<string> allArgs)
+        public static void AddAllArguments(IVsHierarchy project, List<string> allArgs)
         {
             ProjectArgumentsHandlers handler;
-            if (supportedProjects.TryGetValue(Guid.Parse(project.Kind), out handler))
+            if (supportedProjects.TryGetValue(project.GetKind(), out handler))
             {
-                handler.GetAllArguments(project, allArgs);
+                handler.GetAllArguments(project.GetProject(), allArgs);
             }
         }
 
-        public static void SetArguments(EnvDTE.Project project, string arguments)
+        public static void SetArguments(IVsHierarchy project, string arguments)
         {
             ProjectArgumentsHandlers handler;
-            if (supportedProjects.TryGetValue(Guid.Parse(project.Kind), out handler))
+            if (supportedProjects.TryGetValue(project.GetKind(), out handler))
             {
-                handler.SetArguments(project, arguments);
+                handler.SetArguments(project.GetProject(), arguments);
             }
         }
     }
