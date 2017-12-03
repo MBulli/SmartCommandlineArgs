@@ -12,12 +12,15 @@
         <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
         <Setter Property="BorderThickness" Value="0" />
     </Style>
-    
-    <Style x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
+
+    <Style x:Key="ExpandCollapseToggleStyle" TargetType="local:ToggleButtonEx">
         <Setter Property="Focusable" Value="False" />
+        <Setter Property="ExpandedStroke" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphBrushKey}}"/>
+        <Setter Property="CollapsedStroke" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphBrushKey}}"/>
+        <Setter Property="CollapsedFill" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ToggleButton">
+                <ControlTemplate TargetType="local:ToggleButtonEx">
                     <Grid Background="Transparent">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CheckStates">
@@ -43,19 +46,22 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Margin="1,1,4,1"
-                                Data="M 4 0 L 8 4 L 4 8 Z"
-                                Fill="{DynamicResource {x:Static vs:TreeViewColors.GlyphBrushKey}}"/>
+                                Data="M 4.5 0 L 9 4.5 L 4.5 9 Z"
+                                Stroke="{TemplateBinding CollapsedStroke}"
+                                Fill="{TemplateBinding CollapsedFill}"/>
                         <Path x:Name="Expanded"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Margin="1,1,4,1"
-                                Data="M 0 4 L 8 4 L 4 8 Z"
+                                Data="M 9 3.45 L 9 9 L 2.64 9 Z"
                                 Visibility="Hidden"
+                                Stroke="{TemplateBinding ExpandedStroke}"
                                 Fill="{DynamicResource {x:Static vs:TreeViewColors.GlyphBrushKey}}"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Collapsed" Property="Fill" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphMouseOverBrushKey}}" />
+                            <Setter Property="CollapsedStroke" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphMouseOverBrushKey}}" />
+                            <Setter Property="ExpandedStroke" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphMouseOverBrushKey}}" />
                             <Setter TargetName="Expanded" Property="Fill" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphMouseOverBrushKey}}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -93,7 +99,7 @@
                                 <ColumnDefinition Width="*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
                             
-                            <ToggleButton x:Name="Expander" 
+                            <local:ToggleButtonEx x:Name="Expander" 
                                             Grid.Column="0" Grid.Row="0"
                                             ClickMode="Press"
                                             IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
@@ -115,6 +121,15 @@
                         <Trigger Property="IsExpanded" Value="false">
                             <Setter Property="Visibility" TargetName="ItemsHost" Value="Collapsed"/>
                         </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="local:TreeViewEx.IsItemSelected" Value="True"/>
+                                <Condition SourceName="Expander" Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Expander" Property="ExpandedStroke" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphBrushKey}}"/>
+                            <Setter TargetName="Expander" Property="CollapsedStroke" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphBrushKey}}"/>
+                            <Setter TargetName="Expander" Property="CollapsedFill" Value="{DynamicResource {x:Static vs:TreeViewColors.GlyphBrushKey}}"/>
+                        </MultiTrigger>
                         <Trigger Property="HasItems" Value="false">
                             <Setter Property="Visibility" TargetName="Expander" Value="Hidden"/>
                         </Trigger>
