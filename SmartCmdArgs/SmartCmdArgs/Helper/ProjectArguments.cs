@@ -139,40 +139,40 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        private static Dictionary<string, ProjectArgumentsHandlers> supportedProjects = new Dictionary<string, ProjectArgumentsHandlers>()
+        private static Dictionary<Guid, ProjectArgumentsHandlers> supportedProjects = new Dictionary<Guid, ProjectArgumentsHandlers>()
         {
             // C#
-            {"{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", new ProjectArgumentsHandlers() {
+            {ProjectKinds.CS, new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "StartArguments"),
                 GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
             } },
             // VB.NET
-            {"{F184B08F-C81C-45F6-A57F-5ABD9991F28F}", new ProjectArgumentsHandlers() {
+            {ProjectKinds.VB, new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "StartArguments"),
                 GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
             } },
             // C/C++
-            {"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}", new ProjectArgumentsHandlers() {
+            {ProjectKinds.CPP, new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetVCProjEngineArguments(project, arguments),
                 GetAllArguments = (project, allArgs) => GetVCProjEngineAllArguments(project, allArgs)
             } },
             // Python
-            {"{888888a0-9f3d-457c-b088-3a5042f75d52}", new ProjectArgumentsHandlers() {
+            {ProjectKinds.Py, new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetSingleConfigArgument(project, arguments, "CommandLineArguments"),
                 GetAllArguments = (project, allArgs) => GetSingleConfigAllArguments(project, allArgs, "CommandLineArguments")
             } },
             // Node.js
-            {"{9092aa53-fb77-4645-b42d-1ccca6bd08bd}", new ProjectArgumentsHandlers() {
+            {ProjectKinds.Node, new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetSingleConfigArgument(project, arguments, "ScriptArguments"),
                 GetAllArguments = (project, allArgs) => GetSingleConfigAllArguments(project, allArgs, "ScriptArguments")
             } },
             // C# - DotNetCore
-            {"{9A19103F-16F7-4668-BE54-9A1E7A4F7556}", new ProjectArgumentsHandlers() {
+            {ProjectKinds.CSCore, new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetDotNetCoreProjectArguments(project, arguments),
                 GetAllArguments = (project, allArgs) => GetDotNetCoreProjectAllArguments(project, allArgs)
             } },
             // F#
-            {"{f2a71f9b-5d33-465a-a702-920d77279786}", new ProjectArgumentsHandlers() {
+            {ProjectKinds.FS, new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "StartArguments"),
                 GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
             } },
@@ -180,7 +180,7 @@ namespace SmartCmdArgs.Helper
 
         public static bool IsSupportedProject(EnvDTE.Project project)
         {
-            return project != null && supportedProjects.ContainsKey(project.Kind);
+            return project != null && supportedProjects.ContainsKey(Guid.Parse(project.Kind));
         }
 
         public static bool IsSupportedProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy project)
@@ -191,7 +191,7 @@ namespace SmartCmdArgs.Helper
         public static void AddAllArguments(EnvDTE.Project project, List<string> allArgs)
         {
             ProjectArgumentsHandlers handler;
-            if (supportedProjects.TryGetValue(project.Kind, out handler))
+            if (supportedProjects.TryGetValue(Guid.Parse(project.Kind), out handler))
             {
                 handler.GetAllArguments(project, allArgs);
             }
@@ -200,10 +200,21 @@ namespace SmartCmdArgs.Helper
         public static void SetArguments(EnvDTE.Project project, string arguments)
         {
             ProjectArgumentsHandlers handler;
-            if (supportedProjects.TryGetValue(project.Kind, out handler))
+            if (supportedProjects.TryGetValue(Guid.Parse(project.Kind), out handler))
             {
                 handler.SetArguments(project, arguments);
             }
         }
+    }
+
+    static class ProjectKinds
+    {
+        public static readonly Guid CS = Guid.Parse("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}");
+        public static readonly Guid VB = Guid.Parse("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}");
+        public static readonly Guid CPP = Guid.Parse("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}");
+        public static readonly Guid Py = Guid.Parse("{888888a0-9f3d-457c-b088-3a5042f75d52}");
+        public static readonly Guid Node = Guid.Parse("{9092aa53-fb77-4645-b42d-1ccca6bd08bd}");
+        public static readonly Guid CSCore = Guid.Parse("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}");
+        public static readonly Guid FS = Guid.Parse("{f2a71f9b-5d33-465a-a702-920d77279786}");
     }
 }

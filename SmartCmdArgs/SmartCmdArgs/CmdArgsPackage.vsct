@@ -20,6 +20,8 @@
   <!--This header contains the command ids for the menus provided by the shell. -->
   <Extern href="vsshlids.h"/>
 
+  <Include href="KnownImageIds.vsct"/>
+  
   <!--The Commands section is where commands, menus, and menu groups are defined.
       This section uses a Guid to identify the package that provides the command defined inside it. -->
   <Commands package="guidCmdArgsToolWindowPackage">
@@ -81,7 +83,8 @@
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
-        <Icon guid="guidToolBarImages" id="bmpAddIcon" />
+        <Icon guid="ImageCatalogGuid" id="AddFolder" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Add new group</ButtonText>
         </Strings>
@@ -95,14 +98,16 @@
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" />
-        <Icon guid="guidToolBarImages" id="bmpUpArrowIcon" />
+        <Icon guid="ImageCatalogGuid" id="MoveUp" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Move selected rows up</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" />
-        <Icon guid="guidToolBarImages" id="bmpDownArrowIcon" />
+        <Icon guid="ImageCatalogGuid" id="MoveDown" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Move selected rows down</ButtonText>
         </Strings>

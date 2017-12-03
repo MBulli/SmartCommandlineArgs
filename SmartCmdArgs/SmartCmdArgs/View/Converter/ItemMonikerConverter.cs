@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View.Converter
@@ -23,8 +24,17 @@ namespace SmartCmdArgs.View.Converter
                 else
                     return KnownMonikers.FolderClosed;
             }
-            if (item is CmdProject)
+            if (item is CmdProject prj)
+            {
+                if (prj.Kind == ProjectKinds.CS) return KnownMonikers.CSProjectNode;
+                if (prj.Kind == ProjectKinds.CSCore) return KnownMonikers.CSProjectNode;
+                if (prj.Kind == ProjectKinds.CPP) return KnownMonikers.CPPProjectNode;
+                if (prj.Kind == ProjectKinds.VB) return KnownMonikers.VBProjectNode;
+                if (prj.Kind == ProjectKinds.FS) return KnownMonikers.FSProjectNode;
+                if (prj.Kind == ProjectKinds.Node) return KnownMonikers.JSProjectNode;
+                if (prj.Kind == ProjectKinds.Py) return KnownMonikers.PYProjectNode;
                 return KnownMonikers.CSProjectNode;
+            }
             return null;
         }
 

@@ -390,20 +390,22 @@ namespace SmartCmdArgs.ViewModel
         }
 
         public string UniqueName { get; set; }
-
-        public CmdProject(Guid id, string uniqueName, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
+        public Guid Kind { get; set; }
+        
+        public CmdProject(Guid id, Guid kind, string uniqueName, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
             : base(id, displayName, items, isExpanded)
         {
             UniqueName = uniqueName;
+            Kind = kind;
         }
 
-        public CmdProject(string uniqueName, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
-            : this(Guid.NewGuid(), uniqueName, displayName, items, isExpanded)
+        public CmdProject(Guid kind, string uniqueName, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
+            : this(Guid.NewGuid(), kind, uniqueName, displayName, items, isExpanded)
         { }
 
         public override CmdBase Copy()
         {
-            return new CmdProject(UniqueName, Value, Items.Select(cmd => cmd.Copy())) {isExpanded = isExpanded, Filter = Filter};
+            return new CmdProject(Kind, UniqueName, Value, Items.Select(cmd => cmd.Copy())) {isExpanded = isExpanded, Filter = Filter};
         }
 
         public override void OnChildSelectionChanged(CmdBase e)
