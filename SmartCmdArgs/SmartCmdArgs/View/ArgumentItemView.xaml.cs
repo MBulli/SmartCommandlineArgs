@@ -15,6 +15,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using EnvDTE80;
+using Microsoft.VisualStudio.Imaging;
+using SmartCmdArgs.View.Converter;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View
@@ -35,11 +37,31 @@ namespace SmartCmdArgs.View
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            BindingOperations.ClearBinding(Icon, CrispImage.MonikerProperty);
+
             if (e.OldValue != null)
                 ((CmdBase)e.OldValue).EditModeChanged -= OnItemEditModeChanged;
 
             if (e.NewValue != null)
+            {
                 ((CmdBase)e.NewValue).EditModeChanged += OnItemEditModeChanged;
+
+                if (e.NewValue is CmdContainer con)
+                {
+                    MultiBinding bind = new MultiBinding
+                    {
+                        Mode = BindingMode.OneWay,
+                        Converter = new ItemMonikerConverter()
+                    };
+                    bind.Bindings.Add(new Binding {Source = con});
+                    bind.Bindings.Add(new Binding
+                    {
+                        Source = con,
+                        Path = new PropertyPath(nameof(CmdContainer.IsExpanded))
+                    });
+                    Icon.SetBinding(CrispImage.MonikerProperty, bind);
+                }
+            }
         }
 
         private void OnItemEditModeChanged(object sender, CmdBase.EditMode e)
