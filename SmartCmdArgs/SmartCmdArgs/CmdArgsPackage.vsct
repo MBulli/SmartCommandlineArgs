@@ -140,6 +140,7 @@
     <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" editor="guidToolWindow" key1="VK_DELETE"/>
     <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" editor="guidToolWindow" key1="VK_UP" mod1="CONTROL"/>
     <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" editor="guidToolWindow" key1="VK_DOWN" mod1="CONTROL"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarCopyCommandlineCommandId" editor="guidToolWindow" key1="C" mod1="CONTROL ALT"/>
   </KeyBindings>
 
   <Symbols>
