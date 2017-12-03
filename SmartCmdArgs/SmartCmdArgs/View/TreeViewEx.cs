@@ -88,6 +88,8 @@ namespace SmartCmdArgs.View
 
         public IEnumerable<TreeViewItemEx> SelectedTreeViewItems => GetTreeViewItems(this, true).Where(GetIsItemSelected);
 
+        public IEnumerable<TreeViewItemEx> VisibleTreeViewItems => GetTreeViewItems(this, false);
+
         public TreeViewEx()
         {
             DataContextChanged += OnDataContextChanged;            
@@ -310,6 +312,12 @@ namespace SmartCmdArgs.View
 
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(ParentTreeView, this.Level+1);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
+        
+        public event KeyEventHandler HandledKeyDown
+        {
+            add => AddHandler(KeyDownEvent, value, true);
+            remove => RemoveHandler(KeyDownEvent, value);
+        }
 
         public TreeViewItemEx(TreeViewEx parentTreeView, int level = 0)
         {
@@ -319,6 +327,22 @@ namespace SmartCmdArgs.View
             headerBorder = new Lazy<FrameworkElement>(() => (FrameworkElement)GetTemplateChild("HeaderBorder"));
 
             DataContextChanged += OnDataContextChanged;
+
+            HandledKeyDown += OnHandledKeyDown;
+        }
+
+        private void OnHandledKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return && !Item.IsInEditMode && Item.IsSelected)
+            {
+                var items = ParentTreeView.VisibleTreeViewItems.ToList();
+                var indexToSelect = items.IndexOf(this);
+                if (indexToSelect >= 0)
+                {
+                    indexToSelect = Math.Min(items.Count - 1, indexToSelect + 1);
+                    ParentTreeView.SelectIndexCommand.Execute(indexToSelect);
+                }
+            }
         }
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -348,7 +372,7 @@ namespace SmartCmdArgs.View
                 SetBinding(IsExpandedProperty, bind);
             }
         }
-        
+
         protected override void OnTextInput(TextCompositionEventArgs e)
         {
             if (IsFocused 
