@@ -131,7 +131,7 @@ namespace SmartCmdArgs.ViewModel
                     TreeViewModel.ToggleSelected();
                 }, canExecute: _ => HasStartupProject());
 
-            CopySelectedItemsCommand = new RelayCommand(CopySelectedItemsToClipboard, canExecute: _ => HasSelectedItems());
+            CopySelectedItemsCommand = new RelayCommand(() => CopySelectedItemsToClipboard(includeProjects: true), canExecute: _ => HasSelectedItems());
 
             PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => HasStartupProject());
 
@@ -149,13 +149,18 @@ namespace SmartCmdArgs.ViewModel
             TreeViewModel.Projects.Clear();
         }
 
-        private void CopySelectedItemsToClipboard()
+        private void CopySelectedItemsToClipboard(bool includeProjects)
         {
-            var selectedItems = TreeViewModel.Projects.Values.SelectMany(prj => prj.SelectedItems).ToList();
-            var set = new HashSet<CmdBase>(selectedItems.OfType<CmdContainer>());
-            var itemsToCopy = selectedItems.Where(x => !set.Contains(x.Parent)).ToList();
+            var selectedItems = TreeViewModel.Projects.Values.SelectMany(prj => prj.GetEnumerable(includeSelf: includeProjects)).Where(item => item.IsSelected).ToList();
+            var set = new HashSet<CmdContainer>(selectedItems.OfType<CmdContainer>());
+            var itemsToCopy = selectedItems.Where(x => !set.Contains(x.Parent));
 
-            Clipboard.SetDataObject(DataObjectGenerator.Genrate(itemsToCopy, includeObject: false));
+            if (includeProjects)
+                itemsToCopy = itemsToCopy.SelectMany(item => item is CmdProject prj ? prj.Items : Enumerable.Repeat(item, 1));
+
+            var itemListToCopy = itemsToCopy.ToList();
+            if (itemListToCopy.Count > 0)
+                Clipboard.SetDataObject(DataObjectGenerator.Genrate(itemListToCopy, includeObject: false));
         }
 
         private void PasteItemsFromClipboard()
@@ -174,7 +179,7 @@ namespace SmartCmdArgs.ViewModel
 
         private void CutItemsToClipboard()
         {
-            CopySelectedItemsToClipboard();
+            CopySelectedItemsToClipboard(includeProjects: false);
             RemoveSelectedItems();
         }
 
@@ -212,14 +217,18 @@ namespace SmartCmdArgs.ViewModel
                 .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
                 .TakeWhile(item => !item.IsSelected).Count();
 
+            bool removedAnItem = false;
             foreach (var item in TreeViewModel.SelectedItems.ToList())
             {
                 if (item.Parent != null)
                 {
                     item.Parent.Items.Remove(item);
                     TreeViewModel.SelectedItems.Remove(item);
+                    removedAnItem = true;
                 }
             }
+            if (!removedAnItem)
+                return;
 
             indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
                 .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
