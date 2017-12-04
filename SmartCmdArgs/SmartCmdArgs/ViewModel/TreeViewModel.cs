@@ -95,15 +95,17 @@ namespace SmartCmdArgs.ViewModel
             }
             else
             {
-                var removedKeys = new HashSet<Guid>();
+                var inStartupProjects = new Dictionary<Guid, CmdProject>();
                 if (e.Action == NotifyCollectionChangedAction.Remove
                     || e.Action == NotifyCollectionChangedAction.Replace)
                 {
                     foreach (var item in e.OldItems.Cast<KeyValuePair<Guid, CmdProject>>())
                     {
                         item.Value.ParentTreeViewModel = null;
-                        if (startupProjects.Remove(item.Value) && e.Action == NotifyCollectionChangedAction.Replace)
-                            removedKeys.Add(item.Key);
+                        if (e.Action == NotifyCollectionChangedAction.Replace && startupProjects.Contains(item.Value))
+                            inStartupProjects.Add(item.Key, item.Value);
+                        else if (e.Action == NotifyCollectionChangedAction.Remove)
+                            startupProjects.Remove(item.Value);
                     }
                 }
 
@@ -113,8 +115,8 @@ namespace SmartCmdArgs.ViewModel
                     foreach (var item in e.NewItems.Cast<KeyValuePair<Guid, CmdProject>>())
                     {
                         item.Value.ParentTreeViewModel = this;
-                        if (e.Action == NotifyCollectionChangedAction.Replace && removedKeys.Contains(item.Key))
-                            startupProjects.Add(item.Value);
+                        if (e.Action == NotifyCollectionChangedAction.Replace && inStartupProjects.TryGetValue(item.Key, out CmdProject value))
+                            startupProjects[startupProjects.IndexOf(value)] = item.Value;
                     }
                 }
             }
