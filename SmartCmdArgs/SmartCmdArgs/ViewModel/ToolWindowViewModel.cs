@@ -66,6 +66,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand CopyCommandlineCommand { get; }
 
+        public RelayCommand ShowAllProjectsCommand { get; }
+
         public RelayCommand ToggleSelectedCommand { get; }
         
         public RelayCommand CopySelectedItemsCommand { get; }
@@ -73,10 +75,6 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand PasteItemsCommand { get; }
         
         public RelayCommand CutItemsCommand { get; }
-
-        public RelayCommand<int> SelectIndexCommand { get; set; }
-
-        public RelayCommand<object> SelectItemCommand { get; set; }
 
         public event EventHandler CommandLineChanged;
 
@@ -88,16 +86,16 @@ namespace SmartCmdArgs.ViewModel
                 () => {
                     var newArg = new CmdArgument(arg: "", isChecked: true);
                     TreeViewModel.AddItemAtFocusedItem(newArg);
-                    if (SelectItemCommand.CanExecute(newArg))
-                        SelectItemCommand.Execute(newArg);
+                    if (TreeViewModel.SelectItemCommand.CanExecute(newArg))
+                        TreeViewModel.SelectItemCommand.Execute(newArg);
                 }, canExecute: _ => HasStartupProject());
 
             AddGroupCommand = new RelayCommand(
                 () => {
                     var newGrp = new CmdGroup(name: "");
                     TreeViewModel.AddItemAtFocusedItem(newGrp);
-                    if (SelectItemCommand.CanExecute(newGrp))
-                        SelectItemCommand.Execute(newGrp);
+                    if (TreeViewModel.SelectItemCommand.CanExecute(newGrp))
+                        TreeViewModel.SelectItemCommand.Execute(newGrp);
                 }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
@@ -122,6 +120,11 @@ namespace SmartCmdArgs.ViewModel
                     string prjCmdArgs = string.Join(" ", enabledEntries);
                     Clipboard.SetText(prjCmdArgs);
                 }, canExecute: _ => HasStartupProject());
+
+            ShowAllProjectsCommand = new RelayCommand(
+                () => {
+                    TreeViewModel.ShowAllProjects = !TreeViewModel.ShowAllProjects;
+                });
 
             ToggleSelectedCommand = new RelayCommand(
                 () => {
@@ -161,7 +164,7 @@ namespace SmartCmdArgs.ViewModel
             if (pastedItems != null && pastedItems.Count > 0)
             {
                 TreeViewModel.AddItemsAtFocusedItem(pastedItems);
-                SelectItemCommand.Execute(pastedItems.First());
+                TreeViewModel.SelectItemCommand.Execute(pastedItems.First());
                 foreach (var pastedItem in pastedItems.Skip(1))
                 {
                     pastedItem.IsSelected = true;
@@ -211,15 +214,18 @@ namespace SmartCmdArgs.ViewModel
 
             foreach (var item in TreeViewModel.SelectedItems.ToList())
             {
-                item.Parent.Items.Remove(item);
+                if (item.Parent != null)
+                {
+                    item.Parent.Items.Remove(item);
+                    TreeViewModel.SelectedItems.Remove(item);
+                }
             }
-            TreeViewModel.SelectedItems.Clear();
 
             indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
                 .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
                 .Take(indexToSelect + 1).Count() - 1;
-            if (SelectIndexCommand.CanExecute(indexToSelect))
-                SelectIndexCommand.Execute(indexToSelect);
+            if (TreeViewModel.SelectIndexCommand.CanExecute(indexToSelect))
+                TreeViewModel.SelectIndexCommand.Execute(indexToSelect);
         }
 
         public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)

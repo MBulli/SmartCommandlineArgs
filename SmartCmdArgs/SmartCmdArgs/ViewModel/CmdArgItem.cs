@@ -37,7 +37,7 @@ namespace SmartCmdArgs.ViewModel
         }
 
         protected bool isSelected;
-        public bool IsSelected {
+        public virtual bool IsSelected {
             get => isSelected;
             set
             {
@@ -381,6 +381,16 @@ namespace SmartCmdArgs.ViewModel
 
         private bool isStartupProject = false;
         public bool IsStartupProject { get => isStartupProject; set => SetAndNotify(value, ref isStartupProject); }
+
+        public override bool IsSelected
+        {
+            get => isSelected;
+            set
+            {
+                SetAndNotify(value, ref isSelected);
+                ParentTreeViewModel?.OnItemSelectionChanged(this);
+            }
+        }
 
         protected override Predicate<CmdBase> FilterPredicate => Filter;
         private Predicate<CmdBase> filter;

@@ -9,6 +9,7 @@ namespace SmartCmdArgs.Helper
 
         protected void SetAndNotify<T>(T newValue, ref T field, [CallerMemberName]string propertyName = null)
         {
+            if (Equals(newValue, field)) return;
             field = newValue;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

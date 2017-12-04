@@ -81,7 +81,7 @@
           <ButtonText>Add new row</ButtonText>
         </Strings>
       </Button>
-      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupId" priority="0x0100" type="Button">
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="ImageCatalogGuid" id="AddFolder" />
         <CommandFlag>IconIsMoniker</CommandFlag>
@@ -119,6 +119,14 @@
           <ButtonText>Copy whole command line to clipboard</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarShowAllProjectsCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" />
+        <Icon guid="ImageCatalogGuid" id="CheckBoxList" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Show all projects</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -136,7 +144,7 @@
   <KeyBindings>
     <!-- sould work with guidKeyBindingsCmdSet and KeyBindingAddCmdId but doesn't -->
     <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddCommandId" editor="guidToolWindow" key1="VK_INSERT"/>
-    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupId" editor="guidToolWindow" key1="VK_INSERT" mod1="CONTROL"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupCommandId" editor="guidToolWindow" key1="VK_INSERT" mod1="CONTROL"/>
     <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" editor="guidToolWindow" key1="VK_DELETE"/>
     <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" editor="guidToolWindow" key1="VK_UP" mod1="CONTROL"/>
     <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" editor="guidToolWindow" key1="VK_DOWN" mod1="CONTROL"/>
@@ -161,7 +169,8 @@
       <IDSymbol name="ToolbarMoveUpCommandId" value="0x1102"/>
       <IDSymbol name="ToolbarMoveDownCommandId" value="0x1103"/>
       <IDSymbol name="ToolbarCopyCommandlineCommandId" value="0x1104"/>
-      <IDSymbol name="ToolbarAddGroupId" value="0x1105"/>
+      <IDSymbol name="ToolbarAddGroupCommandId" value="0x1105"/>
+      <IDSymbol name="ToolbarShowAllProjectsCommandId" value="0x1106"/>
       
       <IDSymbol name="TWToolbar" value="0x1000" />
       <IDSymbol name="TWToolbarGroupAddRemove" value="0x1050" />
@@ -180,10 +189,6 @@
       <IDSymbol name="bmpUpArrowIcon" value="3" />
       <IDSymbol name="bmpDownArrowIcon" value="4" />
       <IDSymbol name="bmpCopyIcon" value="5" />
-    </GuidSymbol>
-
-    <GuidSymbol name="guidKeyBindingsCmdSet" value="{886F463E-7F96-4BA4-BA88-F36D63044A00}">
-      <IDSymbol name="KeyBindingAddCmdId" value="0x1200"/>
     </GuidSymbol>
   </Symbols>
 </CommandTable>

@@ -61,6 +61,10 @@ namespace SmartCmdArgs.ViewModel
 
         public HashSet<CmdBase> SelectedItems { get; }
 
+        public RelayCommand<int> SelectIndexCommand { get; set; }
+
+        public RelayCommand<object> SelectItemCommand { get; set; }
+
         public TreeViewModel()
         {
             projects = new ObservableDictionary<Guid, CmdProject>();
@@ -158,7 +162,8 @@ namespace SmartCmdArgs.ViewModel
         {
             if (ShowAllProjects)
             {
-                TreeItems = projects;
+                TreeItems = startupProjects.Concat(projects.Values.Except(startupProjects)
+                    .OrderBy(p => p.Value, StringComparer.CurrentCultureIgnoreCase)).ToList();
             }
             else
             {
@@ -172,6 +177,10 @@ namespace SmartCmdArgs.ViewModel
                     TreeItems = startupProjects.ToList();
                 }
             }
+
+            SelectedItems.ToList().ForEach(item => item.IsSelected = false);
+            if (SelectIndexCommand?.CanExecute(0) == true)
+                SelectIndexCommand.Execute(0);
         }
 
         public void AddItemAtFocusedItem(CmdBase item)
