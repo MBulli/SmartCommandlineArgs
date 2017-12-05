@@ -198,14 +198,7 @@ namespace SmartCmdArgs.ViewModel
             else if (focusedItem is CmdArgument arg)
             {
                 var insertIdx = arg.Parent.Items.IndexOf(arg) + 1;
-                var collection = arg.Parent.Items;
-                using (collection.OpenBulkChange())
-                {
-                    foreach (var item in items)
-                    {
-                        collection.Insert(insertIdx++, item);
-                    }
-                }
+                arg.Parent.Items.InsertRange(insertIdx, items);
             }
         }
 

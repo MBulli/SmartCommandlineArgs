@@ -71,6 +71,7 @@
     <Compile Include="Helper\Logger.cs" />
     <Compile Include="Helper\ObservableCollectionEx.cs" />
     <Compile Include="Helper\ObservableDictionary.cs" />
+    <Compile Include="Helper\ObservableRangeCollection.cs" />
     <Compile Include="Helper\ProjectArguments.cs" />
     <Compile Include="Helper\SymbolicLinkUtils.cs" />
     <Compile Include="Helper\TreeHelper.cs" />

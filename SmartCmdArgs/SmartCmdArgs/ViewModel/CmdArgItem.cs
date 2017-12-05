@@ -175,7 +175,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public ObservableCollectionEx<CmdBase> Items { get; }
+        public ObservableRangeCollection<CmdBase> Items { get; }
         public ICollectionView ItemsView { get; }
         protected virtual Predicate<CmdBase> FilterPredicate => Parent?.FilterPredicate;
 
@@ -200,7 +200,7 @@ namespace SmartCmdArgs.ViewModel
         {
             this.isExpanded = isExpanded;
 
-            Items = new ObservableCollectionEx<CmdBase>();
+            Items = new ObservableRangeCollection<CmdBase>();
 
             foreach (var item in items ?? Enumerable.Empty<CmdBase>())
             {
@@ -348,7 +348,7 @@ namespace SmartCmdArgs.ViewModel
         {
             Parent?.OnChildSelectionChanged(e);
         }
-        
+
         public IEnumerable<CmdBase> GetEnumerable(bool useView = false, bool includeSelf = false, bool includeCollapsed = true)
         {
             if (includeSelf)
