@@ -40,7 +40,7 @@ namespace SmartCmdArgs.Helper
         /// <summary> 
         /// Insert the elements of the specified collection at the specified index of the ObservableCollection(Of T). 
         /// </summary> 
-        public void InsertRange(int index, IEnumerable<T> collection, NotifyCollectionChangedAction notificationMode = NotifyCollectionChangedAction.Add)
+        public virtual void InsertRange(int index, IEnumerable<T> collection, NotifyCollectionChangedAction notificationMode = NotifyCollectionChangedAction.Add)
         {
             if (notificationMode != NotifyCollectionChangedAction.Add && notificationMode != NotifyCollectionChangedAction.Reset)
                 throw new ArgumentException("Mode must be either Add or Reset for AddRange.", nameof(notificationMode));
@@ -157,7 +157,7 @@ namespace SmartCmdArgs.Helper
         /// false (default) items already existing in the collection will be reused to increase performance.
         /// true - perform regular clear and add, and notify about a reset when done.
         /// </param>
-        public void ReplaceRange(IEnumerable<T> collection, bool reset = false)
+        public virtual void ReplaceRange(IEnumerable<T> collection, bool reset = false)
         {
             if (collection == null)
                 throw new ArgumentNullException(nameof(collection));

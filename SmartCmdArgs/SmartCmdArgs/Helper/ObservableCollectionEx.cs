@@ -166,6 +166,15 @@ namespace SmartCmdArgs.Helper
             Item = item;
         }
     }
+    
+    public class CollectionItemPropertyChangedDetailedEventArgs<T> : PropertyChangedDetailedEventArgs
+    {
+        public T Item { get; }
 
-
+        public CollectionItemPropertyChangedDetailedEventArgs(T item, PropertyChangedDetailedEventArgs e) 
+            : base(e.PropertyName, e.OldValue, e.NewValue, e.PropertyType)
+        {
+            Item = item;
+        }
+    }
 }
