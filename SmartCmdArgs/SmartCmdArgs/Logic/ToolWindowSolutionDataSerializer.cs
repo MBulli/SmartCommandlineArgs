@@ -34,6 +34,7 @@ namespace SmartCmdArgs.Logic
 
             var data = new ToolWindowStateSolutionData();
 
+            data.ShowAllProjects = vm.TreeViewModel.ShowAllProjects;
             data.CheckedArguments = new HashSet<Guid>(vm.TreeViewModel.Projects.Values.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
             data.ExpandedContainer = new HashSet<Guid>(vm.TreeViewModel.Projects.Values.SelectMany(p  => p.ExpandedContainer).Select(con => con.Id)
                                                .Concat(vm.TreeViewModel.Projects.Values.Where(p => p.IsExpanded).Select(p => p.Id)));

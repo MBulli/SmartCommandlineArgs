@@ -13,6 +13,7 @@ namespace SmartCmdArgs.Logic
 {
     public class ToolWindowStateSolutionData
     {
+        public bool ShowAllProjects;
         public HashSet<Guid> CheckedArguments = new HashSet<Guid>();
         public HashSet<Guid> ExpandedContainer = new HashSet<Guid>();
         public Dictionary<Guid, ToolWindowStateProjectData> ProjectArguments = new Dictionary<Guid, ToolWindowStateProjectData>();

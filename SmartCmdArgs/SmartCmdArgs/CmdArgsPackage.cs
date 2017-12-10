@@ -326,6 +326,8 @@ namespace SmartCmdArgs
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
 
+            ToolWindowViewModel.TreeViewModel.ShowAllProjects = solutionData.ShowAllProjects;
+
             // joins data from solution and project
             //  => overrides solution commands for a project if a project json file exists
             //  => keeps all data from the suo file for projects without a json
