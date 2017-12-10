@@ -3,14 +3,22 @@
                     xmlns:local="clr-namespace:SmartCmdArgs.View"
                     xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
                     xmlns:c="clr-namespace:SmartCmdArgs.View.Converter"
-                    xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0">
+                    xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
+                    xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
+                    xmlns:theming="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
+                    xmlns:utilities="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities">
 
     <!-- https://docs.microsoft.com/en-us/dotnet/framework/wpf/controls/treeview-styles-and-templates -->
 
     <Style x:Key="TreeViewVS" TargetType="local:TreeViewEx">
+        <Style.Resources>
+            <utilities:BrushToColorConverter x:Key="BrushToColorConverter"/>
+        </Style.Resources>
         <!-- Colors -->
         <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
         <Setter Property="BorderThickness" Value="0" />
+
+        <Setter Property="theming:ImageThemingUtilities.ImageBackgroundColor" Value="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}" />
     </Style>
 
     <Style x:Key="ExpandCollapseToggleStyle" TargetType="local:ToggleButtonEx">
