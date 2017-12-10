@@ -18,9 +18,9 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
-        public static readonly string DefaultFontFamily = null;
-        public static readonly string MonospaceFontFamily = "Consolas";
-        
+        private static readonly string DefaultFontFamily = null;
+        private static readonly string MonospaceFontFamily = "Consolas";
+
         public TreeViewModel TreeViewModel { get; }
 
         private bool _isInEditMode;
@@ -30,27 +30,28 @@ namespace SmartCmdArgs.ViewModel
             set { _isInEditMode = value; OnNotifyPropertyChanged(); }
         }
 
-        private string _usedFontFamily;
-        public string UsedFontFamily
+        private string itemsFontFamily;
+        public string ItemsFontFamily
         {
-            get => _usedFontFamily;
-            private set { _usedFontFamily = value; OnNotifyPropertyChanged(); }
+            get => itemsFontFamily;
+            private set { SetAndNotify(value, ref itemsFontFamily); }
         }
 
-        private bool _useMonospaceFont;
+        private bool useMonospaceFont;
         public bool UseMonospaceFont
         {
-            get => _useMonospaceFont;
+            get => useMonospaceFont;
             set
             {
-                if (value == _useMonospaceFont)
-                    return;
+                if (value != useMonospaceFont)
+                {
+                    if (value)
+                        ItemsFontFamily = MonospaceFontFamily;
+                    else
+                        ItemsFontFamily = DefaultFontFamily;
 
-                if (value)
-                    UsedFontFamily = MonospaceFontFamily;
-                else
-                    UsedFontFamily = DefaultFontFamily;
-                _useMonospaceFont = value;
+                    SetAndNotify(value, ref useMonospaceFont);
+                }
             }
         }
 

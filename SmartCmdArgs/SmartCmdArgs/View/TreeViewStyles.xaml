@@ -17,6 +17,8 @@
         <!-- Colors -->
         <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
         <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{Binding ItemsFontFamily}" />
+        
 
         <Setter Property="theming:ImageThemingUtilities.ImageBackgroundColor" Value="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}" />
     </Style>
