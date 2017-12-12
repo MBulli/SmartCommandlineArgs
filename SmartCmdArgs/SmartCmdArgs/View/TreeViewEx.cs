@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -152,9 +153,32 @@ namespace SmartCmdArgs.View
             }
         }
 
+        private Timer _groupRenameTimer;
+        private void ScheduleGroupRename(CmdGroup group)
+        {
+            SynchronizationContext context = SynchronizationContext.Current;
+
+            CancleScheduledGroupRename();
+            _groupRenameTimer = new Timer(
+                (ignore) =>
+                {
+                    _groupRenameTimer?.Dispose();
+
+                    context.Post(ignore2 => group.BeginEdit(), null);
+                }, null, System.Windows.Forms.SystemInformation.DoubleClickTime, Timeout.Infinite);
+        }
+
+        private void CancleScheduledGroupRename()
+        {
+            _groupRenameTimer?.Dispose();
+        }
+
         private TreeViewItemEx _lastMouseDownTargetItem;
+        private int _lastClickCount;
         public void MouseLeftButtonDownOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
         {
+            CancleScheduledGroupRename();
+            _lastClickCount = e.ClickCount;
             _lastMouseDownTargetItem = tvItem;
             if (IsCtrlPressed || IsShiftPressed || !SelectedTreeViewItems.Skip(1).Any() || !GetIsItemSelected(tvItem))
             {
@@ -162,12 +186,21 @@ namespace SmartCmdArgs.View
             }
         }
 
+        private TreeViewItemEx _lastMouseUpTargetItem;
         public void MouseLeftButtonUpOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
         {
-            if (IsCtrlPressed || IsShiftPressed || !SelectedTreeViewItems.Skip(1).Any())
+            bool shouldScheduleGroupEdit = Equals(tvItem, _lastMouseUpTargetItem);
+            _lastMouseUpTargetItem = tvItem;
+            if (IsCtrlPressed || IsShiftPressed)
                 return;
 
             if (!Equals(tvItem, _lastMouseDownTargetItem))
+                return;
+
+            if (tvItem.IsFocused && _lastClickCount == 1 && shouldScheduleGroupEdit && tvItem.Item is CmdGroup grp)
+                ScheduleGroupRename(grp);
+
+            if (!SelectedTreeViewItems.Skip(1).Any())
                 return;
 
             SelectedItemChangedInternal(tvItem);
@@ -184,6 +217,16 @@ namespace SmartCmdArgs.View
                     e.Handled = true;
                 }
             }
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            CancleScheduledGroupRename();
+        }
+
+        protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
+        {
+            CancleScheduledGroupRename();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -412,7 +455,7 @@ namespace SmartCmdArgs.View
                 && !Item.IsInEditMode 
                 && !IsCtrlPressed 
                 && ParentTreeView.SelectedTreeViewItems.Take(2).Count() == 1 
-                && (e.ClickCount % 2 == 1 || !(Item is CmdContainer)))
+                && Item is CmdArgument)
             {
                 Item.BeginEdit();
             }
