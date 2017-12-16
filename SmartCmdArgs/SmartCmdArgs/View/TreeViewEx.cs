@@ -137,6 +137,8 @@ namespace SmartCmdArgs.View
                 SelectedItemChangedInternal(item);
             }
 
+            _shouldRenameGroup = false;
+
             if (!GetIsItemSelected(item))
             {
                 var aSelectedItem = SelectedTreeViewItems.FirstOrDefault();
@@ -153,6 +155,7 @@ namespace SmartCmdArgs.View
             }
         }
 
+        private bool _shouldRenameGroup;
         private Timer _groupRenameTimer;
         private void ScheduleGroupRename(CmdGroup group)
         {
@@ -174,30 +177,26 @@ namespace SmartCmdArgs.View
         }
 
         private TreeViewItemEx _lastMouseDownTargetItem;
-        private int _lastClickCount;
         public void MouseLeftButtonDownOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
         {
             CancleScheduledGroupRename();
-            _lastClickCount = e.ClickCount;
+            _shouldRenameGroup = e.ClickCount == 1;
             _lastMouseDownTargetItem = tvItem;
             if (IsCtrlPressed || IsShiftPressed || !SelectedTreeViewItems.Skip(1).Any() || !GetIsItemSelected(tvItem))
             {
                 SelectedItemChangedInternal(tvItem);
             }
         }
-
-        private TreeViewItemEx _lastMouseUpTargetItem;
+        
         public void MouseLeftButtonUpOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
         {
-            bool shouldScheduleGroupEdit = Equals(tvItem, _lastMouseUpTargetItem);
-            _lastMouseUpTargetItem = tvItem;
             if (IsCtrlPressed || IsShiftPressed)
                 return;
 
             if (!Equals(tvItem, _lastMouseDownTargetItem))
                 return;
 
-            if (tvItem.IsFocused && _lastClickCount == 1 && shouldScheduleGroupEdit && tvItem.Item is CmdGroup grp)
+            if (tvItem.IsFocused && _shouldRenameGroup && tvItem.Item is CmdGroup grp)
                 ScheduleGroupRename(grp);
 
             if (!SelectedTreeViewItems.Skip(1).Any())
