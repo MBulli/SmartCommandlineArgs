@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -150,9 +151,7 @@ namespace SmartCmdArgs.Helper
             public void Dispose()
             {
                 this.owner.raiseEvents = true;
-                // HACK: Totaly stupid. Reset would mess up focus of DataGrid
-                this.owner.OnItemPropertyChanged(null, new PropertyChangedEventArgs(""));
-                //this.owner.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                this.owner.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
     }
@@ -167,6 +166,15 @@ namespace SmartCmdArgs.Helper
             Item = item;
         }
     }
+    
+    public class CollectionItemPropertyChangedDetailedEventArgs<T> : PropertyChangedDetailedEventArgs
+    {
+        public T Item { get; }
 
-
+        public CollectionItemPropertyChangedDetailedEventArgs(T item, PropertyChangedDetailedEventArgs e) 
+            : base(e.PropertyName, e.OldValue, e.NewValue, e.PropertyType)
+        {
+            Item = item;
+        }
+    }
 }

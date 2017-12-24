@@ -11,31 +11,52 @@ using Newtonsoft.Json.Serialization;
 
 namespace SmartCmdArgs.Logic
 {
-    public class ToolWindowStateSolutionData : Dictionary<string, ToolWindowStateProjectData>
-    {}
-
-    public class ToolWindowStateProjectData
+    public class ToolWindowStateSolutionData
     {
-        public List<ListEntryData> DataCollection = new List<ListEntryData>();
+        public int FileVersion = 2;
+        public bool ShowAllProjects;
+        public HashSet<Guid> CheckedArguments = new HashSet<Guid>();
+        public HashSet<Guid> ExpandedContainer = new HashSet<Guid>();
+        public Dictionary<Guid, ToolWindowStateProjectData> ProjectArguments = new Dictionary<Guid, ToolWindowStateProjectData>();
+    }
 
-        public class ListEntryData
+    public class ToolWindowStateProjectData : ListEntryData
+    {
+        public int FileVersion = 2;
+
+        public ToolWindowStateProjectData()
         {
-            public Guid Id = Guid.NewGuid();
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public string Command = null;
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            [Obsolete]
-            public string Project = null; // this one is useles
-            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public bool Enabled = false;
+            Items = new List<ListEntryData>();
+        }
+    }
+    
+    public class ListEntryData
+    {
+        public Guid Id = Guid.NewGuid();
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Command = null;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<ListEntryData> Items = null;
 
-            [OnError]
-            public void OnError(StreamingContext context, ErrorContext errorContext)
+        [JsonIgnore]
+        public bool Enabled = false;
+        [JsonIgnore]
+        public bool Expanded = false;
+
+        [JsonIgnore]
+        public IEnumerable<ListEntryData> AllArguments => Items.Where(item => item.Items == null)
+            .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllArguments));
+
+        [JsonIgnore]
+        public IEnumerable<ListEntryData> AllContainer => Items.Where(item => item.Items != null)
+            .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllContainer));
+
+        [OnError]
+        public void OnError(StreamingContext context, ErrorContext errorContext)
+        {
+            if (errorContext?.Member?.ToString() == nameof(Id))
             {
-                if (errorContext?.Member?.ToString() == nameof(Id))
-                {
-                    errorContext.Handled = true;
-                }
+                errorContext.Handled = true;
             }
         }
     }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
@@ -17,25 +18,10 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
-        public static readonly string DefaultFontFamily = null;
-        public static readonly string MonospaceFontFamily = "Consolas";
+        private static readonly string DefaultFontFamily = null;
+        private static readonly string MonospaceFontFamily = "Consolas";
 
-        private Dictionary<string, ListViewModel> solutionArguments; 
-        public Dictionary<string, ListViewModel> SolutionArguments => solutionArguments;
-
-        private ListViewModel _currentArgumentList;
-        public ListViewModel CurrentArgumentList
-        {
-            get { return _currentArgumentList; }
-            set { _currentArgumentList = value; OnNotifyPropertyChanged(); }
-        }
-
-        private string _startupProject;
-        public string StartupProject
-        {
-            get { return _startupProject; }
-            private set { _startupProject = value; OnNotifyPropertyChanged(); }
-        }
+        public TreeViewModel TreeViewModel { get; }
 
         private bool _isInEditMode;
         public bool IsInEditMode
@@ -44,31 +30,34 @@ namespace SmartCmdArgs.ViewModel
             set { _isInEditMode = value; OnNotifyPropertyChanged(); }
         }
 
-        private string _usedFontFamily;
-        public string UsedFontFamily
+        private string itemsFontFamily;
+        public string ItemsFontFamily
         {
-            get => _usedFontFamily;
-            private set { _usedFontFamily = value; OnNotifyPropertyChanged(); }
+            get => itemsFontFamily;
+            private set { SetAndNotify(value, ref itemsFontFamily); }
         }
 
-        private bool _useMonospaceFont;
+        private bool useMonospaceFont;
         public bool UseMonospaceFont
         {
-            get => _useMonospaceFont;
+            get => useMonospaceFont;
             set
             {
-                if (value == _useMonospaceFont)
-                    return;
+                if (value != useMonospaceFont)
+                {
+                    if (value)
+                        ItemsFontFamily = MonospaceFontFamily;
+                    else
+                        ItemsFontFamily = DefaultFontFamily;
 
-                if (value)
-                    UsedFontFamily = MonospaceFontFamily;
-                else
-                    UsedFontFamily = DefaultFontFamily;
-                _useMonospaceFont = value;
+                    SetAndNotify(value, ref useMonospaceFont);
+                }
             }
         }
 
         public RelayCommand AddEntryCommand { get; }
+
+        public RelayCommand AddGroupCommand { get; }
 
         public RelayCommand RemoveEntriesCommand { get; }
 
@@ -78,7 +67,9 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand CopyCommandlineCommand { get; }
 
-        public RelayCommand<CmdArgItem> ToggleItemEnabledCommand { get; }
+        public RelayCommand ShowAllProjectsCommand { get; }
+
+        public RelayCommand ToggleSelectedCommand { get; }
         
         public RelayCommand CopySelectedItemsCommand { get; }
         
@@ -87,50 +78,68 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand CutItemsCommand { get; }
 
         public event EventHandler CommandLineChanged;
-        public event EventHandler<IList> SelectedItemsChanged;
 
         public ToolWindowViewModel()
         {
-            solutionArguments = new Dictionary<string, ListViewModel>();
+            TreeViewModel = new TreeViewModel();
 
             AddEntryCommand = new RelayCommand(
                 () => {
-                    CurrentArgumentList.AddNewItem(command: "", enabled: true);
+                    var newArg = new CmdArgument(arg: "", isChecked: true);
+                    TreeViewModel.AddItemAtFocusedItem(newArg);
+                    if (TreeViewModel.SelectItemCommand.CanExecute(newArg))
+                        TreeViewModel.SelectItemCommand.Execute(newArg);
+                }, canExecute: _ => HasStartupProject());
+
+            AddGroupCommand = new RelayCommand(
+                () => {
+                    var newGrp = new CmdGroup(name: "");
+                    TreeViewModel.AddItemAtFocusedItem(newGrp);
+                    if (TreeViewModel.SelectItemCommand.CanExecute(newGrp))
+                        TreeViewModel.SelectItemCommand.Execute(newGrp);
                 }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
-               () => {
-                         RemoveSelectedItems();
-               }, canExecute: _ => HasStartupProjectAndSelectedItems());
+                () => {
+                    RemoveSelectedItems();
+                }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             MoveEntriesUpCommand = new RelayCommand(
-               () => {
-                       CurrentArgumentList.MoveEntriesUp(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-               }, canExecute: _ => HasStartupProjectAndSelectedItems());
+                () => {
+                    TreeViewModel.MoveSelectedEntries(moveDirection: -1);
+                }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             MoveEntriesDownCommand = new RelayCommand(
-               () => {
-                       CurrentArgumentList.MoveEntriesDown(CurrentArgumentList.SelectedItems.Cast<CmdArgItem>());
-               }, canExecute: _ => HasStartupProjectAndSelectedItems());
+                () => {
+                    TreeViewModel.MoveSelectedEntries(moveDirection: 1);
+                }, canExecute: _ => HasStartupProjectAndSelectedItems());
 
             CopyCommandlineCommand = new RelayCommand(
-               () => {
-                   IEnumerable<string> enabledEntries;
-                   enabledEntries = this.EnabledItemsForCurrentProject().Select(e => e.Command);
-                   string prjCmdArgs = string.Join(" ", enabledEntries);
-                   Clipboard.SetText(prjCmdArgs);
-               }, canExecute: _ => HasStartupProject());
-
-            ToggleItemEnabledCommand = new RelayCommand<CmdArgItem>(
-                (item) => {
-                    CurrentArgumentList.ToogleEnabledForItem(item, Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt));
+                () => {
+                    IEnumerable<string> enabledEntries;
+                    enabledEntries = TreeViewModel.FocusedProject.CheckedArguments.Select(e => e.Value);
+                    string prjCmdArgs = string.Join(" ", enabledEntries);
+                    Clipboard.SetText(prjCmdArgs);
                 }, canExecute: _ => HasStartupProject());
 
-            CopySelectedItemsCommand = new RelayCommand(CopySelectedItemsToClipboard, canExecute: _ => HasSelectedItems());
+            ShowAllProjectsCommand = new RelayCommand(
+                () => {
+                    TreeViewModel.ShowAllProjects = !TreeViewModel.ShowAllProjects;
+                });
+
+            ToggleSelectedCommand = new RelayCommand(
+                () => {
+                    TreeViewModel.ToggleSelected();
+                }, canExecute: _ => HasStartupProject());
+
+            CopySelectedItemsCommand = new RelayCommand(() => CopySelectedItemsToClipboard(includeProjects: true), canExecute: _ => HasSelectedItems());
 
             PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => HasStartupProject());
 
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => HasSelectedItems());
+
+            TreeViewModel.Projects.ItemPropertyChanged += OnArgumentListItemChanged;
+            TreeViewModel.Projects.CollectionChanged += OnArgumentListChanged;
         }
 
         /// <summary>
@@ -138,53 +147,40 @@ namespace SmartCmdArgs.ViewModel
         /// </summary>
         public void Reset()
         {
-            UpdateStartupProject(null);
-
-            solutionArguments.Clear();
+            TreeViewModel.Projects.Clear();
         }
 
-        private void CopySelectedItemsToClipboard()
+        private void CopySelectedItemsToClipboard(bool includeProjects)
         {
-            var dataObject = new DataObject();
+            var selectedItems = TreeViewModel.Projects.Values.SelectMany(prj => prj.GetEnumerable(includeSelf: includeProjects)).Where(item => item.IsSelected).ToList();
+            var set = new HashSet<CmdContainer>(selectedItems.OfType<CmdContainer>());
+            var itemsToCopy = selectedItems.Where(x => !set.Contains(x.Parent));
 
-            var selectedItemsText = string.Join(
-                                        Environment.NewLine,
-                                        from x in CurrentArgumentList.SelectedItems.Cast<CmdArgItem>() select x.Command);
-            dataObject.SetText(selectedItemsText);
+            if (includeProjects)
+                itemsToCopy = itemsToCopy.SelectMany(item => item is CmdProject prj ? prj.Items : Enumerable.Repeat(item, 1));
 
-            var selectedItemsJson = JsonConvert.SerializeObject(
-                from x in CurrentArgumentList.SelectedItems.Cast<CmdArgItem>()
-                select new CmdArgClipboardItem { Enabled = x.Enabled, Command = x.Command });
-            dataObject.SetData(CmdArgsPackage.ClipboardCmdItemFormat, selectedItemsJson);
-
-            Clipboard.SetDataObject(dataObject);
+            var itemListToCopy = itemsToCopy.ToList();
+            if (itemListToCopy.Count > 0)
+                Clipboard.SetDataObject(DataObjectGenerator.Genrate(itemListToCopy, includeObject: false));
         }
 
         private void PasteItemsFromClipboard()
         {
-            var pastedItemsJson = Clipboard.GetDataObject()?.GetData(CmdArgsPackage.ClipboardCmdItemFormat) as string;
-
-            if (pastedItemsJson != null)
+            var pastedItems = DataObjectGenerator.Extract(Clipboard.GetDataObject(), includeObject: false)?.ToList();
+            if (pastedItems != null && pastedItems.Count > 0)
             {
-                var pastedItems = JsonConvert.DeserializeObject<CmdArgClipboardItem[]>(pastedItemsJson);
-                foreach (var item in pastedItems)
+                TreeViewModel.AddItemsAtFocusedItem(pastedItems);
+                TreeViewModel.SelectItemCommand.Execute(pastedItems.First());
+                foreach (var pastedItem in pastedItems.Skip(1))
                 {
-                    CurrentArgumentList.AddNewItem(item.Command, item.Enabled);
-                }
-            }
-            else if (Clipboard.ContainsText())
-            {
-                var pastedItems = Clipboard.GetText().Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var s in pastedItems)
-                {
-                    CurrentArgumentList.AddNewItem(s);
+                    pastedItem.IsSelected = true;
                 }
             }
         }
 
         private void CutItemsToClipboard()
         {
-            CopySelectedItemsToClipboard();
+            CopySelectedItemsToClipboard(includeProjects: false);
             RemoveSelectedItems();
         }
 
@@ -195,7 +191,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if a valid startup project is set</returns>
         private bool HasStartupProject()
         {
-            return _startupProject != null;
+            return TreeViewModel.StartupProjects.Any();
         }
 
         /// <summary>
@@ -204,7 +200,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if any line is selected</returns>
         private bool HasSelectedItems()
         {
-            return CurrentArgumentList?.HasSelectedItems == true;
+            return TreeViewModel.SelectedItems.Count > 0;
         }
 
         /// <summary>
@@ -218,75 +214,53 @@ namespace SmartCmdArgs.ViewModel
 
         private void RemoveSelectedItems()
         {
-            // This will eventually bubble down to the DataGridView
-            System.Windows.Input.ApplicationCommands.Delete.Execute(parameter: null, target: null);
-        }
+            var indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
+                .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
+                .TakeWhile(item => !item.IsSelected).Count();
 
-        public IEnumerable<CmdArgItem> EnabledItemsForCurrentProject()
-        {
-            return CurrentArgumentList?.DataCollection.Where(item => item.Enabled) ?? new CmdArgItem[0];
-        }
-
-        public void PopulateFromProjectData(string projectName, ToolWindowStateProjectData data)
-        {
-            var curListVM = GetListViewModel(projectName);
-            curListVM.DataCollection.Clear();
-            curListVM.DataCollection.AddRange(
-                data.DataCollection.Select(
-                    // TODO check dup key
-                    item => new CmdArgItem {
-                        Id = item.Id,
-                        Command = item.Command,
-                        Enabled = item.Enabled
-                    }));
-        }
-
-        public ListViewModel GetListViewModel(string projectName)
-        {
-            ListViewModel listVM;
-            if (!solutionArguments.TryGetValue(projectName, out listVM))
+            bool removedAnItem = false;
+            foreach (var item in TreeViewModel.SelectedItems.ToList())
             {
-                listVM = new ListViewModel();
-                solutionArguments.Add(projectName, listVM);
+                if (item.Parent != null)
+                {
+                    item.Parent.Items.Remove(item);
+                    TreeViewModel.SelectedItems.Remove(item);
+                    removedAnItem = true;
+                }
             }
-            return listVM;
+            if (!removedAnItem)
+                return;
+
+            indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
+                .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
+                .Take(indexToSelect + 1).Count() - 1;
+            if (TreeViewModel.SelectIndexCommand.CanExecute(indexToSelect))
+                TreeViewModel.SelectIndexCommand.Execute(indexToSelect);
         }
 
-        public bool UpdateStartupProject(string projectName)
+        public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)
         {
-            if (StartupProject == projectName) return false;
-            if (string.IsNullOrEmpty(projectName))
+            var guid = project.GetGuid();
+            TreeViewModel.Projects[guid] = new CmdProject(guid, project.GetKind(), project.GetDisplayName(), ListEntriesToCmdObjects(data.Items));
+
+            IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
             {
-                UnsubscribeToChangeEvents();
-
-                this.StartupProject = null;
-                this.CurrentArgumentList = null;
-
-                Logger.Info("Reset Startup project");
+                foreach (var item in list)
+                {
+                    if (item.Items == null)
+                        yield return new CmdArgument(item.Id, item.Command, item.Enabled);
+                    else
+                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded);
+                }
             }
-            else
-            {
-                UnsubscribeToChangeEvents();
-
-                this.StartupProject = projectName;
-                this.CurrentArgumentList = GetListViewModel(projectName);
-
-                SubscribeToChangeEvents();
-
-                Logger.Info($"Startup project changed to '{projectName}'.");
-            }
-            return true;
         }
 
-        public void RenameProject(string oldName, string newName)
+        public void RenameProject(IVsHierarchy project)
         {
-            if (SolutionArguments.TryGetValue(oldName, out ListViewModel vm))
+            if (TreeViewModel.Projects.TryGetValue(project.GetGuid(), out CmdProject cmdProject))
             {
-                SolutionArguments.Remove(oldName);
-                solutionArguments.Add(newName, vm);
+                cmdProject.Value = project.GetDisplayName();
             }
-            if (StartupProject == oldName)
-                StartupProject = newName;
         }
 
         public void CancelEdit()
@@ -294,28 +268,7 @@ namespace SmartCmdArgs.ViewModel
             System.Windows.Controls.DataGrid.CancelEditCommand.Execute(null, null);
         }
 
-        private void SubscribeToChangeEvents()
-        {
-            if (CurrentArgumentList != null)
-            {
-                CurrentArgumentList.DataCollection.ItemPropertyChanged += OnArgumentListItemChanged;
-                CurrentArgumentList.DataCollection.CollectionChanged += OnArgumentListChanged;
-                CurrentArgumentList.SelectedItemsChanged += OnSelectedItemsChanged;
-            }
-        }
-
-
-        private void UnsubscribeToChangeEvents()
-        {
-            if (CurrentArgumentList != null)
-            {
-                CurrentArgumentList.DataCollection.ItemPropertyChanged -= OnArgumentListItemChanged;
-                CurrentArgumentList.DataCollection.CollectionChanged -= OnArgumentListChanged;
-                CurrentArgumentList.SelectedItemsChanged -= OnSelectedItemsChanged;
-            }
-        }
-
-        private void OnArgumentListItemChanged(object sender, CollectionItemPropertyChangedEventArgs<CmdArgItem> args)
+        private void OnArgumentListItemChanged(object sender, CollectionItemPropertyChangedEventArgs<CmdProject> args)
         {
             OnCommandLineChanged();
         }
@@ -328,11 +281,6 @@ namespace SmartCmdArgs.ViewModel
         protected virtual void OnCommandLineChanged()
         {
             CommandLineChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected virtual void OnSelectedItemsChanged(object obj, IList e)
-        {
-            SelectedItemsChanged?.Invoke(this, e);
         }
     }
 }

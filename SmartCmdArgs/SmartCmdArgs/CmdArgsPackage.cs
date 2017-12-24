@@ -62,7 +62,8 @@ namespace SmartCmdArgs
         /// CmdArgsPackage GUID string.
         /// </summary>
         public const string PackageGuidString = "131b0c0a-5dd0-4680-b261-86ab5387b86e";
-        public const string ClipboardCmdItemFormat = "SmartCommandlineArgs_D11D715E-CBF3-43F2-A1C1-168FD5C48505";
+        public const string DataObjectCmdJsonFormat = "SmartCommandlineArgs_D11D715E-CBF3-43F2-A1C1-168FD5C48505";
+        public const string DataObjectCmdListFormat = "SmartCommandlineArgs_35AD7E71-E0BC-4440-97D9-2E6DA3085BE4";
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
 
         private readonly Regex msBuildPropertyRegex = new Regex(@"\$\((?<propertyName>(?:(?!\$\()[^)])*?)\)", RegexOptions.Compiled);
@@ -76,7 +77,7 @@ namespace SmartCmdArgs
 
         private ToolWindowStateSolutionData toolWindowStateLoadedFromSolution;
 
-        private Dictionary<string, FileSystemWatcher> projectFsWatchers = new Dictionary<string, FileSystemWatcher>();
+        private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
@@ -139,14 +140,14 @@ namespace SmartCmdArgs
                 InitializeForSolution();
             }
             
-            ToolWindowViewModel.SelectedItemsChanged += OnSelectedItemsChanged;
+            ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
             
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
         }
 
-        private void OnSelectedItemsChanged(object sender, System.Collections.IList e)
+        private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
         {
-            vsHelper.UpdateShellCommandUI();
+            vsHelper.UpdateShellCommandUI(false);
         }
 
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)
@@ -163,7 +164,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(stream);
+                toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(stream, vsHelper);
             }
         }
 
@@ -178,9 +179,9 @@ namespace SmartCmdArgs
                 {
                     Logger.Info("VcsSupport is enabled.");
 
-                    foreach (var projectName in ToolWindowViewModel.SolutionArguments.Keys)
+                    foreach (var propjectGuid in ToolWindowViewModel.TreeViewModel.Projects.Keys)
                     {
-                        var project = vsHelper.ProjectForProjectName(projectName);
+                        var project = vsHelper.HierarchyForProjectGuid(propjectGuid);
                         SaveJsonForProject(project);
                     }
                 }
@@ -190,16 +191,17 @@ namespace SmartCmdArgs
             }
         }
 
-        private void SaveJsonForProject(Project project)
+        private void SaveJsonForProject(IVsHierarchy project)
         {
             if (!IsVcsSupportEnabled || project == null)
                 return;
 
-            ListViewModel vm = ToolWindowViewModel.SolutionArguments[project.UniqueName];
+            var guid = project.GetGuid();
+            var vm = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(guid);
             string filePath = FullFilenameForProjectJsonFileFromProject(project);
-            FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(project.UniqueName);
+            FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(guid);
 
-            if (vm.DataCollection.Count != 0)
+            if (vm != null && vm.Items.Any())
             {
                 using (fsWatcher?.TemporarilyDisable())
                 {
@@ -233,28 +235,31 @@ namespace SmartCmdArgs
 
         #endregion
 
-        private void UpdateConfigurationForProject(Project project)
+        private void UpdateConfigurationForProject(IVsHierarchy project)
         {
             if (project == null) return;
+            IEnumerable<CmdArgument> checkedArgs = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid())?.CheckedArguments;
+            if (checkedArgs == null)
+                return;
+
             IEnumerable<string> enabledEntries;
             if (IsMacroEvaluationEnabled)
             {
-                enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(
-                    e => msBuildPropertyRegex.Replace(e.Command,
-                        match => vsHelper.GetMSBuildPropertyValue(project.UniqueName, match.Groups["propertyName"].Value) ?? match.Value));
+                enabledEntries = checkedArgs.Select(
+                    e => msBuildPropertyRegex.Replace(e.Value,
+                        match => vsHelper.GetMSBuildPropertyValue(project, match.Groups["propertyName"].Value) ?? match.Value));
             }
             else
             {
-                enabledEntries = ToolWindowViewModel.EnabledItemsForCurrentProject().Select(e => e.Command);
+                enabledEntries = checkedArgs.Select(e => e.Value);
             }
             string prjCmdArgs = string.Join(" ", enabledEntries);
             ProjectArguments.SetArguments(project, prjCmdArgs);
-            Logger.Info($"Updated Configuration for Project: {project.UniqueName}");
+            Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
-        private void AttachFsWatcherToProject(string projectName)
+        private void AttachFsWatcherToProject(IVsHierarchy project)
         {
-            Project project = vsHelper.ProjectForProjectName(projectName);
             string realProjectJsonFileFullName = SymbolicLinkUtils.GetRealPath(FullFilenameForProjectJsonFileFromProject(project));
             try
             {
@@ -264,18 +269,18 @@ namespace SmartCmdArgs
                 projectJsonFileWatcher.Filter = Path.GetFileName(realProjectJsonFileFullName);
 
                 projectJsonFileWatcher.EnableRaisingEvents = true;
-                projectFsWatchers.Add(projectName, projectJsonFileWatcher);
+                projectFsWatchers.Add(project.GetGuid(), projectJsonFileWatcher);
 
-                projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(projectName); };
-                projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(projectName); };
+                projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
+                projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
                 projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
-                    { if (IsVcsSupportEnabled && realProjectJsonFileFullName == args.FullPath) UpdateCommandsForProjectOnDispatcher(projectName); };
+                    { if (IsVcsSupportEnabled && realProjectJsonFileFullName == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
 
-                Logger.Info($"Attached FileSystemWatcher to file '{realProjectJsonFileFullName}' for project '{projectName}'.");
+                Logger.Info($"Attached FileSystemWatcher to file '{realProjectJsonFileFullName}' for project '{project.GetName()}'.");
             }
             catch (Exception e)
             {
-                Logger.Warn($"Failed to attach FileSystemWatcher to file '{realProjectJsonFileFullName}' for project '{projectName}' with error '{e}'.");
+                Logger.Warn($"Failed to attach FileSystemWatcher to file '{realProjectJsonFileFullName}' for project '{project.GetName()}' with error '{e}'.");
             }
         }
 
@@ -289,36 +294,39 @@ namespace SmartCmdArgs
             projectFsWatchers.Clear();
         }
 
-        private void DetachFsWatcherFromProject(string projectName)
+        private void DetachFsWatcherFromProject(IVsHierarchy project)
         {
-            if (projectFsWatchers.TryGetValue(projectName, out FileSystemWatcher fsWatcher))
+            var guid = project.GetGuid();
+            if (projectFsWatchers.TryGetValue(guid, out FileSystemWatcher fsWatcher))
             {
                 fsWatcher.Dispose();
-                projectFsWatchers.Remove(projectName);
-                Logger.Info($"Detached FileSystemWatcher for project '{projectName}'.");
+                projectFsWatchers.Remove(guid);
+                Logger.Info($"Detached FileSystemWatcher for project '{project.GetName()}'.");
             }
         }
 
-        private void UpdateCommandsForProjectOnDispatcher(string projectName)
+        private void UpdateCommandsForProjectOnDispatcher(IVsHierarchy project)
         {
             Application.Current.Dispatcher.BeginInvoke(
                 DispatcherPriority.Normal,
                 new Action(() =>
                 {
-                    UpdateCommandsForProject(projectName);
+                    UpdateCommandsForProject(project);
                 }));
         }
 
-        private void UpdateCommandsForProject(string projectName)
+        private void UpdateCommandsForProject(IVsHierarchy project)
         {
-            if (string.IsNullOrEmpty(projectName))
-                throw new ArgumentNullException(nameof(projectName));
+            if (project == null)
+                throw new ArgumentNullException(nameof(project));
 
-            Project project = vsHelper.ProjectForProjectName(projectName);
-            
-            Logger.Info($"Update commands for project '{projectName}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution?.Count}.");
+            var projectGuid = project.GetGuid();
+
+            Logger.Info($"Update commands for project '{project.GetName()}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution.ProjectArguments?.Count}.");
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
+
+            ToolWindowViewModel.TreeViewModel.ShowAllProjects = solutionData.ShowAllProjects;
 
             // joins data from solution and project
             //  => overrides solution commands for a project if a project json file exists
@@ -339,7 +347,7 @@ namespace SmartCmdArgs
                         {
                             projectData = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
                         }
-                        Logger.Info($"Read {projectData?.DataCollection?.Count} commands for project '{projectName}' from json-file '{filePath}'.");
+                        Logger.Info($"Read {projectData?.Items?.Count} commands for project '{project.GetName()}' from json-file '{filePath}'.");
                     }
                     catch (Exception e)
                     {
@@ -356,80 +364,94 @@ namespace SmartCmdArgs
             // project json overrides if it exists
             if (projectData != null)
             {
-                Logger.Info($"Setting {projectData?.DataCollection?.Count} commands for project '{projectName}' from json-file.");
-
-                ToolWindowStateProjectData curSolutionProjectData = solutionData.GetValueOrDefault(projectName);
-                ListViewModel projectListViewModel = ToolWindowViewModel.SolutionArguments.GetValueOrDefault(projectName);
-
-                // check if we have data in the suo file or the ViewModel
-                if (curSolutionProjectData != null || projectListViewModel != null)
+                Logger.Info($"Setting {projectData?.Items?.Count} commands for project '{project.GetName()}' from json-file.");
+                
+                var projectListViewModel = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(projectGuid);
+                
+                // update enabled state of the project json data (source prio: ViewModel > suo file)
+                if (projectData.Items != null)
                 {
-                    // update enabled state of the project json data (source prio: ViewModel > suo file)
-                    var dataCollectionFromProject = projectData?.DataCollection;
-                    if (dataCollectionFromProject != null)
+                    var argumentDataFromProject = projectData.AllArguments;
+                    var argumentDataFromLVM = projectListViewModel?.AllArguments.ToDictionary(arg => arg.Id, arg => arg);
+                    foreach (var dataFromProject in argumentDataFromProject)
                     {
-                        var dataCollectionFromSolution = curSolutionProjectData?.DataCollection;
-                        var dataCollectionFromLVM = projectListViewModel?.DataCollection;
-                        foreach (var dataFromProject in dataCollectionFromProject)
-                        {
-                            var dataFromVM = dataCollectionFromLVM?.FirstOrDefault(data => data.Id == dataFromProject.Id);
-
-                            if (dataFromVM != null)
-                                dataFromProject.Enabled = dataFromVM.Enabled;
-                            else
-                            {
-                                var dataFromSolution =
-                                    dataCollectionFromSolution?.Find(data => data.Id == dataFromProject.Id);
-
-                                if (dataFromSolution != null)
-                                    dataFromProject.Enabled = dataFromSolution.Enabled;
-                            }
-                        }
+                        if (argumentDataFromLVM != null && argumentDataFromLVM.TryGetValue(dataFromProject.Id, out CmdArgument argFromVM))
+                            dataFromProject.Enabled = argFromVM.IsChecked;
+                        else
+                            dataFromProject.Enabled = solutionData.CheckedArguments.Contains(dataFromProject.Id);
                     }
+
+                    var containerDataFromProject = projectData.AllContainer;
+                    var containerDataFromLVM = projectListViewModel?.AllContainer.ToDictionary(con => con.Id, con => con);
+                    foreach (var dataFromProject in containerDataFromProject)
+                    {
+                        if (containerDataFromLVM != null && containerDataFromLVM.TryGetValue(dataFromProject.Id, out CmdContainer conFromVM))
+                            dataFromProject.Expanded = conFromVM.IsExpanded;
+                        else
+                            dataFromProject.Expanded = solutionData.ExpandedContainer.Contains(dataFromProject.Id);
+                    }
+                    
+                    if (projectListViewModel != null)
+                        projectData.Expanded = projectListViewModel.IsExpanded;
                     else
-                    {
-                        projectData = new ToolWindowStateProjectData();
-                        Logger.Info($"DataCollection for project '{projectName}' is null.");
-                    }
+                        projectData.Expanded = solutionData.ExpandedContainer.Contains(projectData.Id);
+                }
+                else
+                {
+                    projectData = new ToolWindowStateProjectData();
+                    Logger.Info($"DataCollection for project '{project.GetName()}' is null.");
                 }
             }
             // if we have data in the ViewModel we keep it
-            else if (ToolWindowViewModel.SolutionArguments.ContainsKey(projectName))
+            else if (ToolWindowViewModel.TreeViewModel.Projects.ContainsKey(projectGuid))
             {
                 return;
-            }
-            // we try to read the suo file data
-            else if (!solutionData.TryGetValue(projectName, out projectData))
-            {
-                Logger.Info($"Gathering commands from configurations for project '{projectName}'.");
-                // if we don't have suo file data we read cmd args from the project configs
-                projectData = new ToolWindowStateProjectData();
-                projectData.DataCollection.AddRange(
-                    ReadCommandlineArgumentsFromProject(project)
-                        .Select(cmdLineArg => new ToolWindowStateProjectData.ListEntryData {Command = cmdLineArg}));
             }
             else if (IsVcsSupportEnabled)
             {
                 projectData = new ToolWindowStateProjectData();
                 Logger.Info("Will clear all data because of missing json file and enabled VCS support.");
             }
+            // we try to read the suo file data
+            else if (solutionData.ProjectArguments.TryGetValue(projectGuid, out projectData))
+            {
+                Logger.Info($"Will use commands from suo file for project '{project.GetName()}'.");
+                var argumentDataFromProject = projectData.AllArguments;
+                foreach (var arg in argumentDataFromProject)
+                {
+                    arg.Enabled = solutionData.CheckedArguments.Contains(arg.Id);
+                }
+
+                var containerDataFromProject = projectData.AllContainer;
+                foreach (var con in containerDataFromProject)
+                {
+                    con.Expanded = solutionData.ExpandedContainer.Contains(con.Id);
+                }
+
+                projectData.Expanded = solutionData.ExpandedContainer.Contains(projectData.Id);
+            }
             else
             {
-                Logger.Info($"Will use commands from suo file for project '{projectName}'.");
+                Logger.Info($"Gathering commands from configurations for project '{project.GetName()}'.");
+                // if we don't have suo file data we read cmd args from the project configs
+                projectData = new ToolWindowStateProjectData();
+                projectData.Items.AddRange(
+                    ReadCommandlineArgumentsFromProject(project)
+                        .Select(cmdLineArg => new ListEntryData { Command = cmdLineArg }));
             }
 
             // push projectData to the ViewModel
-            ToolWindowViewModel.PopulateFromProjectData(projectName, projectData);
+            ToolWindowViewModel.PopulateFromProjectData(project, projectData);
 
-            Logger.Info($"Updated Commands for project '{projectName}'.");
+            Logger.Info($"Updated Commands for project '{project.GetName()}'.");
         }
 
         private void InitializeForSolution()
         {
-            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
+            foreach (var project in vsHelper.GetSupportedProjects())
             {
-                UpdateCommandsForProject(projectName);
-                AttachFsWatcherToProject(projectName);
+                UpdateCommandsForProject(project);
+                AttachFsWatcherToProject(project);
             }
             UpdateCurrentStartupProject();
         }
@@ -472,10 +494,10 @@ namespace SmartCmdArgs
         private void VsHelper_ProjectWillRun(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Startup project will run.");
-
-            if (ToolWindowViewModel.StartupProject != null)
+            
+            foreach (var startupProject in ToolWindowViewModel.TreeViewModel.StartupProjects)
             {
-                var project = vsHelper.ProjectForProjectName(ToolWindowViewModel.StartupProject);
+                var project = vsHelper.HierarchyForProjectGuid(startupProject.Id);
                 UpdateConfigurationForProject(project);
                 SaveJsonForProject(project);
             }
@@ -483,51 +505,49 @@ namespace SmartCmdArgs
 
         private void VsHelper_ProjectAdded(object sender, VisualStudioHelper.ProjectAfterOpenEventArgs e)
         {
-            Logger.Info($"VS-Event: Project '{e.Project.UniqueName}' added. (IsLoadProcess={e.IsLoadProcess}, IsSolutionOpenProcess={e.IsSolutionOpenProcess})");
+            Logger.Info($"VS-Event: Project '{e.Project.GetName()}' added. (IsLoadProcess={e.IsLoadProcess}, IsSolutionOpenProcess={e.IsSolutionOpenProcess})");
 
             if (e.IsSolutionOpenProcess)
                 return;
 
-            UpdateCommandsForProject(e.Project.UniqueName);
-            AttachFsWatcherToProject(e.Project.UniqueName);
+            UpdateCommandsForProject(e.Project);
+            AttachFsWatcherToProject(e.Project);
         }
 
         private void VsHelper_ProjectRemoved(object sender, VisualStudioHelper.ProjectBeforeCloseEventArgs e)
         {
-            Logger.Info($"VS-Event: Project '{e.Project.UniqueName}' removed. (IsUnloadProcess={e.IsUnloadProcess}, IsSolutionCloseProcess={e.IsSolutionCloseProcess})");
+            Logger.Info($"VS-Event: Project '{e.Project.GetName()}' removed. (IsUnloadProcess={e.IsUnloadProcess}, IsSolutionCloseProcess={e.IsSolutionCloseProcess})");
 
             if (e.IsSolutionCloseProcess)
                 return;
 
-            if (ToolWindowViewModel.StartupProject == e.Project.UniqueName)
-                ToolWindowViewModel.UpdateStartupProject(null);
-
             SaveJsonForProject(e.Project);
 
             if (!e.IsUnloadProcess)
-                ToolWindowViewModel.SolutionArguments.Remove(e.Project.UniqueName);
+                ToolWindowViewModel.TreeViewModel.Projects.Remove(e.Project.GetGuid());
 
-            DetachFsWatcherFromProject(e.Project.UniqueName);
+            DetachFsWatcherFromProject(e.Project);
         }
 
         private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectAfterRenameEventArgs e)
         {
-            Logger.Info($"VS-Event: Project '{e.OldUniqueName}' renamed to '{e.Project.UniqueName}'.");
+            Logger.Info($"VS-Event: Project '{e.OldProjectName}' renamed to '{e.Project.GetName()}'.");
 
-            if (projectFsWatchers.TryGetValue(e.OldUniqueName, out FileSystemWatcher fsWatcher))
+            var guid = e.Project.GetGuid();
+            if (projectFsWatchers.TryGetValue(guid, out FileSystemWatcher fsWatcher))
             {
-                projectFsWatchers.Remove(e.OldUniqueName);
+                projectFsWatchers.Remove(guid);
                 using (fsWatcher.TemporarilyDisable())
                 {
                     var newFileName = FullFilenameForProjectJsonFileFromProject(e.Project);
-                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(e.OldFilePath);
+                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(e.OldProjectDir, e.OldProjectName);
 
                     Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
 
                     if (File.Exists(newFileName))
                     {
                         File.Delete(oldFileName);
-                        UpdateCommandsForProject(e.Project.UniqueName);
+                        UpdateCommandsForProject(e.Project);
                     }
                     else if (File.Exists(oldFileName))
                     {
@@ -535,9 +555,9 @@ namespace SmartCmdArgs
                     }
                     fsWatcher.Filter = Path.GetFileName(newFileName);
                 }
-                projectFsWatchers.Add(e.Project.UniqueName, fsWatcher);
+                projectFsWatchers.Add(guid, fsWatcher);
             }
-            ToolWindowViewModel.RenameProject(e.OldUniqueName, e.Project.UniqueName);
+            ToolWindowViewModel.RenameProject(e.Project);
         }
         #endregion
 
@@ -547,7 +567,7 @@ namespace SmartCmdArgs
             if (!enabled)
                 return;
 
-            foreach (var projectName in vsHelper.GetSupportedProjectUniqueNames())
+            foreach (var projectName in vsHelper.GetSupportedProjects())
             {
                 UpdateCommandsForProject(projectName);
             }
@@ -559,7 +579,7 @@ namespace SmartCmdArgs
         }
         #endregion
 
-        private IEnumerable<string> ReadCommandlineArgumentsFromProject(Project project)
+        private IEnumerable<string> ReadCommandlineArgumentsFromProject(IVsHierarchy project)
         {
             List<string> prjCmdArgs = new List<string>();
             Helper.ProjectArguments.AddAllArguments(project, prjCmdArgs);
@@ -568,42 +588,36 @@ namespace SmartCmdArgs
 
         private void UpdateCurrentStartupProject()
         {
-            Project startupProject = vsHelper.GetStartupProject();
+            ToolWindowViewModel.TreeViewModel.StartupProjects.Clear();
 
-            if (ProjectArguments.IsSupportedProject(startupProject))
-            {
-                // update StartupProject
-                ToolWindowViewModel.UpdateStartupProject(startupProject.UniqueName);
-            }
-            else
-            {
-                Logger.Info($"Unsupported startup project '{startupProject?.UniqueName}' of kind '{startupProject?.Kind}'");
-                ToolWindowViewModel.UpdateStartupProject(null);
-            }
+            vsHelper.StartupProjectUniqueNames()
+                .Select(vsHelper.HierarchyForProjectName).Select(hierarchy => hierarchy.GetGuid())
+                .Select(guid => ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(guid))
+                .Where(p => p != null).ForEach(ToolWindowViewModel.TreeViewModel.StartupProjects.Add);
         }
 
-        private string FullFilenameForProjectJsonFileFromProject(EnvDTE.Project project)
+        private string FullFilenameForProjectJsonFileFromProject(IVsHierarchy project)
         {
-            var userFilename = vsHelper.GetMSBuildPropertyValue(project.UniqueName, "SmartCmdArgJsonFile");
+            var userFilename = vsHelper.GetMSBuildPropertyValue(project, "SmartCmdArgJsonFile");
             
             if (!string.IsNullOrEmpty(userFilename))
             {
                 // It's recommended to use absolute paths for the json file in the first place...
                 userFilename = Path.GetFullPath(userFilename); // ... but make it absolute in any case.
                 
-                Logger.Info($"'SmartCmdArgJsonFile' msbuild property present in project '{project.UniqueName}' will use json file '{userFilename}'.");
+                Logger.Info($"'SmartCmdArgJsonFile' msbuild property present in project '{project.GetName()}' will use json file '{userFilename}'.");
                 return userFilename;
             }
             else
             {
-                return FullFilenameForProjectJsonFileFromProjectPath(project.FullName);
+                return FullFilenameForProjectJsonFileFromProjectPath(project.GetProjectDir(), project.GetName());
             }
         }
 
-        private string FullFilenameForProjectJsonFileFromProjectPath(string projectFile)
+        private string FullFilenameForProjectJsonFileFromProjectPath(string projectDir, string projectName)
         {
-            string filename = $"{Path.GetFileNameWithoutExtension(projectFile)}.args.json";
-            return Path.Combine(Path.GetDirectoryName(projectFile), filename);
+            string filename = $"{projectName}.args.json";
+            return Path.Combine(projectDir, filename);
         }
     }
 }

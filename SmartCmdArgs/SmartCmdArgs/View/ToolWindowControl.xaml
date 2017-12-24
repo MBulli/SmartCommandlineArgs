@@ -4,9 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:SmartCmdArgs.View"
-             xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
-             xmlns:c="clr-namespace:SmartCmdArgs.Helper"
+             xmlns:c="clr-namespace:SmartCmdArgs.View.Converter"
              x:Class="SmartCmdArgs.View.ToolWindowControl"
              mc:Ignorable="d"
              Background="{DynamicResource vs:EnvironmentColors.ToolWindowBackgroundBrushKey}"
@@ -17,56 +16,36 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="DataGridStyle.xaml" />
+                <ResourceDictionary Source="TreeViewStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <Grid Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=False}}">
-            <local:DataGridEx x:Name="CmdArgListControl" 
-                               Style="{StaticResource DataGridVS}"
-                               ItemsSource="{Binding CurrentArgumentList.DataCollectionView}"
-                               SelectedItems="{Binding CurrentArgumentList.SelectedItems, Mode=TwoWay}" 
-                               MoveUpCommand="{Binding MoveEntriesUpCommand}" 
-                               MoveDownCommand="{Binding MoveEntriesDownCommand}"
-                               ToggleItemEnabledCommand="{Binding ToggleItemEnabledCommand}"
-                               IsInEditMode="{Binding IsInEditMode, Mode=TwoWay}"
-                               CopyCommand="{Binding CopySelectedItemsCommand}"
-                               PasteCommand="{Binding PasteItemsCommand}"
-                               CutCommand="{Binding CutItemsCommand}"
-                               >
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="Enabled" Width="25">
-                        <DataGridTemplateColumn.CellStyle>
-                            <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource CheckBoxCell}">
-                                <EventSetter Event="PreviewMouseDown" Handler="CheckboxCellOnMouseDown"/>
-                            </Style>
-                        </DataGridTemplateColumn.CellStyle>
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <CheckBox IsChecked="{Binding Enabled}" Command="{Binding DataContext.ToggleItemEnabledCommand, ElementName=MyToolWindow, Mode=OneWay}" CommandParameter="{Binding Mode=OneWay}" Style="{StaticResource CheckBoxStyle}"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Value" Binding="{Binding Command}" Width="*" >
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="FontFamily" Value="{Binding DataContext.UsedFontFamily, ElementName=MyToolWindow}"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                        <DataGridTextColumn.EditingElementStyle>
-                            <Style TargetType="TextBox">
-                                <Setter Property="FontFamily" Value="{Binding DataContext.UsedFontFamily, ElementName=MyToolWindow}"/>
-                            </Style>
-                        </DataGridTextColumn.EditingElementStyle>
-                    </DataGridTextColumn>
-                </DataGrid.Columns>
-            </local:DataGridEx>
+        <Grid Visibility="{Binding TreeViewModel.StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=False}}">
+            <local:TreeViewEx x:Name="treeView"
+                              ItemsSource="{Binding TreeViewModel.TreeItemsView}"
+                              SelectIndexCommand="{Binding TreeViewModel.SelectIndexCommand, Mode=OneWayToSource}"
+                              SelectItemCommand="{Binding TreeViewModel.SelectItemCommand, Mode=OneWayToSource}"
+                              Style="{StaticResource TreeViewVS}"
+                              CopyCommand="{Binding CopySelectedItemsCommand}"
+                              PasteCommand="{Binding PasteItemsCommand}"
+                              ToggleSelectedCommand="{Binding ToggleSelectedCommand}"
+                              CutCommand="{Binding CutItemsCommand}">
+                <local:TreeViewEx.ItemContainerStyleSelector>
+                    <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
+                                               GroupItemStyle="{StaticResource GroupItemStyle}"
+                                               ArgumentItemStyle="{StaticResource ArgumentItemStyle}" />
+                </local:TreeViewEx.ItemContainerStyleSelector>
+                <local:TreeViewEx.ItemTemplateSelector>
+                    <local:TreeDataTemplateSelector ProjectTemplate="{StaticResource ProjectDataTemplate}"
+                                                  GroupItemTemplate="{StaticResource GroupDataTemplate}"
+                                                  ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}" />
+                </local:TreeViewEx.ItemTemplateSelector>
+            </local:TreeViewEx>
         </Grid>
 
-        <Grid Visibility="{Binding StartupProject, Converter={c:NullToVisibilityConverter Inverted=True}}">
+        <Grid Visibility="{Binding TreeViewModel.StartupProjects, Converter={c:EmptyToVisibilityConverter Inverted=True}}">
             <TextBlock Text="No supported startup project found." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource {x:Static vs:ThemedDialogColors.ListItemDisabledTextBrushKey}}"  />
         </Grid>
-
     </Grid>
 </UserControl>

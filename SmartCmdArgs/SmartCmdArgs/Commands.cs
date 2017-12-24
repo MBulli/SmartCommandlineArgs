@@ -36,6 +36,8 @@ namespace SmartCmdArgs
         public const int ToolbarMoveUpCommandId = 0x1102;
         public const int ToolbarMoveDownCommandId = 0x1103;
         public const int ToolbarCopyCommandlineCommandId = 0x1104;
+        public const int ToolbarAddGroupCommandId = 0x1105;
+        public const int ToolbarShowAllProjectsCommandId = 0x1106;
 
         public static readonly Guid KeyBindingsCmdSet = new Guid("886F463E-7F96-4BA4-BA88-F36D63044A00");
 
@@ -66,11 +68,14 @@ namespace SmartCmdArgs
                 AddCommandToService(commandService, VSMenuCmdSet, ToolWindowCommandId, this.ShowToolWindow);
 
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddCommandId, package.ToolWindowViewModel.AddEntryCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddGroupCommandId, package.ToolWindowViewModel.AddGroupCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, package.ToolWindowViewModel.RemoveEntriesCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, package.ToolWindowViewModel.MoveEntriesUpCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, package.ToolWindowViewModel.MoveEntriesDownCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyCommandlineCommandId, package.ToolWindowViewModel.CopyCommandlineCommand);
-                AddCommandToService(commandService, KeyBindingsCmdSet, KeyBindingAddCmdId, package.ToolWindowViewModel.AddEntryCommand);
+
+                AddToggleCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarShowAllProjectsCommandId, 
+                    package.ToolWindowViewModel.ShowAllProjectsCommand, () => package.ToolWindowViewModel.TreeViewModel.ShowAllProjects);
             }
         }
 
@@ -121,6 +126,23 @@ namespace SmartCmdArgs
             menuCommand.BeforeQueryStatus += (sender, args) =>
             {
                 menuCommand.Enabled = relayCommand.CanExecute(null);
+            };
+
+            service.AddCommand(menuCommand);
+        }
+
+        private void AddToggleCommandToService(OleMenuCommandService service, Guid cmdSet, int cmdId, RelayCommand relayCommand, Func<bool> isChecked)
+        {
+            var commandId = new CommandID(cmdSet, cmdId);
+            var menuCommand = new OleMenuCommand((sender, args) =>
+            {
+                relayCommand.Execute(null);
+            }, commandId);
+
+            menuCommand.BeforeQueryStatus += (sender, args) =>
+            {
+                menuCommand.Enabled = relayCommand.CanExecute(null);
+                menuCommand.Checked = isChecked();
             };
 
             service.AddCommand(menuCommand);

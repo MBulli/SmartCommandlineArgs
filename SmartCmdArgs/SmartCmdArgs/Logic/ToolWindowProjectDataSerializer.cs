@@ -5,31 +5,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.Logic
 {
-    class ToolWindowProjectDataSerializer
+    class ToolWindowProjectDataSerializer : ToolWindowDataSerializer
     {
-        public static void Serialize(ListViewModel vm, Stream stream)
+        public static void Serialize(CmdProject prj, Stream stream)
         {
-            if (vm == null)
-                throw new ArgumentNullException(nameof(vm));
+            if (prj == null)
+                throw new ArgumentNullException(nameof(prj));
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            var data = new ToolWindowStateProjectData();
-
-            foreach (var item in vm.DataCollection)
+            var data = new ToolWindowStateProjectData
             {
-                data.DataCollection.Add(new ToolWindowStateProjectData.ListEntryData()
-                {
-                    Id = item.Id,
-                    Command = item.Command,
-                    //Project = item.Project,   // deprecated
-                    //Enabled = item.Enabled
-                });
-            }
+                Id = prj.Id,
+                Items = TransformCmdList(prj.Items)
+            };
 
             string jsonStr = JsonConvert.SerializeObject(data, Formatting.Indented);
 
@@ -53,9 +47,42 @@ namespace SmartCmdArgs.Logic
             }
             else
             {
-                var entries = JsonConvert.DeserializeObject<ToolWindowStateProjectData>(jsonStr);
-                return entries;
+                var obj = JObject.Parse(jsonStr);
+                int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
+                if (fileVersion < 2)
+                {                                      
+                    return ParseOldJosnFormat(obj);
+                }
+                else
+                {
+                    var entries = JsonConvert.DeserializeObject<ToolWindowStateProjectData>(jsonStr);
+                    return entries;
+                }
             }
+        }
+
+        public static ToolWindowStateProjectData ParseOldJosnFormat(JToken root)
+        {
+            var result = new ToolWindowStateProjectData();
+
+            if (root is JObject)
+            {
+                foreach (var item in root["DataCollection"])
+                {
+                    var listItem = new ListEntryData();
+                    result.Items.Add(listItem);
+
+                    listItem.Command = (string)item["Command"];
+                    listItem.Enabled = ((bool?)item["Enabled"]).GetValueOrDefault();
+
+                    if (Guid.TryParse((string)item["Id"], out Guid parsedID))
+                    {
+                        listItem.Id = parsedID;
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
