@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.Logic
@@ -46,9 +47,42 @@ namespace SmartCmdArgs.Logic
             }
             else
             {
-                var entries = JsonConvert.DeserializeObject<ToolWindowStateProjectData>(jsonStr);
-                return entries;
+                var obj = JObject.Parse(jsonStr);
+                int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
+                if (fileVersion < 2)
+                {                                      
+                    return ParseOldJosnFormat(obj);
+                }
+                else
+                {
+                    var entries = JsonConvert.DeserializeObject<ToolWindowStateProjectData>(jsonStr);
+                    return entries;
+                }
             }
+        }
+
+        public static ToolWindowStateProjectData ParseOldJosnFormat(JToken root)
+        {
+            var result = new ToolWindowStateProjectData();
+
+            if (root is JObject)
+            {
+                foreach (var item in root["DataCollection"])
+                {
+                    var listItem = new ListEntryData();
+                    result.Items.Add(listItem);
+
+                    listItem.Command = (string)item["Command"];
+                    listItem.Enabled = ((bool?)item["Enabled"]).GetValueOrDefault();
+
+                    if (Guid.TryParse((string)item["Id"], out Guid parsedID))
+                    {
+                        listItem.Id = parsedID;
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

@@ -192,6 +192,13 @@ namespace SmartCmdArgs
             return hier;
         }
 
+        public Guid ProjectGuidForProjetName(string projectName)
+        {
+            var hier = HierarchyForProjectName(projectName);
+            ErrorHandler.ThrowOnFailure(solutionService.GetGuidOfProject(hier, out Guid result));
+            return result;
+        }
+
         public string GetUniqueName(IVsHierarchy hierarchy)
         {
             solutionService.GetUniqueNameOfProject(hierarchy, out string uniqueName);

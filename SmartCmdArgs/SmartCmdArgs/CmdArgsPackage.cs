@@ -164,7 +164,7 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(stream);
+                toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(stream, vsHelper);
             }
         }
 

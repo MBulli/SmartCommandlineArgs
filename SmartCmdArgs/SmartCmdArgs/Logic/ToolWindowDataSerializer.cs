@@ -7,7 +7,7 @@ using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.Logic
 {
-    public class ToolWindowDataSerializer
+    class ToolWindowDataSerializer
     {
         protected static List<ListEntryData> TransformCmdList(ICollection<CmdBase> items)
         {

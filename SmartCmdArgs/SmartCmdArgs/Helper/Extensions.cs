@@ -32,5 +32,13 @@ namespace SmartCmdArgs.Helper
                 action(item);
             }
         }
+
+        public static void AddRange<T>(this HashSet<T> that, IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                that.Add(item);
+            }
+        }
     }
 }

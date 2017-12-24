@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Helper;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,9 +11,9 @@ using Newtonsoft.Json.Linq;
 
 namespace SmartCmdArgs.Logic
 {
-    public class ToolWindowSolutionDataSerializer : ToolWindowDataSerializer
+    class ToolWindowSolutionDataSerializer : ToolWindowDataSerializer
     {
-        public static ToolWindowStateSolutionData Deserialize(Stream stream)
+        public static ToolWindowStateSolutionData Deserialize(Stream stream, VisualStudioHelper vsHelper)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
@@ -20,9 +21,43 @@ namespace SmartCmdArgs.Logic
             StreamReader sr = new StreamReader(stream);
             string jsonStr = sr.ReadToEnd();
 
-            var entries = JsonConvert.DeserializeObject<ToolWindowStateSolutionData>(jsonStr);
+            // At the moment there are two json formats.
+            // The 'old' format and the new one.
+            // The FileVersion property was introduced with the new format
+            // Hence, a missing FileVersion indicates the old format.
+            var obj = JObject.Parse(jsonStr);
+            int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
 
-            return entries;
+            if (fileVersion < 2)
+            {
+                return ParseOldJsonFormat(obj, vsHelper);
+            }
+            else
+            {
+                var entries = JsonConvert.DeserializeObject<ToolWindowStateSolutionData>(jsonStr);
+                return entries;
+            }
+        }
+
+        private static ToolWindowStateSolutionData ParseOldJsonFormat(JObject obj, VisualStudioHelper vsHelper)
+        {
+            var result = new ToolWindowStateSolutionData();
+
+            foreach (var prop in obj.Properties())
+            {
+                var projectState = ToolWindowProjectDataSerializer.ParseOldJosnFormat(prop.Value);
+
+                var projectName = prop.Name;
+                var projectGuid = vsHelper.ProjectGuidForProjetName(projectName);
+                var enabledItems = from item in projectState.Items
+                                   where item.Enabled
+                                   select item.Id;
+
+                result.ProjectArguments.Add(projectGuid, projectState);
+                result.CheckedArguments.AddRange(enabledItems);               
+            }
+
+            return result;
         }
 
         public static ToolWindowStateSolutionData Serialize(ToolWindowViewModel vm, Stream stream)

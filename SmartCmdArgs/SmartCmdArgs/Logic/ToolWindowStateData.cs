@@ -13,6 +13,7 @@ namespace SmartCmdArgs.Logic
 {
     public class ToolWindowStateSolutionData
     {
+        public int FileVersion = 2;
         public bool ShowAllProjects;
         public HashSet<Guid> CheckedArguments = new HashSet<Guid>();
         public HashSet<Guid> ExpandedContainer = new HashSet<Guid>();
@@ -21,6 +22,7 @@ namespace SmartCmdArgs.Logic
 
     public class ToolWindowStateProjectData : ListEntryData
     {
+        public int FileVersion = 2;
 
         public ToolWindowStateProjectData()
         {
