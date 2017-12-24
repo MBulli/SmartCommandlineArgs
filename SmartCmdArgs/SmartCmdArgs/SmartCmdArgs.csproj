@@ -182,7 +182,7 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.VisualStudio.ProjectSystem.Managed.2.0.6151603\lib\net46\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
+      <HintPath>..\packages\Microsoft.VisualStudio.ProjectSystem.Managed.2.0.6142705\lib\net46\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.VisualStudio.ProjectSystem.15.0.737\lib\net46\Microsoft.VisualStudio.ProjectSystem.VS.dll</HintPath>
