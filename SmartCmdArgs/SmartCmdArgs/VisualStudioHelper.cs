@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using SmartCmdArgs.Helper;
@@ -238,9 +239,29 @@ namespace SmartCmdArgs
             return null;
         }
 
+
+        Timer _startupProjectCheckTimer = null;
         private void OnStartupProjectChanged(IVsHierarchy startupProjectHierarchy)
         {
             StartupProjectChanged?.Invoke(this, EventArgs.Empty);
+
+            var curStartUpProjects = StartupProjectUniqueNames().ToList();
+
+            SynchronizationContext context = SynchronizationContext.Current;
+
+            _startupProjectCheckTimer?.Dispose();
+            _startupProjectCheckTimer = new Timer(
+                (ignore) =>
+                {
+                    _startupProjectCheckTimer?.Dispose();
+                    context.Post(ignore2 =>
+                    {
+                        var newStartUpProjects = StartupProjectUniqueNames().ToList();
+                        if (newStartUpProjects.Count != curStartUpProjects.Count || newStartUpProjects.Zip(curStartUpProjects, (s1, s2) => s1 != s2).Any(b => b))
+                            StartupProjectChanged?.Invoke(this, EventArgs.Empty);
+                    }, null);
+
+                }, null, 500, Timeout.Infinite);
         }
 
         private void CommandEventsOnBeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
