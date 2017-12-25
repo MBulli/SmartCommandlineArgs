@@ -28,14 +28,22 @@ namespace SmartCmdArgs.Logic
             var obj = JObject.Parse(jsonStr);
             int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
 
-            if (fileVersion < 2)
+            try
             {
-                return ParseOldJsonFormat(obj, vsHelper);
+                if (fileVersion < 2)
+                {
+                    return ParseOldJsonFormat(obj, vsHelper);
+                }
+                else
+                {
+                    var entries = JsonConvert.DeserializeObject<ToolWindowStateSolutionData>(jsonStr);
+                    return entries;
+                }
             }
-            else
+            catch (Exception e)
             {
-                var entries = JsonConvert.DeserializeObject<ToolWindowStateSolutionData>(jsonStr);
-                return entries;
+                Logger.Warn($"Could not parse solution json. ({e.Message})");
+                return null;
             }
         }
 

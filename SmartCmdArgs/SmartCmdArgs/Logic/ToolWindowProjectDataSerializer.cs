@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.Logic
@@ -49,14 +50,22 @@ namespace SmartCmdArgs.Logic
             {
                 var obj = JObject.Parse(jsonStr);
                 int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
-                if (fileVersion < 2)
-                {                                      
-                    return ParseOldJosnFormat(obj);
-                }
-                else
+                try
                 {
-                    var entries = JsonConvert.DeserializeObject<ToolWindowStateProjectData>(jsonStr);
-                    return entries;
+                    if (fileVersion < 2)
+                    {
+                        return ParseOldJosnFormat(obj);
+                    }
+                    else
+                    {
+                        var entries = JsonConvert.DeserializeObject<ToolWindowStateProjectData>(jsonStr);
+                        return entries;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Warn($"Could not parse project json. ({e.Message})");
+                    return null;
                 }
             }
         }
