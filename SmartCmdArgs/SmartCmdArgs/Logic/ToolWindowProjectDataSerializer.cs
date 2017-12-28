@@ -41,20 +41,25 @@ namespace SmartCmdArgs.Logic
             StreamReader sr = new StreamReader(stream, Encoding.UTF8);
             string jsonStr = sr.ReadToEnd();
 
+            Logger.Info($"Try to parse project json: '{jsonStr}'");
+
             if (string.IsNullOrEmpty(jsonStr))
             {
                 // If the file is empty return empty project data
+                Logger.Info("Got empty project json string. Returning empty ToolWindowStateProjectData");
                 return new ToolWindowStateProjectData();
             }
             else
             {
                 var obj = JObject.Parse(jsonStr);
                 int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
+                Logger.Info($"Project json file version is '{fileVersion}'");
+
                 try
                 {
                     if (fileVersion < 2)
                     {
-                        return ParseOldJosnFormat(obj);
+                        return ParseOldJsonFormat(obj);
                     }
                     else
                     {
@@ -64,13 +69,13 @@ namespace SmartCmdArgs.Logic
                 }
                 catch (Exception e)
                 {
-                    Logger.Warn($"Could not parse project json. ({e.Message})");
-                    return null;
+                    Logger.Warn($"Failed to parse project json with exception: '{e}'");
+                    return new ToolWindowStateProjectData();
                 }
             }
         }
 
-        public static ToolWindowStateProjectData ParseOldJosnFormat(JToken root)
+        public static ToolWindowStateProjectData ParseOldJsonFormat(JToken root)
         {
             var result = new ToolWindowStateProjectData();
 

@@ -17,9 +17,30 @@ namespace SmartCmdArgs.Logic
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
+            if (vsHelper == null)
+                throw new ArgumentNullException(nameof(vsHelper));
 
             StreamReader sr = new StreamReader(stream);
             string jsonStr = sr.ReadToEnd();
+
+            return Deserialize(jsonStr, vsHelper);
+        }
+
+        public static ToolWindowStateSolutionData Deserialize(string jsonStr, VisualStudioHelper vsHelper)
+        {
+            if (jsonStr == null)
+                throw new ArgumentNullException(nameof(jsonStr));
+            if (vsHelper == null)
+                throw new ArgumentNullException(nameof(vsHelper));
+
+            Logger.Info($"Try to parse solution json: '{jsonStr}'");
+
+            if (string.IsNullOrEmpty(jsonStr))
+            {
+                // If the file is empty return empty solution data
+                Logger.Info("Got empty project json string. Returning empty ToolWindowStateProjectData");
+                return new ToolWindowStateSolutionData();
+            }
 
             // At the moment there are two json formats.
             // The 'old' format and the new one.
@@ -27,6 +48,7 @@ namespace SmartCmdArgs.Logic
             // Hence, a missing FileVersion indicates the old format.
             var obj = JObject.Parse(jsonStr);
             int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
+            Logger.Info($"Solution json file version is '{fileVersion}'");
 
             try
             {
@@ -42,8 +64,8 @@ namespace SmartCmdArgs.Logic
             }
             catch (Exception e)
             {
-                Logger.Warn($"Could not parse solution json. ({e.Message})");
-                return null;
+                Logger.Warn($"Failed to parse solution json with exception: '{e}'");
+                return new ToolWindowStateSolutionData();
             }
         }
 
@@ -53,7 +75,7 @@ namespace SmartCmdArgs.Logic
 
             foreach (var prop in obj.Properties())
             {
-                var projectState = ToolWindowProjectDataSerializer.ParseOldJosnFormat(prop.Value);
+                var projectState = ToolWindowProjectDataSerializer.ParseOldJsonFormat(prop.Value);
 
                 var projectName = prop.Name;
                 var projectGuid = vsHelper.ProjectGuidForProjetName(projectName);

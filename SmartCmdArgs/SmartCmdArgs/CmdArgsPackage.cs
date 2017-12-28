@@ -75,6 +75,12 @@ namespace SmartCmdArgs
         private bool IsMacroEvaluationEnabled => GetDialogPage<CmdArgsOptionPage>().MacroEvaluation;
         private bool IsUseMonospaceFontEnabled => GetDialogPage<CmdArgsOptionPage>().UseMonospaceFont;
 
+        // We store the commandline arguments also in the suo file.
+        // This is handled in the OnLoad/SaveOptions methods.
+        // As the parser needs a initialized instance of vsHelper,
+        // the json string from the suo is saved in this variable and
+        // processed later.
+        private string toolWindowStateFromSolutionJsonStr;
         private ToolWindowStateSolutionData toolWindowStateLoadedFromSolution;
 
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
@@ -129,7 +135,6 @@ namespace SmartCmdArgs
             vsHelper.Initialize();
 
             GetDialogPage<CmdArgsOptionPage>().VcsSupportChanged += OptionPage_VcsSupportChanged;
-
             GetDialogPage<CmdArgsOptionPage>().UseMonospaceFontChanged += OptionPage_UseMonospaceFontChanged;
 
             // Extension window was opend while a solution is already open
@@ -164,7 +169,8 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(stream, vsHelper);
+                StreamReader sr = new StreamReader(stream); // don't free
+                toolWindowStateFromSolutionJsonStr = sr.ReadToEnd();
             }
         }
 
@@ -322,7 +328,7 @@ namespace SmartCmdArgs
 
             var projectGuid = project.GetGuid();
 
-            Logger.Info($"Update commands for project '{project.GetName()}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution.ProjectArguments?.Count}.");
+            Logger.Info($"Update commands for project '{project?.GetName()}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution?.ProjectArguments?.Count}.");
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
 
@@ -448,6 +454,8 @@ namespace SmartCmdArgs
 
         private void InitializeForSolution()
         {
+            toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(toolWindowStateFromSolutionJsonStr, vsHelper);
+
             foreach (var project in vsHelper.GetSupportedProjects())
             {
                 UpdateCommandsForProject(project);
