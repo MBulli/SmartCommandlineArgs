@@ -22,14 +22,15 @@
     </UserControl.Resources>
     <Grid>
         <local:TreeViewEx x:Name="treeView"
-                            ItemsSource="{Binding TreeViewModel.TreeItemsView}"
-                            SelectIndexCommand="{Binding TreeViewModel.SelectIndexCommand, Mode=OneWayToSource}"
-                            SelectItemCommand="{Binding TreeViewModel.SelectItemCommand, Mode=OneWayToSource}"
-                            Style="{StaticResource TreeViewVS}"
-                            CopyCommand="{Binding CopySelectedItemsCommand}"
-                            PasteCommand="{Binding PasteItemsCommand}"
-                            ToggleSelectedCommand="{Binding ToggleSelectedCommand}"
-                            CutCommand="{Binding CutItemsCommand}">
+                          ItemsSource="{Binding TreeViewModel.TreeItemsView}"
+                          SelectIndexCommand="{Binding TreeViewModel.SelectIndexCommand, Mode=OneWayToSource}"
+                          SelectItemCommand="{Binding TreeViewModel.SelectItemCommand, Mode=OneWayToSource}"
+                          Style="{StaticResource TreeViewVS}"
+                          CopyCommand="{Binding CopySelectedItemsCommand}"
+                          PasteCommand="{Binding PasteItemsCommand}"
+                          ToggleSelectedCommand="{Binding ToggleSelectedCommand}"
+                          CutCommand="{Binding CutItemsCommand}"
+                          DeleteCommand="{Binding RemoveEntriesCommand}">
             <local:TreeViewEx.ItemContainerStyleSelector>
                 <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
                                             GroupItemStyle="{StaticResource GroupItemStyle}"
