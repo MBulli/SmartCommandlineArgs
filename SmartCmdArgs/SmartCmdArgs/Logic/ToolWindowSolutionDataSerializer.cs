@@ -28,8 +28,6 @@ namespace SmartCmdArgs.Logic
 
         public static ToolWindowStateSolutionData Deserialize(string jsonStr, VisualStudioHelper vsHelper)
         {
-            if (jsonStr == null)
-                throw new ArgumentNullException(nameof(jsonStr));
             if (vsHelper == null)
                 throw new ArgumentNullException(nameof(vsHelper));
 
@@ -38,7 +36,7 @@ namespace SmartCmdArgs.Logic
             if (string.IsNullOrEmpty(jsonStr))
             {
                 // If the file is empty return empty solution data
-                Logger.Info("Got empty project json string. Returning empty ToolWindowStateProjectData");
+                Logger.Info("Got empty solution json string. Returning empty ToolWindowStateSolutionData");
                 return new ToolWindowStateSolutionData();
             }
 
