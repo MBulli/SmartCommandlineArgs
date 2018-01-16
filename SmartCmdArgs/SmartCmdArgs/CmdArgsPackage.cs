@@ -277,10 +277,20 @@ namespace SmartCmdArgs
                 projectJsonFileWatcher.EnableRaisingEvents = true;
                 projectFsWatchers.Add(project.GetGuid(), projectJsonFileWatcher);
 
-                projectJsonFileWatcher.Changed += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
-                projectJsonFileWatcher.Created += (fsWatcher, args) => { if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project); };
+                projectJsonFileWatcher.Changed += (fsWatcher, args) => {
+                    Logger.Info($"SystemFileWatcher file Change '{args.FullPath}'");
+                    if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project);
+                };
+                projectJsonFileWatcher.Created += (fsWatcher, args) => {
+                    Logger.Info($"SystemFileWatcher file Created '{args.FullPath}'");
+                    if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project);
+                };
                 projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
-                    { if (IsVcsSupportEnabled && realProjectJsonFileFullName == args.FullPath) UpdateCommandsForProjectOnDispatcher(project); };
+                {
+                    Logger.Info($"FileWachter file Renamed '{args.FullPath}'. realProjectJsonFileFullName='{realProjectJsonFileFullName}'");
+                    if (IsVcsSupportEnabled && realProjectJsonFileFullName == args.FullPath)
+                        UpdateCommandsForProjectOnDispatcher(project);
+                };
 
                 Logger.Info($"Attached FileSystemWatcher to file '{realProjectJsonFileFullName}' for project '{project.GetName()}'.");
             }
@@ -313,10 +323,28 @@ namespace SmartCmdArgs
 
         private void UpdateCommandsForProjectOnDispatcher(IVsHierarchy project)
         {
+            Logger.Info($"Dispatching update commands function call for project '{project.GetDisplayName()}'");
+
             Application.Current.Dispatcher.BeginInvoke(
                 DispatcherPriority.Normal,
                 new Action(() =>
                 {
+                    // git branch and merge might lead to a race condition here.
+                    // If a branch is checkout where the json file differs, the
+                    // filewatcher will trigger an event which is dispatched here.
+                    // However, while the function call is queued VS may reopen the
+                    // solution due to changes. This will ultimately result in a
+                    // null ref exception because the project object is unloaded.
+                    // UpdateCommandsForProject() will skip such projects because
+                    // their guid is empty.
+
+                    Logger.Info($"Dispatched update commands function call for project '{project.GetDisplayName()}'");
+
+                    if (project.GetGuid() == Guid.Empty)
+                    {
+                        Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
+                    }
+
                     UpdateCommandsForProject(project);
                 }));
         }
@@ -326,9 +354,14 @@ namespace SmartCmdArgs
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
 
-            var projectGuid = project.GetGuid();
-
             Logger.Info($"Update commands for project '{project?.GetName()}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution?.ProjectArguments?.Count}.");
+
+            var projectGuid = project.GetGuid();
+            if (projectGuid == Guid.Empty)
+            {
+                Logger.Info("Skipping project because guid euqals empty.");
+                return;
+            }
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
 
