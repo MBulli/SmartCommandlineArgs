@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Imaging.Interop;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace SmartCmdArgs.Helper
@@ -21,7 +22,10 @@ namespace SmartCmdArgs.Helper
                 Logger.Warn($"Could not retrieve property with id={propid} from hierarchy");
             }
             else if (prop is T t)
+            {
                 return t;
+            }
+
             return default(T);
         }
 
@@ -30,6 +34,16 @@ namespace SmartCmdArgs.Helper
             return hierarchy.GetProperty<Project>((int)__VSHPROPID.VSHPROPID_ExtObject);
         }
 
+        /// <summary>
+        /// Returns true if the hierachy object is a Common ProjectSystem object.
+        /// see: https://github.com/dotnet/project-system
+        /// </summary>
+        public static bool IsCpsProject(this IVsHierarchy hierarchy)
+        {
+            // see: https://github.com/Microsoft/VSProjectSystem/blob/master/doc/automation/detect_whether_a_project_is_a_CPS_project.md
+            return hierarchy.IsCapabilityMatch("CPS");
+        }
+        
         public static Guid GetGuid(this IVsHierarchy hierarchy)
         {
             hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT,

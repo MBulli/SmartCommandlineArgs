@@ -1,16 +1,13 @@
-﻿using SmartCmdArgs.ViewModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
-using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.VCProjectEngine;
 
 namespace SmartCmdArgs.Helper
 {
@@ -115,7 +112,7 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        private static void SetDotNetCoreProjectArguments(EnvDTE.Project project, string arguments)
+        private static void SetCpsProjectArguments(EnvDTE.Project project, string arguments)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null && project != null)
@@ -140,7 +137,7 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        private static void GetDotNetCoreProjectAllArguments(EnvDTE.Project project, List<string> allArgs)
+        private static void GetCpsProjectAllArguments(EnvDTE.Project project, List<string> allArgs)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null && project != null)
@@ -188,10 +185,10 @@ namespace SmartCmdArgs.Helper
                 SetArguments = (project, arguments) => SetSingleConfigArgument(project, arguments, "ScriptArguments"),
                 GetAllArguments = (project, allArgs) => GetSingleConfigAllArguments(project, allArgs, "ScriptArguments")
             } },
-            // C# - DotNetCore
+            // C# - Lagacy DotNetCore
             {ProjectKinds.CSCore, new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetDotNetCoreProjectArguments(project, arguments),
-                GetAllArguments = (project, allArgs) => GetDotNetCoreProjectAllArguments(project, allArgs)
+                SetArguments = (project, arguments) => SetCpsProjectArguments(project, arguments),
+                GetAllArguments = (project, allArgs) => GetCpsProjectAllArguments(project, allArgs)
             } },
             // F#
             {ProjectKinds.FS, new ProjectArgumentsHandlers() {
@@ -207,19 +204,35 @@ namespace SmartCmdArgs.Helper
 
         public static void AddAllArguments(IVsHierarchy project, List<string> allArgs)
         {
-            ProjectArgumentsHandlers handler;
-            if (supportedProjects.TryGetValue(project.GetKind(), out handler))
+            if (project.IsCpsProject())
             {
-                handler.GetAllArguments(project.GetProject(), allArgs);
+                Logger.Info($"Reading arguments on CPS project of type '{project.GetKind()}'.");
+                GetCpsProjectAllArguments(project.GetProject(), allArgs);
+            }
+            else
+            {
+                ProjectArgumentsHandlers handler;
+                if (supportedProjects.TryGetValue(project.GetKind(), out handler))
+                {
+                    handler.GetAllArguments(project.GetProject(), allArgs);
+                }
             }
         }
 
         public static void SetArguments(IVsHierarchy project, string arguments)
         {
-            ProjectArgumentsHandlers handler;
-            if (supportedProjects.TryGetValue(project.GetKind(), out handler))
+            if (project.IsCpsProject())
             {
-                handler.SetArguments(project.GetProject(), arguments);
+                Logger.Info($"Setting arguments on CPS project of type '{project.GetKind()}'.");
+                SetCpsProjectArguments(project.GetProject(), arguments);
+            }
+            else
+            {
+                ProjectArgumentsHandlers handler;
+                if (supportedProjects.TryGetValue(project.GetKind(), out handler))
+                {
+                    handler.SetArguments(project.GetProject(), arguments);
+                }
             }
         }
     }
@@ -231,7 +244,14 @@ namespace SmartCmdArgs.Helper
         public static readonly Guid CPP = Guid.Parse("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}");
         public static readonly Guid Py = Guid.Parse("{888888a0-9f3d-457c-b088-3a5042f75d52}");
         public static readonly Guid Node = Guid.Parse("{9092aa53-fb77-4645-b42d-1ccca6bd08bd}");
-        public static readonly Guid CSCore = Guid.Parse("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}");
         public static readonly Guid FS = Guid.Parse("{f2a71f9b-5d33-465a-a702-920d77279786}");
+
+        /// <summary>
+        /// Lagacy project type GUID for C# .Net core projects.
+        /// In recent versions of VS this GUID is not used anymore.
+        /// see: https://github.com/dotnet/project-system/issues/1821
+        /// </summary>
+        public static readonly Guid CSCore = Guid.Parse("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}");
+        
     }
 }
