@@ -18,10 +18,10 @@ namespace SmartCmdArgs.ViewModel
         public Guid Id { get; }
 
         private CmdContainer parent;
-        public CmdContainer Parent { get => parent; set => SetAndNotify(value, ref this.parent); }
+        public CmdContainer Parent { get => parent; set => OnParentChanged(parent, value); }
 
         private string value;
-        public string Value { get => value; set => SetAndNotify(value, ref this.value); }
+        public string Value { get => value; set => OnValueChanged(this.value, value); }
 
         protected bool? isChecked;
         public bool? IsChecked
@@ -37,15 +37,12 @@ namespace SmartCmdArgs.ViewModel
         }
 
         protected bool isSelected;
-        public virtual bool IsSelected {
+        public virtual bool IsSelected
+        {
             get => isSelected;
-            set
-            {
-                SetAndNotify(value, ref isSelected);
-                Parent?.OnChildSelectionChanged(this);
-            }
+            set { OnIsSelectedChanged(isSelected, value); }
         }
-        
+
         public bool IsFocusedItem { get; set; }
 
         public virtual bool IsEditable => false;
@@ -59,20 +56,53 @@ namespace SmartCmdArgs.ViewModel
             this.isChecked = isChecked;
         }
 
-        public void ToggleCheckedState()
+        /// <summary>
+        /// Notifies the parent that an event occurred.
+        /// The event will eventually reach the CmdProject root element
+        /// </summary>
+        protected virtual void BubbleEvent(TreeEventBase treeEvent, CmdBase receiver = null)
         {
-            if (IsChecked == null)
-                IsChecked = false;
+            if (receiver != null)
+            {
+                receiver.BubbleEvent(treeEvent);
+            }
             else
-                IsChecked = !IsChecked;
+            {
+                this.Parent?.BubbleEvent(treeEvent);
+            }
         }
 
-        private void ExclusiveChecked()
+        protected virtual void OnParentChanged(CmdContainer oldParent, CmdContainer newParent)
         {
-            var checkedItems = Parent.Items.Where(item => item.IsChecked != false).ToList();
-            var checkState = checkedItems.Count != 1 || isChecked != true;
-            checkedItems.ForEach(item => item.OnIsCheckedChanged(item.IsChecked, false, false));
-            OnIsCheckedChanged(isChecked, checkState, true);
+            SetAndNotify(newParent, ref this.parent, nameof(Parent));
+
+            if (oldParent != newParent)
+            {
+                // Use oldParent if newParent is null as we've been removed from the tree
+                // but still want to notify everbody that we were removed.
+                var receiver = newParent ?? oldParent;
+                BubbleEvent(new ParentChangedEvent(this, oldParent, newParent), receiver);
+            }
+        }
+
+        protected virtual void OnValueChanged(string oldValue, string newValue)
+        {
+            SetAndNotify(newValue, ref this.value, nameof(Value));
+
+            if (oldValue != newValue)
+            { 
+                BubbleEvent(new ValueChangedEvent(this, oldValue, newValue));
+            }
+        }
+
+        private void OnIsSelectedChanged(bool oldValue, bool newValue)
+        {
+            SetAndNotify(newValue, ref isSelected, nameof(IsSelected));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new SelectionChangedEvent(this, oldValue, newValue));
+            }           
         }
 
         protected virtual void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
@@ -83,6 +113,36 @@ namespace SmartCmdArgs.ViewModel
             {
                 parent?.OnChildIsCheckedChanged(oldValue, newValue);
             }
+
+            // TODO: Only bubble event if we're the origin.
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new CheckStateChangedEvent(this, oldValue, newValue));
+            }
+        }
+
+        public void ToggleCheckedState()
+        {
+            if (IsChecked == null)
+                IsChecked = false;
+            else
+                IsChecked = !IsChecked;
+        }
+
+        /// <summary>
+        /// Check this item and uncheck every other.
+        /// </summary>
+        private void ExclusiveChecked()
+        {
+            var checkedItems = Parent.Items.Where(item => item.IsChecked != false).ToList();
+            var checkState = checkedItems.Count != 1 || isChecked != true;
+
+            foreach (var item in checkedItems)
+            {
+                item.OnIsCheckedChanged(item.IsChecked, newValue: false, notifyParent: false);
+            }
+
+            OnIsCheckedChanged(isChecked, checkState, notifyParent:true);
         }
 
         protected virtual void OnChildIsCheckedChanged(bool? oldValue, bool? newValue)
@@ -155,7 +215,7 @@ namespace SmartCmdArgs.ViewModel
 
         public override string ToString()
         {
-            return $"{this.GetType().Name}{{{Value}:{(IsChecked == null ? "▄" : (IsChecked.Value ? "✓" : "❌"))}:{(IsSelected ? "█" : "-")}}}";
+            return $"{this.GetType().Name}{{{Value}:{(IsChecked == null ? "▄" : (IsChecked.Value ? "☑" : "☐"))}:{(IsSelected ? "█" : "-")}}}";
         }
     }
     
@@ -179,12 +239,6 @@ namespace SmartCmdArgs.ViewModel
         public ICollectionView ItemsView { get; }
         protected virtual Predicate<CmdBase> FilterPredicate => Parent?.FilterPredicate;
 
-        protected void RefreshFilters()
-        {
-            Items.OfType<CmdContainer>().ForEach(container => container.RefreshFilters());
-            ItemsView.Refresh();
-        }
-
         public IEnumerable<CmdContainer> AllContainer => this.OfType<CmdContainer>();
 
         public IEnumerable<CmdArgument> AllArguments => this.OfType<CmdArgument>();
@@ -195,14 +249,14 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdContainer> ExpandedContainer => this.OfType<CmdContainer>().Where(arg => arg.IsExpanded);
 
-        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> items = null, bool isExpanded = true)
+        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> subItems = null, bool isExpanded = true)
             : base(id, value)
         {
             this.isExpanded = isExpanded;
 
             Items = new ObservableRangeCollection<CmdBase>();
 
-            foreach (var item in items ?? Enumerable.Empty<CmdBase>())
+            foreach (var item in subItems ?? Enumerable.Empty<CmdBase>())
             {
                 Items.Add(item);
                 item.Parent = this;
@@ -257,6 +311,14 @@ namespace SmartCmdArgs.ViewModel
             {
                 UpdateCheckedState();
             }
+
+            BubbleEvent(new ItemsChangedEvent(this, e));
+        }
+
+        protected void RefreshFilters()
+        {
+            Items.OfType<CmdContainer>().ForEach(container => container.RefreshFilters());
+            ItemsView.Refresh();
         }
 
         public bool? UpdateCheckedState()
@@ -269,12 +331,14 @@ namespace SmartCmdArgs.ViewModel
                 base.OnIsCheckedChanged(IsChecked, false, true);
             else
                 base.OnIsCheckedChanged(IsChecked, null, true);
+
             return IsChecked;
         }
 
         protected override void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
         {
             base.OnIsCheckedChanged(oldValue, newValue, notifyParent);
+
             foreach (var item in Items)
             {
                 item.SetIsCheckedWithoutNotifyingParent(newValue);
@@ -344,11 +408,6 @@ namespace SmartCmdArgs.ViewModel
             Items.OfType<CmdContainer>().Where(item => !items.Contains(item)).ForEach(container => container.MoveEntries(items, moveDirection));
         }
 
-        public virtual void OnChildSelectionChanged(CmdBase e)
-        {
-            Parent?.OnChildSelectionChanged(e);
-        }
-
         public IEnumerable<CmdBase> GetEnumerable(bool useView = false, bool includeSelf = false, bool includeCollapsed = true)
         {
             if (includeSelf)
@@ -413,12 +472,12 @@ namespace SmartCmdArgs.ViewModel
 
         public override CmdBase Copy()
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException("Can't copy a project");
         }
 
-        public override void OnChildSelectionChanged(CmdBase e)
+        protected override void BubbleEvent(TreeEventBase treeEvent, CmdBase receiver)
         {
-            ParentTreeViewModel?.OnItemSelectionChanged(e);
+            ParentTreeViewModel?.OnTreeEvent(treeEvent);
         }
     }
 

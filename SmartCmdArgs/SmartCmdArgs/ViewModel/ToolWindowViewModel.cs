@@ -137,10 +137,8 @@ namespace SmartCmdArgs.ViewModel
             PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => HasStartupProject());
 
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => HasSelectedItems());
-
-            TreeViewModel.Projects.ItemPropertyChanged += OnArgumentListItemChanged;
-            TreeViewModel.Projects.CollectionChanged += OnArgumentListChanged;
         }
+
 
         /// <summary>
         /// Resets the whole state of the tool window view model
@@ -241,7 +239,13 @@ namespace SmartCmdArgs.ViewModel
         public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)
         {
             var guid = project.GetGuid();
-            TreeViewModel.Projects[guid] = new CmdProject(guid, project.GetKind(), project.GetDisplayName(), ListEntriesToCmdObjects(data.Items));
+            var cmdPrj = new CmdProject(guid, project.GetKind(), project.GetDisplayName());
+            cmdPrj.Items.AddRange(ListEntriesToCmdObjects(data.Items));
+
+            // Assign TreeViewModel after AddRange to not get a lot of ParentChanged events
+            cmdPrj.ParentTreeViewModel = TreeViewModel; 
+
+            TreeViewModel.Projects[guid] = cmdPrj;
 
             IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
             {
@@ -266,21 +270,6 @@ namespace SmartCmdArgs.ViewModel
         public void CancelEdit()
         {
             System.Windows.Controls.DataGrid.CancelEditCommand.Execute(null, null);
-        }
-
-        private void OnArgumentListItemChanged(object sender, CollectionItemPropertyChangedEventArgs<CmdProject> args)
-        {
-            OnCommandLineChanged();
-        }
-
-        private void OnArgumentListChanged(object sender, NotifyCollectionChangedEventArgs args)
-        {
-            OnCommandLineChanged();
-        }
-
-        protected virtual void OnCommandLineChanged()
-        {
-            CommandLineChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

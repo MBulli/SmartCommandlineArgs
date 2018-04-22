@@ -146,8 +146,22 @@ namespace SmartCmdArgs
             }
             
             ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
-            
+            ToolWindowViewModel.TreeViewModel.TreeContentChanged += OnTreeContentChanged;
+
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
+        }
+
+        private void OnTreeContentChanged(object sender, EventArgs e)
+        {
+            if (IsVcsSupportEnabled)
+            {
+                Logger.Info("Tree content changed and VCS support is enabled. Saving all project commands to json file.");
+                foreach (var propjectGuid in ToolWindowViewModel.TreeViewModel.Projects.Keys)
+                {
+                    var project = vsHelper.HierarchyForProjectGuid(propjectGuid);
+                    SaveJsonForProject(project);
+                }
+            }
         }
 
         private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
@@ -179,21 +193,9 @@ namespace SmartCmdArgs
             base.OnSaveOptions(key, stream);
             if (key == SolutionOptionKey)
             {
-                Logger.Info("Saving all commands.");
-
-                if (IsVcsSupportEnabled)
-                {
-                    Logger.Info("VcsSupport is enabled.");
-
-                    foreach (var propjectGuid in ToolWindowViewModel.TreeViewModel.Projects.Keys)
-                    {
-                        var project = vsHelper.HierarchyForProjectGuid(propjectGuid);
-                        SaveJsonForProject(project);
-                    }
-                }
-
+                Logger.Info("Saving commands to suo file.");
                 toolWindowStateLoadedFromSolution = ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
-                Logger.Info("All Commands Saved.");
+                Logger.Info("All Commands saved to suo file.");
             }
         }
 

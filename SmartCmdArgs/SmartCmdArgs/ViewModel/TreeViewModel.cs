@@ -240,6 +240,7 @@ namespace SmartCmdArgs.ViewModel
         }
 
         public event EventHandler<CmdBase> ItemSelectionChanged;
+        public event EventHandler TreeContentChanged;
 
         public virtual void OnItemSelectionChanged(CmdBase item)
         {
@@ -247,7 +248,28 @@ namespace SmartCmdArgs.ViewModel
                 SelectedItems.Add(item);
             else
                 SelectedItems.Remove(item);
+
             ItemSelectionChanged?.Invoke(this, item);
+        }
+
+        public void OnTreeEvent(TreeEventBase treeEvent)
+        {
+            switch (treeEvent)
+            {
+                case SelectionChangedEvent e:
+                    OnItemSelectionChanged(e.Sender);
+                    break;
+                case ParentChangedEvent e:
+                    TreeContentChanged?.Invoke(this, EventArgs.Empty);
+                    break;
+                case ValueChangedEvent e:
+                    TreeContentChanged?.Invoke(this, EventArgs.Empty);
+                    break;
+                case CheckStateChangedEvent e:
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
