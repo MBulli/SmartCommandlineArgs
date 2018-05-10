@@ -73,7 +73,12 @@ namespace SmartCmdArgs.View
                     if (dropInfo.InsertPosition.HasFlag(DropInfo.RelativInsertPosition.IntoTargetItem))
                     {
                         yPos = header.RenderSize.Height;
-                        indent = AdornedElement.RenderSize.Width - ((TreeViewItemEx)tvItem.ItemContainerGenerator.ContainerFromIndex(0)).HeaderBorder.RenderSize.Width;
+
+                        var container = (TreeViewItemEx)tvItem.ItemContainerGenerator.ContainerFromIndex(0);                      
+                        if (container != null)
+                        {
+                            indent = AdornedElement.RenderSize.Width - container.HeaderBorder.RenderSize.Width;
+                        }                        
                     }
                     else
                     {
