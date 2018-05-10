@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -91,6 +92,7 @@ namespace SmartCmdArgs.View
         private static bool IsCtrlPressed => (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
         private static bool IsShiftPressed => (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 
+
         public IEnumerable<TreeViewItemEx> SelectedTreeViewItems => GetTreeViewItems(this, true).Where(GetIsItemSelected);
 
         public IEnumerable<TreeViewItemEx> VisibleTreeViewItems => GetTreeViewItems(this, false);
@@ -141,8 +143,6 @@ namespace SmartCmdArgs.View
                 SelectedItemChangedInternal(item);
             }
 
-            _shouldRenameGroup = false;
-
             if (!GetIsItemSelected(item))
             {
                 var aSelectedItem = SelectedTreeViewItems.FirstOrDefault();
@@ -159,54 +159,12 @@ namespace SmartCmdArgs.View
             }
         }
 
-        private bool _shouldRenameGroup;
-        private Timer _groupRenameTimer;
-        private void ScheduleGroupRename(CmdGroup group)
-        {
-            SynchronizationContext context = SynchronizationContext.Current;
-
-            CancleScheduledGroupRename();
-            _groupRenameTimer = new Timer(
-                (ignore) =>
-                {
-                    _groupRenameTimer?.Dispose();
-
-                    context.Post(ignore2 => group.BeginEdit(), null);
-                }, null, System.Windows.Forms.SystemInformation.DoubleClickTime, Timeout.Infinite);
-        }
-
-        private void CancleScheduledGroupRename()
-        {
-            _groupRenameTimer?.Dispose();
-        }
-
-        private TreeViewItemEx _lastMouseDownTargetItem;
         public void MouseLeftButtonDownOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
         {
-            CancleScheduledGroupRename();
-            _shouldRenameGroup = e.ClickCount == 1;
-            _lastMouseDownTargetItem = tvItem;
             if (IsCtrlPressed || IsShiftPressed || !SelectedTreeViewItems.Skip(1).Any() || !GetIsItemSelected(tvItem))
             {
                 SelectedItemChangedInternal(tvItem);
             }
-        }
-        
-        public void MouseLeftButtonUpOnItem(TreeViewItemEx tvItem, MouseButtonEventArgs e)
-        {
-            if (IsCtrlPressed || IsShiftPressed)
-                return;
-
-            if (!Equals(tvItem, _lastMouseDownTargetItem))
-                return;
-
-            if (tvItem.IsFocused && _shouldRenameGroup && tvItem.Item is CmdGroup grp)
-                ScheduleGroupRename(grp);
-
-            if (!SelectedTreeViewItems.Skip(1).Any())
-                return;
-
-            SelectedItemChangedInternal(tvItem);
         }
 
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -221,17 +179,7 @@ namespace SmartCmdArgs.View
                 }
             }
         }
-
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            CancleScheduledGroupRename();
-        }
-
-        protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
-        {
-            CancleScheduledGroupRename();
-        }
-
+        
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.Key == Key.Space && ToggleSelectedCommand?.CanExecute(null) == true)
@@ -303,6 +251,27 @@ namespace SmartCmdArgs.View
             return rangeCount > 0 ? items.GetRange(rangeStart, rangeCount) : new List<TreeViewItemEx>();
         }
 
+        public void SelectItem(TreeViewItemEx item)
+        {
+            SelectedItemChangedInternal(item);
+        }
+
+        public void SelectItemExclusively(TreeViewItemEx item)
+        {
+            var items = GetTreeViewItems(this, includeCollapsedItems: true);
+            foreach (var treeViewItem in items)
+            {
+                if (treeViewItem == item && !GetIsItemSelected(item))
+                {
+                    SetIsItemSelected(treeViewItem, true);
+                }
+                else
+                {
+                    SetIsItemSelected(treeViewItem, false);
+                }
+            }
+        }
+
         private void SelectAllItems(ExecutedRoutedEventArgs args)
         {
             foreach (var treeViewItem in GetTreeViewItems(this, false))
@@ -312,12 +281,27 @@ namespace SmartCmdArgs.View
             args.Handled = true;
         }
 
-        protected override void OnMouseMove(MouseEventArgs e) => DragDrop.OnMouseMove(this, e);
+        public void ClearSelection()
+        {
+            var items = GetTreeViewItems(this, includeCollapsedItems: true);
+            foreach (var treeViewItem in items)
+            {
+                SetIsItemSelected(treeViewItem, false);
+            }
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            DragDrop.OnMouseMove(this, e);
+        }
 
         protected override void OnDragEnter(DragEventArgs e)
         {
             if (HasItems)
-                DragDrop.OnDragEnter((TreeViewItemEx)ItemContainerGenerator.ContainerFromIndex(Items.Count - 1), e);
+            {
+                var item = (TreeViewItemEx)ItemContainerGenerator.ContainerFromIndex(Items.Count - 1);
+                DragDrop.OnDragEnter(item, e);
+            }
         }
 
         protected override void OnDragOver(DragEventArgs e)
@@ -342,6 +326,11 @@ namespace SmartCmdArgs.View
     public class TreeViewItemEx : TreeViewItem
     {
         private bool suppressRequestBringIntoView;
+
+        // Mouse state variables
+        private bool justReceivedSelection = false;
+        private CancellationTokenSource leftSingleClickCancelSource = null;
+        private int leftMouseButtonClickCount = 0;
 
         private readonly Lazy<FrameworkElement> headerBorder;
         public FrameworkElement HeaderBorder => headerBorder.Value;
@@ -451,41 +440,139 @@ namespace SmartCmdArgs.View
             }
         }
 
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            ParentTreeView.MouseLeftButtonDownOnItem(this, e);
+            Debug.WriteLine($"Entering OnMouseDown - ClickCount = {e.ClickCount}");
+            e.Handled = true; // we handle clicks
 
-            if (IsFocused 
-                && Item.IsEditable 
-                && !Item.IsInEditMode 
-                && !IsCtrlPressed 
-                && ParentTreeView.SelectedTreeViewItems.Take(2).Count() == 1 
-                && Item is CmdArgument)
+            if (e.ChangedButton == MouseButton.Left || e.ChangedButton == MouseButton.Right)
             {
-                Item.BeginEdit();
+                if (e.ClickCount == 1) // Single click
+                {
+                    bool wasSelected = Item.IsSelected;
+
+                    // Let Tree select this item
+                    ParentTreeView.MouseLeftButtonDownOnItem(this, e);
+
+                    // If the item was not selected before we change into pre-selection mode
+                    // Aka. User clicked the item for the first time
+                    if (!wasSelected && Item.IsSelected)
+                    {
+                        justReceivedSelection = true;
+                    }
+                }
             }
-            else
+
+            if (e.ChangedButton == MouseButton.Left)
             {
-                if (e.ClickCount % 2 == 0 && Item is CmdContainer)
-                    IsExpanded = !IsExpanded;
+                leftMouseButtonClickCount = e.ClickCount;
 
-                Focus();
+                DragDrop.OnMouseDown(this, e);
+
+                if (e.ClickCount > 1)
+                {
+                    // Cancel any single click action which was delayed
+                    if (leftSingleClickCancelSource != null)
+                    {
+                        Debug.WriteLine("Cancel single click");
+                        leftSingleClickCancelSource.Cancel();
+                        leftSingleClickCancelSource = null;
+                    }
+                }
             }
-            e.Handled = true;
 
-            base.OnMouseLeftButtonDown(e);
+            Debug.WriteLine("Leaving OnMouseDown");
         }
 
-        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        protected override void OnMouseUp(MouseButtonEventArgs e)
         {
-            ParentTreeView.MouseLeftButtonUpOnItem(this, e);
-            e.Handled = true;
+            // Note: e.ClickCount is always 1 for MouseUp
+            Debug.WriteLine($"Entering OnMouseUp");          
+            e.Handled = true; // we handle  clicks
+
+            if (e.ChangedButton == MouseButton.Left || e.ChangedButton == MouseButton.Right)
+            {
+                // If we just received the selection (inside MouseDown)
+                if (!IsFocused && justReceivedSelection)
+                {
+                    Focus();
+                }
+            }
+
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                // First click is special, as the only action to take is to select the item
+                // Only do stuff if were not the first click
+                if (!justReceivedSelection)
+                {
+                    bool hasManyItemsSelected = ParentTreeView.SelectedTreeViewItems.Take(2).Count() == 2;
+                    bool shouldEnterEditMode = Item.IsEditable
+                            && !Item.IsInEditMode
+                            && !IsCtrlPressed;
+
+                    // Only trigger actions if we're the first click in the DoubleClick timespan
+                    if (leftMouseButtonClickCount == 1)
+                    {
+                        if (shouldEnterEditMode && !hasManyItemsSelected)
+                        {
+                            Debug.WriteLine("Triggered delayed enter edit mode");
+
+                            // Wait for possible double click.
+                            // Single click => edit; double click => toggle expand state
+                            leftSingleClickCancelSource?.Cancel();
+                            leftSingleClickCancelSource = new CancellationTokenSource();
+
+                            var doubleClickTime = TimeSpan.FromMilliseconds(System.Windows.Forms.SystemInformation.DoubleClickTime);
+                            DelayExecution.ExecuteAfter(doubleClickTime, leftSingleClickCancelSource.Token, () =>
+                            {
+                                Debug.WriteLine("Delayed edit mode");
+                                // Focus might have changed since first click
+                                if (IsFocused)
+                                {
+                                    Item.BeginEdit();
+                                }
+                            });
+                        }
+                    }
+                    else if(leftMouseButtonClickCount == 2)
+                    {
+                        if (!IsCtrlPressed && !IsShiftPressed)
+                        {
+                             // Remove selection of other items
+                            ParentTreeView.SelectItemExclusively(this);
+
+                            if (Item is CmdArgument)
+                            {
+                                if (shouldEnterEditMode)
+                                {
+                                    Item.BeginEdit();
+                                    Debug.WriteLine("Enter edit mode with double click");
+                                }
+                            }
+
+                            if (Item is CmdContainer)
+                            {
+                                IsExpanded = !IsExpanded;
+                                Debug.WriteLine("Toggled expanded");
+                            }                           
+                        }
+                    }
+                }
+
+                // Item is now officially selected
+                justReceivedSelection = false;
+                leftMouseButtonClickCount = 0;
+            }
+
+            Debug.WriteLine($"Leaving OnMouseUp");
         }
 
         protected override void OnIsKeyboardFocusedChanged(DependencyPropertyChangedEventArgs e)
         {
-            if ((bool) e.NewValue)
+            if ((bool)e.NewValue)
+            {
                 ParentTreeView.ChangedFocusedItem(this);
+            }
         }
 
         protected override void OnIsKeyboardFocusWithinChanged(DependencyPropertyChangedEventArgs e)

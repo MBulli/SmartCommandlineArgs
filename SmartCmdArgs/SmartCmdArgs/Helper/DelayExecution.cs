@@ -11,16 +11,24 @@ namespace SmartCmdArgs.Helper
     {
         internal static void ExecuteAfter(TimeSpan delay, Action action)
         {
-            System.Threading.Timer timer = null;
+            ExecuteAfter(delay, CancellationToken.None, action);
+        }
+
+        internal static void ExecuteAfter(TimeSpan delay, CancellationToken cancelToken, Action action)
+        {
             SynchronizationContext context = SynchronizationContext.Current;
 
-            timer = new System.Threading.Timer(
-                (ignore) =>
+            Task.Delay(delay, cancelToken).ContinueWith((_) =>
+            {
+                context.Post((__) => 
                 {
-                    timer.Dispose();
-
-                    context.Post(ignore2 => action(), null);
-                }, null, delay, TimeSpan.FromMilliseconds(-1));
+                    if (!cancelToken.IsCancellationRequested)
+                    {
+                        action();
+                    }                   
+                }, null);
+            }, cancelToken);
         }
+
     }
 }
