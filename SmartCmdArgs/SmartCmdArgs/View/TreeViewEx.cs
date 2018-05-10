@@ -261,9 +261,12 @@ namespace SmartCmdArgs.View
             var items = GetTreeViewItems(this, includeCollapsedItems: true);
             foreach (var treeViewItem in items)
             {
-                if (treeViewItem == item && !GetIsItemSelected(item))
+                if (treeViewItem == item)
                 {
-                    SetIsItemSelected(treeViewItem, true);
+                    if (!GetIsItemSelected(item))
+                    {
+                        SetIsItemSelected(treeViewItem, true);                        
+                    }
                 }
                 else
                 {
@@ -325,15 +328,12 @@ namespace SmartCmdArgs.View
 
     public class TreeViewItemEx : TreeViewItem
     {
-        private bool suppressRequestBringIntoView;
-
         // Mouse state variables
         private bool justReceivedSelection = false;
         private CancellationTokenSource leftSingleClickCancelSource = null;
         private int leftMouseButtonClickCount = 0;
 
-        private readonly Lazy<FrameworkElement> headerBorder;
-        public FrameworkElement HeaderBorder => headerBorder.Value;
+        public FrameworkElement HeaderBorder => GetTemplateChild("HeaderBorder") as FrameworkElement;
 
         public CmdBase Item => DataContext as CmdBase;
 
@@ -360,8 +360,6 @@ namespace SmartCmdArgs.View
         {
             ParentTreeView = parentTreeView;
             Level = level;
-
-            headerBorder = new Lazy<FrameworkElement>(() => (FrameworkElement)GetTemplateChild("HeaderBorder"));
 
             DataContextChanged += OnDataContextChanged;
             HandledKeyDown += OnHandledKeyDown;
@@ -453,7 +451,7 @@ namespace SmartCmdArgs.View
 
                     // Let Tree select this item
                     ParentTreeView.MouseLeftButtonDownOnItem(this, e);
-
+                    
                     // If the item was not selected before we change into pre-selection mode
                     // Aka. User clicked the item for the first time
                     if (!wasSelected && Item.IsSelected)
@@ -586,27 +584,18 @@ namespace SmartCmdArgs.View
 
         private void OnRequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
         {
-            // Suppress horizontal scrolling when item is selected as checkboxes of other items might get occupied (issue #40)
-            // see https://stackoverflow.com/questions/3225940/prevent-automatic-horizontal-scroll-in-treeview/34269542#42238409
-            if (suppressRequestBringIntoView)
-                return; // Ignore reentrant calls
-
-            // Cancel the current scroll attempt
             e.Handled = true;
 
-            // Call BringIntoView using a rectangle that extends into "negative space" to the left of our
-            // actual control. This allows the vertical scrolling behaviour to operate without adversely
-            // affecting the current horizontal scroll position.
-            suppressRequestBringIntoView = true;
-            try
+            var scrollView = ParentTreeView.Template.FindName("_tv_scrollviewer_", ParentTreeView) as ScrollViewer;
+            var scrollPresenter = scrollView.Template.FindName("PART_ScrollContentPresenter", scrollView) as ScrollContentPresenter; // ScrollViewer without scrollbars
+
+            // If item is not fully created, finish layout
+            if (this.HeaderBorder == null)
             {
-                Rect newTargetRect = new Rect(-1000, 0, ActualWidth + 1000, ActualHeight);
-                BringIntoView(newTargetRect);
+                UpdateLayout();
             }
-            finally
-            {
-                suppressRequestBringIntoView = false;
-            }
+
+            scrollPresenter?.MakeVisible(this, new Rect(new Point(0, 0), HeaderBorder.RenderSize));
         }
         
 
