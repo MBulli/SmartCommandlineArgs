@@ -608,10 +608,8 @@ namespace SmartCmdArgs.View
                 suppressRequestBringIntoView = false;
             }
         }
+        
 
-
-
-        protected override void OnMouseDown(MouseButtonEventArgs e) => DragDrop.OnMouseDown(this, e);
         protected override void OnDragEnter(DragEventArgs e) => DragDrop.OnDragEnter(this, e);
         protected override void OnQueryContinueDrag(QueryContinueDragEventArgs e) => DragDrop.OnQueryContinueDrag(this, e);
         protected override void OnDragOver(DragEventArgs e) => DragDrop.OnDragOver(this, e);
