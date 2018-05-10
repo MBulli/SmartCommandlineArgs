@@ -193,12 +193,14 @@ namespace SmartCmdArgs.ViewModel
         public void AddItemsAtFocusedItem(IEnumerable<CmdBase> items)
         {
             var focusedItem = FocusedItem;
-            if (focusedItem is CmdContainer con)
-                con.Items.AddRange(items);
-            else if (focusedItem is CmdArgument arg)
+            if (focusedItem is CmdContainer con && (con.IsExpanded || focusedItem is CmdProject))
             {
-                var insertIdx = arg.Parent.Items.IndexOf(arg) + 1;
-                arg.Parent.Items.InsertRange(insertIdx, items);
+                con.Items.InsertRange(0, items);
+            }
+            else
+            {
+                var insertIdx = focusedItem.Parent.Items.IndexOf(focusedItem) + 1;
+                focusedItem.Parent.Items.InsertRange(insertIdx, items);
             }
         }
 
