@@ -63,14 +63,18 @@ namespace SmartCmdArgs.View
         {
             System.Diagnostics.Debug.WriteLine($"DragEnter: {tvItem.Item}");
 
-            if (dropInfo == null)
-                dropInfo = new DropInfo();
+            // this logic was moved to OnDragOver to fix an issue 
+            // when using drag and drop if the window is floating
 
-            if (dropInfo.CouldHadleDrop(e))
-            {
-                dropInfo.TargetItem = tvItem;
-                e.Handled = true;
-            }
+            //if (dropInfo == null)
+            //    dropInfo = new DropInfo();
+
+            //if (dropInfo.CouldHadleDrop(e))
+            //{
+            //    dropInfo.TargetItem = tvItem;
+            //    e.Handled = true;
+            //}
+
             OnDragOver(tvItem, e);
         }
 
@@ -87,10 +91,19 @@ namespace SmartCmdArgs.View
         {
             //System.Diagnostics.Debug.WriteLine($"DragOver: {tvItem.Item}");
 
-            if (dropInfo != null && dropInfo.CouldHadleDrop(e))
+            if (dropInfo == null)
+                dropInfo = new DropInfo();
+
+            if (dropInfo.CouldHadleDrop(e))
             {
+                // set the target item, this also initializes the DropTargetAdorner
+                dropInfo.TargetItem = tvItem;
+
+                // update data related to the current mouse position and the target item
                 dropInfo.UpdateInsertPosition(e);
                 dropInfo.UpdateTargetCollectionAndIndex();
+
+                // set the drop mode Copy|Move|None
                 if (dropInfo.CanAcceptData(DropInfo.ExtractDropData(dragInfo, e)))
                 {
                     if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
@@ -100,7 +113,10 @@ namespace SmartCmdArgs.View
                 }
                 else
                     e.Effects = DragDropEffects.None;
+
+                // this controls the adorner
                 dropInfo.Effects = e.Effects;
+                
                 e.Handled = true;
             }
         }
@@ -274,6 +290,7 @@ namespace SmartCmdArgs.View
             get => targetItem;
             set
             {
+                if (targetItem == value) return;
                 targetItem = value;
                 DropTargetAdorner = value != null ? new DropTargetAdorner(value, this) : null;
 
