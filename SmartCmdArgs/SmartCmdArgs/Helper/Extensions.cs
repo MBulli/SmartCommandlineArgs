@@ -40,5 +40,10 @@ namespace SmartCmdArgs.Helper
                 that.Add(item);
             }
         }
+
+        public static bool HasMultipleItems<T>(this IEnumerable<T> enumerable)
+        {
+            return enumerable.Skip(1).Any();
+        }
     }
 }
