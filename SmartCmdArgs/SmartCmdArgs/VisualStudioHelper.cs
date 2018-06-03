@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using SmartCmdArgs.Helper;
+using System.Runtime.InteropServices;
 
 namespace SmartCmdArgs
 {
@@ -185,26 +186,46 @@ namespace SmartCmdArgs
 
         public IVsHierarchy HierarchyForProjectName(string projectName)
         {
-            ErrorHandler.ThrowOnFailure(solutionService.GetProjectOfUniqueName(projectName, out IVsHierarchy hier));
+            int hr = solutionService.GetProjectOfUniqueName(projectName, out IVsHierarchy hier);
+            if (ErrorHandler.Failed(hr))
+            {
+                throw new VisualStudioHelperException("GetProjectOfUniqueName", hr);
+            }           
             return hier;
         }
 
         public IVsHierarchy HierarchyForProjectGuid(Guid propjectGuid)
         {
-            ErrorHandler.ThrowOnFailure(solutionService.GetProjectOfGuid(propjectGuid, out IVsHierarchy hier));
+            int hr = solutionService.GetProjectOfGuid(propjectGuid, out IVsHierarchy hier);
+            if (ErrorHandler.Failed(hr))
+            {
+                throw new VisualStudioHelperException("GetProjectOfGuid", hr);
+            }
             return hier;
         }
 
         public Guid ProjectGuidForProjetName(string projectName)
         {
             var hier = HierarchyForProjectName(projectName);
-            ErrorHandler.ThrowOnFailure(solutionService.GetGuidOfProject(hier, out Guid result));
+
+            int hr = solutionService.GetGuidOfProject(hier, out Guid result);
+            if (ErrorHandler.Failed(hr))
+            {
+                throw new VisualStudioHelperException("GetGuidOfProject", hr);
+            }
             return result;
         }
 
         public string GetUniqueName(IVsHierarchy hierarchy)
         {
-            solutionService.GetUniqueNameOfProject(hierarchy, out string uniqueName);
+            if (hierarchy == null)
+                return null;
+
+            int hr = solutionService.GetUniqueNameOfProject(hierarchy, out string uniqueName);
+            if (ErrorHandler.Failed(hr))
+            {
+                throw new VisualStudioHelperException("GetUniqueNameOfProject", hr);
+            }
             return uniqueName;
         }
 
@@ -449,6 +470,15 @@ namespace SmartCmdArgs
         {
             Logger.Info($"{eventName} event was ignored because project type is not supported.");
             return S_OK;
+        }
+    }
+
+    class VisualStudioHelperException : Exception
+    {
+        public VisualStudioHelperException(string calledFunction, int hr, [CallerMemberName] string callingFunction = null)
+            : base($"Call to {calledFunction} in {callingFunction} failed with error: {Marshal.GetExceptionForHR(hr).Message}", Marshal.GetExceptionForHR(hr))
+        {
+
         }
     }
 }
