@@ -156,10 +156,19 @@ namespace SmartCmdArgs
             if (IsVcsSupportEnabled)
             {
                 Logger.Info("Tree content changed and VCS support is enabled. Saving all project commands to json file.");
-                foreach (var propjectGuid in ToolWindowViewModel.TreeViewModel.Projects.Keys)
+                foreach (var projectGuid in ToolWindowViewModel.TreeViewModel.Projects.Keys)
                 {
-                    var project = vsHelper.HierarchyForProjectGuid(propjectGuid);
-                    SaveJsonForProject(project);
+                    try
+                    {
+                        var project = vsHelper.HierarchyForProjectGuid(projectGuid);
+                        SaveJsonForProject(project);
+                    }
+                    catch(Exception ex)
+                    {
+                        string msg = $"Failed to save json for project '{projectGuid}' with error: {ex}";
+                        Logger.Error(msg);
+                        MessageBox.Show(msg);
+                    }
                 }
             }
         }
