@@ -199,7 +199,18 @@ namespace SmartCmdArgs.Helper
 
         public static bool IsSupportedProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy project)
         {
-            return project != null && supportedProjects.ContainsKey(project.GetKind());
+            if (project == null)
+                return false;
+
+            // Issue #52:
+            // Excludes a magic and strange SingleFileIntelisens pseudo project in %appdata%\Roaming\Microsoft\VisualStudio\<VS_Version>\SingleFileISense
+            // Seems like that all of these _sfi_***.vcxproj files have the same magic guid
+            // https://blogs.msdn.microsoft.com/vcblog/2015/04/29/single-file-intellisense-and-other-ide-improvements-in-vs2015/
+            // https://support.sourcegear.com/viewtopic.php?f=5&t=22778
+            if (project.GetGuid() == new Guid("a7a2a36c-3c53-4ccb-b52e-425623e2dda5"))
+                return false;
+
+            return supportedProjects.ContainsKey(project.GetKind());
         }
 
         public static void AddAllArguments(IVsHierarchy project, List<string> allArgs)
