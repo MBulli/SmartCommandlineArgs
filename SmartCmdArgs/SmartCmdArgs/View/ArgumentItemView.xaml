@@ -11,12 +11,24 @@
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{d:DesignData CmdBase}"
              >
-    <DockPanel Height="18">
+    <DockPanel Height="20">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
             <CheckBox x:Name="checkbox" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
             <imaging:CrispImage x:Name="Icon" Visibility="{Binding Converter={c:ItemVisibilityConverter}}"/>
         </StackPanel>
-        <TextBlock x:Name="textblock" Margin="4,0.5,0,0" Text="{Binding Value}" FontWeight="{Binding FontWeight, ElementName=argView}"/>
-        <TextBox x:Name="textbox" Visibility="Collapsed" Margin="1,-0.5,0,0" Text="{Binding Value, Mode=TwoWay}" KeyDown="Textbox_OnKeyDown" LostFocus="textbox_LostFocus"  />
+        <TextBlock x:Name="textblock"
+                   VerticalAlignment="Center"
+                   Height="{Binding ElementName=textbox, Path=Height}"
+                   Margin="4,0,0,0"
+                   Text="{Binding Value}"
+                   FontWeight="{Binding FontWeight, ElementName=argView}"/>
+        
+        <TextBox x:Name="textbox"
+                 VerticalAlignment="Center"
+                 Margin="1,0,0,0"
+                 Text="{Binding Value, Mode=TwoWay}"
+                 KeyDown="Textbox_OnKeyDown"
+                 LostFocus="textbox_LostFocus"
+                 Visibility="Collapsed" />
     </DockPanel>
 </UserControl>

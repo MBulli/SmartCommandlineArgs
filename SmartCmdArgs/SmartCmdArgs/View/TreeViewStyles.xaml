@@ -119,9 +119,13 @@
                             <Border x:Name="HeaderBorder" 
                                     Grid.Column="1" Grid.Row="0" 
                                     SnapsToDevicePixels="true">
+                                
+                                <!-- Margin: Skip 1px bottom border -->
                                 <ContentPresenter x:Name="PART_Header" 
                                                     ContentSource="Header" HorizontalAlignment="Stretch" 
-                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
+                                                    Margin="{TemplateBinding BorderThickness}"  
+                                                  />
                             </Border>
                         </Grid>
 
