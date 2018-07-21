@@ -98,7 +98,7 @@ namespace SmartCmdArgs.View
         private void LeaveEditMode()
         {
             textblock.Visibility = Visibility.Visible;
-            textbox.Visibility = Visibility.Collapsed;
+            textbox.Visibility = Visibility.Hidden;
         }
         
         private void Textbox_OnKeyDown(object sender, KeyEventArgs e)

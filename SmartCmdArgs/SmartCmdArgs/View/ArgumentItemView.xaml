@@ -11,7 +11,11 @@
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{d:DesignData CmdBase}"
              >
-    <DockPanel Height="20">
+    
+    <!-- The textbox determines the size of a row, because 
+         the textsize depends on system settings like scaling and high contrast.
+         The textblock and everything else have to follow. -->
+    <DockPanel Height="Auto">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
             <CheckBox x:Name="checkbox" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
             <imaging:CrispImage x:Name="Icon" Visibility="{Binding Converter={c:ItemVisibilityConverter}}"/>
@@ -21,7 +25,7 @@
                    Height="{Binding ElementName=textbox, Path=Height}"
                    Margin="4,0,0,0"
                    Text="{Binding Value}"
-                   FontWeight="{Binding FontWeight, ElementName=argView}"/>
+                   FontWeight="{Binding FontWeight, ElementName=argView}" />
         
         <TextBox x:Name="textbox"
                  VerticalAlignment="Center"
@@ -29,6 +33,6 @@
                  Text="{Binding Value, Mode=TwoWay}"
                  KeyDown="Textbox_OnKeyDown"
                  LostFocus="textbox_LostFocus"
-                 Visibility="Collapsed" />
+                 Visibility="Hidden" />
     </DockPanel>
 </UserControl>
