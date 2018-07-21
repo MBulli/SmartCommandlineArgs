@@ -119,7 +119,9 @@ namespace SmartCmdArgs.ViewModel
                     IEnumerable<string> enabledEntries;
                     enabledEntries = TreeViewModel.FocusedProject.CheckedArguments.Select(e => e.Value);
                     string prjCmdArgs = string.Join(" ", enabledEntries);
-                    Clipboard.SetText(prjCmdArgs);
+                    
+                    // copy=false see #58
+                    Clipboard.SetDataObject(prjCmdArgs, copy: false);                   
                 }, canExecute: _ => HasStartupProject());
 
             ShowAllProjectsCommand = new RelayCommand(
