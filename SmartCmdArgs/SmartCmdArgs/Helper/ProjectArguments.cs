@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.ProjectSystem;
 
 namespace SmartCmdArgs.Helper
 {
@@ -130,10 +131,15 @@ namespace SmartCmdArgs.Helper
                     return;
 
                 WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(launchSettingsProvider.ActiveProfile);
-                
                 writableLaunchProfile.CommandLineArgs = arguments;
 
-                launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, false);
+                // Does not work on VS2015, which should be okay ...
+                // We don't hold references for VS2015, where the interface is called IThreadHandling
+                IProjectThreadingService projectThreadingService = context.UnconfiguredProject.ProjectService.Services.ThreadingPolicy;
+                projectThreadingService.ExecuteSynchronously(() =>
+                {
+                    return launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront:false);
+                });
             }
         }
 
