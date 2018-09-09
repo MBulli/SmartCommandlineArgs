@@ -23,13 +23,6 @@ namespace SmartCmdArgs.ViewModel
 
         public TreeViewModel TreeViewModel { get; }
 
-        private bool _isInEditMode;
-        public bool IsInEditMode
-        {
-            get { return _isInEditMode; }
-            set { _isInEditMode = value; OnNotifyPropertyChanged(); }
-        }
-
         private string itemsFontFamily;
         public string ItemsFontFamily
         {
@@ -267,11 +260,6 @@ namespace SmartCmdArgs.ViewModel
             {
                 cmdProject.Value = project.GetDisplayName();
             }
-        }
-
-        public void CancelEdit()
-        {
-            System.Windows.Controls.DataGrid.CancelEditCommand.Execute(null, null);
         }
     }
 }

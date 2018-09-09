@@ -105,10 +105,10 @@ namespace SmartCmdArgs
             // The tool window keeps the focus if pfCommitFailed==1
 
             bool escapeDown = System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Escape);
-            if (escapeDown && view.ViewModel.IsInEditMode)
+            if (escapeDown && view.ViewModel.TreeViewModel.IsInEditMode)
             {
                 pfCommitFailed = 1;
-                view.ViewModel.CancelEdit();
+                view.ViewModel.TreeViewModel.CancelEditMode();
             }
             else
             {

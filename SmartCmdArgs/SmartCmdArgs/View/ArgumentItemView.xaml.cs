@@ -26,7 +26,7 @@ namespace SmartCmdArgs.View
     /// </summary>
     public partial class ArgumentItemView : UserControl
     {
-        private CmdBase Item => (CmdBase) DataContext;
+        private CmdBase Item => (CmdBase)DataContext;
 
         public ArgumentItemView()
         {
@@ -55,7 +55,7 @@ namespace SmartCmdArgs.View
                         Mode = BindingMode.OneWay,
                         Converter = new ItemMonikerConverter()
                     };
-                    bind.Bindings.Add(new Binding {Source = con});
+                    bind.Bindings.Add(new Binding { Source = con });
                     bind.Bindings.Add(new Binding
                     {
                         Source = con,
@@ -66,9 +66,9 @@ namespace SmartCmdArgs.View
             }
         }
 
-        private void OnItemEditModeChanged(object sender, CmdBase.EditMode e)
+        private void OnItemEditModeChanged(object sender, CmdBase.EditModeChangedEventArgs e)
         {
-            switch (e)
+            switch (e.Mode)
             {
                 case CmdBase.EditMode.BeganEdit:
                     EnterEditMode(selectAll: true);
@@ -77,8 +77,10 @@ namespace SmartCmdArgs.View
                     EnterEditMode(selectAll: false);
                     break;
                 case CmdBase.EditMode.CanceledEdit:
+                    LeaveEditMode(editCanceled: true);
+                    break;
                 case CmdBase.EditMode.CommitedEdit:
-                    LeaveEditMode();
+                    LeaveEditMode(editCanceled: false);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(e), e, null);
@@ -87,6 +89,8 @@ namespace SmartCmdArgs.View
 
         private void EnterEditMode(bool selectAll)
         {
+            textbox.Text = Item.Value;
+
             textblock.Visibility = Visibility.Collapsed;
             textbox.Visibility = Visibility.Visible;
             textbox.Focus();
@@ -97,20 +101,22 @@ namespace SmartCmdArgs.View
                 textbox.CaretIndex = textbox.Text.Length;
         }
 
-        private void LeaveEditMode()
+        private void LeaveEditMode(bool editCanceled)
         {
+            if (!editCanceled)
+            {
+                Item.Value = textbox.Text;
+            }
+
             textblock.Visibility = Visibility.Visible;
             textbox.Visibility = Visibility.Hidden;
         }
-        
+
         private void Textbox_OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape && Item.IsInEditMode)
-            {
-                Item.CancelEdit();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Return && Item.IsInEditMode)
+            // Escape is a CmdKey and hence handled in ToolWindow
+
+            if (e.Key == Key.Return && Item.IsInEditMode)
             {
                 Item.CommitEdit();
                 e.Handled = true;

@@ -51,6 +51,14 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        private CmdBase currentEditingItem;
+        private bool _isInEditMode;
+        public bool IsInEditMode
+        {
+            get { return _isInEditMode; }
+            set { _isInEditMode = value; OnNotifyPropertyChanged(); }
+        }
+
         public CmdProject FocusedProject => projects.Values.FirstOrDefault(project => project.IsFocusedItem) ?? startupProjects.FirstOrDefault();
 
         public CmdBase FocusedItem => projects.Values.Concat(projects.Values.SelectMany(prj => prj)).LastOrDefault(prj => prj.IsFocusedItem) ?? startupProjects.FirstOrDefault();
@@ -241,6 +249,14 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        public void CancelEditMode()
+        {
+            if (IsInEditMode)
+            {
+                currentEditingItem?.CancelEdit();
+            }
+        }
+
         public event EventHandler<CmdBase> ItemSelectionChanged;
         public event EventHandler TreeContentChanged;
 
@@ -268,6 +284,10 @@ namespace SmartCmdArgs.ViewModel
                     TreeContentChanged?.Invoke(this, EventArgs.Empty);
                     break;
                 case CheckStateChangedEvent e:
+                    break;
+                case ItemEditModeChangedEvent e:
+                    currentEditingItem = e.IsInEditMode ? e.Sender : null;
+                    IsInEditMode = e.IsInEditMode;                   
                     break;
                 default:
                     break;

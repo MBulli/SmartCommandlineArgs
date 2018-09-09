@@ -24,13 +24,12 @@
                    VerticalAlignment="Center"
                    Height="{Binding ElementName=textbox, Path=Height}"
                    Margin="4,0,0,0"
-                   Text="{Binding Value}"
+                   Text="{Binding Value, Mode=OneWay}"
                    FontWeight="{Binding FontWeight, ElementName=argView}" />
         
         <TextBox x:Name="textbox"
                  VerticalAlignment="Center"
                  Margin="1,0,0,0"
-                 Text="{Binding Value, Mode=TwoWay}"
                  KeyDown="Textbox_OnKeyDown"
                  LostFocus="textbox_LostFocus"
                  Visibility="Hidden" />

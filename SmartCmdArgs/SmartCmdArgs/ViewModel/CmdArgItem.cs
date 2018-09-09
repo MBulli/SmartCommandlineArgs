@@ -158,10 +158,20 @@ namespace SmartCmdArgs.ViewModel
         private bool isInEditMode;
         public bool IsInEditMode { get => isInEditMode; private set => SetAndNotify(value, ref this.isInEditMode); }
 
-        public event EventHandler<EditMode> EditModeChanged;
+        public event EventHandler<EditModeChangedEventArgs> EditModeChanged;
         public enum EditMode
         {
             BeganEdit, BeganEditAndReset, CanceledEdit, CommitedEdit
+        }
+
+        public class EditModeChangedEventArgs : EventArgs
+        {
+            public EditMode Mode { get; }
+
+            public EditModeChangedEventArgs(EditMode mode)
+            {
+                Mode = mode;
+            }
         }
 
         public void BeginEdit(string initialValue = null)
@@ -171,9 +181,12 @@ namespace SmartCmdArgs.ViewModel
             if (!IsInEditMode)
             {
                 editBackupValue = Value;
-                if (initialValue != null) Value = initialValue;
+                if (initialValue != null)
+                    Value = initialValue;
+
                 IsInEditMode = true;
-                EditModeChanged?.Invoke(this, initialValue != null ? EditMode.BeganEditAndReset : EditMode.BeganEdit);
+                EditModeChanged?.Invoke(this, new EditModeChangedEventArgs(initialValue != null ? EditMode.BeganEditAndReset : EditMode.BeganEdit));
+                BubbleEvent(new ItemEditModeChangedEvent(this, isInEditMode: true));
             }
         }
 
@@ -185,8 +198,10 @@ namespace SmartCmdArgs.ViewModel
             {
                 Value = editBackupValue;
                 editBackupValue = null;
+
                 IsInEditMode = false;
-                EditModeChanged?.Invoke(this, EditMode.CanceledEdit);
+                EditModeChanged?.Invoke(this, new EditModeChangedEventArgs(EditMode.CanceledEdit));
+                BubbleEvent(new ItemEditModeChangedEvent(this, isInEditMode: false));
             }
         }
 
@@ -197,8 +212,10 @@ namespace SmartCmdArgs.ViewModel
             if (IsInEditMode)
             {
                 editBackupValue = null;
+
                 IsInEditMode = false;
-                EditModeChanged?.Invoke(this, EditMode.CommitedEdit);
+                EditModeChanged?.Invoke(this, new EditModeChangedEventArgs(EditMode.CommitedEdit));
+                BubbleEvent(new ItemEditModeChangedEvent(this, isInEditMode: false));
             }
         }
 

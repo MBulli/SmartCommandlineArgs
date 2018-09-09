@@ -72,4 +72,15 @@ namespace SmartCmdArgs.ViewModel
             ChangeEventArgs = changeEventArgs;
         }
     }
+
+    public class ItemEditModeChangedEvent : TreeEventBase
+    {
+        public bool IsInEditMode { get; }
+
+        public ItemEditModeChangedEvent(CmdBase sender, bool isInEditMode)
+            : base(sender)
+        {
+            IsInEditMode = isInEditMode;
+        }
+    }
 }
