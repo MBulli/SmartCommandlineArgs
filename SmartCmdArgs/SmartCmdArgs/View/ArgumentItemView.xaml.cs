@@ -40,11 +40,13 @@ namespace SmartCmdArgs.View
             BindingOperations.ClearBinding(Icon, CrispImage.MonikerProperty);
 
             if (e.OldValue != null)
-                ((CmdBase)e.OldValue).EditModeChanged -= OnItemEditModeChanged;
+            {
+                WeakEventManager<CmdBase, CmdBase.EditModeChangedEventArgs>.RemoveHandler((CmdBase)e.OldValue, nameof(CmdBase.EditModeChanged), OnItemEditModeChanged);
+            }
 
             if (e.NewValue != null)
             {
-                ((CmdBase)e.NewValue).EditModeChanged += OnItemEditModeChanged;
+                WeakEventManager<CmdBase, CmdBase.EditModeChangedEventArgs>.AddHandler((CmdBase)e.NewValue, nameof(CmdBase.EditModeChanged), OnItemEditModeChanged);
 
                 if (e.NewValue is CmdContainer con)
                 {
