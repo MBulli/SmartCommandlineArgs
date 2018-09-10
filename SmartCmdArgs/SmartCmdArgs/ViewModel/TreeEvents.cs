@@ -10,6 +10,7 @@ namespace SmartCmdArgs.ViewModel
     public abstract class TreeEventBase
     {
         public CmdBase Sender { get; }
+        public CmdProject AffectedProject { get; set; }
 
         public TreeEventBase(CmdBase sender)
         {

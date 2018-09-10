@@ -56,11 +56,6 @@ namespace SmartCmdArgs.ViewModel
             this.isChecked = isChecked;
         }
 
-        public virtual CmdProject FindParentProject()
-        {
-            return Parent as CmdProject;
-        }
-
         /// <summary>
         /// Notifies the parent that an event occurred.
         /// The event will eventually reach the CmdProject root element
@@ -501,12 +496,10 @@ namespace SmartCmdArgs.ViewModel
 
         protected override void BubbleEvent(TreeEventBase treeEvent, CmdBase receiver)
         {
-            ParentTreeViewModel?.OnTreeEvent(treeEvent);
-        }
+            if (treeEvent != null)
+                treeEvent.AffectedProject = this;
 
-        public override CmdProject FindParentProject()
-        {
-            return this;
+            ParentTreeViewModel?.OnTreeEvent(treeEvent);
         }
     }
 

@@ -262,10 +262,10 @@ namespace SmartCmdArgs.ViewModel
             public CmdBase Source { get; private set; }
             public CmdProject AffectedProject { get; private set; }
             
-            public TreeChangedEventArgs(CmdBase source)
+            public TreeChangedEventArgs(CmdBase source, CmdProject affectedProject)
             {
                 Source = source;
-                AffectedProject = source.FindParentProject();
+                AffectedProject = affectedProject;
             }
         }
 
@@ -284,9 +284,9 @@ namespace SmartCmdArgs.ViewModel
 
         public void OnTreeEvent(TreeEventBase treeEvent)
         {
-            void FireTreeChanged(CmdBase source)
+            void FireTreeChanged(TreeEventBase e)
             {
-                TreeContentChanged?.Invoke(this, new TreeChangedEventArgs(source));
+                TreeContentChanged?.Invoke(this, new TreeChangedEventArgs(e.Sender, e.AffectedProject));
             }
 
             switch (treeEvent)
@@ -295,10 +295,10 @@ namespace SmartCmdArgs.ViewModel
                     OnItemSelectionChanged(e.Sender);
                     break;
                 case ParentChangedEvent e:
-                    FireTreeChanged(e.Sender);
+                    FireTreeChanged(e);
                     break;
                 case ValueChangedEvent e:
-                    FireTreeChanged(e.Sender);
+                    FireTreeChanged(e);
                     break;
                 case CheckStateChangedEvent e:
                     break;
@@ -309,7 +309,7 @@ namespace SmartCmdArgs.ViewModel
                 case ItemsChangedEvent e:
                     // This is called quite frequently, maybe we need
                     // to reduce the number of calls somehow.
-                    FireTreeChanged(e.Sender);
+                    FireTreeChanged(e);
                     break;
                 default:
                     break;
