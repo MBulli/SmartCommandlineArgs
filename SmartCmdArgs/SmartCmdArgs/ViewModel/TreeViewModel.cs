@@ -257,8 +257,20 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        public class TreeChangedEventArgs : EventArgs
+        {
+            public CmdBase Source { get; private set; }
+            public CmdProject AffectedProject { get; private set; }
+            
+            public TreeChangedEventArgs(CmdBase source)
+            {
+                Source = source;
+                AffectedProject = source.FindParentProject();
+            }
+        }
+
         public event EventHandler<CmdBase> ItemSelectionChanged;
-        public event EventHandler TreeContentChanged;
+        public event EventHandler<TreeChangedEventArgs> TreeContentChanged;
 
         public virtual void OnItemSelectionChanged(CmdBase item)
         {
@@ -272,16 +284,21 @@ namespace SmartCmdArgs.ViewModel
 
         public void OnTreeEvent(TreeEventBase treeEvent)
         {
+            void FireTreeChanged(CmdBase source)
+            {
+                TreeContentChanged?.Invoke(this, new TreeChangedEventArgs(source));
+            }
+
             switch (treeEvent)
             {
                 case SelectionChangedEvent e:
                     OnItemSelectionChanged(e.Sender);
                     break;
                 case ParentChangedEvent e:
-                    TreeContentChanged?.Invoke(this, EventArgs.Empty);
+                    FireTreeChanged(e.Sender);
                     break;
                 case ValueChangedEvent e:
-                    TreeContentChanged?.Invoke(this, EventArgs.Empty);
+                    FireTreeChanged(e.Sender);
                     break;
                 case CheckStateChangedEvent e:
                     break;

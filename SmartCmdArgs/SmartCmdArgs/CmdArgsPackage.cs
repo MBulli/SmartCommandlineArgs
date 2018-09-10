@@ -151,24 +151,24 @@ namespace SmartCmdArgs
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
         }
 
-        private void OnTreeContentChanged(object sender, EventArgs e)
+        private void OnTreeContentChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
             if (IsVcsSupportEnabled)
             {
-                Logger.Info("Tree content changed and VCS support is enabled. Saving all project commands to json file.");
-                foreach (var projectGuid in ToolWindowViewModel.TreeViewModel.Projects.Keys)
+                Logger.Info($"Tree content changed and VCS support is enabled. Saving all project commands to json file for project '{e.AffectedProject.Id}'.");
+
+                var projectGuid = e.AffectedProject.Id;
+
+                try
                 {
-                    try
-                    {
-                        var project = vsHelper.HierarchyForProjectGuid(projectGuid);
-                        SaveJsonForProject(project);
-                    }
-                    catch(Exception ex)
-                    {
-                        string msg = $"Failed to save json for project '{projectGuid}' with error: {ex}";
-                        Logger.Error(msg);
-                        MessageBox.Show(msg);
-                    }
+                    var project = vsHelper.HierarchyForProjectGuid(projectGuid);
+                    SaveJsonForProject(project);
+                }
+                catch(Exception ex)
+                {
+                    string msg = $"Failed to save json for project '{projectGuid}' with error: {ex}";
+                    Logger.Error(msg);
+                    MessageBox.Show(msg);
                 }
             }
         }

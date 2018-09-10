@@ -56,6 +56,11 @@ namespace SmartCmdArgs.ViewModel
             this.isChecked = isChecked;
         }
 
+        public virtual CmdProject FindParentProject()
+        {
+            return Parent as CmdProject;
+        }
+
         /// <summary>
         /// Notifies the parent that an event occurred.
         /// The event will eventually reach the CmdProject root element
@@ -153,6 +158,7 @@ namespace SmartCmdArgs.ViewModel
             OnIsCheckedChanged(IsChecked, value, false);
         }
 
+#region Editing
         private string editBackupValue;
 
         private bool isInEditMode;
@@ -224,6 +230,7 @@ namespace SmartCmdArgs.ViewModel
             if (!IsEditable)
                 throw new InvalidOperationException("Can't execute edit operation on a not editable item!");
         }
+#endregion
 
         public virtual CmdBase Copy()
         {
@@ -495,6 +502,11 @@ namespace SmartCmdArgs.ViewModel
         protected override void BubbleEvent(TreeEventBase treeEvent, CmdBase receiver)
         {
             ParentTreeViewModel?.OnTreeEvent(treeEvent);
+        }
+
+        public override CmdProject FindParentProject()
+        {
+            return this;
         }
     }
 
