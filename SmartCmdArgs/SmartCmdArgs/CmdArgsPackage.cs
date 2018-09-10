@@ -222,16 +222,26 @@ namespace SmartCmdArgs
             {
                 using (fsWatcher?.TemporarilyDisable())
                 {
-                    try
+                    // Tell VS that we're about to change this file
+                    // This matters if the user has TFVC with server workpace (see #57)
+
+                    if (!vsHelper.CanEditFile(filePath))
                     {
-                        using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
-                        {
-                            Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
-                        }
+                        Logger.Error($"VS or the user did no let us editing our file :/");
                     }
-                    catch (Exception e)
+                    else
                     {
-                        Logger.Warn($"Failed to write to file '{filePath}' with error '{e}'.");
+                        try
+                        {
+                            using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+                            {
+                                Logic.ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Warn($"Failed to write to file '{filePath}' with error '{e}'.");
+                        }
                     }
                 }
             }

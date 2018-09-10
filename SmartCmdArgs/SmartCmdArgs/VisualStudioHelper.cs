@@ -261,6 +261,65 @@ namespace SmartCmdArgs
         }
 
 
+        private bool gettingCheckoutStatus;
+
+        /// <summary>
+        /// This function asks to the QueryEditQuerySave service if it is possible to
+        /// edit the file.
+        /// </summary>
+        /// <returns>True if the editing of the file are enabled, otherwise returns false.</returns>
+        public bool CanEditFile(string fileName)
+        {
+            // see: https://github.com/Microsoft/VSSDK-Extensibility-Samples/blob/master/Editor_With_Toolbox/CS/EditorPane.cs
+
+            // Check the status of the recursion guard
+            if (gettingCheckoutStatus)
+                return false;
+
+            try
+            {
+                // Set the recursion guard
+                gettingCheckoutStatus = true;
+
+                // Get the QueryEditQuerySave service
+                IVsQueryEditQuerySave2 queryEditQuerySave = package.GetService<SVsQueryEditQuerySave, IVsQueryEditQuerySave2>();
+
+                // Now call the QueryEdit method to find the edit status of this file
+                string[] documents = { fileName };
+                uint result;
+                uint outFlags;
+
+                // Note that this function can pop up a dialog to ask the user to checkout the file.
+                // When this dialog is visible, it is possible to receive other request to change
+                // the file and this is the reason for the recursion guard.
+                int hr = queryEditQuerySave.QueryEditFiles(
+                    0,              // Flags
+                    1,              // Number of elements in the array
+                    documents,      // Files to edit
+                    null,           // Input flags
+                    null,           // Input array of VSQEQS_FILE_ATTRIBUTE_DATA
+                    out result,     // result of the checkout
+                    out outFlags    // Additional flags
+                );
+
+                if (ErrorHandler.Succeeded(hr) && (result == (uint)tagVSQueryEditResult.QER_EditOK))
+                {
+                    // In this case (and only in this case) we can return true from this function.
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"QueryEditFiles() returned non-ok result ({result})");
+                    return false;
+                }
+            }
+            finally
+            {
+                gettingCheckoutStatus = false;
+            }
+        }
+
+
         Timer _startupProjectCheckTimer = null;
         private void OnStartupProjectChanged(IVsHierarchy startupProjectHierarchy)
         {
