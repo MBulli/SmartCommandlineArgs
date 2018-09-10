@@ -306,6 +306,11 @@ namespace SmartCmdArgs.ViewModel
                     currentEditingItem = e.IsInEditMode ? e.Sender : null;
                     IsInEditMode = e.IsInEditMode;                   
                     break;
+                case ItemsChangedEvent e:
+                    // This is called quite frequently, maybe we need
+                    // to reduce the number of calls somehow.
+                    FireTreeChanged(e.Sender);
+                    break;
                 default:
                     break;
             }
