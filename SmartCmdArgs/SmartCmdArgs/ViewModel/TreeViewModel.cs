@@ -229,7 +229,7 @@ namespace SmartCmdArgs.ViewModel
                     project.Filter = filter;
                 }
 
-                TreeItemsView.Refresh();
+                TreeItemsView?.Refresh();
             });
         }
 

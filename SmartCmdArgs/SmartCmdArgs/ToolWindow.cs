@@ -26,7 +26,7 @@ namespace SmartCmdArgs
     /// </para>
     /// </remarks>
     [Guid(ToolWindow.ToolWindowGuidString)]
-    public class ToolWindow : ToolWindowPane, IVsWindowFrameNotify3, IVsWindowPaneCommit, IVsWindowPaneCommitFilter, IVsWindowSearch
+    public class ToolWindow : ToolWindowPane, IVsWindowFrameNotify3, IVsWindowPaneCommit, IVsWindowPaneCommitFilter
     {
         public const string ToolWindowGuidString = "a21b35ed-5c13-4d55-a3d2-71054c4e9540";
 
@@ -123,10 +123,11 @@ namespace SmartCmdArgs
             pfCommitCommand = 1;
             return Microsoft.VisualStudio.VSConstants.S_OK;
         }
-        
-        bool IVsWindowSearch.SearchEnabled => true;
 
-        IVsEnumWindowSearchOptions IVsWindowSearch.SearchOptionsEnum => new WindowSearchOptionEnumerator(searchOptions);
+
+        public override bool SearchEnabled => true;
+
+        public override IVsEnumWindowSearchOptions SearchOptionsEnum => new WindowSearchOptionEnumerator(searchOptions);
 
         public override IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
