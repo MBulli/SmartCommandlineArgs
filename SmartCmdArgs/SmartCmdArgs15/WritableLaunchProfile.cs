@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 
-namespace SmartCmdArgs.Helper
+namespace SmartCmdArgs15
 {
     class WritableLaunchProfile : ILaunchProfile
     {

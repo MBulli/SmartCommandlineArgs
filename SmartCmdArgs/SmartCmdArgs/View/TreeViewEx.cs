@@ -16,7 +16,6 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Microsoft.VisualStudio.Composition.Tasks;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 

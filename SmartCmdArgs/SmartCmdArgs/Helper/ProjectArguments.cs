@@ -5,10 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
-using Microsoft.VisualStudio.ProjectSystem.Properties;
-using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.ProjectSystem;
 
 namespace SmartCmdArgs.Helper
 {
@@ -149,53 +146,16 @@ namespace SmartCmdArgs.Helper
 
         private static void SetCpsProjectArguments(EnvDTE.Project project, string arguments)
         {
-            IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
-            if (context == null && project != null)
-            {
-                // VC implements this on their DTE.Project.Object
-                context = project.Object as IVsBrowseObjectContext;
-            }
-
-            if (context != null)
-            {
-                var launchSettingsProvider = context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
-                var activeLaunchProfile = launchSettingsProvider.ActiveProfile;
-                
-                if (activeLaunchProfile == null)
-                    return;
-
-                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(launchSettingsProvider.ActiveProfile);
-                writableLaunchProfile.CommandLineArgs = arguments;
-
-                // Does not work on VS2015, which should be okay ...
-                // We don't hold references for VS2015, where the interface is called IThreadHandling
-                IProjectThreadingService projectThreadingService = context.UnconfiguredProject.ProjectService.Services.ThreadingPolicy;
-                projectThreadingService.ExecuteSynchronously(() =>
-                {
-                    return launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront:false);
-                });
-            }
+            // Should only be called in VS 2017 or higher
+            // .Net Core 2 is not supported by VS 2015, so this should not cause problems
+            SmartCmdArgs15.CpsProjectSupport.SetCpsProjectArguments(project, arguments);
         }
 
         private static void GetCpsProjectAllArguments(EnvDTE.Project project, List<string> allArgs)
         {
-            IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
-            if (context == null && project != null)
-            {
-                // VC implements this on their DTE.Project.Object
-                context = project.Object as IVsBrowseObjectContext;
-            }
-
-            if (context != null)
-            {
-                var launchSettingsProvider = context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
-                var launchProfiles = launchSettingsProvider?.CurrentSnapshot?.Profiles;
-
-                if (launchProfiles == null)
-                    return;
-
-                allArgs.AddRange(launchProfiles.Select(launchProfile => launchProfile.CommandLineArgs));
-            }
+            // Should only be called in VS 2017 or higher
+            // see SetCpsProjectArguments
+            SmartCmdArgs15.CpsProjectSupport.GetCpsProjectAllArguments(project, allArgs);
         }
 
         private static Dictionary<Guid, ProjectArgumentsHandlers> supportedProjects = new Dictionary<Guid, ProjectArgumentsHandlers>()
