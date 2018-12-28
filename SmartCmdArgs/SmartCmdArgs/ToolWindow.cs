@@ -62,6 +62,12 @@ namespace SmartCmdArgs
             this.view = new View.ToolWindowControl(viewModel);
             this.Content = view;
 
+            // Id from VSPackage.resx.
+            BitmapResourceID = 300;
+
+            // The index is actually zero-based, in contrast to the bitmaps in the vsct-file.
+            BitmapIndex = 0;
+
             this.ToolBar = new CommandID(Commands.CmdArgsToolBarCmdSet, Commands.TWToolbar);
 
             matchCaseSearchOption = new WindowSearchBooleanOption("Match Case", "Enable to make search case sensitive.", false);
