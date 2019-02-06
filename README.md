@@ -1,6 +1,6 @@
 
 # <img src="Doc/SmartCommandLineIcon-Readme.png">  Smart Commandline Arguments 
-A Visual Studio Extension which aims to provide a better UI to manage your command line arguments
+A Visual Studio Extension which aims to provide a better UI to manage your command line arguments  
 
 ## Install
 Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments "Visual Studio Marketplace").
@@ -43,3 +43,9 @@ Tools → Options → Smart Commandline Arguments → General → Enable version
 <kbd>Delete</kbd>: Remove selected items.  
 <kbd>Insert</kbd>: Add a new item.  
 <kbd>Alt</kbd>+<kbd>Enable/Disable Item</kbd>: Disable all other Items (useful if only one item should be enabled).
+
+## Donation
+If you like this extension you can buy us a cup of coffe or a coke! :D
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/SmartCLIArgs/5)
+
