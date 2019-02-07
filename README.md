@@ -2,7 +2,7 @@
 # <img src="Doc/SmartCommandLineIcon-Readme.png">  Smart Commandline Arguments 
 A Visual Studio Extension which aims to provide a better UI to manage your command line arguments  
 
-> The only smart way to pass standard command arguments to programs.
+> "The only smart way to pass standard command arguments to programs." - [A happy user](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments#review-details)
 
 ## Install
 Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments "Visual Studio Marketplace").
