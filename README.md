@@ -45,7 +45,7 @@ Tools → Options → Smart Commandline Arguments → General → Enable version
 <kbd>Alt</kbd>+<kbd>Enable/Disable Item</kbd>: Disable all other Items (useful if only one item should be enabled).
 
 ## Donation
-If you like this extension you can buy us a cup of coffe or a coke! :D
+If you like this extension you can buy us a cup of coffee or a coke! :D
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/SmartCLIArgs/5)
 
