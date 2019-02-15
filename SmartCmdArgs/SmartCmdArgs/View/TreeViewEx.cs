@@ -98,6 +98,10 @@ namespace SmartCmdArgs.View
 
         public TreeViewEx()
         {
+            // TODO: Implement ContextMenu
+            //ContextMenu = new ContextMenu();
+            //ContextMenu.Items.Add(new MenuItem { Header = "Test", Command = new RelayCommand(() => System.Windows.Forms.MessageBox.Show($"{SelectedTreeViewItems.FirstOrDefault()?.Item.Value}")) });
+
             DataContextChanged += OnDataContextChanged;            
         }
 
@@ -269,6 +273,11 @@ namespace SmartCmdArgs.View
                 }
                 else
                 {
+                    if (treeViewItem.Item.IsInEditMode)
+                    {
+                        treeViewItem.Item.CommitEdit();
+                    }
+                    
                     SetIsItemSelected(treeViewItem, false);
                 }
             }
@@ -494,6 +503,7 @@ namespace SmartCmdArgs.View
             //                               Selected        Up       DeselctItem
             //                  Multi        Unselected      Down     AddToSelection
             //                               Selected        Up       DeselctItem
+            // Right     None   Single       Unselected      Down     SelectExclusive
 
             if (e.ChangedButton == MouseButton.Left)
             {
@@ -542,6 +552,17 @@ namespace SmartCmdArgs.View
                             ParentTreeView.SelectItem(this);
                         else if (Item.IsSelected && !down)
                             ParentTreeView.DeselectItem(this);
+                    }
+                }
+            }
+            else if (e.ChangedButton == MouseButton.Right)
+            {
+                if (!isShiftPressed && !isCtrlPressed)
+                {
+                    if (!ParentTreeView.SelectedTreeViewItems.HasMultipleItems())
+                    {
+                        if (!Item.IsSelected && down)
+                            ParentTreeView.SelectItemExclusively(this);
                     }
                 }
             }
@@ -596,8 +617,15 @@ namespace SmartCmdArgs.View
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
+            if (e.ChangedButton == MouseButton.Right)
+            {
+                // Don't do anything and let the magic handle the ContextMenu (for both the TextBox and TreeItems)
+                return;
+            }
+
             // Note: e.ClickCount is always 1 for MouseUp
-            Debug.WriteLine($"Entering OnMouseUp");          
+            Debug.WriteLine($"Entering OnMouseUp");
+            
             e.Handled = true; // we handle  clicks
             
             // release mouse capture
@@ -615,7 +643,7 @@ namespace SmartCmdArgs.View
             if (e.ChangedButton == MouseButton.Left)
             {
                 // First click is special, as the only action to take is to select the item
-                // Only do stuff if were not the first click
+                // Only do stuff if we're not the first click
                 if (!justReceivedSelection)
                 {
                     bool hasManyItemsSelected = ParentTreeView.SelectedTreeViewItems.Take(2).Count() == 2;
