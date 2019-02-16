@@ -99,10 +99,13 @@ namespace SmartCmdArgs.View
         public TreeViewEx()
         {
             // TODO: Implement ContextMenu
-            //ContextMenu = new ContextMenu();
-            //ContextMenu.Items.Add(new MenuItem { Header = "Test", Command = new RelayCommand(() => System.Windows.Forms.MessageBox.Show($"{SelectedTreeViewItems.FirstOrDefault()?.Item.Value}")) });
+            ContextMenu = new ContextMenu();
+            ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Cut });
+            ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Copy });
+            ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Paste });
+            ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
 
-            DataContextChanged += OnDataContextChanged;            
+            DataContextChanged += OnDataContextChanged;
         }
 
         private void OnDataContextChanged(object tv, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
