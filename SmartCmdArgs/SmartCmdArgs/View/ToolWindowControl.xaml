@@ -30,7 +30,8 @@
                           PasteCommand="{Binding PasteItemsCommand}"
                           ToggleSelectedCommand="{Binding ToggleSelectedCommand}"
                           CutCommand="{Binding CutItemsCommand}"
-                          DeleteCommand="{Binding RemoveEntriesCommand}">
+                          DeleteCommand="{Binding RemoveEntriesCommand}"
+                          SplitArgumentCommand="{Binding SplitArgumentCommand}">
             <local:TreeViewEx.ItemContainerStyleSelector>
                 <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
                                             GroupItemStyle="{StaticResource GroupItemStyle}"

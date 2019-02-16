@@ -193,6 +193,20 @@ namespace SmartCmdArgs.ViewModel
                 SelectIndexCommand.Execute(0);
         }
 
+        public void SelectItems(IEnumerable<CmdBase> items)
+        {
+            var isFirst = true;
+            foreach (CmdBase item in items)
+            {
+                if (isFirst)
+                  SelectItemCommand.Execute(item);
+                else
+                  item.IsSelected = true;
+                
+                isFirst = false;
+            }
+        }
+
         public void AddItemAtFocusedItem(CmdBase item)
         {
             AddItemsAtFocusedItem(new[] {item});
@@ -200,15 +214,19 @@ namespace SmartCmdArgs.ViewModel
 
         public void AddItemsAtFocusedItem(IEnumerable<CmdBase> items)
         {
-            var focusedItem = FocusedItem;
-            if (focusedItem is CmdContainer con && (con.IsExpanded || focusedItem is CmdProject))
+            AddItemsAt(FocusedItem, items);
+        }
+
+        public void AddItemsAt(CmdBase targetItem, IEnumerable<CmdBase> items)
+        {
+            if (targetItem is CmdContainer con && (con.IsExpanded || targetItem is CmdProject))
             {
                 con.Items.InsertRange(0, items);
             }
             else
             {
-                var insertIdx = focusedItem.Parent.Items.IndexOf(focusedItem) + 1;
-                focusedItem.Parent.Items.InsertRange(insertIdx, items);
+                var insertIdx = targetItem.Parent.Items.IndexOf(targetItem) + 1;
+                targetItem.Parent.Items.InsertRange(insertIdx, items);
             }
         }
 

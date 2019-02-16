@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -70,7 +71,9 @@ namespace SmartCmdArgs.ViewModel
         
         public RelayCommand CutItemsCommand { get; }
 
-        public event EventHandler CommandLineChanged;
+        public RelayCommand SplitArgumentCommand { get; }
+
+        private static Regex SplitArgumentRegex = new Regex(@"(""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
 
         public ToolWindowViewModel()
         {
@@ -132,6 +135,21 @@ namespace SmartCmdArgs.ViewModel
             PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => HasStartupProject());
 
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => HasSelectedItems());
+
+            SplitArgumentCommand = new RelayCommand(() =>
+            {
+                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                if (selectedItem == null || !(selectedItem is CmdArgument)) return;
+                
+                var newItems = SplitArgumentRegex.Matches(selectedItem.Value)
+                               .Cast<Match>()
+                               .Select((m) => new CmdArgument(arg: m.Value, isChecked: selectedItem.IsChecked ?? false))
+                               .ToList();
+                
+                TreeViewModel.AddItemsAt(selectedItem, newItems);
+                RemoveItems(new[] { selectedItem });
+                TreeViewModel.SelectItems(newItems);
+            });
         }
 
 
@@ -163,11 +181,7 @@ namespace SmartCmdArgs.ViewModel
             if (pastedItems != null && pastedItems.Count > 0)
             {
                 TreeViewModel.AddItemsAtFocusedItem(pastedItems);
-                TreeViewModel.SelectItemCommand.Execute(pastedItems.First());
-                foreach (var pastedItem in pastedItems.Skip(1))
-                {
-                    pastedItem.IsSelected = true;
-                }
+                TreeViewModel.SelectItems(pastedItems);
             }
         }
 
@@ -207,12 +221,23 @@ namespace SmartCmdArgs.ViewModel
 
         private void RemoveSelectedItems()
         {
-            var indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
-                .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
-                .TakeWhile(item => !item.IsSelected).Count();
+            RemoveItems(TreeViewModel.SelectedItems, true);
+        }
+
+        private void RemoveItems(IEnumerable<CmdBase> items, bool doSelection = false)
+        {
+            var itemsSet = new HashSet<CmdBase>(items);
+
+            int indexToSelect = 0;
+            if (doSelection)
+            {
+                indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
+                    .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
+                    .TakeWhile(item => !itemsSet.Contains(item)).Count();
+            }
 
             bool removedAnItem = false;
-            foreach (var item in TreeViewModel.SelectedItems.ToList())
+            foreach (var item in itemsSet)
             {
                 if (item.Parent != null)
                 {
@@ -224,11 +249,14 @@ namespace SmartCmdArgs.ViewModel
             if (!removedAnItem)
                 return;
 
-            indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
-                .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
-                .Take(indexToSelect + 1).Count() - 1;
-            if (TreeViewModel.SelectIndexCommand.CanExecute(indexToSelect))
-                TreeViewModel.SelectIndexCommand.Execute(indexToSelect);
+            if (doSelection)
+            {
+                indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
+                    .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
+                    .Take(indexToSelect + 1).Count() - 1;
+                if (TreeViewModel.SelectIndexCommand.CanExecute(indexToSelect))
+                    TreeViewModel.SelectIndexCommand.Execute(indexToSelect);
+            }
         }
 
         public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)

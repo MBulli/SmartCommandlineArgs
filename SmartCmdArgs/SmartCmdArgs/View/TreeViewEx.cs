@@ -67,6 +67,13 @@ namespace SmartCmdArgs.View
         public static readonly DependencyProperty SelectItemCommandProperty = DependencyProperty.Register(
             nameof(SelectItemCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand SelectItemCommand { get => (ICommand)GetValue(SelectItemCommandProperty); set => SetValue(SelectItemCommandProperty, value); }
+        
+
+        public static readonly DependencyProperty SplitArgumentCommandProperty = DependencyProperty.Register(
+            nameof(SplitArgumentCommand), typeof(ICommand), typeof(TreeViewEx), 
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._splitArgumentMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand SplitArgumentCommand { get { return (ICommand)GetValue(SplitArgumentCommandProperty); } set { SetValue(SplitArgumentCommandProperty, value); } }
+
 
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
@@ -96,6 +103,8 @@ namespace SmartCmdArgs.View
 
         public IEnumerable<TreeViewItemEx> VisibleTreeViewItems => GetTreeViewItems(this, false);
 
+        private MenuItem _splitArgumentMenuItem;
+
         public TreeViewEx()
         {
             // TODO: Implement ContextMenu
@@ -104,6 +113,8 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Copy });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Paste });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
+            ContextMenu.Items.Add(new Separator());
+            ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
 
             DataContextChanged += OnDataContextChanged;
         }
