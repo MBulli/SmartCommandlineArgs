@@ -487,6 +487,10 @@ namespace SmartCmdArgs.View
             // Wait for possible double click.
             // Single click => edit; double click => toggle expand state
             leftSingleClickCancelSource?.Cancel();
+
+            if (!Item.IsEditable)
+                return;
+
             leftSingleClickCancelSource = new CancellationTokenSource();
 
             var doubleClickTime = TimeSpan.FromMilliseconds(System.Windows.Forms.SystemInformation.DoubleClickTime);
