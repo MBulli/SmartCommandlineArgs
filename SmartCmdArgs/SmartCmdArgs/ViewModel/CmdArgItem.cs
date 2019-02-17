@@ -431,13 +431,17 @@ namespace SmartCmdArgs.ViewModel
         {
             if (includeSelf)
                 yield return this;
-            foreach (var item in useView ? ItemsView.Cast<CmdBase>() : Items)
-            {
-                yield return item;
-                if (item is CmdContainer con && (con.IsExpanded || includeCollapsed))
+
+            if (IsExpanded || includeCollapsed)
+            { 
+                foreach (var item in useView ? ItemsView.Cast<CmdBase>() : Items)
                 {
-                    foreach (var conItem in con.GetEnumerable(useView, false, includeCollapsed))
-                        yield return conItem;
+                    yield return item;
+                    if (item is CmdContainer con && (con.IsExpanded || includeCollapsed))
+                    {
+                        foreach (var conItem in con.GetEnumerable(useView, false, includeCollapsed))
+                            yield return conItem;
+                    }
                 }
             }
         }
