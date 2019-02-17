@@ -73,7 +73,7 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand SplitArgumentCommand { get; }
 
-        private static Regex SplitArgumentRegex = new Regex(@"(""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
+        private static Regex SplitArgumentRegex = new Regex(@"(?:""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
 
         public ToolWindowViewModel()
         {
@@ -149,7 +149,7 @@ namespace SmartCmdArgs.ViewModel
                 TreeViewModel.AddItemsAt(selectedItem, newItems);
                 RemoveItems(new[] { selectedItem });
                 TreeViewModel.SelectItems(newItems);
-            });
+            }, canExecute: _ => HasSingleSelectedItem() && (TreeViewModel.SelectedItems.FirstOrDefault() is CmdArgument));
         }
 
 
@@ -208,6 +208,15 @@ namespace SmartCmdArgs.ViewModel
         private bool HasSelectedItems()
         {
             return TreeViewModel.SelectedItems.Count > 0;
+        }
+
+        /// <summary>
+        /// Helper method for CanExecute condition of the commands
+        /// </summary>
+        /// <returns>True if axactly one line is selected</returns>
+        private bool HasSingleSelectedItem()
+        {
+            return TreeViewModel.SelectedItems.Count == 1;
         }
 
         /// <summary>
