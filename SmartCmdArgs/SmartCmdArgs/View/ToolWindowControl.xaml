@@ -31,7 +31,8 @@
                           ToggleSelectedCommand="{Binding ToggleSelectedCommand}"
                           CutCommand="{Binding CutItemsCommand}"
                           DeleteCommand="{Binding RemoveEntriesCommand}"
-                          SplitArgumentCommand="{Binding SplitArgumentCommand}">
+                          SplitArgumentCommand="{Binding SplitArgumentCommand}"
+                          NewGroupFromArgumentsCommand="{Binding NewGroupFromArgumentsCommand}">
             <local:TreeViewEx.ItemContainerStyleSelector>
                 <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
                                             GroupItemStyle="{StaticResource GroupItemStyle}"

@@ -21,6 +21,7 @@ namespace SmartCmdArgs.ViewModel
     {
         private static readonly string DefaultFontFamily = null;
         private static readonly string MonospaceFontFamily = "Consolas";
+        private static readonly Regex SplitArgumentRegex = new Regex(@"(?:""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
 
         public TreeViewModel TreeViewModel { get; }
 
@@ -73,7 +74,7 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand SplitArgumentCommand { get; }
 
-        private static Regex SplitArgumentRegex = new Regex(@"(?:""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
+        public RelayCommand NewGroupFromArgumentsCommand { get; }
 
         public ToolWindowViewModel()
         {
@@ -150,6 +151,31 @@ namespace SmartCmdArgs.ViewModel
                 RemoveItems(new[] { selectedItem });
                 TreeViewModel.SelectItems(newItems);
             }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>());
+
+            NewGroupFromArgumentsCommand = new RelayCommand(() =>
+            {
+                var itemsToGroup = GetSelectedRootItems(true).ToList();
+
+                if (itemsToGroup.Count == 0)
+                    return;
+                
+                CmdBase firstElement = itemsToGroup.First();
+                CmdContainer parent = firstElement.Parent;
+
+                // add new group
+                var newGrp = new CmdGroup(name: "");
+                var insertIndex = parent.TakeWhile((item) => item != firstElement).Count();
+                parent.Items.Insert(insertIndex, newGrp);
+                
+                // move items to new group
+                parent.Items.RemoveRange(itemsToGroup);
+                newGrp.Items.AddRange(itemsToGroup);
+                
+                // set selection to new group
+                if (TreeViewModel.SelectItemCommand.CanExecute(newGrp))
+                    TreeViewModel.SelectItemCommand.Execute(newGrp);
+
+            }, _ => HasSelectedItems() && HaveSameParent(GetSelectedRootItems(true)));
         }
 
 
@@ -161,16 +187,34 @@ namespace SmartCmdArgs.ViewModel
             TreeViewModel.Projects.Clear();
         }
 
-        private void CopySelectedItemsToClipboard(bool includeProjects)
+        private bool HaveSameParent(IEnumerable<CmdBase> itmes)
+        {
+            CmdContainer parent = null;
+            foreach (var item in itmes)
+            {
+                if (parent == null)
+                    parent = item.Parent;
+                else if (parent != item.Parent)
+                    return false;
+            }
+            return parent != null;
+        }
+
+        private IEnumerable<CmdBase> GetSelectedRootItems(bool includeProjects)
         {
             var selectedItems = TreeViewModel.Projects.Values.SelectMany(prj => prj.GetEnumerable(includeSelf: includeProjects)).Where(item => item.IsSelected).ToList();
             var set = new HashSet<CmdContainer>(selectedItems.OfType<CmdContainer>());
-            var itemsToCopy = selectedItems.Where(x => !set.Contains(x.Parent));
+            var result = selectedItems.Where(x => !set.Contains(x.Parent));
 
             if (includeProjects)
-                itemsToCopy = itemsToCopy.SelectMany(item => item is CmdProject prj ? prj.Items : Enumerable.Repeat(item, 1));
+                result = result.SelectMany(item => item is CmdProject prj ? prj.Items : Enumerable.Repeat(item, 1));
 
-            var itemListToCopy = itemsToCopy.ToList();
+            return result;
+        }
+
+        private void CopySelectedItemsToClipboard(bool includeProjects)
+        {
+            var itemListToCopy = GetSelectedRootItems(includeProjects).ToList();
             if (itemListToCopy.Count > 0)
                 Clipboard.SetDataObject(DataObjectGenerator.Genrate(itemListToCopy, includeObject: false));
         }

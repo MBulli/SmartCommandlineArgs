@@ -73,6 +73,11 @@ namespace SmartCmdArgs.View
             nameof(SplitArgumentCommand), typeof(ICommand), typeof(TreeViewEx), 
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._splitArgumentMenuItem.Command = (ICommand)e.NewValue));
         public ICommand SplitArgumentCommand { get { return (ICommand)GetValue(SplitArgumentCommandProperty); } set { SetValue(SplitArgumentCommandProperty, value); } }
+        
+        public static readonly DependencyProperty NewGroupFromArgumentsCommandProperty = DependencyProperty.Register(
+            nameof(NewGroupFromArgumentsCommand), typeof(ICommand), typeof(TreeViewEx), 
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._newGroupFromArgumentsMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand NewGroupFromArgumentsCommand { get { return (ICommand)GetValue(NewGroupFromArgumentsCommandProperty); } set { SetValue(NewGroupFromArgumentsCommandProperty, value); } }
 
 
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
@@ -104,6 +109,7 @@ namespace SmartCmdArgs.View
         public IEnumerable<TreeViewItemEx> VisibleTreeViewItems => GetTreeViewItems(this, false);
 
         private MenuItem _splitArgumentMenuItem;
+        private MenuItem _newGroupFromArgumentsMenuItem;
 
         public TreeViewEx()
         {
@@ -115,6 +121,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
             ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
+            ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Items" });
 
             DataContextChanged += OnDataContextChanged;
         }
