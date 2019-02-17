@@ -61,7 +61,31 @@ namespace SmartCmdArgs.ViewModel
 
         public CmdProject FocusedProject => projects.Values.FirstOrDefault(project => project.IsFocusedItem) ?? startupProjects.FirstOrDefault();
 
-        public CmdBase FocusedItem => projects.Values.Concat(projects.Values.SelectMany(prj => prj)).LastOrDefault(prj => prj.IsFocusedItem) ?? startupProjects.FirstOrDefault();
+        public CmdBase FocusedItem
+        {
+            get
+            {
+                return IterateOnlyFocused(projects.Values).LastOrDefault() ?? startupProjects.FirstOrDefault();
+
+                IEnumerable<CmdBase> IterateOnlyFocused(IEnumerable<CmdBase> items)
+                {
+                    foreach (var item in items)
+                    {
+                        if (item.IsFocusedItem)
+                        {
+                            yield return item;
+                            if (item is CmdContainer con && con.IsExpanded)
+                            {
+                                foreach (var conItem in IterateOnlyFocused(con.Items))
+                                {
+                                    yield return conItem;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         public ObservableCollection<CmdProject> StartupProjects => startupProjects;
 
