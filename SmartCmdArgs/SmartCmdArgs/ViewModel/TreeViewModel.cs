@@ -245,6 +245,9 @@ namespace SmartCmdArgs.ViewModel
         {
             if (targetItem is CmdContainer con && (con.IsExpanded || targetItem is CmdProject))
             {
+                // make sure the container is expanded, so the selection works and the user knows what's happening
+                con.IsExpanded = true;
+
                 con.Items.InsertRange(0, items);
             }
             else
