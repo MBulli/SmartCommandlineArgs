@@ -27,6 +27,9 @@ using EnvDTE;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
+using System.Threading;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs
 {
@@ -47,16 +50,17 @@ namespace SmartCmdArgs
     /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
     /// </para>
     /// </remarks>
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("#110", "#112", "2.0.7", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(ToolWindow), Window = ToolWindow.ToolWindowGuidString)]
+    [ProvideOptionPage(typeof(CmdArgsOptionPage), "Smart Commandline Arguments", "General", 1000, 1001, false)]   
     [ProvideBindingPath]
-    [Guid(CmdArgsPackage.PackageGuidString)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-    [ProvideOptionPage(typeof(CmdArgsOptionPage), "Smart Commandline Arguments", "General", 1000, 1001, false)]
     [ProvideKeyBindingTable(ToolWindow.ToolWindowGuidString, 200)]
-    public sealed class CmdArgsPackage : Package
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [Guid(CmdArgsPackage.PackageGuidString)]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]   
+    public sealed class CmdArgsPackage : AsyncPackage
     {
         /// <summary>
         /// CmdArgsPackage GUID string.
@@ -105,20 +109,21 @@ namespace SmartCmdArgs
             return (Interface)base.GetService(typeof(Service));
         }
 
+        internal async Task<Interface> GetServiceAsync<Service, Interface>()
+        {
+            return (Interface)await base.GetServiceAsync(typeof(Service));
+        }
+
         internal Page GetDialogPage<Page>()
             where Page : class
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return GetDialogPage(typeof(Page)) as Page;
         }
 
-        /// <summary>
-        /// Initialization of the package; this method is called right after the package is sited, so this is the place
-        /// where you can put all the initialization code that rely on services provided by VisualStudio.
-        /// </summary>
-        protected override void Initialize()
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            Commands.Initialize(this);
-            base.Initialize();
+            await Commands.InitializeAsync(this);
 
             vsHelper = new VisualStudioHelper(this);
             vsHelper.SolutionAfterOpen += VsHelper_SolutionOpend;
@@ -132,7 +137,10 @@ namespace SmartCmdArgs
             vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
             vsHelper.ProjectAfterRename += VsHelper_ProjectRenamed;
 
-            vsHelper.Initialize();
+            await vsHelper.InitializeAsync();
+
+            // Switch to main thread
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
 
             GetDialogPage<CmdArgsOptionPage>().VcsSupportChanged += OptionPage_VcsSupportChanged;
             GetDialogPage<CmdArgsOptionPage>().UseMonospaceFontChanged += OptionPage_UseMonospaceFontChanged;
@@ -144,11 +152,13 @@ namespace SmartCmdArgs
 
                 InitializeForSolution();
             }
-            
+
             ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
             ToolWindowViewModel.TreeViewModel.TreeContentChanged += OnTreeContentChanged;
 
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
+
+            await base.InitializeAsync(cancellationToken, progress);
         }
 
         private void OnTreeContentChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
@@ -346,28 +356,28 @@ namespace SmartCmdArgs
         {
             Logger.Info($"Dispatching update commands function call for project '{project.GetDisplayName()}'");
 
-            Application.Current.Dispatcher.BeginInvoke(
-                DispatcherPriority.Normal,
-                new Action(() =>
+            JoinableTaskFactory.RunAsync(async delegate
+            {
+                // git branch and merge might lead to a race condition here.
+                // If a branch is checkout where the json file differs, the
+                // filewatcher will trigger an event which is dispatched here.
+                // However, while the function call is queued VS may reopen the
+                // solution due to changes. This will ultimately result in a
+                // null ref exception because the project object is unloaded.
+                // UpdateCommandsForProject() will skip such projects because
+                // their guid is empty.
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                Logger.Info($"Dispatched update commands function call for project '{project.GetDisplayName()}'");
+
+                if (project.GetGuid() == Guid.Empty)
                 {
-                    // git branch and merge might lead to a race condition here.
-                    // If a branch is checkout where the json file differs, the
-                    // filewatcher will trigger an event which is dispatched here.
-                    // However, while the function call is queued VS may reopen the
-                    // solution due to changes. This will ultimately result in a
-                    // null ref exception because the project object is unloaded.
-                    // UpdateCommandsForProject() will skip such projects because
-                    // their guid is empty.
+                    Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
+                }
 
-                    Logger.Info($"Dispatched update commands function call for project '{project.GetDisplayName()}'");
-
-                    if (project.GetGuid() == Guid.Empty)
-                    {
-                        Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
-                    }
-
-                    UpdateCommandsForProject(project);
-                }));
+                UpdateCommandsForProject(project);
+            });
         }
 
         private void UpdateCommandsForProject(IVsHierarchy project)

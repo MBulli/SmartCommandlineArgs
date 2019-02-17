@@ -7,9 +7,12 @@
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs
 {
@@ -49,20 +52,31 @@ namespace SmartCmdArgs
         private readonly CmdArgsPackage package;
 
         /// <summary>
+        /// Initializes the singleton instance of the command.
+        /// </summary>
+        /// <param name="package">Owner package, not null.</param>
+        public static async Task InitializeAsync(CmdArgsPackage package)
+        {
+            if (package == null)
+                throw new ArgumentNullException(nameof(package));
+            
+            var cmdService = await package.GetServiceAsync<IMenuCommandService, OleMenuCommandService>();
+
+            // AddCommand needs to be run on main thread!
+            await package.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Instance = new Commands(package, cmdService);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Commands"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        private Commands(CmdArgsPackage package)
+        private Commands(CmdArgsPackage package, OleMenuCommandService commandService)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
             this.package = package;
 
-            OleMenuCommandService commandService = this.ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (commandService != null)
             {
                 AddCommandToService(commandService, VSMenuCmdSet, ToolWindowCommandId, this.ShowToolWindow);
@@ -86,26 +100,6 @@ namespace SmartCmdArgs
         {
             get;
             private set;
-        }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private IServiceProvider ServiceProvider
-        {
-            get
-            {
-                return this.package;
-            }
-        }
-
-        /// <summary>
-        /// Initializes the singleton instance of the command.
-        /// </summary>
-        /// <param name="package">Owner package, not null.</param>
-        public static void Initialize(CmdArgsPackage package)
-        {
-            Instance = new Commands(package);
         }
 
         private void AddCommandToService(OleMenuCommandService service, Guid cmdSet, int cmdId, EventHandler handler)
@@ -155,6 +149,8 @@ namespace SmartCmdArgs
         /// <param name="e">The event args.</param>
         private void ShowToolWindow(object sender, EventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.

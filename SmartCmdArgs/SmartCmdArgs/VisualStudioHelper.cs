@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using EnvDTE;
 using SmartCmdArgs.Helper;
 using System.Runtime.InteropServices;
+using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs
 {
@@ -86,20 +87,25 @@ namespace SmartCmdArgs
 
         public VisualStudioHelper(CmdArgsPackage package)
         {
-            this.package = package;
-            this.appObject = package.GetService<SDTE, EnvDTE.DTE>();
+            this.package = package ?? throw new ArgumentNullException(nameof(package));
+
             _VSConstants_VSStd97CmdID_GUID = typeof(VSConstants.VSStd97CmdID).GUID.ToString("B").ToUpper();
             _VSConstants_VSStd2KCmdID_GUID = typeof(VSConstants.VSStd2KCmdID).GUID.ToString("B").ToUpper();
         }
 
-        public void Initialize()
+        public async Task InitializeAsync()
         {
             if (!initialized)
             {
+                this.appObject = await package.GetServiceAsync<SDTE, DTE>();
+
                 // Setup solution related stuff
-                this.solutionService = package.GetService<SVsSolution, IVsSolution2>();
-                this.solutionBuildService = package.GetService<SVsSolutionBuildManager, IVsSolutionBuildManager2>();
-                this.selectionMonitor = package.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
+                this.solutionService = await package.GetServiceAsync<SVsSolution, IVsSolution2>();
+                this.solutionBuildService = await package.GetServiceAsync<SVsSolutionBuildManager, IVsSolutionBuildManager2>();
+                this.selectionMonitor = await package.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
+
+                // Following code needs to be executed on main thread
+                await package.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Set startup project
                 ErrorHandler.ThrowOnFailure(this.solutionService.AdviseSolutionEvents(this, out solutionEventsCookie));
@@ -117,7 +123,7 @@ namespace SmartCmdArgs
                         string projectDir = pHierarchy.GetProjectDir();
                         string projectName = pHierarchy.GetName();
 
-                        ProjectStateMap[projectGuid] = new ProjectState{ ProjectDir = projectDir, ProjectName = projectName, IsLoaded = true };
+                        ProjectStateMap[projectGuid] = new ProjectState { ProjectDir = projectDir, ProjectName = projectName, IsLoaded = true };
                     }
                 }
 
@@ -157,6 +163,8 @@ namespace SmartCmdArgs
 
         public IEnumerable<IVsHierarchy> GetSupportedProjects(bool includeUnloaded = false)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             __VSENUMPROJFLAGS property = includeUnloaded ? __VSENUMPROJFLAGS.EPF_ALLINSOLUTION : __VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION;
 
             Guid guid = Guid.Empty;
