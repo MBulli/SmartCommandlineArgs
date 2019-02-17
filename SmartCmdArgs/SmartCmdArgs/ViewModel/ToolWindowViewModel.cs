@@ -98,7 +98,7 @@ namespace SmartCmdArgs.ViewModel
             RemoveEntriesCommand = new RelayCommand(
                 () => {
                     RemoveSelectedItems();
-                }, canExecute: _ => HasStartupProjectAndSelectedItems());
+                }, canExecute: _ => HasStartupProjectAndSelectedItems() && !HasSingleSelectedItemOfType<CmdProject>());
 
             MoveEntriesUpCommand = new RelayCommand(
                 () => {
@@ -134,7 +134,7 @@ namespace SmartCmdArgs.ViewModel
 
             PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => HasStartupProject());
 
-            CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => HasSelectedItems());
+            CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => HasSelectedItems() && !HasSingleSelectedItemOfType<CmdProject>());
 
             SplitArgumentCommand = new RelayCommand(() =>
             {
@@ -149,7 +149,7 @@ namespace SmartCmdArgs.ViewModel
                 TreeViewModel.AddItemsAt(selectedItem, newItems);
                 RemoveItems(new[] { selectedItem });
                 TreeViewModel.SelectItems(newItems);
-            }, canExecute: _ => HasSingleSelectedItem() && (TreeViewModel.SelectedItems.FirstOrDefault() is CmdArgument));
+            }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>());
         }
 
 
@@ -198,7 +198,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if a valid startup project is set</returns>
         private bool HasStartupProject()
         {
-            return TreeViewModel.StartupProjects.Any();
+            return TreeViewModel.StartupProjects.Count > 0;
         }
 
         /// <summary>
@@ -217,6 +217,24 @@ namespace SmartCmdArgs.ViewModel
         private bool HasSingleSelectedItem()
         {
             return TreeViewModel.SelectedItems.Count == 1;
+        }
+
+        /// <summary>
+        /// Helper method for CanExecute condition of the commands
+        /// </summary>
+        /// <returns>True if an line of the given type is selected</returns>
+        private bool HasSelectedItemOfType<T>()
+        {
+            return TreeViewModel.SelectedItems.OfType<T>().Any();
+        }
+        
+        /// <summary>
+        /// Helper method for CanExecute condition of the commands
+        /// </summary>
+        /// <returns>True if axactly one line is selected and it is of the given type.</returns>
+        private bool HasSingleSelectedItemOfType<T>()
+        {
+            return HasSingleSelectedItem() && (TreeViewModel.SelectedItems.First() is T);
         }
 
         /// <summary>
