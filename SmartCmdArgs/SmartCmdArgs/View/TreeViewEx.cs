@@ -434,26 +434,31 @@ namespace SmartCmdArgs.View
             BindingOperations.ClearBinding(this, TreeViewEx.IsItemSelectedProperty);
             BindingOperations.ClearBinding(this, IsExpandedProperty);
 
-            if (e.NewValue is CmdBase)
+            if (e.OldValue is CmdBase oldCmd)
             {
-                Binding bind = new Binding
+                oldCmd.IsFocusedItem = false;
+            }
+
+            if (e.NewValue is CmdBase newCmd)
+            {
+                newCmd.IsFocusedItem = IsKeyboardFocusWithin;
+
+                SetBinding(TreeViewEx.IsItemSelectedProperty, new Binding
                 {
                     Source = e.NewValue,
                     Path = new PropertyPath(nameof(CmdBase.IsSelected)),
                     Mode = BindingMode.TwoWay
-                };
-                SetBinding(TreeViewEx.IsItemSelectedProperty, bind);
+                });
             }
 
             if (e.NewValue is CmdContainer)
             {
-                Binding bind = new Binding
+                SetBinding(IsExpandedProperty, new Binding
                 {
                     Source = e.NewValue,
                     Path = new PropertyPath(nameof(CmdContainer.IsExpanded)),
                     Mode = BindingMode.TwoWay
-                };
-                SetBinding(IsExpandedProperty, bind);
+                });
             }
         }
 
