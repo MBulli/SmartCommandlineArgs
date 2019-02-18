@@ -281,10 +281,25 @@ namespace SmartCmdArgs
 
         private void UpdateConfigurationForProject(IVsHierarchy project)
         {
-            if (project == null) return;
+            if (project == null) 
+                return;
+
+            var commandLineArgs = CreateCommandLineArgsForProject(project);
+            if (commandLineArgs == null)
+                return;
+            
+            ProjectArguments.SetArguments(project, commandLineArgs);
+            Logger.Info($"Updated Configuration for Project: {project.GetName()}");
+        }
+
+        private string CreateCommandLineArgsForProject(IVsHierarchy project)
+        {
+            if (project == null)
+                return null;
+
             IEnumerable<CmdArgument> checkedArgs = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid())?.CheckedArguments;
             if (checkedArgs == null)
-                return;
+                return null;
 
             IEnumerable<string> enabledEntries;
             if (IsMacroEvaluationEnabled)
@@ -297,9 +312,12 @@ namespace SmartCmdArgs
             {
                 enabledEntries = checkedArgs.Select(e => e.Value);
             }
-            string prjCmdArgs = string.Join(" ", enabledEntries);
-            ProjectArguments.SetArguments(project, prjCmdArgs);
-            Logger.Info($"Updated Configuration for Project: {project.GetName()}");
+            return string.Join(" ", enabledEntries);
+        }
+
+        public string CreateCommandLineArgsForProject(Guid guid)
+        {
+            return CreateCommandLineArgsForProject(vsHelper.HierarchyForProjectGuid(guid));
         }
 
         private void AttachFsWatcherToProject(IVsHierarchy project)

@@ -119,9 +119,13 @@ namespace SmartCmdArgs.ViewModel
 
             CopyCommandlineCommand = new RelayCommand(
                 () => {
-                    IEnumerable<string> enabledEntries;
-                    enabledEntries = TreeViewModel.FocusedProject.CheckedArguments.Select(e => e.Value);
-                    string prjCmdArgs = string.Join(" ", enabledEntries);
+                    var focusedProject = TreeViewModel.FocusedProject;
+                    if (focusedProject == null)
+                        return;
+
+                    var prjCmdArgs = CmdArgsPackage.CreateCommandLineArgsForProject(focusedProject.Id);
+                    if (prjCmdArgs == null)
+                        return;
                     
                     // copy=false see #58
                     Clipboard.SetDataObject(prjCmdArgs, copy: false);                   
