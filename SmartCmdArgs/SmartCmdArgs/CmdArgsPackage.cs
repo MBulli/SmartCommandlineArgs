@@ -73,7 +73,7 @@ namespace SmartCmdArgs
         private readonly Regex msBuildPropertyRegex = new Regex(@"\$\((?<propertyName>(?:(?!\$\()[^)])*?)\)", RegexOptions.Compiled);
 
         private VisualStudioHelper vsHelper;
-        public ViewModel.ToolWindowViewModel ToolWindowViewModel { get; } = new ViewModel.ToolWindowViewModel();
+        public ToolWindowViewModel ToolWindowViewModel { get; }
 
         private bool IsVcsSupportEnabled => GetDialogPage<CmdArgsOptionPage>().VcsSupport;
         private bool IsMacroEvaluationEnabled => GetDialogPage<CmdArgsOptionPage>().MacroEvaluation;
@@ -98,6 +98,8 @@ namespace SmartCmdArgs
             // any Visual Studio service because at this point the package object is created but
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
+
+            ToolWindowViewModel = new ToolWindowViewModel(this);
 
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
@@ -268,6 +270,11 @@ namespace SmartCmdArgs
                     Logger.Warn($"Failed to delete file '{filePath}' with error '{e}'.");
                 }
             }
+        }
+
+        public void SetAsStartupProject(Guid guid)
+        {
+            vsHelper.SetNewStartupProject(vsHelper.GetUniqueName(vsHelper.HierarchyForProjectGuid(guid)));
         }
 
         #endregion

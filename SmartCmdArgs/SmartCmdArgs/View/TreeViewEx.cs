@@ -78,6 +78,11 @@ namespace SmartCmdArgs.View
             nameof(NewGroupFromArgumentsCommand), typeof(ICommand), typeof(TreeViewEx), 
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._newGroupFromArgumentsMenuItem.Command = (ICommand)e.NewValue));
         public ICommand NewGroupFromArgumentsCommand { get { return (ICommand)GetValue(NewGroupFromArgumentsCommandProperty); } set { SetValue(NewGroupFromArgumentsCommandProperty, value); } }
+        
+        public static readonly DependencyProperty SetAsStartupProjectCommandProperty = DependencyProperty.Register(
+            nameof(SetAsStartupProjectCommand), typeof(ICommand), typeof(TreeViewEx), 
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._setAsStartupProjectMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand SetAsStartupProjectCommand { get { return (ICommand)GetValue(SetAsStartupProjectCommandProperty); } set { SetValue(SetAsStartupProjectCommandProperty, value); } }
 
 
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
@@ -110,6 +115,7 @@ namespace SmartCmdArgs.View
 
         private MenuItem _splitArgumentMenuItem;
         private MenuItem _newGroupFromArgumentsMenuItem;
+        private MenuItem _setAsStartupProjectMenuItem;
 
         public TreeViewEx()
         {
@@ -122,6 +128,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Items" });
+            ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as sigle Startup Project" });
 
             DataContextChanged += OnDataContextChanged;
         }

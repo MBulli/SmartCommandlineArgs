@@ -25,6 +25,8 @@ namespace SmartCmdArgs.ViewModel
 
         public TreeViewModel TreeViewModel { get; }
 
+        public CmdArgsPackage CmdArgsPackage { get; }
+
         private string itemsFontFamily;
         public string ItemsFontFamily
         {
@@ -76,8 +78,12 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand NewGroupFromArgumentsCommand { get; }
 
-        public ToolWindowViewModel()
+        public RelayCommand SetAsStartupProjectCommand { get; set; }
+
+        public ToolWindowViewModel(CmdArgsPackage package)
         {
+            CmdArgsPackage = package;
+
             TreeViewModel = new TreeViewModel();
 
             AddEntryCommand = new RelayCommand(
@@ -176,6 +182,14 @@ namespace SmartCmdArgs.ViewModel
                     TreeViewModel.SelectItemCommand.Execute(newGrp);
 
             }, _ => HasSelectedItems() && HaveSameParent(GetSelectedRootItems(true)));
+            
+            SetAsStartupProjectCommand = new RelayCommand(() => {
+                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                if (selectedItem is CmdProject proj)
+                {
+                    CmdArgsPackage.SetAsStartupProject(proj.Id);
+                }
+            }, _ => HasSingleSelectedItemOfType<CmdProject>());
         }
 
 

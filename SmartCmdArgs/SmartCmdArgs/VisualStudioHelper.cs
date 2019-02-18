@@ -161,6 +161,14 @@ namespace SmartCmdArgs
             return (this.appObject?.Solution?.SolutionBuild?.StartupProjects as object[])?.Cast<string>() ?? Enumerable.Empty<string>();
         }
 
+        public void SetNewStartupProject(string ProjectName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (this.appObject?.Solution?.SolutionBuild != null)
+                this.appObject.Solution.SolutionBuild.StartupProjects = ProjectName;
+        }
+
         public IEnumerable<IVsHierarchy> GetSupportedProjects(bool includeUnloaded = false)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

@@ -40,14 +40,6 @@ namespace SmartCmdArgs
             get { return (CmdArgsPackage)base.Package; }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ToolWindow"/> class.
-        /// </summary>
-        public ToolWindow() 
-            : this(new ViewModel.ToolWindowViewModel())
-        {
-        }
-
         public ToolWindow(ViewModel.ToolWindowViewModel viewModel)
             : base(null)
         {
