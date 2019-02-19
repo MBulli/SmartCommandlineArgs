@@ -199,3 +199,6 @@ FakesAssemblies/
 !/SmartCmdArgs/TestSolutions/
 !/SmartCmdArgs/TestSolutions/*
 !/SmartCmdArgs/TestSolutions/**
+
+# Ignore .args.json files for TestProjects
+/TestProjects/**/*.args.json
