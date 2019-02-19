@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View
@@ -162,11 +163,10 @@ namespace SmartCmdArgs.View
                 var focusItem = dragInfo?.DirectSourceItem ?? data.FirstOrDefault();
 
                 var selectItemCommand = dropInfo.TargetItem.ParentTreeView.SelectItemCommand;
-                if (souldDeselctItem && selectItemCommand.CanExecute(dropInfo.TargetItem.Item))
-                    selectItemCommand.Execute(dropInfo.TargetItem.Item);
-                else if (selectItemCommand.CanExecute(focusItem))
+                if (souldDeselctItem)
+                    selectItemCommand.SaveExecute(dropInfo.TargetItem.Item);
+                else if (selectItemCommand.SaveExecute(focusItem))
                 {
-                    selectItemCommand.Execute(focusItem);
                     foreach (var sourceItem in data)
                     {
                         sourceItem.IsSelected = true;

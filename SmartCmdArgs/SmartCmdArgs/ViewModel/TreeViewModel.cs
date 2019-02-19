@@ -213,8 +213,7 @@ namespace SmartCmdArgs.ViewModel
             }
 
             SelectedItems.ToList().ForEach(item => item.IsSelected = false);
-            if (SelectIndexCommand?.CanExecute(0) == true)
-                SelectIndexCommand.Execute(0);
+            SelectIndexCommand?.SaveExecute(0);
         }
 
         public void SelectItems(IEnumerable<CmdBase> items)
@@ -223,7 +222,7 @@ namespace SmartCmdArgs.ViewModel
             foreach (CmdBase item in items)
             {
                 if (isFirst)
-                  SelectItemCommand.Execute(item);
+                  SelectItemCommand.SaveExecute(item);
                 else
                   item.IsSelected = true;
                 

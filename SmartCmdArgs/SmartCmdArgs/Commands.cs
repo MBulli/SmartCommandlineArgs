@@ -114,7 +114,7 @@ namespace SmartCmdArgs
             var commandId = new CommandID(cmdSet, cmdId);
             var menuCommand = new OleMenuCommand((sender, args) =>
             {
-                relayCommand.Execute(null);
+                relayCommand.SaveExecute();
             }, commandId);
 
             menuCommand.BeforeQueryStatus += (sender, args) =>
@@ -130,7 +130,7 @@ namespace SmartCmdArgs
             var commandId = new CommandID(cmdSet, cmdId);
             var menuCommand = new OleMenuCommand((sender, args) =>
             {
-                relayCommand.Execute(null);
+                relayCommand.SaveExecute();
             }, commandId);
 
             menuCommand.BeforeQueryStatus += (sender, args) =>

@@ -205,10 +205,9 @@ namespace SmartCmdArgs.View
         
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.Space && ToggleSelectedCommand?.CanExecute(null) == true)
+            if (e.Key == Key.Space)
             {
-                ToggleSelectedCommand.Execute(null);
-                e.Handled = true;
+                e.Handled = ToggleSelectedCommand?.SaveExecute() == true;
             }
             base.OnKeyDown(e);
         }
@@ -431,7 +430,7 @@ namespace SmartCmdArgs.View
                 if (indexToSelect >= 0)
                 {
                     indexToSelect = Math.Min(items.Count - 1, indexToSelect + 1);
-                    ParentTreeView.SelectIndexCommand.Execute(indexToSelect);
+                    ParentTreeView.SelectIndexCommand.SaveExecute(indexToSelect);
                 }
             }
         }

@@ -99,4 +99,15 @@ namespace SmartCmdArgs.Helper
 
         #endregion
     }
+
+    public static class CommandExtenseions
+    {
+        public static bool SaveExecute(this ICommand command, object obj = null) {
+            if (!command.CanExecute(obj))
+                return false;
+
+            command.Execute(obj);
+            return true;
+        }
+    }
 }

@@ -90,16 +90,14 @@ namespace SmartCmdArgs.ViewModel
                 () => {
                     var newArg = new CmdArgument(arg: "", isChecked: true);
                     TreeViewModel.AddItemAtFocusedItem(newArg);
-                    if (TreeViewModel.SelectItemCommand.CanExecute(newArg))
-                        TreeViewModel.SelectItemCommand.Execute(newArg);
+                    TreeViewModel.SelectItemCommand.SaveExecute(newArg);
                 }, canExecute: _ => HasStartupProject());
 
             AddGroupCommand = new RelayCommand(
                 () => {
                     var newGrp = new CmdGroup(name: "");
                     TreeViewModel.AddItemAtFocusedItem(newGrp);
-                    if (TreeViewModel.SelectItemCommand.CanExecute(newGrp))
-                        TreeViewModel.SelectItemCommand.Execute(newGrp);
+                    TreeViewModel.SelectItemCommand.SaveExecute(newGrp);
                 }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
@@ -182,8 +180,7 @@ namespace SmartCmdArgs.ViewModel
                 newGrp.Items.AddRange(itemsToGroup);
                 
                 // set selection to new group
-                if (TreeViewModel.SelectItemCommand.CanExecute(newGrp))
-                    TreeViewModel.SelectItemCommand.Execute(newGrp);
+                TreeViewModel.SelectItemCommand.SaveExecute(newGrp);
 
             }, _ => HasSelectedItems() && HaveSameParent(GetSelectedRootItems(true)));
             
@@ -343,8 +340,7 @@ namespace SmartCmdArgs.ViewModel
                 indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
                     .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
                     .Take(indexToSelect + 1).Count() - 1;
-                if (TreeViewModel.SelectIndexCommand.CanExecute(indexToSelect))
-                    TreeViewModel.SelectIndexCommand.Execute(indexToSelect);
+                TreeViewModel.SelectIndexCommand.SaveExecute(indexToSelect);
             }
         }
 
