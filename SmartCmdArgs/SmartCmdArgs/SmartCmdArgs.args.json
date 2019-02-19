@@ -4,7 +4,7 @@
   "Items": [
     {
       "Id": "da57db24-d143-43b3-9b9b-5175b8620502",
-      "Command": "\"C:\\Users\\Felix\\Documents\\visual studio 2017\\Projects\\TestApps\\TestApps.sln\""
+      "Command": "\"$(ProjectDir)..\\..\\TestProjects\\TestProjects.sln\""
     },
     {
       "Id": "ac3f6619-4027-4417-935c-824c3a45e604",
