@@ -388,6 +388,7 @@ namespace SmartCmdArgs.View
         private CancellationTokenSource leftSingleClickCancelSource = null;
         private int leftMouseButtonClickCount = 0;
 
+        public FrameworkElement ItemBorder => GetTemplateChild("ItemBorder") as FrameworkElement;
         public FrameworkElement HeaderBorder => GetTemplateChild("HeaderBorder") as FrameworkElement;
 
         public CmdBase Item => DataContext as CmdBase;
@@ -750,12 +751,12 @@ namespace SmartCmdArgs.View
             var scrollPresenter = scrollView.Template.FindName("PART_ScrollContentPresenter", scrollView) as ScrollContentPresenter; // ScrollViewer without scrollbars
 
             // If item is not fully created, finish layout
-            if (this.HeaderBorder == null)
+            if (this.ItemBorder == null)
             {
                 UpdateLayout();
             }
             
-            scrollPresenter?.MakeVisible(this, new Rect(new Point(0, 0), this.RenderSize));
+            scrollPresenter?.MakeVisible(this, new Rect(new Point(0, 0), this.ItemBorder.RenderSize));
         }
         
 

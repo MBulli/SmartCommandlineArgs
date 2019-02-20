@@ -141,7 +141,7 @@ namespace SmartCmdArgs.View
         }
 
 
-        private static double ScrollOffset = 10;
+        private static double ScrollOffset = 5;
         private void Textbox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             int index = -1;
@@ -164,7 +164,7 @@ namespace SmartCmdArgs.View
             // get point to scroll to relative to the TreeViewItem to include the indent
             var treeViewItem = TreeHelper.FindAncestorOrSelf<TreeViewItemEx>(this);
             var point = textbox.TranslatePoint(rect.TopLeft, treeViewItem);
-
+            
             var sv = TreeHelper.FindAncestorOrSelf<ScrollViewer>(treeViewItem);
 
             // if the scroll offset to large, so the point we havt to make visible is left off screen we scroll left
@@ -173,9 +173,9 @@ namespace SmartCmdArgs.View
                 sv.ScrollToHorizontalOffset(point.X - ScrollOffset);
             }
             // if the scroll offset to small, so the point we havt to make visible is right off screen we scroll right
-            else if (sv.HorizontalOffset + sv.ActualWidth < point.X + ScrollOffset)
+            else if (sv.HorizontalOffset + sv.ViewportWidth < point.X + ScrollOffset)
             {
-                sv.ScrollToHorizontalOffset(point.X - sv.ActualWidth + ScrollOffset);
+                sv.ScrollToHorizontalOffset(point.X - sv.ViewportWidth + ScrollOffset);
             }
         }
     }
