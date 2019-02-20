@@ -62,7 +62,8 @@ namespace SmartCmdArgs.ViewModel
         {
             return dataObject.GetDataPresent(CmdArgsPackage.DataObjectCmdListFormat)
                    || dataObject.GetDataPresent(CmdArgsPackage.DataObjectCmdJsonFormat)
-                   || dataObject.GetDataPresent(DataFormats.Text);
+                   || dataObject.GetDataPresent(DataFormats.Text)
+                   || dataObject.GetDataPresent(DataFormats.FileDrop);
         }
 
         public static IEnumerable<CmdBase> Extract(IDataObject dataObject, bool includeObject)
@@ -77,6 +78,8 @@ namespace SmartCmdArgs.ViewModel
                 result = DeserializeFromJson(dataObject.GetData(CmdArgsPackage.DataObjectCmdJsonFormat) as string);
             if (result == null && dataObject.GetDataPresent(DataFormats.UnicodeText))
                 result = DeserializeFromStringList((dataObject.GetData(DataFormats.UnicodeText) as string)?.Split(new []{Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries));
+            if (result == null && dataObject.GetDataPresent(DataFormats.FileDrop))
+                result = DeserializeFromStringList((dataObject.GetData(DataFormats.FileDrop) as string[])?.Select(s => $"\"{s}\""));
             return result;
         }
 
@@ -93,6 +96,9 @@ namespace SmartCmdArgs.ViewModel
 
         private static IEnumerable<CmdBase> DeserializeFromStringList(IEnumerable<string> strings)
         {
+            if (strings == null)
+                return null;
+
             Stack<CmdGroup> groupStack = new Stack<CmdGroup>();
             CmdGroup rootGroup = new CmdGroup(null);
             groupStack.Push(rootGroup);
