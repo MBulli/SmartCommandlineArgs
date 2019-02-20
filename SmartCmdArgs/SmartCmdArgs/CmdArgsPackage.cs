@@ -688,12 +688,11 @@ namespace SmartCmdArgs
 
         private void UpdateCurrentStartupProject()
         {
-            ToolWindowViewModel.TreeViewModel.StartupProjects.Clear();
+            var startupProjectGuids = new HashSet<Guid>(vsHelper.StartupProjectUniqueNames()
+                .Select(vsHelper.HierarchyForProjectName).Select(hierarchy => hierarchy.GetGuid()));
 
-            vsHelper.StartupProjectUniqueNames()
-                .Select(vsHelper.HierarchyForProjectName).Select(hierarchy => hierarchy.GetGuid())
-                .Select(guid => ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(guid))
-                .Where(p => p != null).ForEach(ToolWindowViewModel.TreeViewModel.StartupProjects.Add);
+            ToolWindowViewModel.TreeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
+            ToolWindowViewModel.TreeViewModel.UpdateTree();
         }
 
         private string FullFilenameForProjectJsonFileFromProject(IVsHierarchy project)

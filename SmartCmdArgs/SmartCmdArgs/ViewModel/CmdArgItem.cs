@@ -459,10 +459,30 @@ namespace SmartCmdArgs.ViewModel
     
     public class CmdProject : CmdContainer
     {
-        public TreeViewModel ParentTreeViewModel { get; set; }
+        private TreeViewModel _parentTreeViewModel;
+        public TreeViewModel ParentTreeViewModel
+        {
+            get => _parentTreeViewModel;
+            set
+            {
+                if (value == null)
+                    GetEnumerable(includeSelf: true).ForEach(i => i.IsSelected = false);
+                _parentTreeViewModel = value;
+            }
+        }
 
         private bool isStartupProject = false;
-        public bool IsStartupProject { get => isStartupProject; set => SetAndNotify(value, ref isStartupProject); }
+        public bool IsStartupProject
+        {
+            get => isStartupProject; set
+            {
+                // this is taken care of by the code who sets 'IsStartupProject' to increase performance
+                //if (value != isStartupProject)
+                //    ParentTreeViewModel.UpdateTree();
+
+                SetAndNotify(value, ref isStartupProject);
+            }
+        }
 
         public override bool IsSelected
         {

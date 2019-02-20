@@ -257,7 +257,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if a valid startup project is set</returns>
         private bool HasStartupProject()
         {
-            return TreeViewModel.StartupProjects.Count > 0;
+            return TreeViewModel.StartupProjects.Any();
         }
 
         /// <summary>

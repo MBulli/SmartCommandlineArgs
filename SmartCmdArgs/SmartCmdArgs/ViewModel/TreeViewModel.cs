@@ -14,12 +14,10 @@ namespace SmartCmdArgs.ViewModel
 {
     public class TreeViewModel : PropertyChangedBase
     {
-        private ObservableDictionary<Guid, CmdProject> projects;
-        private ObservableCollection<CmdProject> startupProjects;
         private object treeitems;
         private bool showAllProjects;
 
-        public ObservableDictionary<Guid, CmdProject> Projects => projects;
+        public ObservableDictionary<Guid, CmdProject> Projects { get; }
 
         public object TreeItems
         {
@@ -59,13 +57,13 @@ namespace SmartCmdArgs.ViewModel
             set { _isInEditMode = value; OnNotifyPropertyChanged(); }
         }
 
-        public CmdProject FocusedProject => projects.Values.FirstOrDefault(project => project.IsFocusedItem) ?? startupProjects.FirstOrDefault();
+        public CmdProject FocusedProject => Projects.Values.FirstOrDefault(project => project.IsFocusedItem) ?? StartupProjects.FirstOrDefault();
 
         public CmdBase FocusedItem
         {
             get
             {
-                return IterateOnlyFocused(projects.Values).LastOrDefault() ?? startupProjects.FirstOrDefault();
+                return IterateOnlyFocused(Projects.Values).LastOrDefault() ?? StartupProjects.FirstOrDefault();
 
                 IEnumerable<CmdBase> IterateOnlyFocused(IEnumerable<CmdBase> items)
                 {
@@ -87,7 +85,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public ObservableCollection<CmdProject> StartupProjects => startupProjects;
+        public IEnumerable<CmdProject> StartupProjects => Projects.Where(p => p.Value.IsStartupProject).Select(p => p.Value);
 
         public List<TreeViewItemEx> DragedTreeViewItems { get; }
 
@@ -99,12 +97,9 @@ namespace SmartCmdArgs.ViewModel
 
         public TreeViewModel()
         {
-            projects = new ObservableDictionary<Guid, CmdProject>();
-            projects.CollectionChanged += OnProjectsChanged;
+            Projects = new ObservableDictionary<Guid, CmdProject>();
+            Projects.CollectionChanged += OnProjectsChanged;
             treeitems = null;
-
-            startupProjects = new ObservableCollection<CmdProject>();
-            startupProjects.CollectionChanged += OnStartupProjectsChanged;
 
             DragedTreeViewItems = new List<TreeViewItemEx>();
 
@@ -115,29 +110,22 @@ namespace SmartCmdArgs.ViewModel
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                foreach (var cmdProject in startupProjects.Except(projects.Values).ToList())
-                {
-                    startupProjects.Remove(cmdProject);
-                }
-
-                foreach (var project in projects.Values)
+                foreach (var project in Projects.Values)
                 {
                     project.ParentTreeViewModel = this;
                 }
             }
             else
             {
-                var inStartupProjects = new Dictionary<Guid, CmdProject>();
+                var replacedStartupProjects = new HashSet<Guid>();
                 if (e.Action == NotifyCollectionChangedAction.Remove
                     || e.Action == NotifyCollectionChangedAction.Replace)
                 {
                     foreach (var item in e.OldItems.Cast<KeyValuePair<Guid, CmdProject>>())
                     {
                         item.Value.ParentTreeViewModel = null;
-                        if (e.Action == NotifyCollectionChangedAction.Replace && startupProjects.Contains(item.Value))
-                            inStartupProjects.Add(item.Key, item.Value);
-                        else if (e.Action == NotifyCollectionChangedAction.Remove)
-                            startupProjects.Remove(item.Value);
+                        if (e.Action == NotifyCollectionChangedAction.Replace && item.Value.IsStartupProject)
+                            replacedStartupProjects.Add(item.Key);
                     }
                 }
 
@@ -147,60 +135,26 @@ namespace SmartCmdArgs.ViewModel
                     foreach (var item in e.NewItems.Cast<KeyValuePair<Guid, CmdProject>>())
                     {
                         item.Value.ParentTreeViewModel = this;
-                        if (e.Action == NotifyCollectionChangedAction.Replace && inStartupProjects.TryGetValue(item.Key, out CmdProject value))
-                            startupProjects[startupProjects.IndexOf(value)] = item.Value;
+                        if (replacedStartupProjects.Contains(item.Key))
+                            item.Value.IsStartupProject = true;
                     }
                 }
             }
-        }
-
-        private void OnStartupProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == NotifyCollectionChangedAction.Reset)
-            {
-                foreach (var cmdProject in projects.Values)
-                {
-                    cmdProject.IsStartupProject = false;
-                }
-
-                foreach (var item in startupProjects)
-                {
-                    item.IsStartupProject = true;
-                }
-            }
-            else
-            {
-                if (e.Action == NotifyCollectionChangedAction.Remove
-                    || e.Action == NotifyCollectionChangedAction.Replace)
-                {
-                    foreach (var item in e.OldItems.Cast<CmdProject>())
-                    {
-                        item.IsStartupProject = false;
-                    }
-                }
-
-                if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace)
-                {
-                    foreach (var item in e.NewItems.Cast<CmdProject>())
-                    {
-                        item.IsStartupProject = true;
-                    }
-                }
-            }
-            
-            OnNotifyPropertyChanged(nameof(StartupProjects));
             UpdateTree();
         }
-
-        private void UpdateTree()
+        
+        public void UpdateTree()
         {
             if (ShowAllProjects)
             {
-                TreeItems = startupProjects.Concat(projects.Values.Except(startupProjects)
-                    .OrderBy(p => p.Value, StringComparer.CurrentCultureIgnoreCase)).ToList();
+                TreeItems = Projects.Select(p => p.Value)
+                    .GroupBy(p => p.IsStartupProject).OrderByDescending(g => g.Key)
+                    .SelectMany(g => g.OrderBy(p => p.Value, StringComparer.CurrentCultureIgnoreCase))
+                    .ToList();
             }
             else
             {
+                var startupProjects = StartupProjects.ToList();
                 if (startupProjects.Count == 1)
                 {
                     TreeItems = startupProjects.First().Items;
@@ -268,7 +222,7 @@ namespace SmartCmdArgs.ViewModel
                         || item is CmdContainer && !((CmdContainer)item).ItemsView.IsEmpty;
                 }
 
-                foreach (var project in projects.Values)
+                foreach (var project in Projects.Values)
                 {
                     project.Filter = filter;
                 }
