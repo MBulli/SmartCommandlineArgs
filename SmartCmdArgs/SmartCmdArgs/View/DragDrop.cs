@@ -164,8 +164,8 @@ namespace SmartCmdArgs.View
 
                 var selectItemCommand = dropInfo.TargetItem.ParentTreeView.SelectItemCommand;
                 if (souldDeselctItem)
-                    selectItemCommand.SaveExecute(dropInfo.TargetItem.Item);
-                else if (selectItemCommand.SaveExecute(focusItem))
+                    selectItemCommand.SafeExecute(dropInfo.TargetItem.Item);
+                else if (selectItemCommand.SafeExecute(focusItem))
                 {
                     foreach (var sourceItem in data)
                     {

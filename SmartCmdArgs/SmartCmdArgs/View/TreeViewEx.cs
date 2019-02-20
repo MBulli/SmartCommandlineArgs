@@ -214,7 +214,7 @@ namespace SmartCmdArgs.View
         {
             if (e.Key == Key.Space)
             {
-                e.Handled = ToggleSelectedCommand?.SaveExecute() == true;
+                e.Handled = ToggleSelectedCommand?.SafeExecute() == true;
             }
             base.OnKeyDown(e);
         }
@@ -438,7 +438,7 @@ namespace SmartCmdArgs.View
                 if (indexToSelect >= 0)
                 {
                     indexToSelect = Math.Min(items.Count - 1, indexToSelect + 1);
-                    ParentTreeView.SelectIndexCommand.SaveExecute(indexToSelect);
+                    ParentTreeView.SelectIndexCommand.SafeExecute(indexToSelect);
                 }
             }
         }

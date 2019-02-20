@@ -167,7 +167,7 @@ namespace SmartCmdArgs.ViewModel
             }
 
             SelectedItems.ToList().ForEach(item => item.IsSelected = false);
-            SelectIndexCommand?.SaveExecute(0);
+            SelectIndexCommand?.SafeExecute(0);
         }
 
         public void SelectItems(IEnumerable<CmdBase> items)
@@ -176,7 +176,7 @@ namespace SmartCmdArgs.ViewModel
             foreach (CmdBase item in items)
             {
                 if (isFirst)
-                  SelectItemCommand.SaveExecute(item);
+                  SelectItemCommand.SafeExecute(item);
                 else
                   item.IsSelected = true;
                 

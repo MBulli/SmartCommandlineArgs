@@ -90,14 +90,14 @@ namespace SmartCmdArgs.ViewModel
                 () => {
                     var newArg = new CmdArgument(arg: "", isChecked: true);
                     TreeViewModel.AddItemAtFocusedItem(newArg);
-                    TreeViewModel.SelectItemCommand.SaveExecute(newArg);
+                    TreeViewModel.SelectItemCommand.SafeExecute(newArg);
                 }, canExecute: _ => HasStartupProject());
 
             AddGroupCommand = new RelayCommand(
                 () => {
                     var newGrp = new CmdGroup(name: "");
                     TreeViewModel.AddItemAtFocusedItem(newGrp);
-                    TreeViewModel.SelectItemCommand.SaveExecute(newGrp);
+                    TreeViewModel.SelectItemCommand.SafeExecute(newGrp);
                 }, canExecute: _ => HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
@@ -180,7 +180,7 @@ namespace SmartCmdArgs.ViewModel
                 newGrp.Items.AddRange(itemsToGroup);
                 
                 // set selection to new group
-                TreeViewModel.SelectItemCommand.SaveExecute(newGrp);
+                TreeViewModel.SelectItemCommand.SafeExecute(newGrp);
 
             }, _ => HasSelectedItems() && HaveSameParent(GetSelectedRootItems(true)));
             
@@ -340,7 +340,7 @@ namespace SmartCmdArgs.ViewModel
                 indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
                     .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
                     .Take(indexToSelect + 1).Count() - 1;
-                TreeViewModel.SelectIndexCommand.SaveExecute(indexToSelect);
+                TreeViewModel.SelectIndexCommand.SafeExecute(indexToSelect);
             }
         }
 

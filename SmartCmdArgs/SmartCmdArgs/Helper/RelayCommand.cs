@@ -100,9 +100,10 @@ namespace SmartCmdArgs.Helper
         #endregion
     }
 
-    public static class CommandExtenseions
+    public static class CommandExtensions
     {
-        public static bool SaveExecute(this ICommand command, object obj = null) {
+        public static bool SafeExecute(this ICommand command, object obj = null)
+        {
             if (!command.CanExecute(obj))
                 return false;
 
