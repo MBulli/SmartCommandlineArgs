@@ -773,9 +773,26 @@ namespace SmartCmdArgs.View
 
         protected override void OnDragEnter(DragEventArgs e) => DragDrop.OnDragEnter(this, e);
         protected override void OnQueryContinueDrag(QueryContinueDragEventArgs e) => DragDrop.OnQueryContinueDrag(this, e);
-        protected override void OnDragOver(DragEventArgs e) => DragDrop.OnDragOver(this, e);
         protected override void OnDragLeave(DragEventArgs e) => DragDrop.OnDragLeave(this, e);
         protected override void OnDrop(DragEventArgs e) => DragDrop.HandleDropForTarget(this, e);
+        protected override void OnDragOver(DragEventArgs e)
+        {
+            DragDrop.OnDragOver(this, e);
+
+            ScrollViewer sv = TreeHelper.FindVisualChild<ScrollViewer>(ParentTreeView);
+
+            double tolerance = 15;
+            double verticalPos = e.GetPosition(sv).Y;
+
+            if (verticalPos < tolerance) // Top of visible list?
+            {
+                sv.ScrollToVerticalOffset(sv.VerticalOffset - (tolerance - verticalPos) / 2); //Scroll up.
+            }
+            else if (verticalPos > sv.ViewportHeight - tolerance) //Bottom of visible list?
+            {
+                sv.ScrollToVerticalOffset(sv.VerticalOffset + (verticalPos - sv.ViewportHeight + tolerance) / 1.5); //Scroll down.    
+            }
+        }
 
         public static readonly DependencyProperty LevelProperty =
             DependencyProperty.Register(nameof(LevelProperty), typeof(int), typeof(TreeViewItemEx), new PropertyMetadata(0));
