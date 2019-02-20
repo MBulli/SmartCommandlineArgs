@@ -335,17 +335,17 @@ namespace SmartCmdArgs
 
                 projectJsonFileWatcher.Changed += (fsWatcher, args) => {
                     Logger.Info($"SystemFileWatcher file Change '{args.FullPath}'");
-                    if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project);
+                    UpdateCommandsForProjectOnDispatcher(project, onlyIfVcsSupportEnabled: true);
                 };
                 projectJsonFileWatcher.Created += (fsWatcher, args) => {
                     Logger.Info($"SystemFileWatcher file Created '{args.FullPath}'");
-                    if (IsVcsSupportEnabled) UpdateCommandsForProjectOnDispatcher(project);
+                    UpdateCommandsForProjectOnDispatcher(project, onlyIfVcsSupportEnabled: true);
                 };
                 projectJsonFileWatcher.Renamed += (fsWatcher, args) =>
                 {
                     Logger.Info($"FileWachter file Renamed '{args.FullPath}'. realProjectJsonFileFullName='{realProjectJsonFileFullName}'");
-                    if (IsVcsSupportEnabled && realProjectJsonFileFullName == args.FullPath)
-                        UpdateCommandsForProjectOnDispatcher(project);
+                    if (realProjectJsonFileFullName == args.FullPath)
+                        UpdateCommandsForProjectOnDispatcher(project, onlyIfVcsSupportEnabled: true);
                 };
 
                 Logger.Info($"Attached FileSystemWatcher to file '{realProjectJsonFileFullName}' for project '{project.GetName()}'.");
@@ -377,7 +377,7 @@ namespace SmartCmdArgs
             }
         }
 
-        private void UpdateCommandsForProjectOnDispatcher(IVsHierarchy project)
+        private void UpdateCommandsForProjectOnDispatcher(IVsHierarchy project, bool onlyIfVcsSupportEnabled)
         {
             Logger.Info($"Dispatching update commands function call for project '{project.GetDisplayName()}'");
 
@@ -393,6 +393,9 @@ namespace SmartCmdArgs
                 // their guid is empty.
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (onlyIfVcsSupportEnabled && !IsVcsSupportEnabled)
+                    return;
 
                 Logger.Info($"Dispatched update commands function call for project '{project.GetDisplayName()}'");
 
