@@ -140,29 +140,34 @@ namespace SmartCmdArgs.View
                 var shouldFocus = TreeHelper.FindAncestorOrSelf<Border>(this, "PART_ContentPanel").IsKeyboardFocusWithin;
 
                 var curIdx = 0;
+                TreeViewItemEx focusItem = null;
                 foreach (var treeViewItem in GetTreeViewItems(this, false))
                 {
                     SetIsItemSelected(treeViewItem, false);
                     if (idx == curIdx)
                     {
+                        SetIsItemSelected(treeViewItem, true);
                         if (shouldFocus)
-                            treeViewItem.Focus();
-                        else
-                            SetIsItemSelected(treeViewItem, true);
+                            focusItem = treeViewItem;
                     }
                     curIdx++;
                 }
+                focusItem?.Focus();
             }, i => i >= 0);
 
             SelectItemCommand = new RelayCommand<object>(item =>
             {
+                TreeViewItemEx focusItem = null;
                 foreach (var treeViewItem in GetTreeViewItems(this, false))
                 {
-                    var curItem = treeViewItem.Item;
                     SetIsItemSelected(treeViewItem, false);
-                    if (item == curItem)
-                        treeViewItem.Focus();
+                    if (item == treeViewItem.Item)
+                    {
+                        SetIsItemSelected(treeViewItem, true);
+                        focusItem = treeViewItem;
+                    }
                 }
+                focusItem?.Focus();
             }, o => o != null);
         }
 
