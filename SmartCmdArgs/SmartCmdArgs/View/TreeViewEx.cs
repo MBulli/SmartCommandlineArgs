@@ -137,12 +137,19 @@ namespace SmartCmdArgs.View
         {
             SelectIndexCommand = new RelayCommand<int>(idx =>
             {
+                var shouldFocus = TreeHelper.FindAncestorOrSelf<Border>(this, "PART_ContentPanel").IsKeyboardFocusWithin;
+
                 var curIdx = 0;
                 foreach (var treeViewItem in GetTreeViewItems(this, false))
                 {
                     SetIsItemSelected(treeViewItem, false);
                     if (idx == curIdx)
-                        treeViewItem.Focus();
+                    {
+                        if (shouldFocus)
+                            treeViewItem.Focus();
+                        else
+                            SetIsItemSelected(treeViewItem, true);
+                    }
                     curIdx++;
                 }
             }, i => i >= 0);
