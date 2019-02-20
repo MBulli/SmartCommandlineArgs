@@ -32,6 +32,9 @@
                  Margin="1,0,0,0"
                  KeyDown="Textbox_OnKeyDown"
                  LostFocus="textbox_LostFocus"
-                 Visibility="Hidden" />
+                 Visibility="Collapsed"
+                 SelectionChanged="Textbox_SelectionChanged"/>
+
+        <FrameworkElement Height="17" Width="5" DockPanel.Dock="Right"/>
     </DockPanel>
 </UserControl>

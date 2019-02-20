@@ -28,5 +28,18 @@ namespace SmartCmdArgs.Helper
             }
             return null;
         }
+
+        public static T FindAncestorOrSelf<T>(DependencyObject obj)
+        where T : DependencyObject
+        {
+            while (obj != null)
+            {
+                T objTest = obj as T;
+                if (objTest != null)
+                    return objTest;
+                obj = VisualTreeHelper.GetParent(obj);
+            }
+            return null;
+        }
     }
 }

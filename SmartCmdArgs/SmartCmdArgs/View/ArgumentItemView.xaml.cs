@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,6 +17,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using EnvDTE80;
 using Microsoft.VisualStudio.Imaging;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.View.Converter;
 using SmartCmdArgs.ViewModel;
 
@@ -108,8 +110,8 @@ namespace SmartCmdArgs.View
                 Item.Value = textbox.Text;
             }
 
+            textbox.Visibility = Visibility.Collapsed;
             textblock.Visibility = Visibility.Visible;
-            textbox.Visibility = Visibility.Hidden;
         }
 
         private void Textbox_OnKeyDown(object sender, KeyEventArgs e)
@@ -123,11 +125,57 @@ namespace SmartCmdArgs.View
             }
         }
 
+
+        private int OldSelectionStart = -1;
+        private int OldSelectionEnd = -1;
+
         private void textbox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (Item.IsInEditMode)
             {
                 Item.CommitEdit();
+            }
+
+            OldSelectionStart = -1;
+            OldSelectionEnd = -1;
+        }
+
+
+        private static double ScrollOffset = 10;
+        private void Textbox_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            int index = -1;
+
+            // check if Selection end or start have changed and the changed one as the index to scroll to.
+            if (OldSelectionEnd != textbox.SelectionStart + textbox.SelectionLength)
+                index = OldSelectionEnd = textbox.SelectionStart + textbox.SelectionLength;
+            if (OldSelectionStart != textbox.SelectionStart)
+                index = OldSelectionStart = textbox.SelectionStart;
+
+            // if neither start or end have changed, keep scroll position
+            if (index < 0)
+                return;
+
+            // on the first edit on a line the rect will be empty
+            var rect = textbox.GetRectFromCharacterIndex(index);
+            if (rect == Rect.Empty)
+                return;
+
+            // get point to scroll to relative to the TreeViewItem to include the indent
+            var treeViewItem = TreeHelper.FindAncestorOrSelf<TreeViewItemEx>(this);
+            var point = textbox.TranslatePoint(rect.TopLeft, treeViewItem);
+
+            var sv = TreeHelper.FindAncestorOrSelf<ScrollViewer>(treeViewItem);
+
+            // if the scroll offset to large, so the point we havt to make visible is left off screen we scroll left
+            if (sv.HorizontalOffset > point.X - ScrollOffset)
+            {
+                sv.ScrollToHorizontalOffset(point.X - ScrollOffset);
+            }
+            // if the scroll offset to small, so the point we havt to make visible is right off screen we scroll right
+            else if (sv.HorizontalOffset + sv.ActualWidth < point.X + ScrollOffset)
+            {
+                sv.ScrollToHorizontalOffset(point.X - sv.ActualWidth + ScrollOffset);
             }
         }
     }
