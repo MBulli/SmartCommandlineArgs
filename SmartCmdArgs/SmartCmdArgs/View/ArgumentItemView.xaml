@@ -20,6 +20,7 @@
             <CheckBox x:Name="checkbox" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
             <imaging:CrispImage x:Name="Icon" Visibility="{Binding Converter={c:ItemVisibilityConverter}}"/>
         </StackPanel>
+        <TextBox Width="5" Visibility="Hidden" DockPanel.Dock="Right"/>
         <TextBlock x:Name="textblock"
                    VerticalAlignment="Center"
                    Height="{Binding ElementName=textbox, Path=Height}"
@@ -34,7 +35,5 @@
                  LostFocus="textbox_LostFocus"
                  Visibility="Collapsed"
                  SelectionChanged="Textbox_SelectionChanged"/>
-
-        <FrameworkElement Height="17" Width="5" DockPanel.Dock="Right"/>
     </DockPanel>
 </UserControl>
