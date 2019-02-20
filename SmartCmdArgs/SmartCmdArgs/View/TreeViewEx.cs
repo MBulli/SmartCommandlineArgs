@@ -745,7 +745,7 @@ namespace SmartCmdArgs.View
         private void OnRequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
         {
             e.Handled = true;
-
+            
             var scrollView = ParentTreeView.Template.FindName("_tv_scrollviewer_", ParentTreeView) as ScrollViewer;
             var scrollPresenter = scrollView.Template.FindName("PART_ScrollContentPresenter", scrollView) as ScrollContentPresenter; // ScrollViewer without scrollbars
 
@@ -754,8 +754,8 @@ namespace SmartCmdArgs.View
             {
                 UpdateLayout();
             }
-
-            scrollPresenter?.MakeVisible(this, new Rect(new Point(0, 0), HeaderBorder.RenderSize));
+            
+            scrollPresenter?.MakeVisible(this, new Rect(new Point(0, 0), this.RenderSize));
         }
         
 
