@@ -623,8 +623,7 @@ namespace SmartCmdArgs
 
             SaveJsonForProject(e.Project);
 
-            if (!e.IsUnloadProcess)
-                ToolWindowViewModel.TreeViewModel.Projects.Remove(e.Project.GetGuid());
+            ToolWindowViewModel.TreeViewModel.Projects.Remove(e.Project.GetGuid());
 
             DetachFsWatcherFromProject(e.Project);
         }
