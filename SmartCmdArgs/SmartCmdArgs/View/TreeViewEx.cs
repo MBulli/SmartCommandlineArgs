@@ -84,6 +84,10 @@ namespace SmartCmdArgs.View
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._setAsStartupProjectMenuItem.Command = (ICommand)e.NewValue));
         public ICommand SetAsStartupProjectCommand { get { return (ICommand)GetValue(SetAsStartupProjectCommandProperty); } set { SetValue(SetAsStartupProjectCommandProperty, value); } }
 
+        public static readonly DependencyProperty SetProjectConfigCommandProperty = DependencyProperty.Register(
+            nameof(SetProjectConfigCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public ICommand SetProjectConfigCommand { get { return (ICommand)GetValue(SetProjectConfigCommandProperty); } set { SetValue(SetProjectConfigCommandProperty, value); } }
+
 
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
@@ -116,6 +120,7 @@ namespace SmartCmdArgs.View
         private MenuItem _splitArgumentMenuItem;
         private MenuItem _newGroupFromArgumentsMenuItem;
         private MenuItem _setAsStartupProjectMenuItem;
+        private MenuItem _projConfigMenuItem;
 
         public TreeViewEx()
         {
@@ -126,18 +131,24 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Paste });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
             ContextMenu.Items.Add(new Separator());
+            ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
-            ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Items" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as sigle Startup Project" });
+            ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Config" });
+
+            CollapseWhenDisbaled(_splitArgumentMenuItem);
+            CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
+            CollapseWhenDisbaled(_projConfigMenuItem);
 
             DataContextChanged += OnDataContextChanged;
+            ContextMenuOpening += OnContextMenuOpening;
         }
 
         private void OnDataContextChanged(object tv, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
             SelectIndexCommand = new RelayCommand<int>(idx =>
             {
-                var shouldFocus = TreeHelper.FindAncestorOrSelf<Border>(this, "PART_ContentPanel").IsKeyboardFocusWithin;
+                var shouldFocus = TreeHelper.FindAncestorOrSelf<Border>(this, "PART_ContentPanel")?.IsKeyboardFocusWithin ?? false;
 
                 var curIdx = 0;
                 TreeViewItemEx focusItem = null;
@@ -171,6 +182,55 @@ namespace SmartCmdArgs.View
             }, o => o != null);
         }
 
+        private void OnContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            _projConfigMenuItem.Items.Clear();
+            var item = TreeHelper.FindAncestorOrSelf<TreeViewItemEx>(e.OriginalSource as DependencyObject)?.Item;
+            if (item != null)
+            {
+                CmdContainer con = item.Parent;
+                _projConfigMenuItem.IsEnabled = SetProjectConfigCommand.CanExecute(null);
+                if (_projConfigMenuItem.IsEnabled)
+                {
+                    _projConfigMenuItem.Items.Add(new MenuItem
+                    {
+                        Header = "All",
+                        Command = SetProjectConfigCommand,
+                        CommandParameter = null,
+                        IsChecked = item.ProjectConfig == null,
+                        IsCheckable = true
+                    });
+
+                    while (!(con is CmdProject))
+                        con = con.Parent;
+
+                    var proj = (CmdProject)con;
+                    foreach (var config in proj.Configurations)
+                    {
+                        _projConfigMenuItem.Items.Add(new MenuItem {
+                            Header = config,
+                            Command = SetProjectConfigCommand,
+                            CommandParameter = config,
+                            IsChecked = item.ProjectConfig == config,
+                            IsCheckable = true
+                        });
+                    }
+                }
+            }
+            else
+                _projConfigMenuItem.IsEnabled = false;
+        }
+
+        private void CollapseWhenDisbaled(FrameworkElement element)
+        {
+            element.SetBinding(FrameworkElement.VisibilityProperty, new Binding
+            {
+                Source = element,
+                Path = new PropertyPath(nameof(FrameworkElement.IsEnabled)),
+                Mode = BindingMode.OneWay,
+                Converter = new BooleanToVisibilityConverter()
+            });
+        }
 
         public void ChangedFocusedItem(TreeViewItemEx item)
         {

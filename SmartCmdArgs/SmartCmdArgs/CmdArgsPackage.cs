@@ -301,6 +301,10 @@ namespace SmartCmdArgs
             if (checkedArgs == null)
                 return null;
 
+            string projConfig = project.GetProject()?.ConfigurationManager?.ActiveConfiguration?.ConfigurationName;
+            if (projConfig != null)
+                checkedArgs = checkedArgs.Where(x => { var conf = x.UsedProjectConfig; return conf == null || conf == projConfig; });
+
             IEnumerable<string> enabledEntries;
             if (IsMacroEvaluationEnabled)
             {

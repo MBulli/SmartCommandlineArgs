@@ -17,7 +17,8 @@ namespace SmartCmdArgs.Logic
                 var newElement = new ListEntryData
                 {
                     Id = item.Id,
-                    Command = item.Value
+                    Command = item.Value,
+                    ProjectConfig = item.ProjectConfig
                 };
                 
                 if (item is CmdContainer container)

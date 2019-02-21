@@ -84,4 +84,12 @@ namespace SmartCmdArgs.ViewModel
             IsInEditMode = isInEditMode;
         }
     }
+
+    public class ProjectConfigChangedEvent : GenericChangedEventArgs<string>
+    {
+        public ProjectConfigChangedEvent(CmdBase sender, string oldValue, string newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
 }

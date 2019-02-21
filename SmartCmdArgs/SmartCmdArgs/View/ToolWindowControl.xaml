@@ -33,7 +33,8 @@
                           DeleteCommand="{Binding RemoveEntriesCommand}"
                           SplitArgumentCommand="{Binding SplitArgumentCommand}"
                           NewGroupFromArgumentsCommand="{Binding NewGroupFromArgumentsCommand}"
-                          SetAsStartupProjectCommand="{Binding SetAsStartupProjectCommand}">
+                          SetAsStartupProjectCommand="{Binding SetAsStartupProjectCommand}"
+                          SetProjectConfigCommand="{Binding SetProjectConfigCommand}">
             <local:TreeViewEx.ItemContainerStyleSelector>
                 <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
                                             GroupItemStyle="{StaticResource GroupItemStyle}"

@@ -130,6 +130,9 @@ namespace SmartCmdArgs.ViewModel
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string Value { get; set; } = null;
+            
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public string ProjectConfig { get; set; } = null;
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public IEnumerable<DataObjectJsonItem> Items { get; set; } = null;
@@ -145,7 +148,7 @@ namespace SmartCmdArgs.ViewModel
                     }
                     else if (cmd is CmdGroup grp)
                     {
-                        yield return new DataObjectJsonItem {Value = grp.Value, Items = Convert(grp.Items)};
+                        yield return new DataObjectJsonItem {Value = grp.Value, ProjectConfig = grp.ProjectConfig, Items = Convert(grp.Items)};
                     }
                 }
             }
@@ -156,11 +159,11 @@ namespace SmartCmdArgs.ViewModel
                 {
                     if (item.Items == null)
                     {
-                        yield return new CmdArgument(item.Value, item.Enabled == true);
+                        yield return new CmdArgument(item.Value, item.Enabled ?? false);
                     }
                     else
                     {
-                        yield return new CmdGroup(item.Value, Convert(item.Items));
+                        yield return new CmdGroup(item.Value, Convert(item.Items), projConf: item.ProjectConfig);
                     }
                 }
             }

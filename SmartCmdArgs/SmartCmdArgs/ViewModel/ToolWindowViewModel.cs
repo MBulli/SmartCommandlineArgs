@@ -13,7 +13,6 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
-using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace SmartCmdArgs.ViewModel
 {
@@ -78,7 +77,9 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand NewGroupFromArgumentsCommand { get; }
 
-        public RelayCommand SetAsStartupProjectCommand { get; set; }
+        public RelayCommand SetAsStartupProjectCommand { get; }
+
+        public RelayCommand<string> SetProjectConfigCommand { get; }
 
         public ToolWindowViewModel(CmdArgsPackage package)
         {
@@ -191,6 +192,15 @@ namespace SmartCmdArgs.ViewModel
                     CmdArgsPackage.SetAsStartupProject(proj.Id);
                 }
             }, _ => HasSingleSelectedItemOfType<CmdProject>());
+
+            SetProjectConfigCommand = new RelayCommand<string>(configName =>
+            {
+                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                if (selectedItem is CmdGroup grp)
+                {
+                    grp.ProjectConfig = configName;
+                }
+            }, _ => HasSingleSelectedItemOfType<CmdGroup>());
         }
 
 
@@ -347,8 +357,9 @@ namespace SmartCmdArgs.ViewModel
         public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)
         {
             var guid = project.GetGuid();
-            var cmdPrj = new CmdProject(guid, project.GetKind(), project.GetDisplayName());
-            cmdPrj.Items.AddRange(ListEntriesToCmdObjects(data.Items));
+            var cmdPrj = new CmdProject(guid, project.GetKind(), project.GetDisplayName(), 
+                ListEntriesToCmdObjects(data.Items), data.Expanded,
+                (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>());
 
             // Assign TreeViewModel after AddRange to not get a lot of ParentChanged events
             cmdPrj.ParentTreeViewModel = TreeViewModel; 
@@ -362,7 +373,7 @@ namespace SmartCmdArgs.ViewModel
                     if (item.Items == null)
                         yield return new CmdArgument(item.Id, item.Command, item.Enabled);
                     else
-                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded);
+                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ProjectConfig);
                 }
             }
         }

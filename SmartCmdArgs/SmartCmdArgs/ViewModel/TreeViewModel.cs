@@ -309,6 +309,9 @@ namespace SmartCmdArgs.ViewModel
                     // to reduce the number of calls somehow.
                     FireTreeChanged(e);
                     break;
+                case ProjectConfigChangedEvent e:
+                    FireTreeChanged(e);
+                    break;
                 default:
                     break;
             }

@@ -42,10 +42,15 @@ namespace SmartCmdArgs.ViewModel
             get => isSelected;
             set { OnIsSelectedChanged(isSelected, value); }
         }
-
+        
         public bool IsFocusedItem { get; set; }
 
         public virtual bool IsEditable => false;
+
+        private string _projectConfig = null;
+        public string ProjectConfig { get => _projectConfig; protected set => OnProjectConfigChanged(this._projectConfig, value); }
+
+        public string UsedProjectConfig => _projectConfig ?? Parent?.UsedProjectConfig;
 
         public CmdBase(Guid id, string value, bool? isChecked = false)
         {
@@ -118,6 +123,16 @@ namespace SmartCmdArgs.ViewModel
             if (oldValue != newValue)
             {
                 BubbleEvent(new CheckStateChangedEvent(this, oldValue, newValue));
+            }
+        }
+
+        private void OnProjectConfigChanged(string oldValue, string newValue)
+        {
+            SetAndNotify(newValue, ref _projectConfig, nameof(ProjectConfig));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new ProjectConfigChangedEvent(this, oldValue, newValue));
             }
         }
 
@@ -500,18 +515,19 @@ namespace SmartCmdArgs.ViewModel
         {
             get => filter; set { filter = value; RefreshFilters(); }
         }
+
+        public List<string> Configurations { get; private set; }
         
         public Guid Kind { get; set; }
         
-        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
+        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, IEnumerable<string> configs)
             : base(id, displayName, items, isExpanded)
         {
             Kind = kind;
+            Configurations = new List<string>();
+            if (configs != null)
+                Configurations.AddRange(configs);
         }
-
-        public CmdProject(Guid kind, string displayName, IEnumerable<CmdBase> items = null, bool isExpanded = true)
-            : this(Guid.NewGuid(), kind, displayName, items, isExpanded)
-        { }
 
         public override CmdBase Copy()
         {
@@ -531,17 +547,25 @@ namespace SmartCmdArgs.ViewModel
     { 
         public override bool IsEditable => true;
 
-        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
-            : base(id, name, items, isExpanded)
-        { }
+        public new string ProjectConfig
+        {
+            get => base.ProjectConfig;
+            set => base.ProjectConfig = value;
+        }
 
-        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
-            : this(Guid.NewGuid(), name, items, isExpanded)
+        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, string projConf) 
+            : base(id, name, items, isExpanded)
+        {
+            base.ProjectConfig = projConf;
+        }
+
+        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, string projConf = null) 
+            : this(Guid.NewGuid(), name, items, isExpanded, projConf)
         { }
 
         public override CmdBase Copy()
         {
-            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy())) {isExpanded = isExpanded};
+            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy()), isExpanded);
         }
     }
 
