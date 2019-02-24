@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="1000" xml:space="preserve">
-    <value>Smart Commandline Arguments</value>
+    <value>Smart Command Line Arguments</value>
     <comment>Option category name</comment>
   </data>
   <data name="1001" xml:space="preserve">
@@ -126,7 +126,7 @@
     <comment>Option page name</comment>
   </data>
   <data name="110" xml:space="preserve">
-    <value>Smart Commandline Arguments Extension</value>
+    <value>Smart Command Line Arguments Extension</value>
   </data>
   <data name="112" xml:space="preserve">
     <value>A Visual Studio Extension which aims to provide a better UI to manage your command line arguments. For additional information, visit https://github.com/MBulli/SmartCommandlineArgs</value>
