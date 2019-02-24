@@ -1,5 +1,5 @@
 
-# <img src="Doc/SmartCommandLineIcon-Readme.png">  Smart Commandline Arguments 
+# <img src="Doc/SmartCommandLineIcon-Readme.png">  Smart Command Line Arguments 
 A Visual Studio Extension which aims to provide a better UI to manage your command line arguments  
 
 > "The only smart way to pass standard command arguments to programs." - [A happy user](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments#review-details)
@@ -7,7 +7,7 @@ A Visual Studio Extension which aims to provide a better UI to manage your comma
 ## Install
 Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments "Visual Studio Marketplace").
 
-Visual Studio 2015 and 2017 and the following project types are supported:
+Visual Studio 2015, 2017 and 2019 and the following project types are supported:
 - C# .Net Framework
 - C# .Net Core
 - VB .Net
