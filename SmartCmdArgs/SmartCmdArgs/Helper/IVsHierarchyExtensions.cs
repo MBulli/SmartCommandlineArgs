@@ -16,6 +16,8 @@ namespace SmartCmdArgs.Helper
 
         public static T GetProperty<T>(this IVsHierarchy hierarchy, int propid)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var error = hierarchy.GetProperty(VSConstants.VSITEMID_ROOT, propid, out object prop);
             if (error != VSConstants.S_OK)
             {
@@ -46,6 +48,8 @@ namespace SmartCmdArgs.Helper
         
         public static Guid GetGuid(this IVsHierarchy hierarchy)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT,
                                         (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
                                         out Guid guid);
@@ -54,6 +58,8 @@ namespace SmartCmdArgs.Helper
         
         public static Guid GetKind(this IVsHierarchy hierarchy)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT,
                 (int)__VSHPROPID.VSHPROPID_TypeGuid,
                 out Guid guid);
@@ -77,6 +83,8 @@ namespace SmartCmdArgs.Helper
 
         public static bool TryGetIconMoniker(this IVsHierarchy hierarchy, out ImageMoniker iconMoniker)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var supportsIconMonikers = hierarchy.GetProperty<bool>((int) __VSHPROPID8.VSHPROPID_SupportsIconMonikers);
             if (supportsIconMonikers)
             {
@@ -96,6 +104,8 @@ namespace SmartCmdArgs.Helper
 
         public static bool IsLoaded(this IVsHierarchy hierarchy)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             hierarchy.GetProperty(VSConstants.VSITEMID_ROOT,
                                         (int)__VSHPROPID5.VSHPROPID_ProjectUnloadStatus,
                                         out object objLoaded);

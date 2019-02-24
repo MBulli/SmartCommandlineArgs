@@ -133,6 +133,8 @@ namespace SmartCmdArgs
 
         public void Deinitalize()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Cleanup solution related stuff
             if (selectionEventsCookie != 0)
                 ErrorHandler.ThrowOnFailure(this.selectionMonitor.UnadviseSelectionEvents(selectionEventsCookie));
@@ -191,17 +193,23 @@ namespace SmartCmdArgs
 
         public IVsHierarchy GetStartupProjectHierachy()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             selectionMonitor.GetCurrentElementValue((uint) VSConstants.VSSELELEMID.SEID_StartupProject, out object value);
             return value as IVsHierarchy;
         }
 
         public void UpdateShellCommandUI(bool immediateUpdate = true)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             package.GetService<SVsUIShell, IVsUIShell>()?.UpdateCommandUI(immediateUpdate ? 1 : 0);
         }
 
         public IVsHierarchy HierarchyForProjectName(string projectName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int hr = solutionService.GetProjectOfUniqueName(projectName, out IVsHierarchy hier);
             if (ErrorHandler.Failed(hr))
             {
@@ -212,6 +220,8 @@ namespace SmartCmdArgs
 
         public IVsHierarchy HierarchyForProjectGuid(Guid propjectGuid)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int hr = solutionService.GetProjectOfGuid(propjectGuid, out IVsHierarchy hier);
             if (ErrorHandler.Failed(hr))
             {
@@ -222,6 +232,8 @@ namespace SmartCmdArgs
 
         public Guid ProjectGuidForProjetName(string projectName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var hier = HierarchyForProjectName(projectName);
 
             int hr = solutionService.GetGuidOfProject(hier, out Guid result);
@@ -237,6 +249,8 @@ namespace SmartCmdArgs
             if (hierarchy == null)
                 return null;
 
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int hr = solutionService.GetUniqueNameOfProject(hierarchy, out string uniqueName);
             if (ErrorHandler.Failed(hr))
             {
@@ -247,6 +261,8 @@ namespace SmartCmdArgs
 
         public string GetMSBuildPropertyValue(IVsHierarchy hierarchy, string propName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var propStorage = hierarchy as IVsBuildPropertyStorage;
 
             if (propStorage == null)
@@ -291,6 +307,8 @@ namespace SmartCmdArgs
             // Check the status of the recursion guard
             if (gettingCheckoutStatus)
                 return false;
+
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             try
             {
@@ -388,6 +406,8 @@ namespace SmartCmdArgs
         #region IVsSelectionEvents Implementation
         int IVsSelectionEvents.OnElementValueChanged(uint elementid, object varValueOld, object varValueNew)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (elementid == (uint)VSConstants.VSSELELEMID.SEID_StartupProject)
             {
                 if (varValueNew != null)

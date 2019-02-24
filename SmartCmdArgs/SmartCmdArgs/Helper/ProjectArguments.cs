@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell;
 
 namespace SmartCmdArgs.Helper
 {
@@ -21,12 +22,16 @@ namespace SmartCmdArgs.Helper
 
         private static void SetSingleConfigArgument(EnvDTE.Project project, string arguments, string propertyName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             try { project.Properties.Item(propertyName).Value = arguments; }
             catch (Exception ex) { Logger.Error($"Failed to set single config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
 
         private static void GetSingleConfigAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             try
             {
                 string cmdarg = project.Properties.Item(propertyName).Value as string;
@@ -40,6 +45,8 @@ namespace SmartCmdArgs.Helper
 
         private static void SetMultiConfigArguments(EnvDTE.Project project, string arguments, string propertyName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Set the arguments only on the active configuration
             EnvDTE.Properties properties = project.ConfigurationManager?.ActiveConfiguration?.Properties;
             try { properties.Item(propertyName).Value = arguments; }
@@ -48,6 +55,8 @@ namespace SmartCmdArgs.Helper
 
         private static void GetMultiConfigAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Read properties for all configurations (e.g. Debug/Release)
             foreach (EnvDTE.Configuration config in project.ConfigurationManager)
             {
@@ -65,6 +74,8 @@ namespace SmartCmdArgs.Helper
 
         private static void SetVCProjEngineArguments(EnvDTE.Project project, string arguments)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Use late binding to support VS2015 and VS2017
             dynamic vcPrj = (dynamic)project.Object; // is VCProject
             dynamic vcCfg = vcPrj?.ActiveConfiguration; // is VCConfiguration
@@ -99,6 +110,8 @@ namespace SmartCmdArgs.Helper
 
         private static void GetVCProjEngineAllArguments(EnvDTE.Project project, List<string> allArgs)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             dynamic vcPrj = (dynamic)project.Object; // is VCProject
             dynamic configs = vcPrj?.Configurations;  // is IVCCollection
 
