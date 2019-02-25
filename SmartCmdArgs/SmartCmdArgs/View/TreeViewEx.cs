@@ -158,6 +158,7 @@ namespace SmartCmdArgs.View
                     if (idx == curIdx)
                     {
                         SetIsItemSelected(treeViewItem, true);
+                        _lastItemSelected = treeViewItem;
                         if (shouldFocus)
                             focusItem = treeViewItem;
                     }
@@ -175,6 +176,7 @@ namespace SmartCmdArgs.View
                     if (item == treeViewItem.Item)
                     {
                         SetIsItemSelected(treeViewItem, true);
+                        _lastItemSelected = treeViewItem;
                         focusItem = treeViewItem;
                     }
                 }
