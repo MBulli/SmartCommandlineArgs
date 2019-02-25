@@ -178,6 +178,7 @@ namespace SmartCmdArgs.ViewModel
                 
                 // move items to new group
                 parent.Items.RemoveRange(itemsToGroup);
+                itemsToGroup.ForEach(item => item.IsSelected = false);
                 newGrp.Items.AddRange(itemsToGroup);
                 
                 // set selection to new group
