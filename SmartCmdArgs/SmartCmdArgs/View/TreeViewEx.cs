@@ -187,7 +187,7 @@ namespace SmartCmdArgs.View
         private void OnContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             _projConfigMenuItem.Items.Clear();
-            var item = TreeHelper.FindAncestorOrSelf<TreeViewItemEx>(e.OriginalSource as DependencyObject)?.Item;
+            var item = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdGroup;
             if (item != null)
             {
                 CmdContainer con = item.Parent;
@@ -614,7 +614,10 @@ namespace SmartCmdArgs.View
             //                               Selected        Up       DeselctItem
             //                  Multi        Unselected      Down     AddToSelection
             //                               Selected        Up       DeselctItem
+            //
             // Right     None   Single       Unselected      Down     SelectExclusive
+
+            // Right-click allways triggers Context Menu on MouseUp so only down can be handeled here.
 
             if (e.ChangedButton == MouseButton.Left)
             {
