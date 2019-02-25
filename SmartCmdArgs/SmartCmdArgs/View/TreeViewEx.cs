@@ -616,6 +616,9 @@ namespace SmartCmdArgs.View
             //                               Selected        Up       DeselctItem
             //
             // Right     None   Single       Unselected      Down     SelectExclusive
+            //                               Selected        Down     nop
+            //                  Multi        Unselected      Down     SelectExclusive
+            //                               Selected        Down     nop
 
             // Right-click allways triggers Context Menu on MouseUp so only down can be handeled here.
 
@@ -673,11 +676,8 @@ namespace SmartCmdArgs.View
             {
                 if (!isShiftPressed && !isCtrlPressed)
                 {
-                    if (!ParentTreeView.SelectedTreeViewItems.HasMultipleItems())
-                    {
-                        if (!Item.IsSelected && down)
-                            ParentTreeView.SelectItemExclusively(this);
-                    }
+                    if (!Item.IsSelected && down)
+                        ParentTreeView.SelectItemExclusively(this);
                 }
             }
         }
