@@ -38,6 +38,8 @@ namespace SmartCmdArgs.Logic
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string ProjectConfig = null;
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string LaunchProfile = null;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<ListEntryData> Items = null;
 
         [JsonIgnore]

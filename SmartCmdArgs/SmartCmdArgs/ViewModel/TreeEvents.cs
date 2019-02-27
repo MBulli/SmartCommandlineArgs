@@ -92,4 +92,12 @@ namespace SmartCmdArgs.ViewModel
         {
         }
     }
+
+    public class LaunchProfileChangedEvent : GenericChangedEventArgs<string>
+    {
+        public LaunchProfileChangedEvent(CmdBase sender, string oldValue, string newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
 }

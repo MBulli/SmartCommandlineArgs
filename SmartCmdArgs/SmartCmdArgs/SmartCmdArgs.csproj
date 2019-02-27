@@ -100,6 +100,8 @@
     <Compile Include="View\ArgumentItemView.xaml.cs">
       <DependentUpon>ArgumentItemView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Converter\NullToVisibilityMultiConverter.cs" />
+    <Compile Include="View\Converter\StringConcatConverter.cs" />
     <Compile Include="View\Converter\TreeLevelMarginConverter.cs" />
     <Compile Include="View\DragDrop.cs" />
     <Compile Include="View\DropTargetAdorner.cs" />

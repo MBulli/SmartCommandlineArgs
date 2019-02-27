@@ -21,7 +21,20 @@
             <imaging:CrispImage x:Name="Icon" Visibility="{Binding Converter={c:ItemVisibilityConverter}}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-            <TextBlock x:Name="projectConfig" Visibility="{Binding ProjectConfig, Converter={c:NullToVisibilityConverter HideVisibility=Collapsed}, Mode=OneWay}" Margin="4,0,0,0" Text="{Binding ProjectConfig, Mode=OneWay}" FontStyle="Italic"/>
+            <TextBlock x:Name="projectConfig" Margin="4,0,0,0" FontStyle="Italic">
+                <TextBlock.Text>
+                    <MultiBinding Converter="{c:StringConcatConverter Seperator=' | '}">
+                        <Binding Path="ProjectConfig" Mode="OneWay"/>
+                        <Binding Path="LaunchProfile" Mode="OneWay"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+                <TextBlock.Visibility>
+                    <MultiBinding Converter="{c:NullToVisibilityMultiConverter VisibleCondition=AnyNotNull, HideVisibility=Collapsed}">
+                        <Binding Path="ProjectConfig" Mode="OneWay"/>
+                        <Binding Path="LaunchProfile" Mode="OneWay"/>
+                    </MultiBinding>
+                </TextBlock.Visibility>
+            </TextBlock>
             <TextBox Width="5" Visibility="Hidden"/>
         </StackPanel>
         <TextBlock x:Name="textblock"

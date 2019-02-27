@@ -81,6 +81,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand<string> SetProjectConfigCommand { get; }
 
+        public RelayCommand<string> SetLaunchProfileCommand { get; }
+
         public ToolWindowViewModel(CmdArgsPackage package)
         {
             CmdArgsPackage = package;
@@ -200,6 +202,15 @@ namespace SmartCmdArgs.ViewModel
                 if (selectedItem is CmdGroup grp)
                 {
                     grp.ProjectConfig = configName;
+                }
+            }, _ => HasSingleSelectedItemOfType<CmdGroup>());
+
+            SetLaunchProfileCommand = new RelayCommand<string>(profileName =>
+            {
+                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                if (selectedItem is CmdGroup grp)
+                {
+                    grp.LaunchProfile = profileName;
                 }
             }, _ => HasSingleSelectedItemOfType<CmdGroup>());
         }
@@ -358,9 +369,16 @@ namespace SmartCmdArgs.ViewModel
         public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)
         {
             var guid = project.GetGuid();
+            IEnumerable<string> launchProfiles = null;
+            if (project.IsCpsProject())
+            {
+                launchProfiles = SmartCmdArgs15.CpsProjectSupport.GetLaunchProfileNames(project.GetProject());
+            }
+
             var cmdPrj = new CmdProject(guid, project.GetKind(), project.GetDisplayName(), 
                 ListEntriesToCmdObjects(data.Items), data.Expanded,
-                (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>());
+                (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>(),
+                launchProfiles);
 
             // Assign TreeViewModel after AddRange to not get a lot of ParentChanged events
             cmdPrj.ParentTreeViewModel = TreeViewModel; 
@@ -374,7 +392,7 @@ namespace SmartCmdArgs.ViewModel
                     if (item.Items == null)
                         yield return new CmdArgument(item.Id, item.Command, item.Enabled);
                     else
-                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ProjectConfig);
+                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ProjectConfig, item.LaunchProfile);
                 }
             }
         }

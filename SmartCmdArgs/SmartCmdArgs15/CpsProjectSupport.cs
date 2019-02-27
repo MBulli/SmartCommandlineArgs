@@ -43,6 +43,26 @@ namespace SmartCmdArgs15
             }
         }
 
+        public static string GetActiveLaunchProfileName(EnvDTE.Project project)
+        {
+            if (TryGetProjectServices(project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices))
+            {
+                var launchSettingsProvider = unconfiguredProjectServices.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
+                return launchSettingsProvider?.ActiveProfile?.Name;
+            }
+            return null;
+        }
+
+        public static IEnumerable<string> GetLaunchProfileNames(EnvDTE.Project project)
+        {
+            if (TryGetProjectServices(project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices))
+            {
+                var launchSettingsProvider = unconfiguredProjectServices.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
+                return launchSettingsProvider?.CurrentSnapshot?.Profiles?.Select(p => p.Name);
+            }
+            return null;
+        }
+
         public static void SetCpsProjectArguments(EnvDTE.Project project, string arguments)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;

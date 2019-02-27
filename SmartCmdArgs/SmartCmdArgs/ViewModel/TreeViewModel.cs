@@ -312,6 +312,9 @@ namespace SmartCmdArgs.ViewModel
                 case ProjectConfigChangedEvent e:
                     FireTreeChanged(e);
                     break;
+                case LaunchProfileChangedEvent e:
+                    FireTreeChanged(e);
+                    break;
                 default:
                     break;
             }

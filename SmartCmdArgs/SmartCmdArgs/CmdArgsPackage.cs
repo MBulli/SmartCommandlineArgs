@@ -305,6 +305,13 @@ namespace SmartCmdArgs
             if (projConfig != null)
                 checkedArgs = checkedArgs.Where(x => { var conf = x.UsedProjectConfig; return conf == null || conf == projConfig; });
 
+            if (project.IsCpsProject())
+            {
+                var activeLaunchProfile = SmartCmdArgs15.CpsProjectSupport.GetActiveLaunchProfileName(project.GetProject());
+                if (activeLaunchProfile != null)
+                    checkedArgs = checkedArgs.Where(x => { var prof = x.UsedLaunchProfile; return prof == null || prof == activeLaunchProfile; });
+            }
+
             IEnumerable<string> enabledEntries;
             if (IsMacroEvaluationEnabled)
             {

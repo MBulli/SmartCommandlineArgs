@@ -88,7 +88,10 @@ namespace SmartCmdArgs.View
             nameof(SetProjectConfigCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand SetProjectConfigCommand { get { return (ICommand)GetValue(SetProjectConfigCommandProperty); } set { SetValue(SetProjectConfigCommandProperty, value); } }
 
-
+        public static readonly DependencyProperty SetLaunchProfileCommandProperty = DependencyProperty.Register(
+            nameof(SetLaunchProfileCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public ICommand SetLaunchProfileCommand { get { return (ICommand)GetValue(SetLaunchProfileCommandProperty); } set { SetValue(SetLaunchProfileCommandProperty, value); } }
+        
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -121,6 +124,7 @@ namespace SmartCmdArgs.View
         private MenuItem _newGroupFromArgumentsMenuItem;
         private MenuItem _setAsStartupProjectMenuItem;
         private MenuItem _projConfigMenuItem;
+        private MenuItem _launchProfileMenuItem;
 
         public TreeViewEx()
         {
@@ -135,10 +139,12 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as sigle Startup Project" });
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Config" });
+            ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
 
             CollapseWhenDisbaled(_splitArgumentMenuItem);
             CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
             CollapseWhenDisbaled(_projConfigMenuItem);
+            CollapseWhenDisbaled(_launchProfileMenuItem);
 
             DataContextChanged += OnDataContextChanged;
             ContextMenuOpening += OnContextMenuOpening;
@@ -187,10 +193,16 @@ namespace SmartCmdArgs.View
         private void OnContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             _projConfigMenuItem.Items.Clear();
+            _launchProfileMenuItem.Items.Clear();
+
             var item = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdGroup;
             if (item != null)
             {
                 CmdContainer con = item.Parent;
+                while (!(con is CmdProject))
+                    con = con.Parent;
+                var proj = (CmdProject)con;
+
                 _projConfigMenuItem.IsEnabled = SetProjectConfigCommand.CanExecute(null);
                 if (_projConfigMenuItem.IsEnabled)
                 {
@@ -203,13 +215,10 @@ namespace SmartCmdArgs.View
                         IsCheckable = true
                     });
 
-                    while (!(con is CmdProject))
-                        con = con.Parent;
-
-                    var proj = (CmdProject)con;
                     foreach (var config in proj.Configurations)
                     {
-                        _projConfigMenuItem.Items.Add(new MenuItem {
+                        _projConfigMenuItem.Items.Add(new MenuItem
+                        {
                             Header = config,
                             Command = SetProjectConfigCommand,
                             CommandParameter = config,
@@ -218,9 +227,39 @@ namespace SmartCmdArgs.View
                         });
                     }
                 }
+
+                _launchProfileMenuItem.IsEnabled = SetLaunchProfileCommand.CanExecute(null)
+                    && (proj.LaunchProfiles.Count > 0 || item.LaunchProfile != null);
+
+                if (_launchProfileMenuItem.IsEnabled)
+                {
+                    _launchProfileMenuItem.Items.Add(new MenuItem
+                    {
+                        Header = "All",
+                        Command = SetLaunchProfileCommand,
+                        CommandParameter = null,
+                        IsChecked = item.LaunchProfile == null,
+                        IsCheckable = true
+                    });
+
+                    foreach (var profile in proj.LaunchProfiles)
+                    {
+                        _launchProfileMenuItem.Items.Add(new MenuItem
+                        {
+                            Header = profile,
+                            Command = SetLaunchProfileCommand,
+                            CommandParameter = profile,
+                            IsChecked = item.LaunchProfile == profile,
+                            IsCheckable = true
+                        });
+                    }
+                }
             }
             else
+            {
                 _projConfigMenuItem.IsEnabled = false;
+                _launchProfileMenuItem.IsEnabled = false;
+            }
         }
 
         private void CollapseWhenDisbaled(FrameworkElement element)

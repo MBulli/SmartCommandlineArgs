@@ -49,8 +49,11 @@ namespace SmartCmdArgs.ViewModel
 
         private string _projectConfig = null;
         public string ProjectConfig { get => _projectConfig; protected set => OnProjectConfigChanged(this._projectConfig, value); }
-
         public string UsedProjectConfig => _projectConfig ?? Parent?.UsedProjectConfig;
+
+        private string _launchProfile = null;
+        public string LaunchProfile { get => _launchProfile; protected set => OnLaunchProfileChanged(this._launchProfile, value); }
+        public string UsedLaunchProfile => _launchProfile ?? Parent?.UsedLaunchProfile;
 
         public CmdBase(Guid id, string value, bool? isChecked = false)
         {
@@ -133,6 +136,16 @@ namespace SmartCmdArgs.ViewModel
             if (oldValue != newValue)
             {
                 BubbleEvent(new ProjectConfigChangedEvent(this, oldValue, newValue));
+            }
+        }
+
+        private void OnLaunchProfileChanged(string oldValue, string newValue)
+        {
+            SetAndNotify(newValue, ref _launchProfile, nameof(LaunchProfile));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new LaunchProfileChangedEvent(this, oldValue, newValue));
             }
         }
 
@@ -517,16 +530,22 @@ namespace SmartCmdArgs.ViewModel
         }
 
         public List<string> Configurations { get; private set; }
-        
+        public List<string> LaunchProfiles { get; private set; }
+
         public Guid Kind { get; set; }
         
-        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, IEnumerable<string> configs)
+        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, IEnumerable<string> configs, IEnumerable<string> profiles)
             : base(id, displayName, items, isExpanded)
         {
             Kind = kind;
+
             Configurations = new List<string>();
             if (configs != null)
                 Configurations.AddRange(configs);
+
+            LaunchProfiles = new List<string>();
+            if (profiles != null)
+                LaunchProfiles.AddRange(profiles);
         }
 
         public override CmdBase Copy()
@@ -553,14 +572,21 @@ namespace SmartCmdArgs.ViewModel
             set => base.ProjectConfig = value;
         }
 
-        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, string projConf) 
+        public new string LaunchProfile
+        {
+            get => base.LaunchProfile;
+            set => base.LaunchProfile = value;
+        }
+
+        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, string projConf, string launchProfile) 
             : base(id, name, items, isExpanded)
         {
             base.ProjectConfig = projConf;
+            base.LaunchProfile = launchProfile;
         }
 
-        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, string projConf = null) 
-            : this(Guid.NewGuid(), name, items, isExpanded, projConf)
+        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, string projConf = null, string launchProfile = null) 
+            : this(Guid.NewGuid(), name, items, isExpanded, projConf, launchProfile)
         { }
 
         public override CmdBase Copy()

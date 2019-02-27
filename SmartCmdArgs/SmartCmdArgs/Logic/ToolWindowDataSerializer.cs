@@ -18,7 +18,8 @@ namespace SmartCmdArgs.Logic
                 {
                     Id = item.Id,
                     Command = item.Value,
-                    ProjectConfig = item.ProjectConfig
+                    ProjectConfig = item.ProjectConfig,
+                    LaunchProfile = item.LaunchProfile
                 };
                 
                 if (item is CmdContainer container)
