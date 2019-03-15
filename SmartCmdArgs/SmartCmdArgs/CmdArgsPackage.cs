@@ -75,6 +75,8 @@ namespace SmartCmdArgs
         private VisualStudioHelper vsHelper;
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
+        public static CmdArgsPackage Instance { get; private set; }
+
         private bool IsVcsSupportEnabled => GetDialogPage<CmdArgsOptionPage>().VcsSupport;
         private bool IsMacroEvaluationEnabled => GetDialogPage<CmdArgsOptionPage>().MacroEvaluation;
         private bool IsUseMonospaceFontEnabled => GetDialogPage<CmdArgsOptionPage>().UseMonospaceFont;
@@ -98,6 +100,9 @@ namespace SmartCmdArgs
             // any Visual Studio service because at this point the package object is created but
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
+
+            Debug.Assert(Instance == null, "There can be only be one! (Package)");
+            Instance = this;
 
             ToolWindowViewModel = new ToolWindowViewModel(this);
 
@@ -329,6 +334,32 @@ namespace SmartCmdArgs
         public string CreateCommandLineArgsForProject(Guid guid)
         {
             return CreateCommandLineArgsForProject(vsHelper.HierarchyForProjectGuid(guid));
+        }
+        
+        public List<string> GetProjectConfigurations(Guid projGuid)
+        {
+            IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
+
+            if (project?.IsCpsProject() == true)
+            {
+                var configs = (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>().ToList();
+                return configs;
+            }
+
+            return new List<string>();
+        }
+
+        public List<string> GetLaunchProfiles(Guid projGuid)
+        {
+            IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
+
+            if (project?.IsCpsProject() == true)
+            {
+                var launchProfiles = SmartCmdArgs15.CpsProjectSupport.GetLaunchProfileNames(project.GetProject()).ToList();
+                return launchProfiles;
+            }
+
+            return new List<string>();
         }
 
         private void AttachFsWatcherToProject(IVsHierarchy project)

@@ -369,16 +369,12 @@ namespace SmartCmdArgs.ViewModel
         public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)
         {
             var guid = project.GetGuid();
-            IEnumerable<string> launchProfiles = null;
-            if (project.IsCpsProject())
-            {
-                launchProfiles = SmartCmdArgs15.CpsProjectSupport.GetLaunchProfileNames(project.GetProject());
-            }
 
-            var cmdPrj = new CmdProject(guid, project.GetKind(), project.GetDisplayName(), 
-                ListEntriesToCmdObjects(data.Items), data.Expanded,
-                (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>(),
-                launchProfiles);
+            var cmdPrj = new CmdProject(guid,
+                                        project.GetKind(),
+                                        project.GetDisplayName(), 
+                                        ListEntriesToCmdObjects(data.Items),
+                                        data.Expanded);
 
             // Assign TreeViewModel after AddRange to not get a lot of ParentChanged events
             cmdPrj.ParentTreeViewModel = TreeViewModel; 

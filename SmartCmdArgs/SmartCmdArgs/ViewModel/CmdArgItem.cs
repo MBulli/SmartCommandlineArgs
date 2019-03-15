@@ -529,23 +529,12 @@ namespace SmartCmdArgs.ViewModel
             get => filter; set { filter = value; RefreshFilters(); }
         }
 
-        public List<string> Configurations { get; private set; }
-        public List<string> LaunchProfiles { get; private set; }
-
         public Guid Kind { get; set; }
         
-        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, IEnumerable<string> configs, IEnumerable<string> profiles)
+        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded)
             : base(id, displayName, items, isExpanded)
         {
             Kind = kind;
-
-            Configurations = new List<string>();
-            if (configs != null)
-                Configurations.AddRange(configs);
-
-            LaunchProfiles = new List<string>();
-            if (profiles != null)
-                LaunchProfiles.AddRange(profiles);
         }
 
         public override CmdBase Copy()

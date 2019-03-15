@@ -126,6 +126,8 @@ namespace SmartCmdArgs.View
         private MenuItem _projConfigMenuItem;
         private MenuItem _launchProfileMenuItem;
 
+        private TreeViewModel ViewModel => DataContext as TreeViewModel;
+
         public TreeViewEx()
         {
             // TODO: Implement ContextMenu
@@ -138,7 +140,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as sigle Startup Project" });
-            ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Config" });
+            ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
 
             CollapseWhenDisbaled(_splitArgumentMenuItem);
@@ -195,6 +197,9 @@ namespace SmartCmdArgs.View
             _projConfigMenuItem.Items.Clear();
             _launchProfileMenuItem.Items.Clear();
 
+            _projConfigMenuItem.IsEnabled = false;
+            _launchProfileMenuItem.IsEnabled = false;
+
             var item = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdGroup;
             if (item != null)
             {
@@ -203,62 +208,68 @@ namespace SmartCmdArgs.View
                     con = con.Parent;
                 var proj = (CmdProject)con;
 
-                _projConfigMenuItem.IsEnabled = SetProjectConfigCommand.CanExecute(null);
-                if (_projConfigMenuItem.IsEnabled)
+                if (SetProjectConfigCommand.CanExecute(null))
                 {
-                    _projConfigMenuItem.Items.Add(new MenuItem
-                    {
-                        Header = "All",
-                        Command = SetProjectConfigCommand,
-                        CommandParameter = null,
-                        IsChecked = item.ProjectConfig == null,
-                        IsCheckable = true
-                    });
+                    var configurations = CmdArgsPackage.Instance.GetProjectConfigurations(proj.Id);
 
-                    foreach (var config in proj.Configurations)
+                    if (configurations.Count > 0 || item.ProjectConfig != null)
                     {
+                        _projConfigMenuItem.IsEnabled = true;
+
                         _projConfigMenuItem.Items.Add(new MenuItem
                         {
-                            Header = config,
+                            Header = "All",
                             Command = SetProjectConfigCommand,
-                            CommandParameter = config,
-                            IsChecked = item.ProjectConfig == config,
+                            CommandParameter = null,
+                            IsChecked = item.ProjectConfig == null,
                             IsCheckable = true
                         });
+
+                        foreach (var config in configurations)
+                        {
+                            _projConfigMenuItem.Items.Add(new MenuItem
+                            {
+                                Header = config,
+                                Command = SetProjectConfigCommand,
+                                CommandParameter = config,
+                                IsChecked = item.ProjectConfig == config,
+                                IsCheckable = true
+                            });
+                        }
                     }
                 }
 
-                _launchProfileMenuItem.IsEnabled = SetLaunchProfileCommand.CanExecute(null)
-                    && (proj.LaunchProfiles.Count > 0 || item.LaunchProfile != null);
 
-                if (_launchProfileMenuItem.IsEnabled)
+                if (SetLaunchProfileCommand.CanExecute(null))
                 {
-                    _launchProfileMenuItem.Items.Add(new MenuItem
-                    {
-                        Header = "All",
-                        Command = SetLaunchProfileCommand,
-                        CommandParameter = null,
-                        IsChecked = item.LaunchProfile == null,
-                        IsCheckable = true
-                    });
+                    var launchProfiles = CmdArgsPackage.Instance.GetLaunchProfiles(proj.Id);
 
-                    foreach (var profile in proj.LaunchProfiles)
+                    if (launchProfiles.Count > 0 || item.LaunchProfile != null)
                     {
+                        _launchProfileMenuItem.IsEnabled = true;
+
                         _launchProfileMenuItem.Items.Add(new MenuItem
                         {
-                            Header = profile,
+                            Header = "All",
                             Command = SetLaunchProfileCommand,
-                            CommandParameter = profile,
-                            IsChecked = item.LaunchProfile == profile,
+                            CommandParameter = null,
+                            IsChecked = item.LaunchProfile == null,
                             IsCheckable = true
                         });
+
+                        foreach (var profile in launchProfiles)
+                        {
+                            _launchProfileMenuItem.Items.Add(new MenuItem
+                            {
+                                Header = profile,
+                                Command = SetLaunchProfileCommand,
+                                CommandParameter = profile,
+                                IsChecked = item.LaunchProfile == profile,
+                                IsCheckable = true
+                            });
+                        }
                     }
                 }
-            }
-            else
-            {
-                _projConfigMenuItem.IsEnabled = false;
-                _launchProfileMenuItem.IsEnabled = false;
             }
         }
 
