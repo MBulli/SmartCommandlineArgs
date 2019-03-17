@@ -351,7 +351,7 @@ namespace SmartCmdArgs
             List<string> launchProfiles = null;
             if (project?.IsCpsProject() == true)
             {
-                launchProfiles = SmartCmdArgs15.CpsProjectSupport.GetLaunchProfileNames(project.GetProject()).ToList();
+                launchProfiles = SmartCmdArgs15.CpsProjectSupport.GetLaunchProfileNames(project.GetProject())?.ToList();
             }
 
             return launchProfiles ?? new List<string>();
