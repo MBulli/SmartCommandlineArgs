@@ -339,27 +339,22 @@ namespace SmartCmdArgs
         public List<string> GetProjectConfigurations(Guid projGuid)
         {
             IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
-
-            if (project?.IsCpsProject() == true)
-            {
-                var configs = (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>().ToList();
-                return configs;
-            }
-
-            return new List<string>();
+            
+            var configs = (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>().ToList();
+            return configs ?? new List<string>();
         }
 
         public List<string> GetLaunchProfiles(Guid projGuid)
         {
             IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
 
+            List<string> launchProfiles = null;
             if (project?.IsCpsProject() == true)
             {
-                var launchProfiles = SmartCmdArgs15.CpsProjectSupport.GetLaunchProfileNames(project.GetProject()).ToList();
-                return launchProfiles;
+                launchProfiles = SmartCmdArgs15.CpsProjectSupport.GetLaunchProfileNames(project.GetProject()).ToList();
             }
 
-            return new List<string>();
+            return launchProfiles ?? new List<string>();
         }
 
         private void AttachFsWatcherToProject(IVsHierarchy project)
