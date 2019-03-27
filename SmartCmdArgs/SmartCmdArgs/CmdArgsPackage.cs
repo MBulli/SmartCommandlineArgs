@@ -416,7 +416,7 @@ namespace SmartCmdArgs
 
         private void UpdateCommandsForProjectOnDispatcher(IVsHierarchy project, bool onlyIfVcsSupportEnabled)
         {
-            Logger.Info($"Dispatching update commands function call for project '{project.GetDisplayName()}'");
+            Logger.Info($"Dispatching update commands function call");
 
             JoinableTaskFactory.RunAsync(async delegate
             {
