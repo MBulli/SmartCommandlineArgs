@@ -92,6 +92,11 @@ namespace SmartCmdArgs.View
             nameof(SetLaunchProfileCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand SetLaunchProfileCommand { get { return (ICommand)GetValue(SetLaunchProfileCommandProperty); } set { SetValue(SetLaunchProfileCommandProperty, value); } }
         
+        public static readonly DependencyProperty SetExclusiveModeCommandProperty = DependencyProperty.Register(
+            nameof(ToggleExclusiveModeCommand), typeof(ICommand), typeof(TreeViewEx), 
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._exclusiveModeMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand ToggleExclusiveModeCommand { get { return (ICommand)GetValue(SetExclusiveModeCommandProperty); } set { SetValue(SetExclusiveModeCommandProperty, value); } }
+        
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -120,6 +125,7 @@ namespace SmartCmdArgs.View
 
         public IEnumerable<TreeViewItemEx> VisibleTreeViewItems => GetTreeViewItems(this, false);
 
+        private MenuItem _exclusiveModeMenuItem;
         private MenuItem _splitArgumentMenuItem;
         private MenuItem _newGroupFromArgumentsMenuItem;
         private MenuItem _setAsStartupProjectMenuItem;
@@ -137,12 +143,14 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Paste });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
             ContextMenu.Items.Add(new Separator());
+            ContextMenu.Items.Add(_exclusiveModeMenuItem = new MenuItem { Header = "Exclusive Mode" });
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as single Startup Project" });
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
 
+            CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
             CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
             CollapseWhenDisbaled(_projConfigMenuItem);
@@ -199,11 +207,21 @@ namespace SmartCmdArgs.View
 
             _projConfigMenuItem.IsEnabled = false;
             _launchProfileMenuItem.IsEnabled = false;
+            _exclusiveModeMenuItem.IsEnabled = false;
 
-            var item = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdGroup;
-            if (item != null)
+            _exclusiveModeMenuItem.IsCheckable = false;
+
+            var container = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdContainer;
+            if (container != null)
             {
-                CmdContainer con = item.Parent;
+                _exclusiveModeMenuItem.IsEnabled = true;
+                _exclusiveModeMenuItem.IsCheckable = true;
+                _exclusiveModeMenuItem.IsChecked = container.ExclusiveMode;
+            }
+
+            if (container is CmdGroup group)
+            {
+                CmdContainer con = group.Parent;
                 while (!(con is CmdProject))
                     con = con.Parent;
                 var proj = (CmdProject)con;
@@ -212,7 +230,7 @@ namespace SmartCmdArgs.View
                 {
                     var configurations = CmdArgsPackage.Instance.GetProjectConfigurations(proj.Id);
 
-                    if (configurations.Count > 0 || item.ProjectConfig != null)
+                    if (configurations.Count > 0 || group.ProjectConfig != null)
                     {
                         _projConfigMenuItem.IsEnabled = true;
 
@@ -221,7 +239,7 @@ namespace SmartCmdArgs.View
                             Header = "All",
                             Command = SetProjectConfigCommand,
                             CommandParameter = null,
-                            IsChecked = item.ProjectConfig == null,
+                            IsChecked = group.ProjectConfig == null,
                             IsCheckable = true
                         });
 
@@ -232,7 +250,7 @@ namespace SmartCmdArgs.View
                                 Header = config,
                                 Command = SetProjectConfigCommand,
                                 CommandParameter = config,
-                                IsChecked = item.ProjectConfig == config,
+                                IsChecked = group.ProjectConfig == config,
                                 IsCheckable = true
                             });
                         }
@@ -244,7 +262,7 @@ namespace SmartCmdArgs.View
                 {
                     var launchProfiles = CmdArgsPackage.Instance.GetLaunchProfiles(proj.Id);
 
-                    if (launchProfiles.Count > 0 || item.LaunchProfile != null)
+                    if (launchProfiles.Count > 0 || group.LaunchProfile != null)
                     {
                         _launchProfileMenuItem.IsEnabled = true;
 
@@ -253,7 +271,7 @@ namespace SmartCmdArgs.View
                             Header = "All",
                             Command = SetLaunchProfileCommand,
                             CommandParameter = null,
-                            IsChecked = item.LaunchProfile == null,
+                            IsChecked = group.LaunchProfile == null,
                             IsCheckable = true
                         });
 
@@ -264,7 +282,7 @@ namespace SmartCmdArgs.View
                                 Header = profile,
                                 Command = SetLaunchProfileCommand,
                                 CommandParameter = profile,
-                                IsChecked = item.LaunchProfile == profile,
+                                IsChecked = group.LaunchProfile == profile,
                                 IsCheckable = true
                             });
                         }

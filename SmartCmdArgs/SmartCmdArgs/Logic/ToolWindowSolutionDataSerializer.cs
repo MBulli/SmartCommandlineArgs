@@ -107,6 +107,7 @@ namespace SmartCmdArgs.Logic
                 var list = new ToolWindowStateProjectData
                 {
                     Id = kvPair.Value.Id,
+                    ExclusiveMode = kvPair.Value.ExclusiveMode,
                     Items = TransformCmdList(kvPair.Value.Items)
                 };
                 data.ProjectArguments.Add(kvPair.Key, list);

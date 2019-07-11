@@ -137,6 +137,9 @@ namespace SmartCmdArgs.ViewModel
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string LaunchProfile { get; set; } = null;
 
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+            public bool ExclusiveMode { get; set; } = false;
+
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public IEnumerable<DataObjectJsonItem> Items { get; set; } = null;
 
@@ -151,7 +154,7 @@ namespace SmartCmdArgs.ViewModel
                     }
                     else if (cmd is CmdGroup grp)
                     {
-                        yield return new DataObjectJsonItem {Value = grp.Value, ProjectConfig = grp.ProjectConfig, LaunchProfile = grp.LaunchProfile, Items = Convert(grp.Items)};
+                        yield return new DataObjectJsonItem {Value = grp.Value, ProjectConfig = grp.ProjectConfig, LaunchProfile = grp.LaunchProfile, ExclusiveMode = grp.ExclusiveMode, Items = Convert(grp.Items)};
                     }
                 }
             }
@@ -166,7 +169,7 @@ namespace SmartCmdArgs.ViewModel
                     }
                     else
                     {
-                        yield return new CmdGroup(item.Value, Convert(item.Items), projConf: item.ProjectConfig, launchProfile: item.LaunchProfile);
+                        yield return new CmdGroup(item.Value, Convert(item.Items), exclusiveMode: item.ExclusiveMode, projConf: item.ProjectConfig, launchProfile: item.LaunchProfile);
                     }
                 }
             }

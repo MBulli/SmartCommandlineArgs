@@ -23,7 +23,10 @@ namespace SmartCmdArgs.Logic
                 };
                 
                 if (item is CmdContainer container)
+                {
                     newElement.Items = TransformCmdList(container.Items);
+                    newElement.ExclusiveMode = container.ExclusiveMode;
+                }
 
                 result.Add(newElement);
             }

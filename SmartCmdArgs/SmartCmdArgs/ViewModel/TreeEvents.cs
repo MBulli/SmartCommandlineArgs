@@ -100,4 +100,12 @@ namespace SmartCmdArgs.ViewModel
         {
         }
     }
+
+    public class ExclusiveModeChangedEvent : GenericChangedEventArgs<bool>
+    {
+        public ExclusiveModeChangedEvent(CmdBase sender, bool oldValue, bool newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
 }

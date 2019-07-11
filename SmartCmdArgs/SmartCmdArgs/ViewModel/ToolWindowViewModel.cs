@@ -83,6 +83,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand<string> SetLaunchProfileCommand { get; }
 
+        public RelayCommand ToggleExclusiveModeCommand { get; }
+
         public ToolWindowViewModel(CmdArgsPackage package)
         {
             CmdArgsPackage = package;
@@ -213,6 +215,15 @@ namespace SmartCmdArgs.ViewModel
                     grp.LaunchProfile = profileName;
                 }
             }, _ => HasSingleSelectedItemOfType<CmdGroup>());
+
+            ToggleExclusiveModeCommand = new RelayCommand(() =>
+            {
+                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                if (selectedItem is CmdContainer con)
+                {
+                    con.ExclusiveMode = !con.ExclusiveMode;
+                }
+            }, _ => HasSingleSelectedItemOfType<CmdContainer>());
         }
 
 
@@ -374,7 +385,8 @@ namespace SmartCmdArgs.ViewModel
                                         project.GetKind(),
                                         project.GetDisplayName(), 
                                         ListEntriesToCmdObjects(data.Items),
-                                        data.Expanded);
+                                        data.Expanded,
+                                        data.ExclusiveMode);
 
             // Assign TreeViewModel after AddRange to not get a lot of ParentChanged events
             cmdPrj.ParentTreeViewModel = TreeViewModel; 
@@ -388,7 +400,7 @@ namespace SmartCmdArgs.ViewModel
                     if (item.Items == null)
                         yield return new CmdArgument(item.Id, item.Command, item.Enabled);
                     else
-                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ProjectConfig, item.LaunchProfile);
+                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.LaunchProfile);
                 }
             }
         }

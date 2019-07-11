@@ -29,7 +29,7 @@ namespace SmartCmdArgs.ViewModel
             get => isChecked;
             set
             {
-                if ((Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || Parent.ExclusiveMode)
                     ExclusiveChecked();
                 else
                     OnIsCheckedChanged(isChecked, value, true);
@@ -282,6 +282,13 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        protected bool exclusiveMode;
+        public bool ExclusiveMode
+        {
+            get => exclusiveMode;
+            set => OnExclusiveModeChanged(exclusiveMode, value);
+        }
+
         public ObservableRangeCollection<CmdBase> Items { get; }
         public ICollectionView ItemsView { get; }
         protected virtual Predicate<CmdBase> FilterPredicate => Parent?.FilterPredicate;
@@ -296,10 +303,11 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdContainer> ExpandedContainer => this.OfType<CmdContainer>().Where(arg => arg.IsExpanded);
 
-        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> subItems = null, bool isExpanded = true)
+        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> subItems, bool isExpanded, bool exclusiveMode)
             : base(id, value)
         {
             this.isExpanded = isExpanded;
+            ExclusiveMode = exclusiveMode;
 
             Items = new ObservableRangeCollection<CmdBase>();
 
@@ -322,8 +330,8 @@ namespace SmartCmdArgs.ViewModel
             };
         }
 
-        public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true) 
-            : this(Guid.NewGuid(), value, items, isExpanded)
+        public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false) 
+            : this(Guid.NewGuid(), value, items, isExpanded, exclusiveMode)
         { }
 
         private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -360,6 +368,16 @@ namespace SmartCmdArgs.ViewModel
             }
 
             BubbleEvent(new ItemsChangedEvent(this, e));
+        }
+
+        private void OnExclusiveModeChanged(bool oldValue, bool newValue)
+        {
+            SetAndNotify(newValue, ref exclusiveMode, nameof(ExclusiveMode));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new ExclusiveModeChangedEvent(this, oldValue, newValue));
+            }
         }
 
         protected void RefreshFilters()
@@ -531,8 +549,8 @@ namespace SmartCmdArgs.ViewModel
 
         public Guid Kind { get; set; }
         
-        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded)
-            : base(id, displayName, items, isExpanded)
+        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode)
+            : base(id, displayName, items, isExpanded, exclusiveMode)
         {
             Kind = kind;
         }
@@ -567,20 +585,20 @@ namespace SmartCmdArgs.ViewModel
             set => base.LaunchProfile = value;
         }
 
-        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, string projConf, string launchProfile) 
-            : base(id, name, items, isExpanded)
+        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string projConf, string launchProfile) 
+            : base(id, name, items, isExpanded, exclusiveMode)
         {
             base.ProjectConfig = projConf;
             base.LaunchProfile = launchProfile;
         }
 
-        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, string projConf = null, string launchProfile = null) 
-            : this(Guid.NewGuid(), name, items, isExpanded, projConf, launchProfile)
+        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string projConf = null, string launchProfile = null) 
+            : this(Guid.NewGuid(), name, items, isExpanded, exclusiveMode, projConf, launchProfile)
         { }
 
         public override CmdBase Copy()
         {
-            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy()), isExpanded);
+            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy()), isExpanded, ExclusiveMode);
         }
     }
 

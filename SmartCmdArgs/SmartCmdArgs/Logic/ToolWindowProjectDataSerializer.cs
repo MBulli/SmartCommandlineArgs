@@ -23,6 +23,7 @@ namespace SmartCmdArgs.Logic
             var data = new ToolWindowStateProjectData
             {
                 Id = prj.Id,
+                ExclusiveMode = prj.ExclusiveMode,
                 Items = TransformCmdList(prj.Items)
             };
 
