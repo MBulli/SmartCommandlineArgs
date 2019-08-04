@@ -88,6 +88,7 @@
     <Compile Include="ViewModel\TreeEvents.cs" />
     <Compile Include="ViewModel\TreeViewModel.cs" />
     <Compile Include="View\Converter\BooleanBoldFontConverter.cs" />
+    <Compile Include="View\Converter\BoolToVisibilityConverter.cs" />
     <Compile Include="View\Converter\ItemVisibilityConverter.cs" />
     <Compile Include="View\Converter\ConverterBase.cs" />
     <Compile Include="View\Converter\EmptyToVisibilityConverter.cs" />

@@ -15,7 +15,7 @@ namespace SmartCmdArgs.Helper
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected void OnNotifyPropertyChanged([CallerMemberName]string propertyName = null)
+        public void OnNotifyPropertyChanged([CallerMemberName]string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

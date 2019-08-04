@@ -17,7 +17,8 @@
          The textblock and everything else have to follow. -->
     <DockPanel Height="Auto">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-            <CheckBox x:Name="checkbox" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
+            <CheckBox x:Name="checkbox" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}" Visibility="{Binding InExclusiveModeContainer, Mode=OneWay, Converter={c:BoolToVisibilityConverter Inverted=True, HideVisibility=Collapsed}}"/>
+            <RadioButton x:Name="radiobutton" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}" Visibility="{Binding InExclusiveModeContainer, Mode=OneWay, Converter={c:BoolToVisibilityConverter Inverted=False, HideVisibility=Collapsed}}"/>
             <imaging:CrispImage x:Name="Icon" Visibility="{Binding Converter={c:ItemVisibilityConverter}}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -29,7 +29,7 @@ namespace SmartCmdArgs.ViewModel
             get => isChecked;
             set
             {
-                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || Parent.ExclusiveMode)
+                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || InExclusiveModeContainer)
                     ExclusiveChecked();
                 else
                     OnIsCheckedChanged(isChecked, value, true);
@@ -54,6 +54,8 @@ namespace SmartCmdArgs.ViewModel
         private string _launchProfile = null;
         public string LaunchProfile { get => _launchProfile; protected set => OnLaunchProfileChanged(this._launchProfile, value); }
         public string UsedLaunchProfile => _launchProfile ?? Parent?.UsedLaunchProfile;
+
+        public bool InExclusiveModeContainer => Parent?.ExclusiveMode ?? false;
 
         public CmdBase(Guid id, string value, bool? isChecked = false)
         {
@@ -307,7 +309,7 @@ namespace SmartCmdArgs.ViewModel
             : base(id, value)
         {
             this.isExpanded = isExpanded;
-            ExclusiveMode = exclusiveMode;
+            this.exclusiveMode = exclusiveMode;
 
             Items = new ObservableRangeCollection<CmdBase>();
 
@@ -373,6 +375,11 @@ namespace SmartCmdArgs.ViewModel
         private void OnExclusiveModeChanged(bool oldValue, bool newValue)
         {
             SetAndNotify(newValue, ref exclusiveMode, nameof(ExclusiveMode));
+
+            foreach (var item in Items)
+            {
+                item.OnNotifyPropertyChanged(nameof(InExclusiveModeContainer));
+            }
 
             if (oldValue != newValue)
             {
