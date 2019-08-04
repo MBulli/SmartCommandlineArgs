@@ -178,12 +178,12 @@ namespace SmartCmdArgs.ViewModel
                 // add new group
                 var newGrp = new CmdGroup(name: "");
                 var insertIndex = parent.TakeWhile((item) => item != firstElement).Count();
-                parent.Items.Insert(insertIndex, newGrp);
+                parent.Insert(insertIndex, newGrp);
                 
                 // move items to new group
                 parent.Items.RemoveRange(itemsToGroup);
                 itemsToGroup.ForEach(item => item.IsSelected = false);
-                newGrp.Items.AddRange(itemsToGroup);
+                newGrp.AddRange(itemsToGroup);
                 
                 // set selection to new group
                 TreeViewModel.SelectItemCommand.SafeExecute(newGrp);

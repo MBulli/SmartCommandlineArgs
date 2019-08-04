@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -123,6 +123,18 @@ namespace SmartCmdArgs.ViewModel
             {
                 parent?.OnChildIsCheckedChanged(oldValue, newValue);
             }
+            
+            if (InExclusiveModeContainer && IsChecked != false)
+            {
+                var checkedItems = Parent.Items.Where(item => item.IsChecked != false);
+                foreach (var item in checkedItems)
+                {
+                    if (item != this)
+                    {
+                        item.OnIsCheckedChanged(item.isChecked, false, true);
+                    }
+                }
+            }
 
             // TODO: Only bubble event if we're the origin.
             if (oldValue != newValue)
@@ -183,7 +195,12 @@ namespace SmartCmdArgs.ViewModel
             OnIsCheckedChanged(IsChecked, value, false);
         }
 
-#region Editing
+        public void SetIsCheckedAndNotifyingParent(bool? value)
+        {
+            OnIsCheckedChanged(IsChecked, value, true);
+        }
+
+        #region Editing
         private string editBackupValue;
 
         private bool isInEditMode;
@@ -313,13 +330,6 @@ namespace SmartCmdArgs.ViewModel
 
             Items = new ObservableRangeCollection<CmdBase>();
 
-            foreach (var item in subItems ?? Enumerable.Empty<CmdBase>())
-            {
-                Items.Add(item);
-                item.Parent = this;
-            }
-            UpdateCheckedState();
-
             Items.CollectionChanged += ItemsOnCollectionChanged;
 
             ItemsView = CollectionViewSource.GetDefaultView(Items);
@@ -330,6 +340,9 @@ namespace SmartCmdArgs.ViewModel
                     return FilterPredicate(item);
                 return true;
             };
+
+            if (subItems != null)
+                AddRange(subItems);
         }
 
         public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false) 
@@ -376,9 +389,19 @@ namespace SmartCmdArgs.ViewModel
         {
             SetAndNotify(newValue, ref exclusiveMode, nameof(ExclusiveMode));
 
+            var checkedFound = false;
+
             foreach (var item in Items)
             {
                 item.OnNotifyPropertyChanged(nameof(InExclusiveModeContainer));
+
+                if (exclusiveMode && (item.IsChecked ?? true))
+                {
+                    if (checkedFound)
+                        item.SetIsCheckedAndNotifyingParent(false);
+                    else
+                        checkedFound = true;
+                }
             }
 
             if (oldValue != newValue)
@@ -409,11 +432,28 @@ namespace SmartCmdArgs.ViewModel
 
         protected override void OnIsCheckedChanged(bool? oldValue, bool? newValue, bool notifyParent)
         {
-            base.OnIsCheckedChanged(oldValue, newValue, notifyParent);
-
-            foreach (var item in Items)
+            bool? value = newValue;
+            if (newValue == true && ExclusiveMode && Items.Count > 1)
             {
-                item.SetIsCheckedWithoutNotifyingParent(newValue);
+                value = null;
+            }
+
+            base.OnIsCheckedChanged(oldValue, value, notifyParent);
+
+            if (ExclusiveMode)
+            {
+                foreach (var item in Items.Skip(1))
+                {
+                    item.SetIsCheckedWithoutNotifyingParent(false);
+                }
+                Items.FirstOrDefault()?.SetIsCheckedWithoutNotifyingParent(newValue);
+            }
+            else
+            {
+                foreach (var item in Items)
+                {
+                    item.SetIsCheckedWithoutNotifyingParent(newValue);
+                }
             }
         }
 
@@ -433,6 +473,58 @@ namespace SmartCmdArgs.ViewModel
                 else
                     base.OnIsCheckedChanged(IsChecked, false, true);
             }
+        }
+
+        public void InsertRange(int idx, IEnumerable<CmdBase> items)
+        {
+            var list = items.ToList();
+
+            if (ExclusiveMode)
+            {
+                var checkedFound = false;
+                foreach (var item in list)
+                {
+                    if (item.IsChecked ?? true)
+                    {
+                        if (checkedFound)
+                            item.SetIsCheckedWithoutNotifyingParent(false);
+                        else
+                            checkedFound = true;
+                    }
+                }
+
+                if (checkedFound)
+                {
+                    foreach (var item in Items)
+                    {
+                        item.SetIsCheckedWithoutNotifyingParent(false);
+                    }
+                }
+            }
+
+            Items.InsertRange(idx, list);
+        }
+
+        public void AddRange(IEnumerable<CmdBase> items)
+        {
+            InsertRange(Items.Count, items);
+        }
+
+        public void Insert(int idx, CmdBase item)
+        {
+            if (ExclusiveMode && (item.IsChecked ?? true))
+            {
+                foreach (var loopItem in Items)
+                {
+                    loopItem.SetIsCheckedWithoutNotifyingParent(false);
+                }
+            }
+            Items.Insert(idx, item);
+        }
+
+        public void Add(CmdBase item)
+        {
+            Insert(Items.Count, item);
         }
 
 

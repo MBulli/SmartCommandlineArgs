@@ -201,12 +201,12 @@ namespace SmartCmdArgs.ViewModel
                 // make sure the container is expanded, so the selection works and the user knows what's happening
                 con.IsExpanded = true;
 
-                con.Items.InsertRange(0, items);
+                con.InsertRange(0, items);
             }
             else
             {
                 var insertIdx = targetItem.Parent.Items.IndexOf(targetItem) + 1;
-                targetItem.Parent.Items.InsertRange(insertIdx, items);
+                targetItem.Parent.InsertRange(insertIdx, items);
             }
         }
 

@@ -102,7 +102,7 @@ namespace SmartCmdArgs.View
 
                 // update data related to the current mouse position and the target item
                 dropInfo.UpdateInsertPosition(e);
-                dropInfo.UpdateTargetCollectionAndIndex();
+                dropInfo.UpdateTargetContainerAndIndex();
 
                 // set the drop mode Copy|Move|None
                 if (dropInfo.CanAcceptData(DropInfo.ExtractDropData(dragInfo, e)))
@@ -157,7 +157,7 @@ namespace SmartCmdArgs.View
                 {
                     if (souldDeselctItem)
                         sourceItem.IsSelected = false;
-                    dropInfo.TargetCollection.Insert(idx++, sourceItem);
+                    dropInfo.TargetContainer.Insert(idx++, sourceItem);
                 }
 
                 var focusItem = dragInfo?.DirectSourceItem ?? data.FirstOrDefault();
@@ -186,15 +186,15 @@ namespace SmartCmdArgs.View
         {
             System.Diagnostics.Debug.WriteLine($"HandleDropForSource: {result}");
 
-            dropInfo?.UpdateTargetCollectionAndIndex();
+            dropInfo?.UpdateTargetContainerAndIndex();
 
             if (result.HasFlag(DragDropEffects.Move))
             {
                 foreach (var sourceItem in dragInfo.SourceItems)
                 {
-                    var sourceCol = sourceItem.Parent.Items;
-                    var idx = sourceCol.IndexOf(sourceItem);
-                    if (Equals(sourceCol, dropInfo?.TargetCollection) && idx < dropInfo.InsertIndex)
+                    var sourceCol = sourceItem.Parent;
+                    var idx = sourceCol.Items.IndexOf(sourceItem);
+                    if (Equals(sourceCol, dropInfo?.TargetContainer) && idx < dropInfo.InsertIndex)
                         dropInfo.InsertIndex--;
                     sourceItem.Parent.Items.RemoveAt(idx);
                 }
@@ -271,7 +271,7 @@ namespace SmartCmdArgs.View
         private TreeViewItemEx targetItem;
         private RelativInsertPosition insertPosition;
 
-        public IList<CmdBase> TargetCollection { get; private set; }
+        public CmdContainer TargetContainer { get; private set; }
         public int InsertIndex { get; set; }
         public DragDropEffects Effects { get; set; }
 
@@ -346,30 +346,30 @@ namespace SmartCmdArgs.View
                 InsertPosition = RelativInsertPosition.None;
         }
 
-        public void UpdateTargetCollectionAndIndex()
+        public void UpdateTargetContainerAndIndex()
         {
             if (TargetItem == null || InsertPosition == RelativInsertPosition.None)
             {
-                TargetCollection = null;
+                TargetContainer = null;
                 InsertIndex = 0;
             }
             else
             {
                 if (InsertPosition.HasFlag(RelativInsertPosition.IntoTargetItem) && TargetItem.Item is CmdContainer con)
                 {
-                    TargetCollection = con.Items;
-                    InsertIndex = InsertPosition.HasFlag(RelativInsertPosition.AfterTargetItem) ? 0 : TargetCollection.Count;
+                    TargetContainer = con;
+                    InsertIndex = InsertPosition.HasFlag(RelativInsertPosition.AfterTargetItem) ? 0 : TargetContainer.Items.Count;
                 }
                 else
                 {
-                    TargetCollection = TargetItem.Item.Parent.Items;
-                    InsertIndex = TargetCollection.IndexOf(TargetItem.Item);
+                    TargetContainer = TargetItem.Item.Parent;
+                    InsertIndex = TargetContainer.Items.IndexOf(TargetItem.Item);
                     if (InsertPosition == RelativInsertPosition.AfterTargetItem)
                         InsertIndex++;
                 }
             }
 
-            System.Diagnostics.Debug.WriteLine($"UpdateTargetCollectionAndIndex: TargetCollection={TargetCollection}, InsertIndex={InsertIndex}");
+            System.Diagnostics.Debug.WriteLine($"UpdateTargetContainerAndIndex: TargetContainer={TargetContainer}, InsertIndex={InsertIndex}");
         }
 
         public bool CouldHadleDrop(DragEventArgs e)
@@ -384,7 +384,7 @@ namespace SmartCmdArgs.View
 
             var sourceContainerItems = data.OfType<CmdContainer>().ToList();
             if (sourceContainerItems.Concat(sourceContainerItems.SelectMany(container => container.AllContainer))
-                .Any(container => Equals(container.Items, TargetCollection)))
+                .Any(container => Equals(container, TargetContainer)))
                 return false;
 
             return true;

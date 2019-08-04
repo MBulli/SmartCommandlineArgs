@@ -114,11 +114,11 @@ namespace SmartCmdArgs.ViewModel
                 if (trimmedItem.EndsWith(":"))
                 {
                     var group = new CmdGroup(trimmedItem.Substring(0, trimmedItem.Length-1));
-                    groupStack.Peek().Items.Add(group);
+                    groupStack.Peek().Add(group);
                     groupStack.Push(group);
                 }
                 else
-                    groupStack.Peek().Items.Add(new CmdArgument(trimmedItem));
+                    groupStack.Peek().Add(new CmdArgument(trimmedItem));
             }
             return rootGroup.Items;
         }
