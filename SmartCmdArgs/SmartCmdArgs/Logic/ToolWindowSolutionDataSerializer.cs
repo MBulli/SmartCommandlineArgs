@@ -101,6 +101,9 @@ namespace SmartCmdArgs.Logic
             data.CheckedArguments = new HashSet<Guid>(vm.TreeViewModel.AllProjects.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
             data.ExpandedContainer = new HashSet<Guid>(vm.TreeViewModel.AllItems.OfType<CmdContainer>().Where(con => con.IsExpanded).Select(p => p.Id));
 
+            data.SelectedItems = new HashSet<Guid>(vm.TreeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).Select(item => item.Id)
+                                                   .Concat(vm.TreeViewModel.Projects.Values.Where(p => p.IsSelected).Select(p => p.Id)));
+
             foreach (var kvPair in vm.TreeViewModel.Projects)
             {
                 var list = new ToolWindowStateProjectData

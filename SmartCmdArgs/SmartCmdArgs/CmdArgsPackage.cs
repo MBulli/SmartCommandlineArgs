@@ -525,11 +525,27 @@ namespace SmartCmdArgs
                         else
                             dataFromProject.Expanded = solutionData.ExpandedContainer.Contains(dataFromProject.Id);
                     }
-                    
+
+                    var itemDataFromProject = projectData.AllItems;
+                    var itemDataFromLVM = projectListViewModel?.ToDictionary(item => item.Id, item => item);
+                    foreach (var dataFromProject in itemDataFromProject)
+                    {
+                        if (itemDataFromLVM != null && itemDataFromLVM.TryGetValue(dataFromProject.Id, out CmdBase itemFromVM))
+                            dataFromProject.Selected = itemFromVM.IsSelected;
+                        else
+                            dataFromProject.Selected = solutionData.SelectedItems.Contains(dataFromProject.Id);
+                    }
+
                     if (projectListViewModel != null)
+                    {
                         projectData.Expanded = projectListViewModel.IsExpanded;
+                        projectData.Selected = projectListViewModel.IsSelected;
+                    }
                     else
+                    {
                         projectData.Expanded = solutionData.ExpandedContainer.Contains(projectData.Id);
+                        projectData.Selected = solutionData.SelectedItems.Contains(projectData.Id);
+                    }
                 }
                 else
                 {
@@ -563,7 +579,14 @@ namespace SmartCmdArgs
                     con.Expanded = solutionData.ExpandedContainer.Contains(con.Id);
                 }
 
+                var itemDataFromProject = projectData.AllItems;
+                foreach (var item in itemDataFromProject)
+                {
+                    item.Selected = solutionData.SelectedItems.Contains(item.Id);
+                }
+
                 projectData.Expanded = solutionData.ExpandedContainer.Contains(projectData.Id);
+                projectData.Selected = solutionData.ExpandedContainer.Contains(projectData.Id);
             }
             else
             {

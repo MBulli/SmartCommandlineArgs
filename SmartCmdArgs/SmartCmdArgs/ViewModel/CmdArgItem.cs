@@ -318,6 +318,8 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdArgument> CheckedArguments => AllArguments.Where(arg => arg.IsChecked);
 
+        public IEnumerable<CmdBase> SelectedItems => this.Where(item => item.IsSelected);
+
         public CmdContainer(Guid id, string value, IEnumerable<CmdBase> subItems, bool isExpanded, bool exclusiveMode)
             : base(id, value)
         {

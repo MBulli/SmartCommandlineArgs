@@ -326,7 +326,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if axactly one line is selected and it is of the given type.</returns>
         private bool HasSingleSelectedItemOfType<T>()
         {
-            return HasSingleSelectedItem() && (TreeViewModel.SelectedItems.First() is T);
+            return HasSingleSelectedItem() && (TreeViewModel.SelectedItems.FirstOrDefault() is T);
         }
 
         /// <summary>
@@ -392,14 +392,20 @@ namespace SmartCmdArgs.ViewModel
 
             TreeViewModel.Projects[guid] = cmdPrj;
 
+            cmdPrj.IsSelected = data.Selected;
+
             IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
             {
+                CmdBase result = null;
                 foreach (var item in list)
                 {
                     if (item.Items == null)
-                        yield return new CmdArgument(item.Id, item.Command, item.Enabled);
+                        result = new CmdArgument(item.Id, item.Command, item.Enabled);
                     else
-                        yield return new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.LaunchProfile);
+                        result = new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.LaunchProfile);
+
+                    result.IsSelected = item.Selected;
+                    yield return result;
                 }
             }
         }

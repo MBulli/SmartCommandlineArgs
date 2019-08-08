@@ -15,6 +15,7 @@ namespace SmartCmdArgs.Logic
     {
         public int FileVersion = 2;
         public bool ShowAllProjects;
+        public HashSet<Guid> SelectedItems = new HashSet<Guid>();
         public HashSet<Guid> CheckedArguments = new HashSet<Guid>();
         public HashSet<Guid> ExpandedContainer = new HashSet<Guid>();
         public Dictionary<Guid, ToolWindowStateProjectData> ProjectArguments = new Dictionary<Guid, ToolWindowStateProjectData>();
@@ -48,14 +49,18 @@ namespace SmartCmdArgs.Logic
         public bool Enabled = false;
         [JsonIgnore]
         public bool Expanded = false;
+        [JsonIgnore]
+        public bool Selected = false;
 
         [JsonIgnore]
-        public IEnumerable<ListEntryData> AllArguments => Items.Where(item => item.Items == null)
-            .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllArguments));
+        public IEnumerable<ListEntryData> AllItems => Items
+            .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllItems));
 
         [JsonIgnore]
-        public IEnumerable<ListEntryData> AllContainer => Items.Where(item => item.Items != null)
-            .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllContainer));
+        public IEnumerable<ListEntryData> AllArguments => AllItems.Where(item => item.Items == null);
+
+        [JsonIgnore]
+        public IEnumerable<ListEntryData> AllContainer => AllItems.Where(item => item.Items != null);
 
         [OnError]
         public void OnError(StreamingContext context, ErrorContext errorContext)

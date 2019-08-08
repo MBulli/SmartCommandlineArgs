@@ -169,8 +169,8 @@ namespace SmartCmdArgs.ViewModel
                 }
             }
 
-            SelectedItems.ToList().ForEach(item => item.IsSelected = false);
-            SelectIndexCommand?.SafeExecute(0);
+            if (!SelectedItems.Any())
+                SelectIndexCommand?.SafeExecute(0);
         }
 
         public void SelectItems(IEnumerable<CmdBase> items)
