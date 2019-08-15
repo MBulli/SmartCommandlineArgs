@@ -148,26 +148,31 @@ namespace SmartCmdArgs.View
                 var idx = dropInfo.InsertIndex;
                 if (result.HasFlag(DragDropEffects.Copy))
                     data = data.Select(cmd => cmd.Copy());
+
+                var dataList = data.ToList();
                 
                 var souldDeselctItem = dropInfo.InsertPosition.HasFlag(DropInfo.RelativInsertPosition.IntoTargetItem) 
                     && dropInfo.TargetItem.Item is CmdContainer con 
                     && !con.IsExpanded;
 
-                foreach (var sourceItem in data)
+                if (dataList.Count > 0)
+                    ToolWindowHistory.SaveState();
+
+                foreach (var sourceItem in dataList)
                 {
                     if (souldDeselctItem)
                         sourceItem.IsSelected = false;
                     dropInfo.TargetContainer.Insert(idx++, sourceItem);
                 }
 
-                var focusItem = dragInfo?.DirectSourceItem ?? data.FirstOrDefault();
+                var focusItem = dragInfo?.DirectSourceItem ?? dataList.FirstOrDefault();
 
                 var selectItemCommand = dropInfo.TargetItem.ParentTreeView.SelectItemCommand;
                 if (souldDeselctItem)
                     selectItemCommand.SafeExecute(dropInfo.TargetItem.Item);
                 else if (selectItemCommand.SafeExecute(focusItem))
                 {
-                    foreach (var sourceItem in data)
+                    foreach (var sourceItem in dataList)
                     {
                         sourceItem.IsSelected = true;
                     }
@@ -190,6 +195,8 @@ namespace SmartCmdArgs.View
 
             if (result.HasFlag(DragDropEffects.Move))
             {
+                ToolWindowHistory.SaveStateAndPause();
+
                 foreach (var sourceItem in dragInfo.SourceItems)
                 {
                     var sourceCol = sourceItem.Parent;
@@ -202,6 +209,11 @@ namespace SmartCmdArgs.View
 
             if (dropInfo?.TargetItem != null)
                 HandleDropForTarget(result);
+
+            if (result.HasFlag(DragDropEffects.Move))
+            {
+                ToolWindowHistory.Resume();
+            }
         }
 
         private static void Cancel()

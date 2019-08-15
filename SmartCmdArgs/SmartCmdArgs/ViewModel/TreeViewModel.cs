@@ -49,6 +49,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        private string textBeforeEdit;
         private CmdBase currentEditingItem;
         private bool _isInEditMode;
         public bool IsInEditMode
@@ -236,7 +237,9 @@ namespace SmartCmdArgs.ViewModel
 
         public void MoveSelectedEntries(int moveDirection)
         {
-            AllProjects.ForEach(project => project.MoveSelectedEntries(moveDirection));
+            if (SelectedItems.Any()) {
+                AllProjects.ForEach(project => project.MoveSelectedEntries(moveDirection));
+            }
         }
 
         public void ToggleSelected()
@@ -285,7 +288,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 TreeContentChanged?.Invoke(this, new TreeChangedEventArgs(e.Sender, e.AffectedProject));
             }
-
+            
             switch (treeEvent)
             {
                 case SelectionChangedEvent e:
@@ -301,6 +304,17 @@ namespace SmartCmdArgs.ViewModel
                     break;
                 case ItemEditModeChangedEvent e:
                     currentEditingItem = e.IsInEditMode ? e.Sender : null;
+                    if (currentEditingItem != null)
+                    {
+                        textBeforeEdit = currentEditingItem.Value;
+                        ToolWindowHistory.SaveState();
+                    }
+                    else if (textBeforeEdit == e.Sender.Value)
+                    {
+                        ToolWindowHistory.DeleteNewest();
+                        textBeforeEdit = null;
+                    }
+
                     IsInEditMode = e.IsInEditMode;                   
                     break;
                 case ItemsChangedEvent e:

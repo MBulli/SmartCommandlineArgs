@@ -29,6 +29,8 @@ namespace SmartCmdArgs.View
             RegisterCommand(ApplicationCommands.Paste, PasteCommandProperty);
             RegisterCommand(ApplicationCommands.Cut, CutCommandProperty);
             RegisterCommand(ApplicationCommands.Delete, DeleteCommandProperty);
+            RegisterCommand(ApplicationCommands.Undo, UndoCommandProperty);
+            RegisterCommand(ApplicationCommands.Redo, RedoCommandProperty);
 
             CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx), new CommandBinding(ApplicationCommands.SelectAll, 
                 (sender, args) => ((TreeViewEx)sender).SelectAllItems(args), (sender, args) => args.CanExecute = ((TreeViewEx)sender).HasItems));
@@ -51,10 +53,16 @@ namespace SmartCmdArgs.View
             nameof(CutCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public static readonly DependencyProperty DeleteCommandProperty = DependencyProperty.Register(
             nameof(DeleteCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public static readonly DependencyProperty UndoCommandProperty = DependencyProperty.Register(
+            nameof(UndoCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public static readonly DependencyProperty RedoCommandProperty = DependencyProperty.Register(
+            nameof(RedoCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand CopyCommand { get => (ICommand)GetValue(CopyCommandProperty); set => SetValue(CopyCommandProperty, value); }
         public ICommand PasteCommand { get => (ICommand)GetValue(PasteCommandProperty); set => SetValue(PasteCommandProperty, value); }
         public ICommand CutCommand { get => (ICommand)GetValue(CutCommandProperty); set => SetValue(CutCommandProperty, value); }
         public ICommand DeleteCommand { get => (ICommand)GetValue(DeleteCommandProperty); set => SetValue(DeleteCommandProperty, value); }
+        public ICommand UndoCommand { get => (ICommand)GetValue(UndoCommandProperty); set => SetValue(UndoCommandProperty, value); }
+        public ICommand RedoCommand { get => (ICommand)GetValue(RedoCommandProperty); set => SetValue(RedoCommandProperty, value); }
 
         public static readonly DependencyProperty ToggleSelectedCommandProperty = DependencyProperty.Register(
             nameof(ToggleSelectedCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));

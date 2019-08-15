@@ -85,6 +85,7 @@
     <Compile Include="Helper\BindingListEx.cs" />
     <Compile Include="ViewModel\CmdArgItem.cs" />
     <Compile Include="ViewModel\DataObjectGenerator.cs" />
+    <Compile Include="ViewModel\ToolWindowHistory.cs" />
     <Compile Include="ViewModel\TreeEvents.cs" />
     <Compile Include="ViewModel\TreeViewModel.cs" />
     <Compile Include="View\Converter\BooleanBoldFontConverter.cs" />

@@ -441,6 +441,8 @@ namespace SmartCmdArgs
                     Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
                 }
 
+                ToolWindowHistory.SaveState();
+
                 UpdateCommandsForProject(project);
             });
         }
@@ -607,7 +609,7 @@ namespace SmartCmdArgs
         private void InitializeForSolution()
         {
             toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(toolWindowStateFromSolutionJsonStr, vsHelper);
-
+            
             foreach (var project in vsHelper.GetSupportedProjects())
             {
                 UpdateCommandsForProject(project);
@@ -670,6 +672,8 @@ namespace SmartCmdArgs
             if (e.IsSolutionOpenProcess)
                 return;
 
+            ToolWindowHistory.SaveState();
+
             UpdateCommandsForProject(e.Project);
             AttachFsWatcherToProject(e.Project);
         }
@@ -706,6 +710,9 @@ namespace SmartCmdArgs
                     if (File.Exists(newFileName))
                     {
                         File.Delete(oldFileName);
+
+                        ToolWindowHistory.SaveState();
+
                         UpdateCommandsForProject(e.Project);
                     }
                     else if (File.Exists(oldFileName))
@@ -725,6 +732,8 @@ namespace SmartCmdArgs
         {
             if (!enabled)
                 return;
+
+            ToolWindowHistory.SaveState();
 
             foreach (var projectName in vsHelper.GetSupportedProjects())
             {

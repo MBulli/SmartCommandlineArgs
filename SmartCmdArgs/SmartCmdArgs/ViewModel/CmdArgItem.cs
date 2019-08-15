@@ -29,6 +29,7 @@ namespace SmartCmdArgs.ViewModel
             get => isChecked;
             set
             {
+                ToolWindowHistory.SaveState();
                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || InExclusiveModeContainer)
                     ExclusiveChecked();
                 else

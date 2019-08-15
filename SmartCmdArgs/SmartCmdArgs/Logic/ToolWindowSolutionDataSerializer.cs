@@ -88,12 +88,10 @@ namespace SmartCmdArgs.Logic
             return result;
         }
 
-        public static ToolWindowStateSolutionData Serialize(ToolWindowViewModel vm, Stream stream)
+        public static ToolWindowStateSolutionData Serialize(ToolWindowViewModel vm)
         {
             if (vm == null)
                 throw new ArgumentNullException(nameof(vm));
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
 
             var data = new ToolWindowStateSolutionData();
 
@@ -110,10 +108,24 @@ namespace SmartCmdArgs.Logic
                 {
                     Id = kvPair.Value.Id,
                     ExclusiveMode = kvPair.Value.ExclusiveMode,
-                    Items = TransformCmdList(kvPair.Value.Items)
+                    Items = TransformCmdList(kvPair.Value.Items),
+
+                    // not in JSON
+                    Expanded = kvPair.Value.IsExpanded,
+                    Selected = kvPair.Value.IsSelected,
                 };
                 data.ProjectArguments.Add(kvPair.Key, list);
             }
+
+            return data;
+        }
+
+        public static ToolWindowStateSolutionData Serialize(ToolWindowViewModel vm, Stream stream)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            var data = Serialize(vm);
 
             string jsonStr = JsonConvert.SerializeObject(data);
 

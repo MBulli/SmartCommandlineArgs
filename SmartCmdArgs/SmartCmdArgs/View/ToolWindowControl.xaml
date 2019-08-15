@@ -28,6 +28,8 @@
                           Style="{StaticResource TreeViewVS}"
                           CopyCommand="{Binding CopySelectedItemsCommand}"
                           PasteCommand="{Binding PasteItemsCommand}"
+                          UndoCommand="{Binding UndoCommand}"
+                          RedoCommand="{Binding RedoCommand}"
                           ToggleSelectedCommand="{Binding ToggleSelectedCommand}"
                           CutCommand="{Binding CutItemsCommand}"
                           DeleteCommand="{Binding RemoveEntriesCommand}"
