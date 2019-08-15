@@ -437,8 +437,8 @@ namespace SmartCmdArgs.View
                     if (!GetIsItemSelected(item))
                     {
                         SetIsItemSelected(treeViewItem, true);
-                        _lastItemSelected = treeViewItem;
                     }
+                    _lastItemSelected = treeViewItem;
                 }
                 else
                 {
