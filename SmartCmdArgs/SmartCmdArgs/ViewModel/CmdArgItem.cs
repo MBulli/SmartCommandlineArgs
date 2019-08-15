@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -553,9 +553,10 @@ namespace SmartCmdArgs.ViewModel
             return result;
         }
 
-        internal void MoveEntries(HashSet<CmdBase> items, int moveDirection)
+        internal void MoveSelectedEntries(int moveDirection)
         {
-            var itemIndexList = Items.Where(items.Contains).Select(item => new KeyValuePair<CmdBase, int>(item, Items.IndexOf(item))).ToList();
+            var selectedItems = Items.Where(item => item.IsSelected).ToList();
+            var itemIndexList = selectedItems.Select(item => new KeyValuePair<CmdBase, int>(item, Items.IndexOf(item))).ToList();
 
             if (itemIndexList.Any()
                 && (moveDirection == -1 && itemIndexList.Min(pair => pair.Value) > 0
@@ -569,7 +570,7 @@ namespace SmartCmdArgs.ViewModel
                 }
             }
 
-            Items.OfType<CmdContainer>().Where(item => !items.Contains(item)).ForEach(container => container.MoveEntries(items, moveDirection));
+            Items.OfType<CmdContainer>().ForEach(container => container.MoveSelectedEntries(moveDirection));
         }
 
         public IEnumerable<CmdBase> GetEnumerable(bool useView = false, bool includeSelf = false, bool includeCollapsed = true)

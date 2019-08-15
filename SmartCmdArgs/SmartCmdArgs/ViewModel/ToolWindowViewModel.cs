@@ -299,7 +299,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if any line is selected</returns>
         private bool HasSelectedItems()
         {
-            return TreeViewModel.SelectedItems.Count > 0;
+            return TreeViewModel.SelectedItems.Any();
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if axactly one line is selected</returns>
         private bool HasSingleSelectedItem()
         {
-            return TreeViewModel.SelectedItems.Count == 1;
+            return TreeViewModel.SelectedItems.Take(2).Count() == 1;
         }
 
         /// <summary>
@@ -361,7 +361,6 @@ namespace SmartCmdArgs.ViewModel
                 if (item.Parent != null)
                 {
                     item.Parent.Items.Remove(item);
-                    TreeViewModel.SelectedItems.Remove(item);
                     removedAnItem = true;
                 }
             }

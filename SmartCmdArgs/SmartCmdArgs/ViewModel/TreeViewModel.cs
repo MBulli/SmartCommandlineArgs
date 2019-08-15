@@ -89,7 +89,7 @@ namespace SmartCmdArgs.ViewModel
 
         public List<TreeViewItemEx> DragedTreeViewItems { get; }
 
-        public HashSet<CmdBase> SelectedItems { get; }
+        public IEnumerable<CmdBase> SelectedItems => Projects.Values.Concat(Projects.Values.SelectMany(p => p)).Where(item => item.IsSelected);
 
         public RelayCommand<int> SelectIndexCommand { get; set; }
 
@@ -102,8 +102,6 @@ namespace SmartCmdArgs.ViewModel
             treeitems = null;
 
             DragedTreeViewItems = new List<TreeViewItemEx>();
-
-            SelectedItems = new HashSet<CmdBase>();
         }
 
         private void OnProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -233,12 +231,13 @@ namespace SmartCmdArgs.ViewModel
 
         public void MoveSelectedEntries(int moveDirection)
         {
-            Projects.Values.ForEach(project => project.MoveEntries(SelectedItems, moveDirection));
+            Projects.Values.ForEach(project => project.MoveSelectedEntries(moveDirection));
         }
 
         public void ToggleSelected()
         {
-            var itemsToToggle = SelectedItems.Where(x => !SelectedItems.Contains(x.Parent)).ToList();
+            var selectedItemsSet = new HashSet<CmdBase>(SelectedItems);
+            var itemsToToggle = selectedItemsSet.Where(x => !selectedItemsSet.Contains(x.Parent)).ToList();
 
             var checkState = itemsToToggle.All(item => item.IsChecked == false);
             foreach (var selectedItem in itemsToToggle)
@@ -272,11 +271,6 @@ namespace SmartCmdArgs.ViewModel
 
         public virtual void OnItemSelectionChanged(CmdBase item)
         {
-            if (item.IsSelected)
-                SelectedItems.Add(item);
-            else
-                SelectedItems.Remove(item);
-
             ItemSelectionChanged?.Invoke(this, item);
         }
 
