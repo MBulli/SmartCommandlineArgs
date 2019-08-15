@@ -250,7 +250,7 @@ namespace SmartCmdArgs.ViewModel
 
         private IEnumerable<CmdBase> GetSelectedRootItems(bool includeProjects)
         {
-            var selectedItems = TreeViewModel.Projects.Values.SelectMany(prj => prj.GetEnumerable(includeSelf: includeProjects)).Where(item => item.IsSelected).ToList();
+            var selectedItems = TreeViewModel.AllProjects.SelectMany(prj => prj.GetEnumerable(includeSelf: includeProjects)).Where(item => item.IsSelected).ToList();
             var set = new HashSet<CmdContainer>(selectedItems.OfType<CmdContainer>());
             var result = selectedItems.Where(x => !set.Contains(x.Parent));
 

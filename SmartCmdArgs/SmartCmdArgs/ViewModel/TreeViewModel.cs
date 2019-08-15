@@ -57,13 +57,13 @@ namespace SmartCmdArgs.ViewModel
             set { _isInEditMode = value; OnNotifyPropertyChanged(); }
         }
 
-        public CmdProject FocusedProject => Projects.Values.FirstOrDefault(project => project.IsFocusedItem) ?? StartupProjects.FirstOrDefault();
+        public CmdProject FocusedProject => AllProjects.FirstOrDefault(project => project.IsFocusedItem) ?? StartupProjects.FirstOrDefault();
 
         public CmdBase FocusedItem
         {
             get
             {
-                return IterateOnlyFocused(Projects.Values).LastOrDefault() ?? StartupProjects.FirstOrDefault();
+                return IterateOnlyFocused(AllProjects).LastOrDefault() ?? StartupProjects.FirstOrDefault();
 
                 IEnumerable<CmdBase> IterateOnlyFocused(IEnumerable<CmdBase> items)
                 {
@@ -85,11 +85,16 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public IEnumerable<CmdProject> StartupProjects => Projects.Where(p => p.Value.IsStartupProject).Select(p => p.Value);
+        public IEnumerable<CmdProject> AllProjects => Projects.Values;
+
+        public IEnumerable<CmdProject> StartupProjects => AllProjects.Where(p => p.IsStartupProject);
+
+        public IEnumerable<CmdBase> AllItems => AllProjects.Concat(AllProjects.SelectMany(p => p));
+
+        public IEnumerable<CmdBase> SelectedItems => AllItems.Where(item => item.IsSelected);
+
 
         public List<TreeViewItemEx> DragedTreeViewItems { get; }
-
-        public IEnumerable<CmdBase> SelectedItems => Projects.Values.Concat(Projects.Values.SelectMany(p => p)).Where(item => item.IsSelected);
 
         public RelayCommand<int> SelectIndexCommand { get; set; }
 
@@ -108,7 +113,7 @@ namespace SmartCmdArgs.ViewModel
         {
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                foreach (var project in Projects.Values)
+                foreach (var project in AllProjects)
                 {
                     project.ParentTreeViewModel = this;
                 }
@@ -145,7 +150,7 @@ namespace SmartCmdArgs.ViewModel
         {
             if (ShowAllProjects)
             {
-                TreeItems = Projects.Select(p => p.Value)
+                TreeItems = AllProjects
                     .GroupBy(p => p.IsStartupProject).OrderByDescending(g => g.Key)
                     .SelectMany(g => g.OrderBy(p => p.Value, StringComparer.CurrentCultureIgnoreCase))
                     .ToList();
@@ -220,7 +225,7 @@ namespace SmartCmdArgs.ViewModel
                         || item is CmdContainer && !((CmdContainer)item).ItemsView.IsEmpty;
                 }
 
-                foreach (var project in Projects.Values)
+                foreach (var project in AllProjects)
                 {
                     project.Filter = filter;
                 }
@@ -231,7 +236,7 @@ namespace SmartCmdArgs.ViewModel
 
         public void MoveSelectedEntries(int moveDirection)
         {
-            Projects.Values.ForEach(project => project.MoveSelectedEntries(moveDirection));
+            AllProjects.ForEach(project => project.MoveSelectedEntries(moveDirection));
         }
 
         public void ToggleSelected()
