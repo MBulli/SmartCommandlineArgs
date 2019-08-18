@@ -95,7 +95,7 @@ namespace SmartCmdArgs
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
         public CmdArgsPackage()
-        {   
+        {
             // Inside this method you can place any initialization code that does not require
             // any Visual Studio service because at this point the package object is created but
             // not sited yet inside Visual Studio environment. The place to do all the other
@@ -588,7 +588,7 @@ namespace SmartCmdArgs
                 }
 
                 projectData.Expanded = solutionData.ExpandedContainer.Contains(projectData.Id);
-                projectData.Selected = solutionData.ExpandedContainer.Contains(projectData.Id);
+                projectData.Selected = solutionData.SelectedItems.Contains(projectData.Id);
             }
             else
             {

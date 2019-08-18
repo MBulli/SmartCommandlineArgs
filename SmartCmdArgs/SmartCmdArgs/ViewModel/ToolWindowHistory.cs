@@ -193,6 +193,8 @@ namespace SmartCmdArgs.ViewModel
         {
             if (_buffer.TryGetCurrent(out ToolWindowStateSolutionData data))
             {
+                _vm.TreeViewModel.ShowAllProjects = data.ShowAllProjects;
+
                 foreach (var pair in data.ProjectArguments)
                 {
                     _vm.PopulateFromProjectData(pair.Key, pair.Value);
