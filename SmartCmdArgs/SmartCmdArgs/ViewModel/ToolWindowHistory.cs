@@ -89,9 +89,10 @@ namespace SmartCmdArgs.ViewModel
         public void Push(T item)
         {
             if (!IsCurrentFront)
-                Count = Count - GetInclusiveIntervalSize(_current, _front) + 1;
+                Count = Count - GetInclusiveIntervalSize(_current, _front);
+            else
+                _current = IncIdx(_current);
 
-            _current = IncIdx(_current);
             _front = _current;
             _items[_front] = item;
             IncrementCount();
