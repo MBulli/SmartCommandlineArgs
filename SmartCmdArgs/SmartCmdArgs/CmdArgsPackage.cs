@@ -322,7 +322,7 @@ namespace SmartCmdArgs
             {
                 enabledEntries = checkedArgs.Select(
                     e => msBuildPropertyRegex.Replace(e.Value,
-                        match => vsHelper.GetMSBuildPropertyValue(project, match.Groups["propertyName"].Value) ?? match.Value));
+                        match => vsHelper.GetMSBuildPropertyValueForActiveConfig(project, match.Groups["propertyName"].Value) ?? match.Value));
             }
             else
             {

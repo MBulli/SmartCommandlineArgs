@@ -259,16 +259,11 @@ namespace SmartCmdArgs
             return uniqueName;
         }
 
-        public string GetMSBuildPropertyValue(IVsHierarchy hierarchy, string propName)
+        public string GetMSBuildPropertyValueForActiveConfig(IVsHierarchy hierarchy, string propName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var propStorage = hierarchy as IVsBuildPropertyStorage;
-
-            if (propStorage == null)
-                return null;
-
-            string configName;
+            string configName = null;
             try
             {
                 configName = hierarchy.GetProject()?.ConfigurationManager.ActiveConfiguration.ConfigurationName;
@@ -279,19 +274,31 @@ namespace SmartCmdArgs
                 return null;
             }
 
-            if (configName != null)
+            if (configName == null)
+                return null;
+
+            return GetMSBuildPropertyValue(hierarchy, propName, configName);
+        }
+
+        public string GetMSBuildPropertyValue(IVsHierarchy hierarchy, string propName, string configName = null)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var propStorage = hierarchy as IVsBuildPropertyStorage;
+
+            if (propStorage == null)
+                return null;
+
+            // configName can be null
+            if (ErrorHandler.Succeeded(propStorage.GetPropertyValue(propName, configName,
+                                                                    (int)_PersistStorageType.PST_PROJECT_FILE,
+                                                                    out string value)))
             {
-                if (ErrorHandler.Succeeded(propStorage.GetPropertyValue(propName, configName,
-                                                                        (int)_PersistStorageType.PST_PROJECT_FILE,
-                                                                        out string value)))
-                {
-                    return value;
-                }
+                return value;
             }
 
             return null;
         }
-
 
         private bool gettingCheckoutStatus;
 
