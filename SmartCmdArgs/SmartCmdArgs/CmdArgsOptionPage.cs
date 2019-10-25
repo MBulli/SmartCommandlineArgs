@@ -13,6 +13,7 @@ namespace SmartCmdArgs
         private bool _vcsSupport = true;
         private bool _macroEvaluation = true;
         private bool _useMonospaceFont = false;
+        private bool _useSolutionDir = false;
 
         [Category("General")]
         [DisplayName("Enable version control support")]
@@ -62,6 +63,22 @@ namespace SmartCmdArgs
             }
         }
 
+        [Category("General")]
+        [DisplayName("Use Solution Directory")]
+        [Description("If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)")]
+        [DefaultValue(false)]
+        public bool UseSolutionDir
+        {
+            get => _useSolutionDir;
+            set
+            {
+                if (_useSolutionDir != value)
+                {
+                    _useSolutionDir = value;
+                    UseSolutionDirChanged?.Invoke(this, value);
+                }
+            }
+        }
         public override void ResetSettings()
         {
             base.ResetSettings();
@@ -69,10 +86,12 @@ namespace SmartCmdArgs
             VcsSupport = true;
             MacroEvaluation = true;
             UseMonospaceFont = false;
+            UseSolutionDir = false;
         }
 
         public event EventHandler<bool> VcsSupportChanged;
         public event EventHandler<bool> MacroEvaluationChanged;
         public event EventHandler<bool> UseMonospaceFontChanged;
+        public event EventHandler<bool> UseSolutionDirChanged;
     }
 }

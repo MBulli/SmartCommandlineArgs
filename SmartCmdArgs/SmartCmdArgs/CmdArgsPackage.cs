@@ -80,6 +80,7 @@ namespace SmartCmdArgs
         private bool IsVcsSupportEnabled => GetDialogPage<CmdArgsOptionPage>().VcsSupport;
         private bool IsMacroEvaluationEnabled => GetDialogPage<CmdArgsOptionPage>().MacroEvaluation;
         private bool IsUseMonospaceFontEnabled => GetDialogPage<CmdArgsOptionPage>().UseMonospaceFont;
+        private bool IsUseSolutionDirEnabled => GetDialogPage<CmdArgsOptionPage>().UseSolutionDir; 
 
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.
@@ -151,6 +152,7 @@ namespace SmartCmdArgs
 
             GetDialogPage<CmdArgsOptionPage>().VcsSupportChanged += OptionPage_VcsSupportChanged;
             GetDialogPage<CmdArgsOptionPage>().UseMonospaceFontChanged += OptionPage_UseMonospaceFontChanged;
+            GetDialogPage<CmdArgsOptionPage>().UseSolutionDirChanged += CmdArgsPackage_UseSolutionDirChanged;
 
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
@@ -745,6 +747,12 @@ namespace SmartCmdArgs
         {
             ToolWindowViewModel.UseMonospaceFont = enabled;
         }
+
+        private void CmdArgsPackage_UseSolutionDirChanged(object sender, bool e)
+        {
+            // TODO let fileStorage know and implement logic
+        }
+
         #endregion
 
         private IEnumerable<string> ReadCommandlineArgumentsFromProject(IVsHierarchy project)
