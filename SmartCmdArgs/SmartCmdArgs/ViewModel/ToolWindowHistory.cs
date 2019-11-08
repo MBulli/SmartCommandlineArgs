@@ -146,14 +146,14 @@ namespace SmartCmdArgs.ViewModel
 
     internal static class ToolWindowHistory
     {
-        private static HistoryRingBuffer<ToolWindowStateSolutionData> _buffer;
+        private static HistoryRingBuffer<SuoDataJson> _buffer;
         private static ToolWindowViewModel _vm;
         private static int _pauseCounter = 0;
 
         public static void Init(ToolWindowViewModel vm, int size = 500)
         {
             _vm = vm;
-            _buffer = new HistoryRingBuffer<ToolWindowStateSolutionData>(size);
+            _buffer = new HistoryRingBuffer<SuoDataJson>(size);
         }
 
         public static void Clear()
@@ -170,7 +170,7 @@ namespace SmartCmdArgs.ViewModel
         public static void SaveState()
         {
             if (_pauseCounter == 0)
-                _buffer.Push(ToolWindowSolutionDataSerializer.Serialize(_vm));
+                _buffer.Push(SuoDataSerializer.Serialize(_vm));
         }
 
         public static void SaveStateAndPause()
@@ -192,7 +192,7 @@ namespace SmartCmdArgs.ViewModel
 
         private static void RestoreCurrentState()
         {
-            if (_buffer.TryGetCurrent(out ToolWindowStateSolutionData data))
+            if (_buffer.TryGetCurrent(out SuoDataJson data))
             {
                 _vm.TreeViewModel.ShowAllProjects = data.ShowAllProjects;
 

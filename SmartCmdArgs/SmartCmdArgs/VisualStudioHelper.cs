@@ -39,7 +39,6 @@ namespace SmartCmdArgs
         private readonly string _VSConstants_VSStd97CmdID_GUID;
         private readonly string _VSConstants_VSStd2KCmdID_GUID;
 
-        public EnvDTE.Solution Solution { get { return appObject.Solution; } }
         public bool IsSolutionOpen { get { return appObject?.Solution?.IsOpen ?? false; } }
         
         public event EventHandler ProjectBeforeRun;
@@ -151,6 +150,19 @@ namespace SmartCmdArgs
             commandEvents.BeforeExecute -= CommandEventsOnBeforeExecute;
 
             initialized = false;
+        }
+
+        public string GetSolutionFilename()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            int hr = solutionService.GetSolutionInfo(out string slnDir, out string slnFile, out string suoFile);
+            if (ErrorHandler.Failed(hr))
+            {
+                throw new VisualStudioHelperException("GetSolutionInfo", hr);
+            }
+
+            return System.IO.Path.Combine(slnDir, slnFile);
         }
 
         public string StartupProjectUniqueName()

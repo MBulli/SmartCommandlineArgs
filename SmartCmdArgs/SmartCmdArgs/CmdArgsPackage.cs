@@ -81,7 +81,7 @@ namespace SmartCmdArgs
         public bool IsVcsSupportEnabled => GetDialogPage<CmdArgsOptionPage>().VcsSupport;
         private bool IsMacroEvaluationEnabled => GetDialogPage<CmdArgsOptionPage>().MacroEvaluation;
         private bool IsUseMonospaceFontEnabled => GetDialogPage<CmdArgsOptionPage>().UseMonospaceFont;
-        private bool IsUseSolutionDirEnabled => GetDialogPage<CmdArgsOptionPage>().UseSolutionDir; 
+        public bool IsUseSolutionDirEnabled => GetDialogPage<CmdArgsOptionPage>().UseSolutionDir; 
 
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.
@@ -89,7 +89,7 @@ namespace SmartCmdArgs
         // the json string from the suo is saved in this variable and
         // processed later.
         private string toolWindowStateFromSolutionJsonStr;
-        private ToolWindowStateSolutionData toolWindowStateLoadedFromSolution;
+        private SuoDataJson toolWindowStateLoadedFromSolution;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
@@ -224,7 +224,7 @@ namespace SmartCmdArgs
             if (key == SolutionOptionKey)
             {
                 Logger.Info("Saving commands to suo file.");
-                toolWindowStateLoadedFromSolution = ToolWindowSolutionDataSerializer.Serialize(ToolWindowViewModel, stream);
+                toolWindowStateLoadedFromSolution = SuoDataSerializer.Serialize(ToolWindowViewModel, stream);
                 Logger.Info("All Commands saved to suo file.");
             }
         }
@@ -362,7 +362,7 @@ namespace SmartCmdArgs
                 return;
             }
 
-            var solutionData = toolWindowStateLoadedFromSolution ?? new ToolWindowStateSolutionData();
+            var solutionData = toolWindowStateLoadedFromSolution ?? new SuoDataJson();
 
             ToolWindowViewModel.TreeViewModel.ShowAllProjects = solutionData.ShowAllProjects;
 
@@ -372,7 +372,7 @@ namespace SmartCmdArgs
             //  => if we have data in our ViewModel we use this instad of the suo file
 
             // get project json data
-            ToolWindowStateProjectData projectData = null;
+            ProjectDataJson projectData = null;
             if (IsVcsSupportEnabled)
             {
                 projectData = fileStorage.ReadDataForProject(project);
@@ -431,7 +431,7 @@ namespace SmartCmdArgs
                 }
                 else
                 {
-                    projectData = new ToolWindowStateProjectData();
+                    projectData = new ProjectDataJson();
                     Logger.Info($"DataCollection for project '{project.GetName()}' is null.");
                 }
             }
@@ -442,7 +442,7 @@ namespace SmartCmdArgs
             }
             else if (IsVcsSupportEnabled)
             {
-                projectData = new ToolWindowStateProjectData();
+                projectData = new ProjectDataJson();
                 Logger.Info("Will clear all data because of missing json file and enabled VCS support.");
             }
             // we try to read the suo file data
@@ -474,10 +474,10 @@ namespace SmartCmdArgs
             {
                 Logger.Info($"Gathering commands from configurations for project '{project.GetName()}'.");
                 // if we don't have suo file data we read cmd args from the project configs
-                projectData = new ToolWindowStateProjectData();
+                projectData = new ProjectDataJson();
                 projectData.Items.AddRange(
                     ReadCommandlineArgumentsFromProject(project)
-                        .Select(cmdLineArg => new ListEntryData { Command = cmdLineArg }));
+                        .Select(cmdLineArg => new CmdArgumentJson { Command = cmdLineArg }));
             }
 
             // push projectData to the ViewModel
@@ -488,7 +488,7 @@ namespace SmartCmdArgs
 
         private void InitializeForSolution()
         {
-            toolWindowStateLoadedFromSolution = Logic.ToolWindowSolutionDataSerializer.Deserialize(toolWindowStateFromSolutionJsonStr, vsHelper);
+            toolWindowStateLoadedFromSolution = Logic.SuoDataSerializer.Deserialize(toolWindowStateFromSolutionJsonStr, vsHelper);
             
             foreach (var project in vsHelper.GetSupportedProjects())
             {

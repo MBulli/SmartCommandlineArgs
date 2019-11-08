@@ -7,14 +7,14 @@ using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.Logic
 {
-    class ToolWindowDataSerializer
+    class DataSerializer
     {
-        protected static List<ListEntryData> TransformCmdList(ICollection<CmdBase> items)
+        protected static List<CmdArgumentJson> TransformCmdList(ICollection<CmdBase> items)
         {
-            var result = new List<ListEntryData>(items.Count);
+            var result = new List<CmdArgumentJson>(items.Count);
             foreach (var item in items)
             {
-                var newElement = new ListEntryData
+                var newElement = new CmdArgumentJson
                 {
                     Id = item.Id,
                     Command = item.Value,

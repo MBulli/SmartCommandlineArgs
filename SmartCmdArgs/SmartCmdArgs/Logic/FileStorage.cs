@@ -29,81 +29,170 @@ namespace SmartCmdArgs.Logic
 
         public void AddProject(IVsHierarchy project)
         {
-            AttachFsWatcherToProject(project);
+            if (!cmdPackage.IsUseSolutionDirEnabled)
+            {
+                AttachFsWatcherToProject(project);
+            }
         }
 
         public void RemoveAllProjects()
         {
-            DetachFsWatcherFromAllProjects();
+            if (!cmdPackage.IsUseSolutionDirEnabled)
+            {
+                DetachFsWatcherFromAllProjects();
+            }
         }
 
         public void RemoveProject(IVsHierarchy project)
         {
-            DetachFsWatcherFromProject(project);
+            if (!cmdPackage.IsUseSolutionDirEnabled)
+            {
+                DetachFsWatcherFromProject(project);
+            }
         }
 
         public void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName, Action hack)
         {
-            var guid = project.GetGuid();
-            if (projectFsWatchers.TryGetValue(guid, out FileSystemWatcher fsWatcher))
+            if (!cmdPackage.IsUseSolutionDirEnabled)
             {
-                projectFsWatchers.Remove(guid);
-                using (fsWatcher.TemporarilyDisable())
+                var guid = project.GetGuid();
+                if (projectFsWatchers.TryGetValue(guid, out FileSystemWatcher fsWatcher))
                 {
-                    var newFileName = FullFilenameForProjectJsonFileFromProject(project);
-                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(oldProjectDir, oldProjectName);
-
-                    Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
-
-                    if (File.Exists(newFileName))
+                    projectFsWatchers.Remove(guid);
+                    using (fsWatcher.TemporarilyDisable())
                     {
-                        File.Delete(oldFileName);
+                        var newFileName = FullFilenameForProjectJsonFileFromProject(project);
+                        var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(oldProjectDir, oldProjectName);
 
-                        hack(); // TODO
+                        Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
+
+                        if (File.Exists(newFileName))
+                        {
+                            File.Delete(oldFileName);
+
+                            hack(); // TODO
+                        }
+                        else if (File.Exists(oldFileName))
+                        {
+                            File.Move(oldFileName, newFileName);
+                        }
+                        fsWatcher.Filter = Path.GetFileName(newFileName);
                     }
-                    else if (File.Exists(oldFileName))
-                    {
-                        File.Move(oldFileName, newFileName);
-                    }
-                    fsWatcher.Filter = Path.GetFileName(newFileName);
+                    projectFsWatchers.Add(guid, fsWatcher);
                 }
-                projectFsWatchers.Add(guid, fsWatcher);
             }
         }
 
-        public ToolWindowStateProjectData ReadDataForProject(IVsHierarchy project)
+        public ProjectDataJson ReadDataForProject(IVsHierarchy project)
         {
-            ToolWindowStateProjectData result = null;
+            ProjectDataJson result = null;
 
-            string filePath = FullFilenameForProjectJsonFileFromProject(project);
-
-            if (File.Exists(filePath))
+            if (!cmdPackage.IsUseSolutionDirEnabled)
             {
-                try
+                string filePath = FullFilenameForProjectJsonFileFromProject(project);
+
+                if (File.Exists(filePath))
                 {
-                    using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+                    try
                     {
-                        result = Logic.ToolWindowProjectDataSerializer.Deserialize(fileStream);
+                        using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+                        {
+                            result = Logic.ProjectDataSerializer.Deserialize(fileStream);
+                        }
+                        Logger.Info($"Read {result?.Items?.Count} commands for project '{project.GetName()}' from json-file '{filePath}'.");
                     }
-                    Logger.Info($"Read {result?.Items?.Count} commands for project '{project.GetName()}' from json-file '{filePath}'.");
+                    catch (Exception e)
+                    {
+                        Logger.Warn($"Failed to read file '{filePath}' with error '{e}'.");
+                        result = null;
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    Logger.Warn($"Failed to read file '{filePath}' with error '{e}'.");
-                    result = null;
+                    Logger.Info($"Json-file '{filePath}' doesn't exists.");
                 }
+
+                return result;
             }
             else
             {
-                Logger.Info($"Json-file '{filePath}' doesn't exists.");
-            }
+                Guid projectGui = project.GetGuid();
+                string slnFilename = vsHelper.GetSolutionFilename();
+                string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
 
-            return result;
+                if (File.Exists(jsonFilename))
+                {
+                    try
+                    {
+                        using (Stream fileStream = File.Open(jsonFilename, FileMode.Open, FileAccess.Read))
+                        {
+                            SolutionDataJson slnData = SolutionDataSerializer.Deserialize(fileStream);
+
+                            result = slnData.ProjectArguments.FirstOrDefault(p => p.Id == projectGui);
+                        }
+                        Logger.Info($"Read {result?.Items?.Count} commands for project '{project.GetName()}' from json-file '{jsonFilename}'.");
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Warn($"Failed to read file '{jsonFilename}' with error '{e}'.");
+                        result = null;
+                    }
+                }
+                else
+                {
+                    Logger.Info($"Json-file '{jsonFilename}' doesn't exists.");
+                }
+
+                return result;
+            }
         }
 
         public void SaveProject(IVsHierarchy project)
         {
-            SaveJsonForProject(project);
+            if (!cmdPackage.IsUseSolutionDirEnabled)
+            {
+                SaveJsonForProject(project);
+            }
+            else
+            {
+                string slnFilename = vsHelper.GetSolutionFilename();
+                string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
+
+                if (cmdPackage.ToolWindowViewModel.TreeViewModel.AllArguments.Any())
+                {
+                    if (!vsHelper.CanEditFile(jsonFilename))
+                    {
+                        Logger.Error($"VS or the user did no let us edit our file :/ '{jsonFilename}'");
+                    }
+                    else
+                    {
+                        try
+                        {
+                            using (Stream fileStream = File.Open(jsonFilename, FileMode.Create, FileAccess.Write))
+                            {
+                                SolutionDataSerializer.Serialize(cmdPackage.ToolWindowViewModel, fileStream);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Warn($"Failed to write to file '{jsonFilename}' with error '{e}'.");
+                        }
+                    }
+                }
+                else
+                {
+                    Logger.Info("Deleting solution json file because no project has command arguments but json file exists.");
+
+                    try
+                    {
+                        File.Delete(jsonFilename);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Warn($"Failed to delete file '{jsonFilename}' with error '{e}'.");
+                    }
+                }
+            }
         }
 
         private void SaveJsonForProject(IVsHierarchy project)
@@ -125,7 +214,7 @@ namespace SmartCmdArgs.Logic
 
                     if (!vsHelper.CanEditFile(filePath))
                     {
-                        Logger.Error($"VS or the user did no let us editing our file :/");
+                        Logger.Error($"VS or the user did no let us edit our file :/");
                     }
                     else
                     {
@@ -133,7 +222,7 @@ namespace SmartCmdArgs.Logic
                         {
                             using (Stream fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
                             {
-                                ToolWindowProjectDataSerializer.Serialize(vm, fileStream);
+                                ProjectDataSerializer.Serialize(vm, fileStream);
                             }
                         }
                         catch (Exception e)

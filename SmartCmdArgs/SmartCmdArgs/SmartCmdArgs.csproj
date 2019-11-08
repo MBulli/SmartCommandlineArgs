@@ -77,10 +77,11 @@
     <Compile Include="Helper\SymbolicLinkUtils.cs" />
     <Compile Include="Helper\TreeHelper.cs" />
     <Compile Include="Logic\FileStorage.cs" />
-    <Compile Include="Logic\ToolWindowDataSerializer.cs" />
-    <Compile Include="Logic\ToolWindowProjectDataSerializer.cs" />
-    <Compile Include="Logic\ToolWindowSolutionDataSerializer.cs" />
-    <Compile Include="Logic\ToolWindowStateData.cs" />
+    <Compile Include="Logic\DataSerializer.cs" />
+    <Compile Include="Logic\ProjectDataSerializer.cs" />
+    <Compile Include="Logic\SolutionDataSerializer.cs" />
+    <Compile Include="Logic\SuoDataSerializer.cs" />
+    <Compile Include="Logic\JsonDataObjects.cs" />
     <Compile Include="ToolWindow.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Helper\BindingListEx.cs" />

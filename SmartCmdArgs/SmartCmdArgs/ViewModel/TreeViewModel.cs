@@ -92,6 +92,8 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdBase> AllItems => AllProjects.Concat(AllProjects.SelectMany(p => p));
 
+        public IEnumerable<CmdArgument> AllArguments => AllProjects.SelectMany(p => p.AllArguments);
+
         public IEnumerable<CmdBase> SelectedItems => AllItems.Where(item => item.IsSelected);
 
 

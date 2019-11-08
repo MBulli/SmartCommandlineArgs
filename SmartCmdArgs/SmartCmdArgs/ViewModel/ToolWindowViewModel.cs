@@ -412,7 +412,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public void PopulateFromProjectData(IVsHierarchy project, ToolWindowStateProjectData data)
+        public void PopulateFromProjectData(IVsHierarchy project, ProjectDataJson data)
         {
             var guid = project.GetGuid();
 
@@ -431,7 +431,7 @@ namespace SmartCmdArgs.ViewModel
             cmdPrj.IsSelected = data.Selected;
         }
 
-        public void PopulateFromProjectData(Guid projectId, ToolWindowStateProjectData data)
+        public void PopulateFromProjectData(Guid projectId, ProjectDataJson data)
         {
             if (TreeViewModel.Projects.TryGetValue(projectId, out CmdProject cmdPrj))
             {
@@ -443,7 +443,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        private IEnumerable<CmdBase> ListEntriesToCmdObjects(List<ListEntryData> list)
+        private IEnumerable<CmdBase> ListEntriesToCmdObjects(List<CmdArgumentJson> list)
         {
             CmdBase result = null;
             foreach (var item in list)
