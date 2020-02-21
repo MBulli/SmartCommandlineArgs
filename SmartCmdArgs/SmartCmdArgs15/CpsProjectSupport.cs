@@ -76,16 +76,24 @@ namespace SmartCmdArgs15
                 if (activeLaunchProfile == null)
                     return;
 
-                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile);
+                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile, true);
                 writableLaunchProfile.CommandLineArgs = arguments;
+                writableLaunchProfile.Name = "updated";
 
                 // Does not work on VS2015, which should be okay ...
                 // We don't hold references for VS2015, where the interface is called IThreadHandling
                 IProjectThreadingService projectThreadingService = projectServices.ThreadingPolicy;
+
                 projectThreadingService.ExecuteSynchronously(() =>
                 {
                     return launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
                 });
+
+                projectThreadingService.ExecuteSynchronously(() =>
+                {
+                    return launchSettingsProvider.SetActiveProfileAsync(writableLaunchProfile.Name);
+                });
+
             }
         }
 

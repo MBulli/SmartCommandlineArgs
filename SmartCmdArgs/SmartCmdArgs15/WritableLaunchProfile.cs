@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.ProjectSystem.Debug;
 
 namespace SmartCmdArgs15
 {
-    class WritableLaunchProfile : ILaunchProfile
+    class WritableLaunchProfile : ILaunchProfile, IPersistOption
     {
         public string Name { set; get; }
         public string CommandName { set; get; }
@@ -20,8 +20,9 @@ namespace SmartCmdArgs15
         public ImmutableDictionary<string, string> EnvironmentVariables { set; get; }
         public ImmutableDictionary<string, object> OtherSettings { set; get; }
 
-        public WritableLaunchProfile(ILaunchProfile launchProfile)
+        public WritableLaunchProfile(ILaunchProfile launchProfile, bool doNotPersist)
         {
+            DoNotPersist = doNotPersist;
             Name = launchProfile.Name;
             ExecutablePath = launchProfile.ExecutablePath;
             CommandName = launchProfile.CommandName;
@@ -32,5 +33,7 @@ namespace SmartCmdArgs15
             EnvironmentVariables = launchProfile.EnvironmentVariables;
             OtherSettings = launchProfile.OtherSettings;
         }
+
+        public bool DoNotPersist { get; }
     }
 }
