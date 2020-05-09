@@ -17,10 +17,18 @@
         <!-- Colors -->
         <Setter Property="Background" Value="{DynamicResource {x:Static vs:TreeViewColors.BackgroundBrushKey}}"/>
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="FontFamily" Value="{Binding ItemsFontFamily}" />
-        
+        <Setter Property="FontSize" Value="{DynamicResource VsFont.EnvironmentFontSize}" />
 
         <Setter Property="theming:ImageThemingUtilities.ImageBackgroundColor" Value="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}" />
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding UseMonospaceFont}" Value="True">
+                <Setter Property="FontFamily" Value="Consolas" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding UseMonospaceFont}" Value="False">
+                <Setter Property="FontFamily" Value="{DynamicResource VsFont.EnvironmentFontFamily}" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="ExpandCollapseToggleStyle" TargetType="local:ToggleButtonEx">

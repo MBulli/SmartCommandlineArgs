@@ -18,37 +18,18 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase
     {
-        private static readonly string DefaultFontFamily = null;
-        private static readonly string MonospaceFontFamily = "Consolas";
         private static readonly Regex SplitArgumentRegex = new Regex(@"(?:""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
 
         public TreeViewModel TreeViewModel { get; }
 
         public CmdArgsPackage CmdArgsPackage { get; }
 
-        private string itemsFontFamily;
-        public string ItemsFontFamily
-        {
-            get => itemsFontFamily;
-            private set { SetAndNotify(value, ref itemsFontFamily); }
-        }
 
         private bool useMonospaceFont;
         public bool UseMonospaceFont
         {
             get => useMonospaceFont;
-            set
-            {
-                if (value != useMonospaceFont)
-                {
-                    if (value)
-                        ItemsFontFamily = MonospaceFontFamily;
-                    else
-                        ItemsFontFamily = DefaultFontFamily;
-
-                    SetAndNotify(value, ref useMonospaceFont);
-                }
-            }
+            set => SetAndNotify(value, ref useMonospaceFont);
         }
 
         public RelayCommand AddEntryCommand { get; }
