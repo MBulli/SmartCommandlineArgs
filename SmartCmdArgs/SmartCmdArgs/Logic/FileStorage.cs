@@ -18,6 +18,7 @@ namespace SmartCmdArgs.Logic
         private readonly VisualStudioHelper vsHelper;
 
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
+        private FileSystemWatcher solutionFsWatcher;
 
         public event EventHandler<FileStorageChangedEventArgs> FileStorageChanged;
 
@@ -33,13 +34,22 @@ namespace SmartCmdArgs.Logic
             {
                 AttachFsWatcherToProject(project);
             }
+            else
+            {
+                AttachSolutionWatcher();
+            }
         }
+
 
         public void RemoveAllProjects()
         {
             if (!cmdPackage.IsUseSolutionDirEnabled)
             {
                 DetachFsWatcherFromAllProjects();
+            }
+            else
+            {
+                DetachSolutionWatcher();
             }
         }
 
@@ -53,33 +63,33 @@ namespace SmartCmdArgs.Logic
 
         public void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName, Action hack)
         {
-            if (!cmdPackage.IsUseSolutionDirEnabled)
+            if (cmdPackage.IsUseSolutionDirEnabled)
+                return;
+
+            var guid = project.GetGuid();
+            if (projectFsWatchers.TryGetValue(guid, out FileSystemWatcher fsWatcher))
             {
-                var guid = project.GetGuid();
-                if (projectFsWatchers.TryGetValue(guid, out FileSystemWatcher fsWatcher))
+                projectFsWatchers.Remove(guid);
+                using (fsWatcher.TemporarilyDisable())
                 {
-                    projectFsWatchers.Remove(guid);
-                    using (fsWatcher.TemporarilyDisable())
+                    var newFileName = FullFilenameForProjectJsonFileFromProject(project);
+                    var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(oldProjectDir, oldProjectName);
+
+                    Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
+
+                    if (File.Exists(newFileName))
                     {
-                        var newFileName = FullFilenameForProjectJsonFileFromProject(project);
-                        var oldFileName = FullFilenameForProjectJsonFileFromProjectPath(oldProjectDir, oldProjectName);
+                        File.Delete(oldFileName);
 
-                        Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
-
-                        if (File.Exists(newFileName))
-                        {
-                            File.Delete(oldFileName);
-
-                            hack(); // TODO
-                        }
-                        else if (File.Exists(oldFileName))
-                        {
-                            File.Move(oldFileName, newFileName);
-                        }
-                        fsWatcher.Filter = Path.GetFileName(newFileName);
+                        hack(); // TODO
                     }
-                    projectFsWatchers.Add(guid, fsWatcher);
+                    else if (File.Exists(oldFileName))
+                    {
+                        File.Move(oldFileName, newFileName);
+                    }
+                    fsWatcher.Filter = Path.GetFileName(newFileName);
                 }
+                projectFsWatchers.Add(guid, fsWatcher);
             }
         }
 
@@ -333,12 +343,61 @@ namespace SmartCmdArgs.Logic
             }
             projectFsWatchers.Clear();
         }
+
+
+        private void AttachSolutionWatcher()
+        {
+            if (solutionFsWatcher == null)
+            {
+                string slnFilename = vsHelper.GetSolutionFilename();
+                string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
+
+                try
+                {
+                    solutionFsWatcher = new FileSystemWatcher();
+                    solutionFsWatcher.Path = Path.GetDirectoryName(jsonFilename);
+                    solutionFsWatcher.Filter = Path.GetFileName(jsonFilename);
+
+                    solutionFsWatcher.EnableRaisingEvents = true;
+
+                    solutionFsWatcher.Changed += (fsWatcher, args) => {
+                        Logger.Info($"SystemFileWatcher file Change '{args.FullPath}'");
+                        FireFileStorageChanged(null);
+                    };
+                    solutionFsWatcher.Created += (fsWatcher, args) => {
+                        Logger.Info($"SystemFileWatcher file Created '{args.FullPath}'");
+                        FireFileStorageChanged(null);
+                    };
+                    solutionFsWatcher.Renamed += (fsWatcher, args) =>
+                    {
+                        Logger.Info($"FileWachter file Renamed '{args.FullPath}'. filename='{jsonFilename}'");
+                        if (jsonFilename == args.FullPath)
+                            FireFileStorageChanged(null);
+                    };
+
+                    Logger.Info($"Attached FileSystemWatcher to file '{jsonFilename}' for solution.");
+                }
+                catch (Exception e)
+                {
+                    Logger.Warn($"Failed to attach FileSystemWatcher to file '{jsonFilename}' for solution with error '{e}'.");
+                }
+            }
+        }
+        private void DetachSolutionWatcher()
+        {
+            if (solutionFsWatcher != null)
+            {
+                solutionFsWatcher.Dispose();
+                solutionFsWatcher = null;
+            }
+        }
     }
 
     class FileStorageChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// The project for that the event was triggered
+        /// The project for that the event was triggered.
+        /// Can be null if solution file triggered the event.
         /// </summary>
         public readonly IVsHierarchy Project;
 
