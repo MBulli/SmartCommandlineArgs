@@ -312,11 +312,7 @@ namespace SmartCmdArgs
         private void FileStorage_FileStorageChanged(object sender, FileStorageChangedEventArgs e)
         {
             // This event is triggered on non-main thread!
-            UpdateCommandsForProjectOnDispatcher(e.Project, onlyIfVcsSupportEnabled:true);
-        }
-
-        private void UpdateCommandsForProjectOnDispatcher(IVsHierarchy project, bool onlyIfVcsSupportEnabled)
-        {
+            
             Logger.Info($"Dispatching update commands function call");
 
             JoinableTaskFactory.RunAsync(async delegate
@@ -332,19 +328,32 @@ namespace SmartCmdArgs
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (onlyIfVcsSupportEnabled && !IsVcsSupportEnabled)
+                if (!IsVcsSupportEnabled)
                     return;
-
-                Logger.Info($"Dispatched update commands function call for project '{project.GetDisplayName()}'");
-
-                if (project.GetGuid() == Guid.Empty)
-                {
-                    Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
-                }
-
+                
                 ToolWindowHistory.SaveState();
 
-                UpdateCommandsForProject(project);
+                IEnumerable<IVsHierarchy> projects;
+                if (e.IsSolutionWide)
+                {
+                    Logger.Info($"Dispatched update commands function calls for the solution.");
+                    projects = vsHelper.GetSupportedProjects();
+                }
+                else
+                {
+                    Logger.Info($"Dispatched update commands function call for project '{e.Project.GetDisplayName()}'");
+                    projects = new[] { e.Project };
+                }
+
+                foreach (var project in projects)
+                {                
+                    if (project.GetGuid() == Guid.Empty)
+                    {
+                        Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
+                    }
+
+                    UpdateCommandsForProject(project);
+                }
             });
         }
 

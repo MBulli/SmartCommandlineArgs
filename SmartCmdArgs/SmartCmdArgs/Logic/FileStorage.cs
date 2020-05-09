@@ -168,38 +168,41 @@ namespace SmartCmdArgs.Logic
                 string slnFilename = vsHelper.GetSolutionFilename();
                 string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
 
-                if (cmdPackage.ToolWindowViewModel.TreeViewModel.AllArguments.Any())
+                using (solutionFsWatcher?.TemporarilyDisable())
                 {
-                    if (!vsHelper.CanEditFile(jsonFilename))
+                    if (cmdPackage.ToolWindowViewModel.TreeViewModel.AllArguments.Any())
                     {
-                        Logger.Error($"VS or the user did no let us edit our file :/ '{jsonFilename}'");
+                        if (!vsHelper.CanEditFile(jsonFilename))
+                        {
+                            Logger.Error($"VS or the user did no let us edit our file :/ '{jsonFilename}'");
+                        }
+                        else
+                        {
+                            try
+                            {
+                                using (Stream fileStream = File.Open(jsonFilename, FileMode.Create, FileAccess.Write))
+                                {
+                                    SolutionDataSerializer.Serialize(cmdPackage.ToolWindowViewModel, fileStream);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.Warn($"Failed to write to file '{jsonFilename}' with error '{e}'.");
+                            }
+                        }
                     }
                     else
                     {
+                        Logger.Info("Deleting solution json file because no project has command arguments but json file exists.");
+
                         try
                         {
-                            using (Stream fileStream = File.Open(jsonFilename, FileMode.Create, FileAccess.Write))
-                            {
-                                SolutionDataSerializer.Serialize(cmdPackage.ToolWindowViewModel, fileStream);
-                            }
+                            File.Delete(jsonFilename);
                         }
                         catch (Exception e)
                         {
-                            Logger.Warn($"Failed to write to file '{jsonFilename}' with error '{e}'.");
+                            Logger.Warn($"Failed to delete file '{jsonFilename}' with error '{e}'.");
                         }
-                    }
-                }
-                else
-                {
-                    Logger.Info("Deleting solution json file because no project has command arguments but json file exists.");
-
-                    try
-                    {
-                        File.Delete(jsonFilename);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Warn($"Failed to delete file '{jsonFilename}' with error '{e}'.");
                     }
                 }
             }
@@ -400,6 +403,8 @@ namespace SmartCmdArgs.Logic
         /// Can be null if solution file triggered the event.
         /// </summary>
         public readonly IVsHierarchy Project;
+
+        public bool IsSolutionWide => Project != null;
 
         public FileStorageChangedEventArgs(IVsHierarchy project)
         {
