@@ -13,6 +13,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
+using SmartCmdArgs.View;
 
 namespace SmartCmdArgs.ViewModel
 {
@@ -21,6 +22,8 @@ namespace SmartCmdArgs.ViewModel
         private static readonly Regex SplitArgumentRegex = new Regex(@"(?:""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
 
         public TreeViewModel TreeViewModel { get; }
+
+        public SettingsViewModel SettingsViewModel { get; }
 
         public CmdArgsPackage CmdArgsPackage { get; }
 
@@ -45,6 +48,8 @@ namespace SmartCmdArgs.ViewModel
         public RelayCommand CopyCommandlineCommand { get; }
 
         public RelayCommand ShowAllProjectsCommand { get; }
+
+        public RelayCommand ShowSettingsCommand { get; }
 
         public RelayCommand ToggleSelectedCommand { get; }
         
@@ -75,6 +80,8 @@ namespace SmartCmdArgs.ViewModel
             CmdArgsPackage = package;
 
             TreeViewModel = new TreeViewModel();
+
+            SettingsViewModel = new SettingsViewModel();
 
             ToolWindowHistory.Init(this);
 
@@ -129,6 +136,16 @@ namespace SmartCmdArgs.ViewModel
                 () => {
                     ToolWindowHistory.SaveState();
                     TreeViewModel.ShowAllProjects = !TreeViewModel.ShowAllProjects;
+                });
+
+            ShowSettingsCommand = new RelayCommand(
+                () => {
+                    var settingsClone = new SettingsViewModel(SettingsViewModel);
+                    if (new SettingsDialog(settingsClone).ShowModal() == true)
+                    {
+                        SettingsViewModel.Assign(settingsClone);
+                        package.SaveSettings();
+                    }
                 });
 
             ToggleSelectedCommand = new RelayCommand(

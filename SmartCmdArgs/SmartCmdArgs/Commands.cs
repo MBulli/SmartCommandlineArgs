@@ -41,6 +41,7 @@ namespace SmartCmdArgs
         public const int ToolbarCopyCommandlineCommandId = 0x1104;
         public const int ToolbarAddGroupCommandId = 0x1105;
         public const int ToolbarShowAllProjectsCommandId = 0x1106;
+        public const int ToolbarOpenSettingsCommandId = 0x1107;
 
         public static readonly Guid KeyBindingsCmdSet = new Guid("886F463E-7F96-4BA4-BA88-F36D63044A00");
 
@@ -87,6 +88,7 @@ namespace SmartCmdArgs
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, package.ToolWindowViewModel.MoveEntriesUpCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, package.ToolWindowViewModel.MoveEntriesDownCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyCommandlineCommandId, package.ToolWindowViewModel.CopyCommandlineCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarOpenSettingsCommandId, package.ToolWindowViewModel.ShowSettingsCommand);
 
                 AddToggleCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarShowAllProjectsCommandId, 
                     package.ToolWindowViewModel.ShowAllProjectsCommand, () => package.ToolWindowViewModel.TreeViewModel.ShowAllProjects);

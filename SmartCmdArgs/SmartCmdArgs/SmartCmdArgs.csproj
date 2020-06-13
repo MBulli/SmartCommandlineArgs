@@ -79,6 +79,7 @@
     <Compile Include="Logic\FileStorage.cs" />
     <Compile Include="Logic\DataSerializer.cs" />
     <Compile Include="Logic\ProjectDataSerializer.cs" />
+    <Compile Include="Logic\SettingsSerializer.cs" />
     <Compile Include="Logic\SolutionDataSerializer.cs" />
     <Compile Include="Logic\SuoDataSerializer.cs" />
     <Compile Include="Logic\JsonDataObjects.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="Helper\BindingListEx.cs" />
     <Compile Include="ViewModel\CmdArgItem.cs" />
     <Compile Include="ViewModel\DataObjectGenerator.cs" />
+    <Compile Include="ViewModel\SettingsViewModel.cs" />
     <Compile Include="ViewModel\ToolWindowHistory.cs" />
     <Compile Include="ViewModel\TreeEvents.cs" />
     <Compile Include="ViewModel\TreeViewModel.cs" />
@@ -109,6 +111,7 @@
     <Compile Include="View\Converter\TreeLevelMarginConverter.cs" />
     <Compile Include="View\DragDrop.cs" />
     <Compile Include="View\DropTargetAdorner.cs" />
+    <Compile Include="View\SettingsDialog.cs" />
     <Compile Include="View\ToggleButtonEx.cs" />
     <Compile Include="View\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
@@ -117,6 +120,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="View\TreeItemStyleSelector.cs" />
     <Compile Include="View\TreeViewEx.cs" />
+    <Compile Include="View\SettingsControl.xaml.cs">
+      <DependentUpon>SettingsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VisualStudioHelper.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +147,10 @@
     <Page Include="View\TreeViewStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\SettingsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

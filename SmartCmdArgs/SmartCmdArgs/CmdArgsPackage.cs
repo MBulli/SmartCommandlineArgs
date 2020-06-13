@@ -78,10 +78,10 @@ namespace SmartCmdArgs
 
         public static CmdArgsPackage Instance { get; private set; }
 
-        public bool IsVcsSupportEnabled => GetDialogPage<CmdArgsOptionPage>().VcsSupport;
-        private bool IsMacroEvaluationEnabled => GetDialogPage<CmdArgsOptionPage>().MacroEvaluation;
+        public bool IsVcsSupportEnabled => ToolWindowViewModel.SettingsViewModel.VcsSupportEnabled;
+        private bool IsMacroEvaluationEnabled => ToolWindowViewModel.SettingsViewModel.MacroEvaluationEnabled;
         private bool IsUseMonospaceFontEnabled => GetDialogPage<CmdArgsOptionPage>().UseMonospaceFont;
-        public bool IsUseSolutionDirEnabled => GetDialogPage<CmdArgsOptionPage>().UseSolutionDir; 
+        public bool IsUseSolutionDirEnabled => ToolWindowViewModel.SettingsViewModel.UseSolutionDir; 
 
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.
@@ -152,9 +152,9 @@ namespace SmartCmdArgs
             // Switch to main thread
             await JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            GetDialogPage<CmdArgsOptionPage>().VcsSupportChanged += OptionPage_VcsSupportChanged;
+            ToolWindowViewModel.SettingsViewModel.VcsSupportEnabledChanged += OptionPage_VcsSupportChanged;
+            ToolWindowViewModel.SettingsViewModel.UseSolutionDirChanged += CmdArgsPackage_UseSolutionDirChanged;
             GetDialogPage<CmdArgsOptionPage>().UseMonospaceFontChanged += OptionPage_UseMonospaceFontChanged;
-            GetDialogPage<CmdArgsOptionPage>().UseSolutionDirChanged += CmdArgsPackage_UseSolutionDirChanged;
 
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
@@ -346,7 +346,7 @@ namespace SmartCmdArgs
                 }
 
                 foreach (var project in projects)
-                {                
+                {
                     if (project.GetGuid() == Guid.Empty)
                     {
                         Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
@@ -355,6 +355,21 @@ namespace SmartCmdArgs
                     UpdateCommandsForProject(project);
                 }
             });
+        }
+
+        public void SaveSettings()
+        {
+            fileStorage.SaveSettings();
+        }
+
+        public void LoadSettings()
+        {
+            var settings = fileStorage.ReadSettings();
+            var vm = ToolWindowViewModel.SettingsViewModel;
+
+            vm.MacroEvaluationEnabled = settings.MacroEvaluationEnabled;
+            vm.UseSolutionDir = settings.UseSolutionDir;
+            vm.VcsSupportEnabled = settings.VcsSupportEnabled;
         }
 
         private void UpdateCommandsForProject(IVsHierarchy project)
@@ -372,8 +387,6 @@ namespace SmartCmdArgs
             }
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new SuoDataJson();
-
-            ToolWindowViewModel.TreeViewModel.ShowAllProjects = solutionData.ShowAllProjects;
 
             // joins data from solution and project
             //  => overrides solution commands for a project if a project json file exists
@@ -498,7 +511,9 @@ namespace SmartCmdArgs
         private void InitializeForSolution()
         {
             toolWindowStateLoadedFromSolution = Logic.SuoDataSerializer.Deserialize(toolWindowStateFromSolutionJsonStr, vsHelper);
-            
+
+            LoadSettings();
+
             foreach (var project in vsHelper.GetSupportedProjects())
             {
                 UpdateCommandsForProject(project);
@@ -604,9 +619,10 @@ namespace SmartCmdArgs
 
             ToolWindowHistory.SaveState();
 
-            foreach (var projectName in vsHelper.GetSupportedProjects())
+            foreach (var project in vsHelper.GetSupportedProjects())
             {
-                UpdateCommandsForProject(projectName);
+                UpdateCommandsForProject(project);
+                fileStorage.SaveProject(project);
             }
         }
 

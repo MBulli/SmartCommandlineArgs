@@ -53,6 +53,9 @@
       <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" priority="0x0000">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
       </Group>
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarSettings" priority="0x0000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
     </Groups>
     
     <!--Buttons section. -->
@@ -127,6 +130,14 @@
           <ButtonText>Show all projects</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarOpenSettingsCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarSettings" />
+        <Icon guid="ImageCatalogGuid" id="Property" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Settings</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -170,11 +181,13 @@
       <IDSymbol name="ToolbarCopyCommandlineCommandId" value="0x1104"/>
       <IDSymbol name="ToolbarAddGroupCommandId" value="0x1105"/>
       <IDSymbol name="ToolbarShowAllProjectsCommandId" value="0x1106"/>
+      <IDSymbol name="ToolbarOpenSettingsCommandId" value="0x1107"/>
       
       <IDSymbol name="TWToolbar" value="0x1000" />
       <IDSymbol name="TWToolbarGroupAddRemove" value="0x1050" />
       <IDSymbol name="TWToolbarGroupMove" value="0x1051" />
       <IDSymbol name="TWToolbarEdit" value="0x1052" />
+      <IDSymbol name="TWToolbarSettings" value="0x1053" />
     </GuidSymbol>
     
     

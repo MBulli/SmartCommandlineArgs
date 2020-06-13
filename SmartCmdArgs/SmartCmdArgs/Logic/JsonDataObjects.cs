@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -11,6 +12,20 @@ using Newtonsoft.Json.Serialization;
 
 namespace SmartCmdArgs.Logic
 {
+    public class SettingsJson
+    {
+        public bool VcsSupportEnabled = true;
+        public bool UseSolutionDir = false;
+        public bool MacroEvaluationEnabled = true;
+
+        public bool IsDefault()
+        {
+            return VcsSupportEnabled == true
+                && UseSolutionDir == false
+                && MacroEvaluationEnabled == true;
+        }
+    }
+
     public class SuoDataJson
     {
         public int FileVersion = 2;

@@ -38,6 +38,8 @@ namespace SmartCmdArgs.Logic
             {
                 AttachSolutionWatcher();
             }
+
+            SaveProject(project);
         }
 
 
@@ -91,6 +93,38 @@ namespace SmartCmdArgs.Logic
                 }
                 projectFsWatchers.Add(guid, fsWatcher);
             }
+        }
+
+        private string GetSettingsPath()
+        {
+            string slnFilename = vsHelper.GetSolutionFilename();
+            return Path.ChangeExtension(slnFilename, "ArgsCfg.json");
+        }
+
+        public void SaveSettings()
+        {
+            string jsonFilename = GetSettingsPath();
+
+            string jsonStr = SettingsSerializer.Serialize(cmdPackage.ToolWindowViewModel.SettingsViewModel);
+
+            if (string.IsNullOrEmpty(jsonStr))
+                File.Delete(jsonFilename);
+            else
+                File.WriteAllText(jsonFilename, jsonStr);
+        }
+
+        public SettingsJson ReadSettings()
+        {
+            string jsonFilename = GetSettingsPath();
+
+            if (File.Exists(jsonFilename))
+            {
+                string jsonStr = File.ReadAllText(jsonFilename);
+
+                return SettingsSerializer.Deserialize(jsonStr);
+            }
+
+            return new SettingsJson();
         }
 
         public ProjectDataJson ReadDataForProject(IVsHierarchy project)
