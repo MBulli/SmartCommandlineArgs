@@ -104,6 +104,12 @@ namespace SmartCmdArgs.Helper
                     windowsRemoteDebugger.SetPropertyValue("RemoteDebuggerCommandArguments", arguments);
                 }
                 else { Logger.Warn("SetVCProjEngineArguments: ProjectConfig Rule 'RemoteDebuggerCommandArguments' returned null"); }
+
+                dynamic googleAndroidDebugger = vcCfg.Rules.Item( "GoogleAndroidDebugger" ); // is IVCRulePropertyStorage
+                if( googleAndroidDebugger != null )
+                {
+                    googleAndroidDebugger.SetPropertyValue( "LaunchFlags", arguments );
+                }
             }
             else { Logger.Warn("SetVCProjEngineArguments: VCProject?.ActiveConfiguration? returned null"); }
         }
