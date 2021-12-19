@@ -14,17 +14,15 @@ namespace SmartCmdArgs.ViewModel
 {
     public class TreeViewModel : PropertyChangedBase
     {
-        private object treeitems;
-        private bool showAllProjects;
-
         public ObservableDictionary<Guid, CmdProject> Projects { get; }
 
-        public object TreeItems
+        private IEnumerable<CmdBase> treeitems;
+        public IEnumerable<CmdBase> TreeItems
         {
             get => treeitems;
             private set
             {
-                SetAndNotify(value, ref treeitems);
+                treeitems = value;
                 TreeItemsView = CollectionViewSource.GetDefaultView(treeitems);
             }
         }
@@ -36,6 +34,7 @@ namespace SmartCmdArgs.ViewModel
             private set => SetAndNotify(value, ref treeItemsView);
         }
 
+        private bool showAllProjects;
         public bool ShowAllProjects
         {
             get => showAllProjects;
@@ -64,10 +63,13 @@ namespace SmartCmdArgs.ViewModel
         {
             get
             {
-                return IterateOnlyFocused(AllProjects).LastOrDefault() ?? StartupProjects.FirstOrDefault();
+                return IterateOnlyFocused(TreeItems).LastOrDefault() ?? StartupProjects.FirstOrDefault();
 
                 IEnumerable<CmdBase> IterateOnlyFocused(IEnumerable<CmdBase> items)
                 {
+                    if (items == null)
+                        yield break;
+
                     foreach (var item in items)
                     {
                         if (item.IsFocusedItem)
@@ -151,6 +153,12 @@ namespace SmartCmdArgs.ViewModel
         
         public void UpdateTree()
         {
+            // reset focus
+            foreach (var item in AllProjects.SelectMany(x => x.GetEnumerable(useView: false, includeSelf: true)))
+            {
+                item.IsFocusedItem = false;
+            }
+
             if (ShowAllProjects)
             {
                 TreeItems = AllProjects
@@ -163,12 +171,24 @@ namespace SmartCmdArgs.ViewModel
                 var startupProjects = StartupProjects.ToList();
                 if (startupProjects.Count == 1)
                 {
-                    TreeItems = startupProjects.First().Items;
+                    var project = startupProjects.First();
+
+                    // set the project as focused because it does not appear in the tree (UI)
+                    // and therfore it cant be set as focused by the UI
+                    project.IsFocusedItem = true;
+                    
+                    TreeItems = project.Items;
                 }
                 else
                 {
                     // Fixes a strange potential bug in WPF. If ToList() is missing the project will be shown twice.
                     TreeItems = startupProjects.ToList();
+                }
+
+                // reset selected
+                foreach (var item in AllProjects.Where(x => !x.IsStartupProject).SelectMany(x => x.GetEnumerable(useView: false, includeSelf: true)))
+                {
+                    item.IsSelected = false;
                 }
             }
 
