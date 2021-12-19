@@ -103,13 +103,24 @@ namespace SmartCmdArgs.Helper
                 {
                     windowsRemoteDebugger.SetPropertyValue("RemoteDebuggerCommandArguments", arguments);
                 }
-                else { Logger.Warn("SetVCProjEngineArguments: ProjectConfig Rule 'RemoteDebuggerCommandArguments' returned null"); }
+                else 
+                {
+                    dynamic linuxRemoteDebugger = vcCfg.Rules.Item("LinuxWSLDebugger"); // is IVCRulePropertyStorage
+                    if (linuxRemoteDebugger != null)
+                    {
+                        linuxRemoteDebugger.SetPropertyValue("RemoteDebuggerCommandArguments", arguments);
+                    }
+                    else
+                    {
+                        Logger.Warn("SetVCProjEngineArguments: ProjectConfig Rule 'RemoteDebuggerCommandArguments' returned null");
+                    }
+                }
 
                 dynamic googleAndroidDebugger = vcCfg.Rules.Item( "GoogleAndroidDebugger" ); // is IVCRulePropertyStorage
                 if( googleAndroidDebugger != null )
                 {
                     googleAndroidDebugger.SetPropertyValue( "LaunchFlags", arguments );
-                }
+                }              
             }
             else { Logger.Warn("SetVCProjEngineArguments: VCProject?.ActiveConfiguration? returned null"); }
         }
@@ -126,7 +137,7 @@ namespace SmartCmdArgs.Helper
                 Logger.Warn("GetVCProjEngineAllArguments: VCProject.Configurations is null");
                 return;
             }
-            
+
             for (int index = 1; index <= configs.Count; index++)
             {
                 dynamic cfg = configs.Item(index); // is VCConfiguration
@@ -159,7 +170,19 @@ namespace SmartCmdArgs.Helper
                         allArgs.Add(remoteArguments);
                     }
                 }
-                else { Logger.Warn("GetVCProjEngineAllArguments: ProjectConfig Rule 'WindowsRemoteDebugger' returned null"); }
+                else //check WSL remote debugger
+                {
+                    dynamic linuxWSLDebugger = cfg.Rules.Item("LinuxWSLDebugger"); // is IVCRulePropertyStorage
+                    if (linuxWSLDebugger != null)
+                    {
+                        var remoteArguments = windowsRemoteDebugger.GetUnevaluatedPropertyValue("RemoteDebuggerCommandArguments");
+                        if (!string.IsNullOrEmpty(remoteArguments))
+                        {
+                            allArgs.Add(remoteArguments);
+                        }
+                    }
+                    else { Logger.Warn("GetVCProjEngineAllArguments: ProjectConfig Rule 'WindowsRemoteDebugger' returned null"); }
+                }
             }
         }
 
