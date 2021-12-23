@@ -75,6 +75,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand ToggleExclusiveModeCommand { get; }
 
+        public RelayCommand ToggleSpaceDelimiterCommand { get; }
+
         public ToolWindowViewModel(CmdArgsPackage package)
         {
             CmdArgsPackage = package;
@@ -244,6 +246,19 @@ namespace SmartCmdArgs.ViewModel
                 {
                     ToolWindowHistory.SaveState();
                     con.ExclusiveMode = !con.ExclusiveMode;
+                }
+            }, _ => HasSingleSelectedItemOfType<CmdContainer>());
+
+            ToggleSpaceDelimiterCommand = new RelayCommand(() =>
+            {
+                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                if (selectedItem is CmdContainer con)
+                {
+                    ToolWindowHistory.SaveState();
+                    if (con.Delimiter == "")
+                        con.Delimiter = " ";
+                    else if (con.Delimiter == " ")
+                        con.Delimiter = "";
                 }
             }, _ => HasSingleSelectedItemOfType<CmdContainer>());
         }
@@ -419,7 +434,8 @@ namespace SmartCmdArgs.ViewModel
                                         project.GetDisplayName(), 
                                         ListEntriesToCmdObjects(data.Items),
                                         data.Expanded,
-                                        data.ExclusiveMode);
+                                        data.ExclusiveMode,
+                                        data.Delimiter);
 
             // Assign TreeViewModel after AddRange to not get a lot of ParentChanged events
             cmdPrj.ParentTreeViewModel = TreeViewModel; 
@@ -436,6 +452,7 @@ namespace SmartCmdArgs.ViewModel
                 cmdPrj.ExclusiveMode = data.ExclusiveMode;
                 cmdPrj.IsExpanded = data.Expanded;
                 cmdPrj.IsSelected = data.Selected;
+                cmdPrj.Delimiter = data.Delimiter;
 
                 cmdPrj.Items.ReplaceRange(ListEntriesToCmdObjects(data.Items));
             }
@@ -449,7 +466,7 @@ namespace SmartCmdArgs.ViewModel
                 if (item.Items == null)
                     result = new CmdArgument(item.Id, item.Command, item.Enabled);
                 else
-                    result = new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.LaunchProfile);
+                    result = new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.LaunchProfile, item.Delimiter);
 
                 result.IsSelected = item.Selected;
                 yield return result;

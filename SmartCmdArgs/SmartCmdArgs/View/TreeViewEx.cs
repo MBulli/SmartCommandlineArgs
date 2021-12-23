@@ -104,7 +104,12 @@ namespace SmartCmdArgs.View
             nameof(ToggleExclusiveModeCommand), typeof(ICommand), typeof(TreeViewEx), 
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._exclusiveModeMenuItem.Command = (ICommand)e.NewValue));
         public ICommand ToggleExclusiveModeCommand { get { return (ICommand)GetValue(SetExclusiveModeCommandProperty); } set { SetValue(SetExclusiveModeCommandProperty, value); } }
-        
+
+        public static readonly DependencyProperty SetSpaceDelimiterCommandProperty = DependencyProperty.Register(
+            nameof(ToggleSpaceDelimiterCommand), typeof(ICommand), typeof(TreeViewEx),
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._spaceDelimiterMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand ToggleSpaceDelimiterCommand { get { return (ICommand)GetValue(SetSpaceDelimiterCommandProperty); } set { SetValue(SetSpaceDelimiterCommandProperty, value); } }
+
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -133,6 +138,7 @@ namespace SmartCmdArgs.View
 
         public IEnumerable<TreeViewItemEx> VisibleTreeViewItems => GetTreeViewItems(this, false);
 
+        private MenuItem _spaceDelimiterMenuItem;
         private MenuItem _exclusiveModeMenuItem;
         private MenuItem _splitArgumentMenuItem;
         private MenuItem _newGroupFromArgumentsMenuItem;
@@ -151,6 +157,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Paste });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
             ContextMenu.Items.Add(new Separator());
+            ContextMenu.Items.Add(_spaceDelimiterMenuItem = new MenuItem { Header = "Space Delimiter" });
             ContextMenu.Items.Add(_exclusiveModeMenuItem = new MenuItem { Header = "Exclusive Mode" });
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
@@ -158,6 +165,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
 
+            CollapseWhenDisbaled(_spaceDelimiterMenuItem);
             CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
             CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
@@ -216,8 +224,10 @@ namespace SmartCmdArgs.View
             _projConfigMenuItem.IsEnabled = false;
             _launchProfileMenuItem.IsEnabled = false;
             _exclusiveModeMenuItem.IsEnabled = false;
+            _spaceDelimiterMenuItem.Visibility = Visibility.Collapsed;
 
             _exclusiveModeMenuItem.IsCheckable = false;
+            _spaceDelimiterMenuItem.IsCheckable = false;
 
             var container = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdContainer;
             if (container != null)
@@ -225,6 +235,11 @@ namespace SmartCmdArgs.View
                 _exclusiveModeMenuItem.IsEnabled = true;
                 _exclusiveModeMenuItem.IsCheckable = true;
                 _exclusiveModeMenuItem.IsChecked = container.ExclusiveMode;
+
+                _spaceDelimiterMenuItem.Visibility = Visibility.Visible;
+                _spaceDelimiterMenuItem.IsEnabled = container.Delimiter == " " || container.Delimiter == "";
+                _spaceDelimiterMenuItem.IsCheckable = true;
+                _spaceDelimiterMenuItem.IsChecked = container.Delimiter == " ";
             }
 
             if (container is CmdGroup group)

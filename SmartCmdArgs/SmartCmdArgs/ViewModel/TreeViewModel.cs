@@ -353,6 +353,9 @@ namespace SmartCmdArgs.ViewModel
                 case ExclusiveModeChangedEvent e:
                     FireTreeChanged(e);
                     break;
+                case DelimiterChangedEvent e:
+                    FireTreeChanged(e);
+                    break;
                 default:
                     break;
             }

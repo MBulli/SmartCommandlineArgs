@@ -69,6 +69,8 @@ namespace SmartCmdArgs.Logic
         public string LaunchProfile = null;
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public bool ExclusiveMode = false;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(" ")]
+        public string Delimiter = " ";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<CmdArgumentJson> Items = null;
 

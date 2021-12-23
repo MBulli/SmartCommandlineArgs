@@ -42,6 +42,7 @@ namespace SmartCmdArgs.Logic
                 {
                     Id = kvPair.Value.Id,
                     ExclusiveMode = kvPair.Value.ExclusiveMode,
+                    Delimiter = kvPair.Value.Delimiter,
                     Items = TransformCmdList(kvPair.Value.Items),
 
                     // not in JSON

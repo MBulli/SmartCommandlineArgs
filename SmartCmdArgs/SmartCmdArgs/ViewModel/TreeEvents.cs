@@ -108,4 +108,12 @@ namespace SmartCmdArgs.ViewModel
         {
         }
     }
+
+    public class DelimiterChangedEvent : GenericChangedEventArgs<string>
+    {
+        public DelimiterChangedEvent(CmdBase sender, string oldValue, string newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
 }

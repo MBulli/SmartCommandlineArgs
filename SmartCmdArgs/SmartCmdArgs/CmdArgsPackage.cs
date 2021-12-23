@@ -254,33 +254,39 @@ namespace SmartCmdArgs
             if (project == null)
                 return null;
 
-            IEnumerable<CmdArgument> checkedArgs = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid())?.CheckedArguments;
-            if (checkedArgs == null)
+            var projectCmd = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid());
+            if (projectCmd == null)
                 return null;
 
             string projConfig = project.GetProject()?.ConfigurationManager?.ActiveConfiguration?.ConfigurationName;
-            if (projConfig != null)
-                checkedArgs = checkedArgs.Where(x => { var conf = x.UsedProjectConfig; return conf == null || conf == projConfig; });
 
+            string activeLaunchProfile = null;
             if (project.IsCpsProject())
+                activeLaunchProfile = SmartCmdArgs15.CpsProjectSupport.GetActiveLaunchProfileName(project.GetProject());
+
+            string MacroEvaluation(string arg)
             {
-                var activeLaunchProfile = SmartCmdArgs15.CpsProjectSupport.GetActiveLaunchProfileName(project.GetProject());
-                if (activeLaunchProfile != null)
-                    checkedArgs = checkedArgs.Where(x => { var prof = x.UsedLaunchProfile; return prof == null || prof == activeLaunchProfile; });
+                if (!IsMacroEvaluationEnabled)
+                    return arg;
+
+                return msBuildPropertyRegex.Replace(arg,
+                    match => vsHelper.GetMSBuildPropertyValueForActiveConfig(project, match.Groups["propertyName"].Value) ?? match.Value);
             }
 
-            IEnumerable<string> enabledEntries;
-            if (IsMacroEvaluationEnabled)
+            string JoinContainer(CmdContainer con)
             {
-                enabledEntries = checkedArgs.Select(
-                    e => msBuildPropertyRegex.Replace(e.Value,
-                        match => vsHelper.GetMSBuildPropertyValueForActiveConfig(project, match.Groups["propertyName"].Value) ?? match.Value));
+                IEnumerable<CmdBase> items = con.Items.Where(x => x.IsChecked != false);
+
+                if (projConfig != null)
+                    items = items.Where(x => { var conf = x.UsedProjectConfig; return conf == null || conf == projConfig; });
+
+                if (activeLaunchProfile != null)
+                    items = items.Where(x => { var prof = x.UsedLaunchProfile; return prof == null || prof == activeLaunchProfile; });
+
+                return string.Join(con.Delimiter, items.Select(x => x is CmdContainer c ? JoinContainer(c) : MacroEvaluation(x.Value)));
             }
-            else
-            {
-                enabledEntries = checkedArgs.Select(e => e.Value);
-            }
-            return string.Join(" ", enabledEntries);
+
+            return JoinContainer(projectCmd);
         }
 
         public string CreateCommandLineArgsForProject(Guid guid)

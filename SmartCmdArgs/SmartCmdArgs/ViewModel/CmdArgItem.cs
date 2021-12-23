@@ -309,6 +309,13 @@ namespace SmartCmdArgs.ViewModel
             set => OnExclusiveModeChanged(exclusiveMode, value);
         }
 
+        protected string delimiter;
+        public string Delimiter
+        {
+            get => delimiter;
+            set => OnDelimiterChanged(delimiter, value);
+        }
+
         public ObservableRangeCollection<CmdBase> Items { get; }
         public ICollectionView ItemsView { get; }
         protected virtual Predicate<CmdBase> FilterPredicate => Parent?.FilterPredicate;
@@ -321,11 +328,12 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdBase> SelectedItems => this.Where(item => item.IsSelected);
 
-        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> subItems, bool isExpanded, bool exclusiveMode)
+        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> subItems, bool isExpanded, bool exclusiveMode, string delimiter)
             : base(id, value)
         {
             this.isExpanded = isExpanded;
             this.exclusiveMode = exclusiveMode;
+            this.delimiter = delimiter;
 
             Items = new ObservableRangeCollection<CmdBase>();
 
@@ -344,8 +352,8 @@ namespace SmartCmdArgs.ViewModel
                 AddRange(subItems);
         }
 
-        public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false) 
-            : this(Guid.NewGuid(), value, items, isExpanded, exclusiveMode)
+        public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string delimiter = " ") 
+            : this(Guid.NewGuid(), value, items, isExpanded, exclusiveMode, delimiter)
         { }
 
         private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -406,6 +414,16 @@ namespace SmartCmdArgs.ViewModel
             if (oldValue != newValue)
             {
                 BubbleEvent(new ExclusiveModeChangedEvent(this, oldValue, newValue));
+            }
+        }
+
+        private void OnDelimiterChanged(string oldValue, string newValue)
+        {
+            SetAndNotify(newValue, ref delimiter, nameof(Delimiter));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new DelimiterChangedEvent(this, oldValue, newValue));
             }
         }
 
@@ -648,8 +666,8 @@ namespace SmartCmdArgs.ViewModel
 
         public Guid Kind { get; set; }
         
-        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode)
-            : base(id, displayName, items, isExpanded, exclusiveMode)
+        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string delimiter)
+            : base(id, displayName, items, isExpanded, exclusiveMode, delimiter)
         {
             Kind = kind;
         }
@@ -684,15 +702,15 @@ namespace SmartCmdArgs.ViewModel
             set => base.LaunchProfile = value;
         }
 
-        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string projConf, string launchProfile) 
-            : base(id, name, items, isExpanded, exclusiveMode)
+        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string projConf, string launchProfile, string delimiter) 
+            : base(id, name, items, isExpanded, exclusiveMode, delimiter)
         {
             base.ProjectConfig = projConf;
             base.LaunchProfile = launchProfile;
         }
 
-        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string projConf = null, string launchProfile = null) 
-            : this(Guid.NewGuid(), name, items, isExpanded, exclusiveMode, projConf, launchProfile)
+        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string projConf = null, string launchProfile = null, string delimiter = " ") 
+            : this(Guid.NewGuid(), name, items, isExpanded, exclusiveMode, projConf, launchProfile, delimiter)
         { }
 
         public override CmdBase Copy()

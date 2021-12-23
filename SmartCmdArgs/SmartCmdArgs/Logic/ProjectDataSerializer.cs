@@ -24,6 +24,7 @@ namespace SmartCmdArgs.Logic
             {
                 Id = prj.Id,
                 ExclusiveMode = prj.ExclusiveMode,
+                Delimiter = prj.Delimiter,
                 Items = TransformCmdList(prj.Items)
             };
 
