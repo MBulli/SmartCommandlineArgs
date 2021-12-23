@@ -198,7 +198,7 @@ namespace SmartCmdArgs.ViewModel
 
                 // add new group
                 var newGrp = new CmdGroup(name: "");
-                var insertIndex = parent.TakeWhile((item) => item != firstElement).Count();
+                var insertIndex = parent.Items.TakeWhile((item) => item != firstElement).Count();
                 parent.Insert(insertIndex, newGrp);
                 
                 // move items to new group
