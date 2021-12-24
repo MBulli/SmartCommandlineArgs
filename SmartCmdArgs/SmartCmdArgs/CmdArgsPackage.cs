@@ -143,6 +143,7 @@ namespace SmartCmdArgs
             vsHelper.ProjectAfterOpen += VsHelper_ProjectAdded;
             vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
             vsHelper.ProjectAfterRename += VsHelper_ProjectRenamed;
+            vsHelper.ProjectAfterLoad += VsHelper_ProjectAfterLoad;
 
             fileStorage = new FileStorage(this, vsHelper);
             fileStorage.FileStorageChanged += FileStorage_FileStorageChanged;
@@ -614,6 +615,16 @@ namespace SmartCmdArgs
             });
 
             ToolWindowViewModel.RenameProject(e.Project);
+        }
+
+        private void VsHelper_ProjectAfterLoad(object sender, IVsHierarchy e)
+        {
+            Logger.Info("VS-Event: Project loaded.");
+
+            // Startup project must be set here beacuase in the event of a project
+            // reload the StartupProjectChanged event is fired before the project
+            // is added so we don't know it and can't set it as startup project
+            UpdateCurrentStartupProject();
         }
         #endregion
 
