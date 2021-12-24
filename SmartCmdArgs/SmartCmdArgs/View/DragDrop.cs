@@ -273,7 +273,8 @@ namespace SmartCmdArgs.View
 
         public bool CanStartDrag()
         {
-            return !SourceItems.OfType<CmdProject>().Any();
+            return DirectVisualSourceItem?.Item != null &&
+                !SourceItems.OfType<CmdProject>().Any();
         }
     }
 

@@ -782,6 +782,9 @@ namespace SmartCmdArgs.View
             Debug.WriteLine($"Entering OnMouseDown - ClickCount = {e.ClickCount}");
             e.Handled = true; // we handle clicks
 
+            if (Item == null)
+                return;
+
             // cature mouse to get mouse up event if mouse is realesed out of element bounds
             //Mouse.Capture(this);
 
@@ -826,6 +829,9 @@ namespace SmartCmdArgs.View
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
+            if (Item == null)
+                return;
+
             if (e.ChangedButton == MouseButton.Right)
             {
                 // Don't do anything and let the magic handle the ContextMenu (for both the TextBox and TreeItems)
