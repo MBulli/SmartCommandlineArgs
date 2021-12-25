@@ -639,8 +639,8 @@ namespace SmartCmdArgs
             foreach (var project in vsHelper.GetSupportedProjects())
             {
                 UpdateCommandsForProject(project);
-                fileStorage.SaveProject(project);
             }
+            fileStorage.SaveAllProjects();
         }
 
         private void OptionPage_UseMonospaceFontChanged(object sender, bool enabled)

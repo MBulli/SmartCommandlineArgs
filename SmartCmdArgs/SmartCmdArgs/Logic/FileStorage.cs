@@ -2,6 +2,7 @@
 using SmartCmdArgs.Helper;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -193,50 +194,59 @@ namespace SmartCmdArgs.Logic
 
         public void SaveProject(IVsHierarchy project)
         {
-            if (!cmdPackage.IsUseSolutionDirEnabled)
-            {
-                SaveJsonForProject(project);
-            }
+            if (cmdPackage.IsUseSolutionDirEnabled)
+                SaveJsonForSolution();
             else
-            {
-                string slnFilename = vsHelper.GetSolutionFilename();
-                string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
+                SaveJsonForProject(project);
+        }
 
-                using (solutionFsWatcher?.TemporarilyDisable())
+        public void SaveAllProjects()
+        {
+            if (cmdPackage.IsUseSolutionDirEnabled)
+                SaveJsonForSolution();
+            else
+                vsHelper.GetSupportedProjects().ForEach(SaveJsonForProject);
+        }
+
+        private void SaveJsonForSolution()
+        {
+            string slnFilename = vsHelper.GetSolutionFilename();
+            string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
+
+            using (solutionFsWatcher?.TemporarilyDisable())
+            {
+                if (cmdPackage.ToolWindowViewModel.TreeViewModel.AllArguments.Any())
                 {
-                    if (cmdPackage.ToolWindowViewModel.TreeViewModel.AllArguments.Any())
+                    if (!vsHelper.CanEditFile(jsonFilename))
                     {
-                        if (!vsHelper.CanEditFile(jsonFilename))
-                        {
-                            Logger.Error($"VS or the user did no let us edit our file :/ '{jsonFilename}'");
-                        }
-                        else
-                        {
-                            try
-                            {
-                                using (Stream fileStream = File.Open(jsonFilename, FileMode.Create, FileAccess.Write))
-                                {
-                                    SolutionDataSerializer.Serialize(cmdPackage.ToolWindowViewModel, fileStream);
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Logger.Warn($"Failed to write to file '{jsonFilename}' with error '{e}'.");
-                            }
-                        }
+                        Logger.Error($"VS or the user did no let us edit our file :/ '{jsonFilename}'");
                     }
                     else
                     {
-                        Logger.Info("Deleting solution json file because no project has command arguments but json file exists.");
-
                         try
                         {
-                            File.Delete(jsonFilename);
+                            using (Stream fileStream = File.Open(jsonFilename, FileMode.Create, FileAccess.Write))
+                            {
+                                SolutionDataSerializer.Serialize(cmdPackage.ToolWindowViewModel, fileStream);
+                            }
                         }
                         catch (Exception e)
                         {
-                            Logger.Warn($"Failed to delete file '{jsonFilename}' with error '{e}'.");
+                            Logger.Warn($"Failed to write to file '{jsonFilename}' with error '{e}'.");
                         }
+                    }
+                }
+                else
+                {
+                    Logger.Info("Deleting solution json file because no project has command arguments but json file exists.");
+
+                    try
+                    {
+                        File.Delete(jsonFilename);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Warn($"Failed to delete file '{jsonFilename}' with error '{e}'.");
                     }
                 }
             }
