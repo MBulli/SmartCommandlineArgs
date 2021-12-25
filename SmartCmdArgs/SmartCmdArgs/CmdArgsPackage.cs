@@ -379,6 +379,34 @@ namespace SmartCmdArgs
             vm.VcsSupportEnabled = settings.VcsSupportEnabled;
         }
 
+        private string FormatCmdArgumentJsonListForMessage(IEnumerable<CmdArgumentJson> list)
+        {
+            var sb = new StringBuilder();
+
+            internalFormat(list, level: 0);
+
+            void internalFormat(IEnumerable<CmdArgumentJson> items, int level)
+            {
+                foreach (var arg in items)
+                {
+                    sb.Append(arg.Command);
+
+                    if (arg.Items != null)
+                    {
+                        sb.AppendLine(":");
+                        internalFormat(arg.Items, level + 1);
+                        sb.AppendLine();
+                    }
+                    else
+                    {
+                        sb.AppendLine();
+                    }
+                }
+            }
+
+            return sb.ToString().Trim();
+        }
+
         private void UpdateCommandsForProject(IVsHierarchy project)
         {
             if (project == null)
@@ -471,8 +499,30 @@ namespace SmartCmdArgs
             }
             else if (IsVcsSupportEnabled)
             {
+                var args = ReadCommandlineArgumentsFromProject(project).ToList();
+
                 projectData = new ProjectDataJson();
-                Logger.Info("Will clear all data because of missing json file and enabled VCS support.");
+
+                if (args.Any())
+                {
+                    var argsStr = FormatCmdArgumentJsonListForMessage(args);
+
+                    var msgResult = MessageBox.Show($"VSC support is enabled and the project '{project.GetName()}' has no JSON-file and the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleard like the missing JSON-file dictates?", "Smart Command Line Arguments", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                    if (msgResult == MessageBoxResult.Yes)
+                    {
+                        Logger.Info("Will clear all data because the user saied yes, the missing json file, and enabled VCS support.");
+                    }
+                    else
+                    {
+                        Logger.Info($"User didn't want to clear the arguments due to missing JSON-file, therefore gathering commands from configurations for project '{project.GetName()}'.");
+                        projectData.Items.AddRange(args);
+                    }
+                }
+                else
+                {
+                    Logger.Info("Using empty project data because of epty project configuration, missing json file, and enabled VCS support.");
+                }
             }
             // we try to read the suo file data
             else if (solutionData.ProjectArguments.TryGetValue(projectGuid, out projectData))
