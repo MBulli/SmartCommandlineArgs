@@ -89,10 +89,12 @@ namespace SmartCmdArgs15
             }
         }
 
-        public static void GetCpsProjectAllArguments(EnvDTE.Project project, List<string> allArgs)
+        public static Dictionary<string, string> GetCpsProjectAllArguments(EnvDTE.Project project)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
+
+            var result = new Dictionary<string, string>();
 
             if (TryGetProjectServices(project, out unconfiguredProjectServices, out projectServices))
             {
@@ -100,10 +102,16 @@ namespace SmartCmdArgs15
                 var launchProfiles = launchSettingsProvider?.CurrentSnapshot?.Profiles;
 
                 if (launchProfiles == null)
-                    return;
+                    return result;
 
-                allArgs.AddRange(launchProfiles.Select(launchProfile => launchProfile.CommandLineArgs));
+                foreach (var profile in launchProfiles)
+                {
+                    if (!string.IsNullOrEmpty(profile.CommandLineArgs))
+                        result.Add(profile.Name, profile.CommandLineArgs);
+                }
             }
+
+            return result;
         }
     }
 }

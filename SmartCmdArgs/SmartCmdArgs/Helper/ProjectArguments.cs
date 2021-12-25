@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using SmartCmdArgs.Logic;
 
 namespace SmartCmdArgs.Helper
 {
@@ -15,7 +16,7 @@ namespace SmartCmdArgs.Helper
         private class ProjectArgumentsHandlers
         {
             public delegate void SetArgumentsDelegate(EnvDTE.Project project, string arguments);
-            public delegate void GetAllArgumentsDelegate(EnvDTE.Project project, List<string> allArgs);
+            public delegate void GetAllArgumentsDelegate(EnvDTE.Project project, List<CmdArgumentJson> allArgs);
             public SetArgumentsDelegate SetArguments;
             public GetAllArgumentsDelegate GetAllArguments;
         }
@@ -28,7 +29,7 @@ namespace SmartCmdArgs.Helper
             catch (Exception ex) { Logger.Error($"Failed to set single config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
 
-        private static void GetSingleConfigAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
+        private static void GetSingleConfigAllArguments(EnvDTE.Project project, List<CmdArgumentJson> allArgs, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -37,7 +38,7 @@ namespace SmartCmdArgs.Helper
                 string cmdarg = project.Properties.Item(propertyName).Value as string;
                 if (!string.IsNullOrEmpty(cmdarg))
                 {
-                    allArgs.Add(cmdarg);
+                    allArgs.Add(new CmdArgumentJson { Command = cmdarg, Enabled = true });
                 }
             }
             catch (Exception ex) { Logger.Error($"Failed to get single config arguments for project '{project.UniqueName}' with error '{ex}'"); }
@@ -53,7 +54,7 @@ namespace SmartCmdArgs.Helper
             catch (Exception ex) { Logger.Error($"Failed to set multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
 
-        private static void GetMultiConfigAllArguments(EnvDTE.Project project, List<string> allArgs, string propertyName)
+        private static void GetMultiConfigAllArguments(EnvDTE.Project project, List<CmdArgumentJson> allArgs, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -65,7 +66,9 @@ namespace SmartCmdArgs.Helper
                     string cmdarg = config.Properties.Item(propertyName).Value as string;
                     if (!string.IsNullOrEmpty(cmdarg))
                     {
-                        allArgs.Add(cmdarg);
+                        var configGrp = new CmdArgumentJson { Command = config.ConfigurationName, ProjectConfig = config.ConfigurationName, Items = new List<CmdArgumentJson>() };
+                        configGrp.Items.Add(new CmdArgumentJson { Command = cmdarg, Enabled = true });
+                        allArgs.Add(configGrp);
                     }
                 }
                 catch (Exception ex) { Logger.Error($"Failed to get multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
@@ -125,7 +128,7 @@ namespace SmartCmdArgs.Helper
             else { Logger.Warn("SetVCProjEngineArguments: VCProject?.ActiveConfiguration? returned null"); }
         }
 
-        private static void GetVCProjEngineAllArguments(EnvDTE.Project project, List<string> allArgs)
+        private static void GetVCProjEngineAllArguments(EnvDTE.Project project, List<CmdArgumentJson> allArgs)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -143,9 +146,11 @@ namespace SmartCmdArgs.Helper
                 dynamic cfg = configs.Item(index); // is VCConfiguration
                 dynamic dbg = cfg.DebugSettings;  // is VCDebugSettings
 
+                var items = new List<string>();
+
                 if (!string.IsNullOrEmpty(dbg?.CommandArguments))
                 {
-                    allArgs.Add(dbg.CommandArguments);
+                    items.Add(dbg.CommandArguments);
                 }
 
                 // Read local debugger values
@@ -155,7 +160,7 @@ namespace SmartCmdArgs.Helper
                     var localArguments = windowsLocalDebugger.GetUnevaluatedPropertyValue("LocalDebuggerCommandArguments");
                     if (!string.IsNullOrEmpty(localArguments))
                     {
-                        allArgs.Add(localArguments);
+                        items.Add(localArguments);
                     }
                 }
                 else { Logger.Warn("GetVCProjEngineAllArguments: ProjectConfig Rule 'WindowsLocalDebugger' returned null"); }
@@ -167,7 +172,7 @@ namespace SmartCmdArgs.Helper
                     var remoteArguments = windowsRemoteDebugger.GetUnevaluatedPropertyValue("RemoteDebuggerCommandArguments");
                     if (!string.IsNullOrEmpty(remoteArguments))
                     {
-                        allArgs.Add(remoteArguments);
+                        items.Add(remoteArguments);
                     }
                 }
                 else //check WSL remote debugger
@@ -178,10 +183,19 @@ namespace SmartCmdArgs.Helper
                         var remoteArguments = windowsRemoteDebugger.GetUnevaluatedPropertyValue("RemoteDebuggerCommandArguments");
                         if (!string.IsNullOrEmpty(remoteArguments))
                         {
-                            allArgs.Add(remoteArguments);
+                            items.Add(remoteArguments);
                         }
                     }
                     else { Logger.Warn("GetVCProjEngineAllArguments: ProjectConfig Rule 'WindowsRemoteDebugger' returned null"); }
+                }
+
+                if (items.Count > 0)
+                {
+                    var configGrp = new CmdArgumentJson { Command = cfg.ConfigurationName, ProjectConfig = cfg.ConfigurationName, Items = new List<CmdArgumentJson>() };
+
+                    configGrp.Items.AddRange(items.Distinct().Select(arg => new CmdArgumentJson { Command = arg, Enabled = true }));
+
+                    allArgs.Add(configGrp);
                 }
             }
         }
@@ -193,11 +207,19 @@ namespace SmartCmdArgs.Helper
             SmartCmdArgs15.CpsProjectSupport.SetCpsProjectArguments(project, arguments);
         }
 
-        private static void GetCpsProjectAllArguments(EnvDTE.Project project, List<string> allArgs)
+        private static void GetCpsProjectAllArguments(EnvDTE.Project project, List<CmdArgumentJson> allArgs)
         {
             // Should only be called in VS 2017 or higher
             // see SetCpsProjectArguments
-            SmartCmdArgs15.CpsProjectSupport.GetCpsProjectAllArguments(project, allArgs);
+            var profileArgsMap = SmartCmdArgs15.CpsProjectSupport.GetCpsProjectAllArguments(project);
+
+            var profileGrps = profileArgsMap.Select(x => {
+                var profileGrp = new CmdArgumentJson { Command = x.Key, LaunchProfile = x.Key, Items = new List<CmdArgumentJson>() };
+                profileGrp.Items.Add(new CmdArgumentJson { Command = x.Value, Enabled = true });
+                return profileGrp;
+            });
+
+            allArgs.AddRange(profileGrps);
         }
 
         private static Dictionary<Guid, ProjectArgumentsHandlers> supportedProjects = new Dictionary<Guid, ProjectArgumentsHandlers>()
@@ -255,7 +277,7 @@ namespace SmartCmdArgs.Helper
             return supportedProjects.ContainsKey(project.GetKind());
         }
 
-        public static void AddAllArguments(IVsHierarchy project, List<string> allArgs)
+        public static void AddAllArguments(IVsHierarchy project, List<CmdArgumentJson> allArgs)
         {
             if (project.IsCpsProject())
             {

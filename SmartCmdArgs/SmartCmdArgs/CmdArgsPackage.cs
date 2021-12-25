@@ -504,9 +504,7 @@ namespace SmartCmdArgs
                 Logger.Info($"Gathering commands from configurations for project '{project.GetName()}'.");
                 // if we don't have suo file data we read cmd args from the project configs
                 projectData = new ProjectDataJson();
-                projectData.Items.AddRange(
-                    ReadCommandlineArgumentsFromProject(project)
-                        .Select(cmdLineArg => new CmdArgumentJson { Command = cmdLineArg }));
+                projectData.Items.AddRange(ReadCommandlineArgumentsFromProject(project));
             }
 
             // push projectData to the ViewModel
@@ -655,11 +653,11 @@ namespace SmartCmdArgs
 
         #endregion
 
-        private IEnumerable<string> ReadCommandlineArgumentsFromProject(IVsHierarchy project)
+        private List<CmdArgumentJson> ReadCommandlineArgumentsFromProject(IVsHierarchy project)
         {
-            List<string> prjCmdArgs = new List<string>();
+            var prjCmdArgs = new List<CmdArgumentJson>();
             Helper.ProjectArguments.AddAllArguments(project, prjCmdArgs);
-            return prjCmdArgs.Where(arg => !string.IsNullOrWhiteSpace(arg)).Distinct();
+            return prjCmdArgs;
         }
 
         private void UpdateCurrentStartupProject()
