@@ -210,6 +210,9 @@ namespace SmartCmdArgs.Logic
 
         private void SaveJsonForSolution()
         {
+            if (!cmdPackage.IsVcsSupportEnabled)
+                return;
+
             string slnFilename = vsHelper.GetSolutionFilename();
             string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
 
