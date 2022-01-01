@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
@@ -389,6 +390,8 @@ namespace SmartCmdArgs
             {
                 foreach (var arg in items)
                 {
+                    sb.Append(new string(' ', level * 4));
+
                     sb.Append(arg.Command);
 
                     if (arg.Items != null)
@@ -507,9 +510,9 @@ namespace SmartCmdArgs
                 {
                     var argsStr = FormatCmdArgumentJsonListForMessage(args);
 
-                    var msgResult = MessageBox.Show($"VSC support is enabled and the project '{project.GetName()}' has no JSON-file and the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleard like the missing JSON-file dictates?", "Smart Command Line Arguments", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    var msgResult = MessageDialog.Show("Smart Command Line Arguments", $"VSC support is enabled and the project '{project.GetName()}' has no JSON-file and the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleard like the missing JSON-file dictates?", MessageDialogCommandSet.YesNo);
 
-                    if (msgResult == MessageBoxResult.Yes)
+                    if (msgResult == MessageDialogCommand.Yes)
                     {
                         Logger.Info("Will clear all data because the user saied yes, the missing json file, and enabled VCS support.");
                     }
