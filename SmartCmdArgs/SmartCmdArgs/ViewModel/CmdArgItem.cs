@@ -715,7 +715,7 @@ namespace SmartCmdArgs.ViewModel
 
         public override CmdBase Copy()
         {
-            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy()), isExpanded, ExclusiveMode);
+            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy()), isExpanded, ExclusiveMode, ProjectConfig, LaunchProfile, Delimiter);
         }
     }
 
