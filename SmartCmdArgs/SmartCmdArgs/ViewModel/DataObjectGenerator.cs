@@ -144,6 +144,9 @@ namespace SmartCmdArgs.ViewModel
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(" ")]
             public string Delimiter { get; set; } = " ";
 
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+            public bool DefaultChecked { get; set; } = false;
+
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public IEnumerable<DataObjectJsonItem> Items { get; set; } = null;
 
@@ -154,7 +157,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     if (cmd is CmdArgument arg)
                     {
-                        yield return new DataObjectJsonItem {Enabled = arg.IsChecked, Value = arg.Value};
+                        yield return new DataObjectJsonItem {Enabled = arg.IsChecked, Value = arg.Value, DefaultChecked = arg.DefaultChecked};
                     }
                     else if (cmd is CmdGroup grp)
                     {
@@ -169,7 +172,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     if (item.Items == null)
                     {
-                        yield return new CmdArgument(item.Value, item.Enabled ?? false);
+                        yield return new CmdArgument(item.Value, item.Enabled ?? false, item.DefaultChecked);
                     }
                     else
                     {

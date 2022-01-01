@@ -116,4 +116,12 @@ namespace SmartCmdArgs.ViewModel
         {
         }
     }
+
+    public class DefaultCheckedChangedEvent : GenericChangedEventArgs<bool>
+    {
+        public DefaultCheckedChangedEvent(CmdBase sender, bool oldValue, bool newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
 }

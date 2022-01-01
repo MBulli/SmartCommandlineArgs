@@ -73,6 +73,8 @@ namespace SmartCmdArgs.Logic
         public string Delimiter = " ";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<CmdArgumentJson> Items = null;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public bool DefaultChecked = false;
 
         [JsonIgnore]
         public bool Enabled = false;

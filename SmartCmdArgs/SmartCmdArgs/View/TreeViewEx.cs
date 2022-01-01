@@ -110,6 +110,11 @@ namespace SmartCmdArgs.View
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._spaceDelimiterMenuItem.Command = (ICommand)e.NewValue));
         public ICommand ToggleSpaceDelimiterCommand { get { return (ICommand)GetValue(SetSpaceDelimiterCommandProperty); } set { SetValue(SetSpaceDelimiterCommandProperty, value); } }
 
+        public static readonly DependencyProperty ToggleDefaultCheckedCommandProperty = DependencyProperty.Register(
+            nameof(ToggleDefaultCheckedCommand), typeof(ICommand), typeof(TreeViewEx),
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._defaultCheckedMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand ToggleDefaultCheckedCommand { get { return (ICommand)GetValue(ToggleDefaultCheckedCommandProperty); } set { SetValue(ToggleDefaultCheckedCommandProperty, value); } }
+
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -145,6 +150,7 @@ namespace SmartCmdArgs.View
         private MenuItem _setAsStartupProjectMenuItem;
         private MenuItem _projConfigMenuItem;
         private MenuItem _launchProfileMenuItem;
+        private MenuItem _defaultCheckedMenuItem;
 
         private TreeViewModel ViewModel => DataContext as TreeViewModel;
 
@@ -156,20 +162,21 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Paste });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
             ContextMenu.Items.Add(new Separator());
-            ContextMenu.Items.Add(_spaceDelimiterMenuItem = new MenuItem { Header = "Space Delimiter" });
-            ContextMenu.Items.Add(_exclusiveModeMenuItem = new MenuItem { Header = "Exclusive Mode" });
+            ContextMenu.Items.Add(_spaceDelimiterMenuItem = new MenuItem { Header = "Space Delimiter", IsCheckable = true });
+            ContextMenu.Items.Add(_exclusiveModeMenuItem = new MenuItem { Header = "Exclusive Mode", IsCheckable = true });
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as single Startup Project" });
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
+            ContextMenu.Items.Add(_defaultCheckedMenuItem = new MenuItem { Header = "Default Checked", IsCheckable = true });
 
-            CollapseWhenDisbaled(_spaceDelimiterMenuItem);
             CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
             CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
             CollapseWhenDisbaled(_projConfigMenuItem);
             CollapseWhenDisbaled(_launchProfileMenuItem);
+            CollapseWhenDisbaled(_defaultCheckedMenuItem);
 
             DataContextChanged += OnDataContextChanged;
             ContextMenuOpening += OnContextMenuOpening;
@@ -229,19 +236,16 @@ namespace SmartCmdArgs.View
             _exclusiveModeMenuItem.IsEnabled = false;
             _spaceDelimiterMenuItem.Visibility = Visibility.Collapsed;
 
-            _exclusiveModeMenuItem.IsCheckable = false;
-            _spaceDelimiterMenuItem.IsCheckable = false;
+            _defaultCheckedMenuItem.IsChecked = SelectedTreeViewItems.Select(x => x.Item).OfType<CmdArgument>().Any(x => x.DefaultChecked);
 
             var container = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdContainer;
             if (container != null)
             {
                 _exclusiveModeMenuItem.IsEnabled = true;
-                _exclusiveModeMenuItem.IsCheckable = true;
                 _exclusiveModeMenuItem.IsChecked = container.ExclusiveMode;
 
                 _spaceDelimiterMenuItem.Visibility = Visibility.Visible;
                 _spaceDelimiterMenuItem.IsEnabled = container.Delimiter == " " || container.Delimiter == "";
-                _spaceDelimiterMenuItem.IsCheckable = true;
                 _spaceDelimiterMenuItem.IsChecked = container.Delimiter == " ";
             }
 

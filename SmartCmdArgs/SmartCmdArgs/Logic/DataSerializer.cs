@@ -27,6 +27,8 @@ namespace SmartCmdArgs.Logic
 
                 if (item is CmdArgument arg)
                 {
+                    newElement.DefaultChecked = arg.DefaultChecked;
+
                     // not in JSON
                     newElement.Enabled = item.IsChecked ?? false;
                 }

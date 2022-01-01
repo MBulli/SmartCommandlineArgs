@@ -444,7 +444,9 @@ namespace SmartCmdArgs
                 Logger.Info($"Setting {projectData?.Items?.Count} commands for project '{project.GetName()}' from json-file.");
                 
                 var projectListViewModel = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(projectGuid);
-                
+
+                var projHasSuoData = solutionData.ProjectArguments.ContainsKey(projectGuid);
+
                 // update enabled state of the project json data (source prio: ViewModel > suo file)
                 if (projectData.Items != null)
                 {
@@ -454,8 +456,10 @@ namespace SmartCmdArgs
                     {
                         if (argumentDataFromLVM != null && argumentDataFromLVM.TryGetValue(dataFromProject.Id, out CmdArgument argFromVM))
                             dataFromProject.Enabled = argFromVM.IsChecked;
-                        else
+                        else if (projHasSuoData)
                             dataFromProject.Enabled = solutionData.CheckedArguments.Contains(dataFromProject.Id);
+                        else
+                            dataFromProject.Enabled = dataFromProject.DefaultChecked;
                     }
 
                     var containerDataFromProject = projectData.AllContainer;

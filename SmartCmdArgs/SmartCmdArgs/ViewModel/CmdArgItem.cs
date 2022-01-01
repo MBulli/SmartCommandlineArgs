@@ -729,17 +729,32 @@ namespace SmartCmdArgs.ViewModel
             set => base.IsChecked = value;
         }
 
-        public CmdArgument(Guid id, string arg, bool isChecked = false)
+        private bool defaultChecked;
+        public bool DefaultChecked { get => defaultChecked; set => OnDefaultCheckedChanged(defaultChecked, value); }
+
+        public CmdArgument(Guid id, string arg, bool isChecked = false, bool defaultChecked = false)
             : base(id, arg, isChecked)
+        {
+            DefaultChecked = defaultChecked;
+        }
+
+        public CmdArgument(string arg, bool isChecked = false, bool defaultChecked = false)
+            : this(Guid.NewGuid(), arg, isChecked, defaultChecked)
         { }
-        
-        public CmdArgument(string arg, bool isChecked = false) 
-            : this(Guid.NewGuid(), arg, isChecked)
-        { }
+
+        private void OnDefaultCheckedChanged(bool oldValue, bool newValue)
+        {
+            SetAndNotify(newValue, ref defaultChecked, nameof(DefaultChecked));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new DefaultCheckedChangedEvent(this, oldValue, newValue));
+            }
+        }
 
         public override CmdBase Copy()
         {
-            return new CmdArgument(Value, IsChecked);
+            return new CmdArgument(Value, IsChecked, DefaultChecked);
         }
     }
 }

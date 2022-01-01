@@ -77,6 +77,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand ToggleSpaceDelimiterCommand { get; }
 
+        public RelayCommand ToggleDefaultCheckedCommand { get; }
+
         public ToolWindowViewModel(CmdArgsPackage package)
         {
             CmdArgsPackage = package;
@@ -170,18 +172,19 @@ namespace SmartCmdArgs.ViewModel
             SplitArgumentCommand = new RelayCommand(() =>
             {
                 var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
-                if (selectedItem == null || !(selectedItem is CmdArgument)) return;
+                if (selectedItem is CmdArgument argument)
+                {
+                    ToolWindowHistory.SaveState();
 
-                ToolWindowHistory.SaveState();
+                    var newItems = SplitArgumentRegex.Matches(argument.Value)
+                                   .Cast<Match>()
+                                   .Select((m) => new CmdArgument(m.Value, argument.IsChecked, argument.DefaultChecked))
+                                   .ToList();
 
-                var newItems = SplitArgumentRegex.Matches(selectedItem.Value)
-                               .Cast<Match>()
-                               .Select((m) => new CmdArgument(arg: m.Value, isChecked: selectedItem.IsChecked ?? false))
-                               .ToList();
-                
-                TreeViewModel.AddItemsAt(selectedItem, newItems);
-                RemoveItems(new[] { selectedItem });
-                TreeViewModel.SelectItems(newItems);
+                    TreeViewModel.AddItemsAt(selectedItem, newItems);
+                    RemoveItems(new[] { selectedItem });
+                    TreeViewModel.SelectItems(newItems);
+                }
             }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>());
 
             NewGroupFromArgumentsCommand = new RelayCommand(() =>
@@ -261,6 +264,13 @@ namespace SmartCmdArgs.ViewModel
                         con.Delimiter = "";
                 }
             }, _ => HasSingleSelectedItemOfType<CmdContainer>());
+
+            ToggleDefaultCheckedCommand = new RelayCommand(() =>
+            {
+                var items = TreeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
+                var hasTrue = items.Any(x => x.DefaultChecked);
+                items.ForEach(x => x.DefaultChecked = !hasTrue);
+            }, _ => HasSelectedItemOfType<CmdArgument>());
         }
 
 
@@ -464,7 +474,7 @@ namespace SmartCmdArgs.ViewModel
             foreach (var item in list)
             {
                 if (item.Items == null)
-                    result = new CmdArgument(item.Id, item.Command, item.Enabled);
+                    result = new CmdArgument(item.Id, item.Command, item.Enabled, item.DefaultChecked);
                 else
                     result = new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.LaunchProfile, item.Delimiter);
 
