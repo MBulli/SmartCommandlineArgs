@@ -252,14 +252,14 @@ namespace SmartCmdArgs.Helper
         {
             // Should only be called in VS 2017 or higher
             // .Net Core 2 is not supported by VS 2015, so this should not cause problems
-            SmartCmdArgs15.CpsProjectSupport.SetCpsProjectArguments(project, arguments);
+            CpsProjectSupport.SetCpsProjectArguments(project, arguments);
         }
 
         private static void GetCpsProjectAllArguments(EnvDTE.Project project, List<CmdArgumentJson> allArgs)
         {
             // Should only be called in VS 2017 or higher
             // see SetCpsProjectArguments
-            var profileArgsMap = SmartCmdArgs15.CpsProjectSupport.GetCpsProjectAllArguments(project);
+            var profileArgsMap = CpsProjectSupport.GetCpsProjectAllArguments(project);
 
             var profileGrps = profileArgsMap.Select(x => {
                 var profileGrp = new CmdArgumentJson { Command = x.Key, LaunchProfile = x.Key, Items = new List<CmdArgumentJson>() };

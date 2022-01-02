@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--  This is the file that defines the actual layout and type of the commands.
+        It is divided in different sections (e.g. command definition, command
+        placement, ...), with each defining a specific set of properties.
+        See the comment before each section for more details about how to
+        use it. -->
+
+  <!--  The VSCT compiler (the tool that translates this file into the binary
+        format that VisualStudio will consume) has the ability to run a preprocessor
+        on the vsct file; this preprocessor is (usually) the C++ preprocessor, so
+        it is possible to define includes and macros with the same syntax used
+        in C++ files. Using this ability of the compiler here, we include some files
+        defining some of the constants that we will use inside the file. -->
+
+  <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
+  <Extern href="stdidcmd.h"/>
+
+  <!--This header contains the command ids for the menus provided by the shell. -->
+  <Extern href="vsshlids.h"/>
+
+  <Include href="KnownImageIds.vsct"/>
+  
+  <!--The Commands section is where commands, menus, and menu groups are defined.
+      This section uses a Guid to identify the package that provides the command defined inside it. -->
+  <Commands package="guidCmdArgsToolWindowPackage">
+    <!-- Inside this section we have different sub-sections: one for the menus, another
+    for the menu groups, one for the buttons (the actual commands), one for the combos
+    and the last one for the bitmaps used. Each element is identified by a command id that
+    is a unique pair of guid and numeric identifier; the guid part of the identifier is usually
+    called "command set" and is used to group different command inside a logically related
+    group; your package should define its own command set in order to avoid collisions
+    with command ids defined by other packages. -->
+
+    <Menus>
+      <Menu guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" type="ToolWindowToolbar">
+        <CommandFlag>DefaultDocked</CommandFlag>
+        <Strings>
+          <ButtonText>Test Toolbar</ButtonText>
+          <CommandName>Test Toolbar</CommandName>
+        </Strings>
+      </Menu>
+    </Menus>
+
+    <Groups>
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" priority="0x0000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" priority="0x0000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" priority="0x0000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarSettings" priority="0x0000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
+    </Groups>
+    
+    <!--Buttons section. -->
+    <!--This section defines the elements the user can interact with, like a menu command or a button
+        or combo box in a toolbar. -->
+    <Buttons>
+      <!--To define a menu group you have to specify its ID, the parent menu and its display priority.
+          The command is visible and enabled by default. If you need to change the visibility, status, etc, you can use
+          the CommandFlag node.
+          You can add more than one CommandFlag node e.g.:
+              <CommandFlag>DefaultInvisible</CommandFlag>
+              <CommandFlag>DynamicVisibility</CommandFlag>
+          If you do not want an image next to your command, remove the Icon node /> -->
+      <Button guid="guidVSMenuCmdSet" id="ToolWindowCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
+        <Icon guid="guidImages" id="bmpVSMenuIcon" />
+        <Strings>
+          <ButtonText>Command Line Arguments</ButtonText>
+        </Strings>
+      </Button>
+    
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
+        <Icon guid="guidToolBarImages" id="bmpAddIcon" />
+        <Strings>
+          <ButtonText>Add new row</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
+        <Icon guid="ImageCatalogGuid" id="AddFolder" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Add new group</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
+        <Icon guid="guidToolBarImages" id="bmpRemoveIcon" />
+        <Strings>
+          <ButtonText>Remove selected rows</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" />
+        <Icon guid="ImageCatalogGuid" id="MoveUp" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Move selected rows up</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupMove" />
+        <Icon guid="ImageCatalogGuid" id="MoveDown" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Move selected rows down</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarCopyCommandlineCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" />
+        <Icon guid="guidToolBarImages" id="bmpCopyIcon" />
+        <Strings>
+          <ButtonText>Copy whole command line to clipboard</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarShowAllProjectsCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" />
+        <Icon guid="ImageCatalogGuid" id="CheckBoxList" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Show all projects</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarOpenSettingsCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarSettings" />
+        <Icon guid="ImageCatalogGuid" id="Property" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Settings</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+
+    <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
+    <Bitmaps>
+      <!--  The bitmap id is defined in a way that is a little bit different from the others:
+            the declaration starts with a guid for the bitmap strip, then there is the resource id of the
+            bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
+            inside a button definition. An important aspect of this declaration is that the element id
+            must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
+      <Bitmap guid="guidToolBarImages" href="Resources\ToolBarIconStrip.png" usedList="bmpAddIcon, bmpRemoveIcon, bmpUpArrowIcon, bmpDownArrowIcon, bmpCopyIcon"/>
+      <Bitmap guid="guidImages" href="Resources\VSMeuIcon.png" usedList="bmpVSMenuIcon"/>
+    </Bitmaps>
+  </Commands>
+
+  <KeyBindings>
+    <!-- sould work with guidKeyBindingsCmdSet and KeyBindingAddCmdId but doesn't -->
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddCommandId" editor="guidToolWindow" key1="VK_INSERT"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupCommandId" editor="guidToolWindow" key1="VK_INSERT" mod1="ALT"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveUpCommandId" editor="guidToolWindow" key1="VK_UP" mod1="CONTROL"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarMoveDownCommandId" editor="guidToolWindow" key1="VK_DOWN" mod1="CONTROL"/>
+    <KeyBinding guid="guidCmdArgsToolBarCmdSet" id="ToolbarCopyCommandlineCommandId" editor="guidToolWindow" key1="C" mod1="CONTROL ALT"/>
+  </KeyBindings>
+
+  <Symbols>
+    <!-- This is the package guid. -->
+    <GuidSymbol name="guidCmdArgsToolWindowPackage" value="{131b0c0a-5dd0-4680-b261-86ab5387b86e}" />
+
+    <GuidSymbol name="guidToolWindow" value="{a21b35ed-5c13-4d55-a3d2-71054c4e9540}" />
+    
+    <!-- This is the guid used to group exteranl Visual Studio commands together -->
+    <GuidSymbol name="guidVSMenuCmdSet" value="{C5334667-5DDA-4F4A-BC24-6E0084DC5068}">
+      <IDSymbol name="ToolWindowCommandId" value="0x0100" />
+    </GuidSymbol>
+    
+    <!-- This is the guid used to group toolbar commands together -->
+    <GuidSymbol name="guidCmdArgsToolBarCmdSet" value="{53D59879-7413-491E-988C-938117B773E3}">
+      <IDSymbol name="ToolbarAddCommandId" value="0x1100"/>
+      <IDSymbol name="ToolbarRemoveCommandId" value="0x1101"/>
+      <IDSymbol name="ToolbarMoveUpCommandId" value="0x1102"/>
+      <IDSymbol name="ToolbarMoveDownCommandId" value="0x1103"/>
+      <IDSymbol name="ToolbarCopyCommandlineCommandId" value="0x1104"/>
+      <IDSymbol name="ToolbarAddGroupCommandId" value="0x1105"/>
+      <IDSymbol name="ToolbarShowAllProjectsCommandId" value="0x1106"/>
+      <IDSymbol name="ToolbarOpenSettingsCommandId" value="0x1107"/>
+      
+      <IDSymbol name="TWToolbar" value="0x1000" />
+      <IDSymbol name="TWToolbarGroupAddRemove" value="0x1050" />
+      <IDSymbol name="TWToolbarGroupMove" value="0x1051" />
+      <IDSymbol name="TWToolbarEdit" value="0x1052" />
+      <IDSymbol name="TWToolbarSettings" value="0x1053" />
+    </GuidSymbol>
+    
+    
+    <GuidSymbol name="guidImages" value="{B7F63ABD-939F-4912-912E-E98C7CC9EF6F}" >
+      <IDSymbol name="bmpVSMenuIcon" value="1" />
+    </GuidSymbol>
+    
+    <GuidSymbol name="guidToolBarImages" value="{F87D8310-848A-43A7-9FAB-AFB633CB98C3}" >
+      <IDSymbol name="bmpAddIcon" value="1" />
+      <IDSymbol name="bmpRemoveIcon" value="2" />
+      <IDSymbol name="bmpUpArrowIcon" value="3" />
+      <IDSymbol name="bmpDownArrowIcon" value="4" />
+      <IDSymbol name="bmpCopyIcon" value="5" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>

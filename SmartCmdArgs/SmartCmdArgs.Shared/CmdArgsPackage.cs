@@ -264,7 +264,7 @@ namespace SmartCmdArgs
 
             string activeLaunchProfile = null;
             if (project.IsCpsProject())
-                activeLaunchProfile = SmartCmdArgs15.CpsProjectSupport.GetActiveLaunchProfileName(project.GetProject());
+                activeLaunchProfile = CpsProjectSupport.GetActiveLaunchProfileName(project.GetProject());
 
             string MacroEvaluation(string arg)
             {
@@ -311,7 +311,7 @@ namespace SmartCmdArgs
             List<string> launchProfiles = null;
             if (project?.IsCpsProject() == true)
             {
-                launchProfiles = SmartCmdArgs15.CpsProjectSupport.GetLaunchProfileNames(project.GetProject())?.ToList();
+                launchProfiles = CpsProjectSupport.GetLaunchProfileNames(project.GetProject())?.ToList();
             }
 
             return launchProfiles ?? new List<string>();

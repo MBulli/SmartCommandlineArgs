@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>676c8571-fc9d-43dd-948e-897817a07039</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SmartCmdArgs.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CmdArgsOptionPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CmdArgsPackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\BindingListEx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\CpsProjectSupport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\DelayExecution.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\FileSystemWatcherDisabledContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\IVsHierarchyExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\Logger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableCollectionEx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableItemsRangeCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableRangeCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\ProjectArguments.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\PropertyChangedBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\RelayCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\SymbolicLinkUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\TreeHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logic\DataSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logic\FileStorage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logic\JsonDataObjects.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logic\ProjectDataSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logic\SettingsSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logic\SolutionDataSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logic\SuoDataSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToolWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdArgItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\DataObjectGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\SettingsViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ToolWindowHistory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ToolWindowViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\TreeEvents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\TreeViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\ArgumentItemView.xaml.cs">
+      <DependentUpon>ArgumentItemView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BooleanBoldFontConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BoolToVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ConverterBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\EmptyToVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ItemMonikerConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ItemVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\MultiConverterBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\NullToVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\NullToVisibilityMultiConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\StringConcatConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\TreeLevelMarginConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\DragDrop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\DropTargetAdorner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\SettingsControl.xaml.cs">
+      <DependentUpon>SettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\SettingsDialog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\ToggleButtonEx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\ToolWindowControl.xaml.cs">
+      <DependentUpon>ToolWindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\TreeItemStyleSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\TreeViewEx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)VisualStudioHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)View\ArgumentItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\SettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\ToolWindowControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\TreeViewStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+</Project>
