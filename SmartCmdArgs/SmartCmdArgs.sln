@@ -9,9 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCmdArgs17", "SmartCmdA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCmdArgs16", "SmartCmdArgs16\SmartCmdArgs16.csproj", "{BE0ACAF0-CBF3-47B3-BC3F-7A5CBBABB7AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCmdArgs15", "SmartCmdArgs15\SmartCmdArgs15.csproj", "{745982F0-9E21-4F74-B349-788957F07D38}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{676c8571-fc9d-43dd-948e-897817a07039}*SharedItemsImports = 13
+		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{745982f0-9e21-4f74-b349-788957f07d38}*SharedItemsImports = 4
 		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{be0acaf0-cbf3-47b3-bc3f-7a5cbbabb7ae}*SharedItemsImports = 4
 		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{fc5fa6d9-ad78-4915-b47c-af9eeae5dd86}*SharedItemsImports = 4
 	EndGlobalSection
@@ -38,6 +41,14 @@ Global
 		{BE0ACAF0-CBF3-47B3-BC3F-7A5CBBABB7AE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BE0ACAF0-CBF3-47B3-BC3F-7A5CBBABB7AE}.Release|x86.ActiveCfg = Release|x86
 		{BE0ACAF0-CBF3-47B3-BC3F-7A5CBBABB7AE}.Release|x86.Build.0 = Release|x86
+		{745982F0-9E21-4F74-B349-788957F07D38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{745982F0-9E21-4F74-B349-788957F07D38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{745982F0-9E21-4F74-B349-788957F07D38}.Debug|x86.ActiveCfg = Debug|x86
+		{745982F0-9E21-4F74-B349-788957F07D38}.Debug|x86.Build.0 = Debug|x86
+		{745982F0-9E21-4F74-B349-788957F07D38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{745982F0-9E21-4F74-B349-788957F07D38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{745982F0-9E21-4F74-B349-788957F07D38}.Release|x86.ActiveCfg = Release|x86
+		{745982F0-9E21-4F74-B349-788957F07D38}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
