@@ -337,6 +337,9 @@ namespace SmartCmdArgs
                 // Get the QueryEditQuerySave service
                 IVsQueryEditQuerySave2 queryEditQuerySave = package.GetService<SVsQueryEditQuerySave, IVsQueryEditQuerySave2>();
 
+                if (queryEditQuerySave == null)
+                    return false;
+
                 // Now call the QueryEdit method to find the edit status of this file
                 string[] documents = { fileName };
                 uint result;
