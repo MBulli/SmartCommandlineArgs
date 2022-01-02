@@ -281,6 +281,17 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        public void ResetToDefaultChecked()
+        {
+            var selectedItems = SelectedItems.ToList();
+
+            var selectedArgs = new HashSet<CmdArgument>();
+            selectedArgs.AddRange(selectedItems.OfType<CmdContainer>().SelectMany(con => con.AllArguments));
+            selectedArgs.AddRange(selectedItems.OfType<CmdArgument>());
+
+            selectedArgs.ForEach(arg => arg.IsChecked = arg.DefaultChecked);
+        }
+
         public void CancelEditMode()
         {
             if (IsInEditMode)

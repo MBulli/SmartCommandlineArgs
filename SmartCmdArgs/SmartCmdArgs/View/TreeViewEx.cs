@@ -115,6 +115,11 @@ namespace SmartCmdArgs.View
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._defaultCheckedMenuItem.Command = (ICommand)e.NewValue));
         public ICommand ToggleDefaultCheckedCommand { get { return (ICommand)GetValue(ToggleDefaultCheckedCommandProperty); } set { SetValue(ToggleDefaultCheckedCommandProperty, value); } }
 
+        public static readonly DependencyProperty ResetToDefaultCheckedCommandProperty = DependencyProperty.Register(
+            nameof(ResetToDefaultCheckedCommand), typeof(ICommand), typeof(TreeViewEx),
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._resetToDefaultMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand ResetToDefaultCheckedCommand { get { return (ICommand)GetValue(ResetToDefaultCheckedCommandProperty); } set { SetValue(ResetToDefaultCheckedCommandProperty, value); } }
+
         protected override DependencyObject GetContainerForItemOverride() => new TreeViewItemEx(this);
         protected override bool IsItemItsOwnContainerOverride(object item) => item is TreeViewItemEx;
 
@@ -151,6 +156,7 @@ namespace SmartCmdArgs.View
         private MenuItem _projConfigMenuItem;
         private MenuItem _launchProfileMenuItem;
         private MenuItem _defaultCheckedMenuItem;
+        private MenuItem _resetToDefaultMenuItem;
 
         private TreeViewModel ViewModel => DataContext as TreeViewModel;
 
@@ -170,6 +176,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
             ContextMenu.Items.Add(_defaultCheckedMenuItem = new MenuItem { Header = "Default Checked", IsCheckable = true });
+            ContextMenu.Items.Add(_resetToDefaultMenuItem = new MenuItem { Header = "Reset to default checked" });
 
             CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
@@ -177,6 +184,7 @@ namespace SmartCmdArgs.View
             CollapseWhenDisbaled(_projConfigMenuItem);
             CollapseWhenDisbaled(_launchProfileMenuItem);
             CollapseWhenDisbaled(_defaultCheckedMenuItem);
+            CollapseWhenDisbaled(_resetToDefaultMenuItem);
 
             DataContextChanged += OnDataContextChanged;
             ContextMenuOpening += OnContextMenuOpening;

@@ -79,6 +79,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand ToggleDefaultCheckedCommand { get; }
 
+        public RelayCommand ResetToDefaultCheckedCommand { get; }
+
         public ToolWindowViewModel(CmdArgsPackage package)
         {
             CmdArgsPackage = package;
@@ -271,6 +273,13 @@ namespace SmartCmdArgs.ViewModel
                 var hasTrue = items.Any(x => x.DefaultChecked);
                 items.ForEach(x => x.DefaultChecked = !hasTrue);
             }, _ => HasSelectedItemOfType<CmdArgument>());
+
+            ResetToDefaultCheckedCommand = new RelayCommand(() =>
+            {
+                ToolWindowHistory.SaveStateAndPause();
+                TreeViewModel.ResetToDefaultChecked();
+                ToolWindowHistory.Resume();
+            }, _ => HasSelectedItems());
         }
 
 

@@ -40,7 +40,8 @@
                           SetLaunchProfileCommand="{Binding SetLaunchProfileCommand}"
                           ToggleExclusiveModeCommand="{Binding ToggleExclusiveModeCommand}"
                           ToggleSpaceDelimiterCommand="{Binding ToggleSpaceDelimiterCommand}"
-                          ToggleDefaultCheckedCommand="{Binding ToggleDefaultCheckedCommand}">
+                          ToggleDefaultCheckedCommand="{Binding ToggleDefaultCheckedCommand}"
+                          ResetToDefaultCheckedCommand="{Binding ResetToDefaultCheckedCommand}">
             <local:TreeViewEx.ItemContainerStyleSelector>
                 <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
                                             GroupItemStyle="{StaticResource GroupItemStyle}"
