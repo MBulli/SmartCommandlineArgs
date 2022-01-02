@@ -1,0 +1,19 @@
+{
+  "FileVersion": 2,
+  "Id": "be0acaf0-cbf3-47b3-bc3f-7a5cbbabb7ae",
+  "Items": [
+    {
+      "Id": "d197ecb2-3747-437f-965e-9a973ddde27a",
+      "Command": "\"$(ProjectDir)..\\..\\TestProjects\\TestProjects.sln\""
+    },
+    {
+      "Id": "34e01b8f-5ccf-42ec-a4a7-893992b0bdef",
+      "Command": "/RootSuffix Exp",
+      "DefaultChecked": true
+    },
+    {
+      "Id": "173c6e0c-7a71-43d7-b6ca-98d695a62b15",
+      "Command": "/Log"
+    }
+  ]
+}

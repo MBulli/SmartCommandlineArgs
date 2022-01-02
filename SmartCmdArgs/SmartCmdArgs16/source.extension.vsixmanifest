@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+    <Metadata>
+        <Identity Id="SmartCmdArgs16.6e0b005f-d482-4341-97c0-7e78c25c4bb3"  Version="2.3.2" Language="en-US" Publisher="Irame &amp; MBulli" />
+        <DisplayName>Smart Command Line Arguments</DisplayName>
+        <Description xml:space="preserve">A Visual Studio Extension which aims to provide a better UI to manage your command line arguments.</Description>
+        <MoreInfo>https://github.com/MBulli/SmartCommandlineArgs</MoreInfo>
+        <GettingStartedGuide>Open the window via: View → Other Windows → Commandline Arguments</GettingStartedGuide>
+        <Icon>Resources\BigIcon.png</Icon>
+        <PreviewImage>Resources\vsix_preview_image.png</PreviewImage>
+        <Tags>Commandline Command Line Arguments cmd project</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    </Dependencies>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    </Assets>
+</PackageManifest>
