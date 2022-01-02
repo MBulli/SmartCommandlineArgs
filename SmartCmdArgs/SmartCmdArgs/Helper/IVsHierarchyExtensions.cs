@@ -45,7 +45,19 @@ namespace SmartCmdArgs.Helper
             // see: https://github.com/Microsoft/VSProjectSystem/blob/master/doc/automation/detect_whether_a_project_is_a_CPS_project.md
             return hierarchy.IsCapabilityMatch("CPS");
         }
-        
+
+        /// <summary>
+        /// Returns true if the hierachy object is a shared project (C#, C++ or VB).
+        /// see: https://docs.microsoft.com/en-us/xamarin/cross-platform/app-fundamentals/shared-projects
+        /// </summary>
+        /// <param name="hierarchy"></param>
+        /// <returns></returns>
+        public static bool IsSharedAssetsProject(this IVsHierarchy hierarchy)
+        {
+            // see: https://docs.microsoft.com/en-us/visualstudio/extensibility/managing-universal-windows-projects
+            return hierarchy.IsCapabilityMatch("SharedAssetsProject");
+        }
+
         public static Guid GetGuid(this IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

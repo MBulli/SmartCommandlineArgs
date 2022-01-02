@@ -274,6 +274,12 @@ namespace SmartCmdArgs.Helper
             if (project.GetGuid() == new Guid("a7a2a36c-3c53-4ccb-b52e-425623e2dda5"))
                 return false;
 
+            // Issue #113:
+            // Shared projects are not supported as they are not runnable.
+            // However, they share the same project kind GUID with other projects.
+            if (project.IsSharedAssetsProject())
+                return false;
+
             return supportedProjects.ContainsKey(project.GetKind());
         }
 
@@ -281,7 +287,7 @@ namespace SmartCmdArgs.Helper
         {
             if (project.IsCpsProject())
             {
-                Logger.Info($"Reading arguments on CPS project of type '{project.GetKind()}'.");
+                Logger.Info($"Reading arguments on CPS project '{project.GetGuid()}' of type '{project.GetKind()}'.");
                 GetCpsProjectAllArguments(project.GetProject(), allArgs);
             }
             else
