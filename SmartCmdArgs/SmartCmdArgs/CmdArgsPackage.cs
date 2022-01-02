@@ -510,7 +510,7 @@ namespace SmartCmdArgs
                 {
                     var argsStr = FormatCmdArgumentJsonListForMessage(args);
 
-                    var msgResult = MessageDialog.Show("Smart Command Line Arguments", $"VSC support is enabled, and the project '{project.GetName()}' has no associated JSON file but the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleared like the missing JSON file dictates?", MessageDialogCommandSet.YesNo);
+                    var msgResult = MessageDialog.Show("Smart Command Line Arguments extension", $"VSC support is enabled, and the project '{project.GetName()}' has no associated JSON file but the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleared like the missing JSON file dictates?", MessageDialogCommandSet.YesNo);
 
                     if (msgResult == MessageDialogCommand.Yes)
                     {
