@@ -510,21 +510,21 @@ namespace SmartCmdArgs
                 {
                     var argsStr = FormatCmdArgumentJsonListForMessage(args);
 
-                    var msgResult = MessageDialog.Show("Smart Command Line Arguments", $"VSC support is enabled and the project '{project.GetName()}' has no JSON-file and the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleard like the missing JSON-file dictates?", MessageDialogCommandSet.YesNo);
+                    var msgResult = MessageDialog.Show("Smart Command Line Arguments", $"VSC support is enabled, and the project '{project.GetName()}' has no associated JSON file but the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleared like the missing JSON file dictates?", MessageDialogCommandSet.YesNo);
 
                     if (msgResult == MessageDialogCommand.Yes)
                     {
-                        Logger.Info("Will clear all data because the user saied yes, the missing json file, and enabled VCS support.");
+                        Logger.Info("Will clear all data because VCS support is enabled, the json file is missing and the user confirmed it.");
                     }
                     else
                     {
-                        Logger.Info($"User didn't want to clear the arguments due to missing JSON-file, therefore gathering commands from configurations for project '{project.GetName()}'.");
+                        Logger.Info($"VCS support is enabled but the JSON file is missing. User don't want to clear the project arguments. Therefore, commands will be gathered from configurations for project '{project.GetName()}'.");
                         projectData.Items.AddRange(args);
                     }
                 }
                 else
                 {
-                    Logger.Info("Using empty project data because of epty project configuration, missing json file, and enabled VCS support.");
+                    Logger.Info("VCS support is enabled but the JSON file is missing. Will use empty project data because of empty project configuration.");
                 }
             }
             // we try to read the suo file data
