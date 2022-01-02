@@ -176,7 +176,12 @@ namespace SmartCmdArgs.ViewModel
                     // set the project as focused because it does not appear in the tree (UI)
                     // and therfore it cant be set as focused by the UI
                     project.IsFocusedItem = true;
-                    
+
+                    // selected must be false because it isn't set to false by the tree (UI)
+                    // and if it would be true, then for each action where selected
+                    // elements are used, all elements of this project would be used
+                    project.IsSelected = false;
+
                     TreeItems = project.Items;
                 }
                 else
