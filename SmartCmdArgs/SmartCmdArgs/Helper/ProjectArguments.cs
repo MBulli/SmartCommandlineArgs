@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -124,6 +124,13 @@ namespace SmartCmdArgs.Helper
                 {
                     googleAndroidDebugger.SetPropertyValue( "LaunchFlags", arguments );
                 }              
+
+                dynamic gamingDesktopDebugger = vcCfg.Rules.Item("GamingDesktopDebugger"); // is IVCRulePropertyStorage
+                if (gamingDesktopDebugger != null)
+                {
+                    gamingDesktopDebugger.SetPropertyValue("CommandLineArgs", arguments);
+                }
+
             }
             else { Logger.Warn("SetVCProjEngineArguments: VCProject?.ActiveConfiguration? returned null"); }
         }
