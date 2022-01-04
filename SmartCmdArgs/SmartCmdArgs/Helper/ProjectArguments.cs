@@ -187,7 +187,7 @@ namespace SmartCmdArgs.Helper
                     dynamic linuxWSLDebugger = cfg.Rules.Item("LinuxWSLDebugger"); // is IVCRulePropertyStorage
                     if (linuxWSLDebugger != null)
                     {
-                        var remoteArguments = windowsRemoteDebugger.GetUnevaluatedPropertyValue("RemoteDebuggerCommandArguments");
+                        var remoteArguments = linuxWSLDebugger.GetUnevaluatedPropertyValue("RemoteDebuggerCommandArguments");
                         if (!string.IsNullOrEmpty(remoteArguments))
                         {
                             items.Add(remoteArguments);
