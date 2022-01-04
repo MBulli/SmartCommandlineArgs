@@ -21,7 +21,8 @@ namespace SmartCmdArgs.Logic
             {
                 VcsSupportEnabled = vm.VcsSupportEnabled,
                 UseSolutionDir = vm.UseSolutionDir,
-                MacroEvaluationEnabled = vm.MacroEvaluationEnabled
+                MacroEvaluationEnabled = vm.MacroEvaluationEnabled,
+                ShowDialogIfNoConfig = vm.ShowDialogIfNoConfig
             };
 
             if (data.IsDefault())

@@ -17,12 +17,14 @@ namespace SmartCmdArgs.Logic
         public bool VcsSupportEnabled = true;
         public bool UseSolutionDir = false;
         public bool MacroEvaluationEnabled = true;
+        public bool ShowDialogIfNoConfig = false;
 
         public bool IsDefault()
         {
             return VcsSupportEnabled == true
                 && UseSolutionDir == false
-                && MacroEvaluationEnabled == true;
+                && MacroEvaluationEnabled == true
+                && ShowDialogIfNoConfig == false;
         }
     }
 

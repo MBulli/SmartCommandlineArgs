@@ -45,5 +45,10 @@ namespace SmartCmdArgs.View
             parentWindow.DialogResult = true;
             parentWindow.Close();
         }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

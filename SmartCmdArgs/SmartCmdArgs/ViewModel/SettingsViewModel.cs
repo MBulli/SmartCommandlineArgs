@@ -11,6 +11,7 @@ namespace SmartCmdArgs.ViewModel
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
+        private bool _showDialogIfNoConfig;
 
         public bool VcsSupportEnabled
         {
@@ -51,9 +52,23 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        public bool ShowDialogIfNoConfig
+        {
+            get => _showDialogIfNoConfig;
+            set
+            {
+                if (_showDialogIfNoConfig != value)
+                {
+                    _showDialogIfNoConfig = value;
+                    ShowDialogIfNoConfigChanged?.Invoke(this, value);
+                }
+            }
+        }
+
         public event EventHandler<bool> VcsSupportEnabledChanged;
         public event EventHandler<bool> UseSolutionDirChanged;
         public event EventHandler<bool> MacroEvaluationEnabledChanged;
+        public event EventHandler<bool> ShowDialogIfNoConfigChanged;
 
         public SettingsViewModel() { }
 
@@ -67,6 +82,7 @@ namespace SmartCmdArgs.ViewModel
             VcsSupportEnabled = other.VcsSupportEnabled;
             UseSolutionDir = other.UseSolutionDir;
             MacroEvaluationEnabled = other.MacroEvaluationEnabled;
+            ShowDialogIfNoConfig = other.ShowDialogIfNoConfig;
         }
     }
 }

@@ -82,7 +82,8 @@ namespace SmartCmdArgs
         public bool IsVcsSupportEnabled => ToolWindowViewModel.SettingsViewModel.VcsSupportEnabled;
         private bool IsMacroEvaluationEnabled => ToolWindowViewModel.SettingsViewModel.MacroEvaluationEnabled;
         private bool IsUseMonospaceFontEnabled => GetDialogPage<CmdArgsOptionPage>().UseMonospaceFont;
-        public bool IsUseSolutionDirEnabled => ToolWindowViewModel.SettingsViewModel.UseSolutionDir; 
+        public bool IsUseSolutionDirEnabled => ToolWindowViewModel.SettingsViewModel.UseSolutionDir;
+        private bool IsShowDialogIfNoConfig => ToolWindowViewModel.SettingsViewModel.ShowDialogIfNoConfig;
 
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.
@@ -375,6 +376,7 @@ namespace SmartCmdArgs
             var settings = fileStorage.ReadSettings();
             var vm = ToolWindowViewModel.SettingsViewModel;
 
+            vm.ShowDialogIfNoConfig = settings.ShowDialogIfNoConfig;
             vm.MacroEvaluationEnabled = settings.MacroEvaluationEnabled;
             vm.UseSolutionDir = settings.UseSolutionDir;
             vm.VcsSupportEnabled = settings.VcsSupportEnabled;
@@ -506,29 +508,32 @@ namespace SmartCmdArgs
             }
             else if (IsVcsSupportEnabled)
             {
-                var args = ReadCommandlineArgumentsFromProject(project).ToList();
-
                 projectData = new ProjectDataJson();
 
-                if (args.Any())
+                if (IsShowDialogIfNoConfig)
                 {
-                    var argsStr = FormatCmdArgumentJsonListForMessage(args);
+                    var args = ReadCommandlineArgumentsFromProject(project).ToList();
 
-                    var msgResult = MessageDialog.Show("Smart Command Line Arguments extension", $"VSC support is enabled, and the project '{project.GetName()}' has no associated JSON file but the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleared like the missing JSON file dictates?", MessageDialogCommandSet.YesNo);
-
-                    if (msgResult == MessageDialogCommand.Yes)
+                    if (args.Any())
                     {
-                        Logger.Info("Will clear all data because VCS support is enabled, the json file is missing and the user confirmed it.");
+                        var argsStr = FormatCmdArgumentJsonListForMessage(args);
+
+                        var msgResult = MessageDialog.Show("Smart Command Line Arguments extension", $"VSC support is enabled, and the project '{project.GetName()}' has no associated JSON file but the following arguments in the project configuration:\n\n{argsStr}\n\nShould they be cleared like the missing JSON file dictates?", MessageDialogCommandSet.YesNo);
+
+                        if (msgResult == MessageDialogCommand.Yes)
+                        {
+                            Logger.Info("Will clear all data because VCS support is enabled, the json file is missing and the user confirmed it.");
+                        }
+                        else
+                        {
+                            Logger.Info($"VCS support is enabled but the JSON file is missing. User don't want to clear the project arguments. Therefore, commands will be gathered from configurations for project '{project.GetName()}'.");
+                            projectData.Items.AddRange(args);
+                        }
                     }
                     else
                     {
-                        Logger.Info($"VCS support is enabled but the JSON file is missing. User don't want to clear the project arguments. Therefore, commands will be gathered from configurations for project '{project.GetName()}'.");
-                        projectData.Items.AddRange(args);
+                        Logger.Info("VCS support is enabled but the JSON file is missing. Will use empty project data because of empty project configuration.");
                     }
-                }
-                else
-                {
-                    Logger.Info("VCS support is enabled but the JSON file is missing. Will use empty project data because of empty project configuration.");
                 }
             }
             // we try to read the suo file data
