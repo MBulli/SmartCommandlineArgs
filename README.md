@@ -15,6 +15,8 @@ Visual Studio 2015, 2017 and 2019 and the following project types are supported:
 - C/C++
 - Node.js
 - Python
+- Remote WSL Debugger
+- Android Native Debugger
 
 If you're using Cmake make sure to read the [Cmake support wiki page](https://github.com/MBulli/SmartCommandlineArgs/wiki/Cmake-support "Cmake").
 
