@@ -64,7 +64,7 @@ namespace SmartCmdArgs.Logic
             }
         }
 
-        public void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName, Action hack)
+        public void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName)
         {
             if (cmdPackage.IsUseSolutionDirEnabled)
                 return;
@@ -84,7 +84,7 @@ namespace SmartCmdArgs.Logic
                     {
                         File.Delete(oldFileName);
 
-                        hack(); // TODO
+                        FireFileStorageChanged(project);
                     }
                     else if (File.Exists(oldFileName))
                     {
@@ -451,7 +451,7 @@ namespace SmartCmdArgs.Logic
         /// </summary>
         public readonly IVsHierarchy Project;
 
-        public bool IsSolutionWide => Project != null;
+        public bool IsSolutionWide => Project == null;
 
         public FileStorageChangedEventArgs(IVsHierarchy project)
         {

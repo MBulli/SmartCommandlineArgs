@@ -658,12 +658,7 @@ namespace SmartCmdArgs
         {
             Logger.Info($"VS-Event: Project '{e.OldProjectName}' renamed to '{e.Project.GetName()}'.");
 
-            fileStorage.RenameProject(e.Project, e.OldProjectDir, e.OldProjectName, () =>
-            {
-                ToolWindowHistory.SaveState();
-
-                UpdateCommandsForProject(e.Project);
-            });
+            fileStorage.RenameProject(e.Project, e.OldProjectDir, e.OldProjectName);
 
             ToolWindowViewModel.RenameProject(e.Project);
         }
