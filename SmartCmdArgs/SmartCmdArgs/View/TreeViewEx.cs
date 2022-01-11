@@ -150,6 +150,7 @@ namespace SmartCmdArgs.View
 
         private MenuItem _spaceDelimiterMenuItem;
         private MenuItem _exclusiveModeMenuItem;
+        private Separator _spacer1MenuItem;
         private MenuItem _splitArgumentMenuItem;
         private MenuItem _newGroupFromArgumentsMenuItem;
         private MenuItem _setAsStartupProjectMenuItem;
@@ -170,6 +171,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_spaceDelimiterMenuItem = new MenuItem { Header = "Space Delimiter", IsCheckable = true });
             ContextMenu.Items.Add(_exclusiveModeMenuItem = new MenuItem { Header = "Exclusive Mode", IsCheckable = true });
+            ContextMenu.Items.Add(_spacer1MenuItem = new Separator());
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as single Startup Project" });
@@ -241,20 +243,26 @@ namespace SmartCmdArgs.View
 
             _projConfigMenuItem.IsEnabled = false;
             _launchProfileMenuItem.IsEnabled = false;
-            _exclusiveModeMenuItem.IsEnabled = false;
-            _spaceDelimiterMenuItem.Visibility = Visibility.Collapsed;
 
             _defaultCheckedMenuItem.IsChecked = SelectedTreeViewItems.Select(x => x.Item).OfType<CmdArgument>().Any(x => x.DefaultChecked);
 
             var container = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdContainer;
             if (container != null)
             {
+                _spacer1MenuItem.Visibility = Visibility.Visible;
+
                 _exclusiveModeMenuItem.IsEnabled = true;
                 _exclusiveModeMenuItem.IsChecked = container.ExclusiveMode;
 
                 _spaceDelimiterMenuItem.Visibility = Visibility.Visible;
                 _spaceDelimiterMenuItem.IsEnabled = container.Delimiter == " " || container.Delimiter == "";
                 _spaceDelimiterMenuItem.IsChecked = container.Delimiter == " ";
+            }
+            else
+            {
+                _spacer1MenuItem.Visibility = Visibility.Collapsed;
+                _exclusiveModeMenuItem.IsEnabled = false;
+                _spaceDelimiterMenuItem.Visibility = Visibility.Collapsed;
             }
 
             if (container is CmdGroup group)
