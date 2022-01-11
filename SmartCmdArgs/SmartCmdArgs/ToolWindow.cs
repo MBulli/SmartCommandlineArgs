@@ -68,11 +68,6 @@ namespace SmartCmdArgs
 
         public int OnShow(int fShow)
         {
-            if (fShow == (int)__FRAMESHOW.FRAMESHOW_WinShown)
-            {
-                // TODO Obsolete ?!
-                //view.ViewModel.UpdateView();
-            }
             return Microsoft.VisualStudio.VSConstants.S_OK;
         }
 

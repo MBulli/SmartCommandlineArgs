@@ -150,7 +150,6 @@ namespace SmartCmdArgs.View
 
         public TreeViewEx()
         {
-            // TODO: Implement ContextMenu
             ContextMenu = new ContextMenu();
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Cut });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Copy });
