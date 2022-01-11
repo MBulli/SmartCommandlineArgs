@@ -696,7 +696,9 @@ namespace SmartCmdArgs
 
         private void CmdArgsPackage_UseSolutionDirChanged(object sender, bool e)
         {
-            // TODO let fileStorage know and implement logic
+            fileStorage.DeleteAllUnusedArgFiles();
+
+            fileStorage.SaveAllProjects();
         }
 
         #endregion

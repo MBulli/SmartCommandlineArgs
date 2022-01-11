@@ -192,6 +192,27 @@ namespace SmartCmdArgs.Logic
             }
         }
 
+        public void DeleteAllUnusedArgFiles()
+        {
+            IEnumerable<string> fileNames;
+            if (cmdPackage.IsUseSolutionDirEnabled)
+                fileNames = vsHelper.GetSupportedProjects().Select(FullFilenameForProjectJsonFileFromProject);
+            else
+                fileNames = new[] { FullFilenameForSolutionJsonFile() };
+            
+            foreach (var fileName in fileNames)
+            {
+                try
+                {
+                    File.Delete(fileName);
+                }
+                catch (Exception e)
+                {
+                    Logger.Warn($"Couldn't delete '{fileName}': {e}");
+                }
+            }
+        }
+
         public void SaveProject(IVsHierarchy project)
         {
             if (cmdPackage.IsUseSolutionDirEnabled)
@@ -213,8 +234,7 @@ namespace SmartCmdArgs.Logic
             if (!cmdPackage.IsVcsSupportEnabled)
                 return;
 
-            string slnFilename = vsHelper.GetSolutionFilename();
-            string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
+            string jsonFilename = FullFilenameForSolutionJsonFile();
 
             using (solutionFsWatcher?.TemporarilyDisable())
             {
@@ -323,6 +343,12 @@ namespace SmartCmdArgs.Logic
             {
                 return FullFilenameForProjectJsonFileFromProjectPath(project.GetProjectDir(), project.GetName());
             }
+        }
+
+        private string FullFilenameForSolutionJsonFile()
+        {
+            string slnFilename = vsHelper.GetSolutionFilename();
+            return Path.ChangeExtension(slnFilename, "args.json");
         }
 
         private string FullFilenameForProjectJsonFileFromProjectPath(string projectDir, string projectName)
