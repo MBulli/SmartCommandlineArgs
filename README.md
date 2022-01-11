@@ -5,6 +5,9 @@ A Visual Studio Extension which aims to provide a better UI to manage your comma
 > "The only smart way to pass standard command arguments to programs." - [A happy user](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments#review-details)
 
 ## Install
+
+For VS 2022 download the vsix manually from: [Release v2.3.0](https://github.com/MBulli/SmartCommandlineArgs/releases/tag/v2.3.0)
+
 Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments "Visual Studio Marketplace").
 
 Visual Studio 2015, 2017 and 2019 and the following project types are supported:
