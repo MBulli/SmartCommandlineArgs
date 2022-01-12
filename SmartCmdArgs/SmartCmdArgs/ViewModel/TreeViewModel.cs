@@ -150,13 +150,14 @@ namespace SmartCmdArgs.ViewModel
             }
             UpdateTree();
         }
-        
+
         public void UpdateTree()
         {
             // reset focus
             foreach (var item in AllProjects.SelectMany(x => x.GetEnumerable(useView: false, includeSelf: true)))
             {
                 item.IsFocusedItem = false;
+                item.IsSelected = false;
             }
 
             if (ShowAllProjects)
@@ -177,11 +178,6 @@ namespace SmartCmdArgs.ViewModel
                     // and therfore it cant be set as focused by the UI
                     project.IsFocusedItem = true;
 
-                    // selected must be false because it isn't set to false by the tree (UI)
-                    // and if it would be true, then for each action where selected
-                    // elements are used, all elements of this project would be used
-                    project.IsSelected = false;
-
                     TreeItems = project.Items;
                 }
                 else
@@ -189,16 +185,9 @@ namespace SmartCmdArgs.ViewModel
                     // Fixes a strange potential bug in WPF. If ToList() is missing the project will be shown twice.
                     TreeItems = startupProjects.ToList();
                 }
-
-                // reset selected
-                foreach (var item in AllProjects.Where(x => !x.IsStartupProject).SelectMany(x => x.GetEnumerable(useView: false, includeSelf: true)))
-                {
-                    item.IsSelected = false;
-                }
             }
 
-            if (!SelectedItems.Any())
-                SelectIndexCommand?.SafeExecute(0);
+            SelectIndexCommand?.SafeExecute(0);
         }
 
         public void SelectItems(IEnumerable<CmdBase> items)
