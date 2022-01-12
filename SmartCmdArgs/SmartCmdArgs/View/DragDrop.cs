@@ -152,8 +152,8 @@ namespace SmartCmdArgs.View
                 var dataList = data.ToList();
                 
                 var souldDeselctItem = dropInfo.InsertPosition.HasFlag(DropInfo.RelativInsertPosition.IntoTargetItem) 
-                    && dropInfo.TargetItem.Item is CmdContainer con 
-                    && !con.IsExpanded;
+                    && dropInfo.TargetItem.Item is CmdContainer tarCon 
+                    && !tarCon.IsExpanded;
 
                 if (dataList.Count > 0)
                     ToolWindowHistory.SaveState();
@@ -161,7 +161,18 @@ namespace SmartCmdArgs.View
                 foreach (var sourceItem in dataList)
                 {
                     if (souldDeselctItem)
-                        sourceItem.IsSelected = false;
+                    {
+                        if (sourceItem is CmdContainer con)
+                        {
+                            con.GetEnumerable(useView: false, includeSelf: true)
+                                .ForEach(item => item.IsSelected = false);
+                        }
+                        else
+                        {
+                            sourceItem.IsSelected = false;
+                        }
+                    }
+
                     dropInfo.TargetContainer.Insert(idx++, sourceItem);
                 }
 
