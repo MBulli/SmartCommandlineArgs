@@ -82,6 +82,7 @@ namespace SmartCmdArgs.Helper
             ("WindowsRemoteDebugger", "RemoteDebuggerCommandArguments"),
             ("LinuxWSLDebugger", "RemoteDebuggerCommandArguments"),
             ("GoogleAndroidDebugger", "LaunchFlags"),
+            ("GamingDesktopDebugger", "CommandLineArgs"),
         };
 
         private static void SetVCProjEngineArguments(EnvDTE.Project project, string arguments)
