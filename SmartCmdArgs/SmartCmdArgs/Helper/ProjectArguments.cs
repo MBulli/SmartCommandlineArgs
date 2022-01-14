@@ -75,6 +75,15 @@ namespace SmartCmdArgs.Helper
             }
         }
 
+        
+        private static readonly List<(string RuleName, string PropName)> VCArgLocations = new List<(string RuleName, string PropName)>
+        {
+            ("WindowsLocalDebugger", "LocalDebuggerCommandArguments"),
+            ("WindowsRemoteDebugger", "RemoteDebuggerCommandArguments"),
+            ("LinuxWSLDebugger", "RemoteDebuggerCommandArguments"),
+            ("GoogleAndroidDebugger", "LaunchFlags"),
+        };
+
         private static void SetVCProjEngineArguments(EnvDTE.Project project, string arguments)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -82,50 +91,28 @@ namespace SmartCmdArgs.Helper
             // Use late binding to support VS2015 and VS2017
             dynamic vcPrj = (dynamic)project.Object; // is VCProject
             dynamic vcCfg = vcPrj?.ActiveConfiguration; // is VCConfiguration
-            dynamic vcDbg = vcCfg?.DebugSettings;  // is VCDebugSettings
+
+            if (vcCfg == null)
+            {
+                Logger.Info("SetVCProjEngineArguments: VCProject?.ActiveConfiguration returned null");
+                return;
+            }
 
             // apply it first using the old way, in case the new way doesn't work for this type of projects (platforms other than Windows, for example)
+            dynamic vcDbg = vcCfg.DebugSettings;  // is VCDebugSettings
             if (vcDbg != null)
-            {
                 vcDbg.CommandArguments = arguments;
-            }
-            else { Logger.Warn("SetVCProjEngineArguments: VCProject?.ActiveConfiguration?.DebugSettings returned null"); }
+            else
+                Logger.Info("SetVCProjEngineArguments: VCProject?.ActiveConfiguration?.DebugSettings returned null");
 
-
-            if (vcCfg != null)
+            foreach (var (RuleName, PropName) in VCArgLocations)
             {
-                dynamic windowsLocalDebugger = vcCfg.Rules.Item("WindowsLocalDebugger"); // is IVCRulePropertyStorage
-                if (windowsLocalDebugger != null)
-                {
-                    windowsLocalDebugger.SetPropertyValue("LocalDebuggerCommandArguments", arguments);
-                }
-                else { Logger.Warn("SetVCProjEngineArguments: ProjectConfig Rule 'WindowsLocalDebugger' returned null"); }
-
-                dynamic windowsRemoteDebugger = vcCfg.Rules.Item("WindowsRemoteDebugger"); // is IVCRulePropertyStorage
-                if (windowsRemoteDebugger != null)
-                {
-                    windowsRemoteDebugger.SetPropertyValue("RemoteDebuggerCommandArguments", arguments);
-                }
-                else 
-                {
-                    dynamic linuxRemoteDebugger = vcCfg.Rules.Item("LinuxWSLDebugger"); // is IVCRulePropertyStorage
-                    if (linuxRemoteDebugger != null)
-                    {
-                        linuxRemoteDebugger.SetPropertyValue("RemoteDebuggerCommandArguments", arguments);
-                    }
-                    else
-                    {
-                        Logger.Warn("SetVCProjEngineArguments: ProjectConfig Rule 'RemoteDebuggerCommandArguments' returned null");
-                    }
-                }
-
-                dynamic googleAndroidDebugger = vcCfg.Rules.Item( "GoogleAndroidDebugger" ); // is IVCRulePropertyStorage
-                if( googleAndroidDebugger != null )
-                {
-                    googleAndroidDebugger.SetPropertyValue( "LaunchFlags", arguments );
-                }              
+                dynamic rule = vcCfg.Rules.Item(RuleName); // is IVCRulePropertyStorage
+                if (rule != null)
+                    rule.SetPropertyValue(PropName, arguments);
+                else
+                    Logger.Info($"SetVCProjEngineArguments: ProjectConfig Rule '{RuleName}' returned null");
             }
-            else { Logger.Warn("SetVCProjEngineArguments: VCProject?.ActiveConfiguration? returned null"); }
         }
 
         private static void GetVCProjEngineAllArguments(EnvDTE.Project project, List<CmdArgumentJson> allArgs)
@@ -137,7 +124,7 @@ namespace SmartCmdArgs.Helper
 
             if (configs == null)
             {
-                Logger.Warn("GetVCProjEngineAllArguments: VCProject.Configurations is null");
+                Logger.Info("GetVCProjEngineAllArguments: VCProject.Configurations is null");
                 return;
             }
 
@@ -149,44 +136,18 @@ namespace SmartCmdArgs.Helper
                 var items = new List<string>();
 
                 if (!string.IsNullOrEmpty(dbg?.CommandArguments))
-                {
                     items.Add(dbg.CommandArguments);
-                }
 
-                // Read local debugger values
-                dynamic windowsLocalDebugger = cfg.Rules.Item("WindowsLocalDebugger"); // is IVCRulePropertyStorage
-                if (windowsLocalDebugger != null)
-                {
-                    var localArguments = windowsLocalDebugger.GetUnevaluatedPropertyValue("LocalDebuggerCommandArguments");
-                    if (!string.IsNullOrEmpty(localArguments))
+                foreach (var (RuleName, PropName) in VCArgLocations)
+                { 
+                    dynamic rule = cfg.Rules.Item(RuleName); // is IVCRulePropertyStorage
+                    if (rule != null)
                     {
-                        items.Add(localArguments);
+                        var args = rule.GetUnevaluatedPropertyValue(PropName);
+                        if (!string.IsNullOrEmpty(args))
+                            items.Add(args);
                     }
-                }
-                else { Logger.Warn("GetVCProjEngineAllArguments: ProjectConfig Rule 'WindowsLocalDebugger' returned null"); }
-
-                // Read remote debugger values
-                dynamic windowsRemoteDebugger = cfg.Rules.Item("WindowsRemoteDebugger"); // is IVCRulePropertyStorage
-                if (windowsRemoteDebugger != null)
-                {
-                    var remoteArguments = windowsRemoteDebugger.GetUnevaluatedPropertyValue("RemoteDebuggerCommandArguments");
-                    if (!string.IsNullOrEmpty(remoteArguments))
-                    {
-                        items.Add(remoteArguments);
-                    }
-                }
-                else //check WSL remote debugger
-                {
-                    dynamic linuxWSLDebugger = cfg.Rules.Item("LinuxWSLDebugger"); // is IVCRulePropertyStorage
-                    if (linuxWSLDebugger != null)
-                    {
-                        var remoteArguments = linuxWSLDebugger.GetUnevaluatedPropertyValue("RemoteDebuggerCommandArguments");
-                        if (!string.IsNullOrEmpty(remoteArguments))
-                        {
-                            items.Add(remoteArguments);
-                        }
-                    }
-                    else { Logger.Warn("GetVCProjEngineAllArguments: ProjectConfig Rule 'WindowsRemoteDebugger' returned null"); }
+                    else Logger.Info($"GetVCProjEngineAllArguments: ProjectConfig Rule '{RuleName}' returned null");
                 }
 
                 if (items.Count > 0)
