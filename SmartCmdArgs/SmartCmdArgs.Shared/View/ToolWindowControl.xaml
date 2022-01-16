@@ -22,6 +22,7 @@
     </UserControl.Resources>
     <Grid>
         <local:TreeViewEx x:Name="treeView"
+                          Visibility="{Binding ShowDisabledScreen, Converter={c:BoolToVisibilityConverter Inverted=True, HideVisibility=Collapsed}}"
                           ItemsSource="{Binding TreeViewModel.TreeItemsView}"
                           SelectIndexCommand="{Binding TreeViewModel.SelectIndexCommand, Mode=OneWayToSource}"
                           SelectItemCommand="{Binding TreeViewModel.SelectItemCommand, Mode=OneWayToSource}"
@@ -59,5 +60,24 @@
                                                 ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}" />
             </local:TreeViewEx.ItemTemplateSelector>
         </local:TreeViewEx>
+
+        <StackPanel Visibility="{Binding ShowDisabledScreen, Converter={c:BoolToVisibilityConverter Inverted=False, HideVisibility=Collapsed}}"
+                    Orientation="Vertical"
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center"
+                    Margin="10">
+            <TextBlock TextWrapping="Wrap" FontWeight="Bold">
+                This extension is disabled.
+            </TextBlock>
+            <TextBlock TextWrapping="Wrap" Margin="0,5,0,0">
+                Please check the <Hyperlink Command="{Binding ShowSettingsCommand}">Settings</Hyperlink> if you want to configure the behaviour before enabling.
+                <LineBreak/>
+                If you enable the extension, it will read command line arguments and environment variables from all supported projects where it can't find preexisting data (either in *.json files if version control support is enabled or in the visual studio user data for this solution).
+            </TextBlock>
+            <TextBlock TextWrapping="Wrap" Margin="0,5,0,0">
+                You can also enable this extension by default in the <Hyperlink Command="{Binding OpenOptionsCommand}">Options</Hyperlink>.
+            </TextBlock>
+            <Button x:Name="EnableExtensionBtn" Content="Enable" Padding="5,0,5,0" Command="{Binding EnableExtensionCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+        </StackPanel>
     </Grid>
 </UserControl>

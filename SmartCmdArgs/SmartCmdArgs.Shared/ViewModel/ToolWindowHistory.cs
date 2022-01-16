@@ -163,12 +163,18 @@ namespace SmartCmdArgs.ViewModel
 
         public static void DeleteNewest()
         {
+            if (!_vm.CmdArgsPackage.IsEnabled)
+                return;
+
             if (_pauseCounter == 0)
                 _buffer.PopFront();
         }
 
         public static void SaveState()
         {
+            if (!_vm.CmdArgsPackage.IsEnabled)
+                return;
+
             if (_pauseCounter == 0)
                 _buffer.Push(SuoDataSerializer.Serialize(_vm));
         }
@@ -192,6 +198,9 @@ namespace SmartCmdArgs.ViewModel
 
         private static void RestoreCurrentState()
         {
+            if (!_vm.CmdArgsPackage.IsEnabled)
+                return;
+
             if (_buffer.TryGetCurrent(out SuoDataJson data))
             {
                 _vm.TreeViewModel.ShowAllProjects = data.ShowAllProjects;
@@ -205,6 +214,9 @@ namespace SmartCmdArgs.ViewModel
 
         public static void RestoreLastState()
         {
+            if (!_vm.CmdArgsPackage.IsEnabled)
+                return;
+
             if (_buffer.IsCurrentFront)
                 SaveState();
 
@@ -216,6 +228,9 @@ namespace SmartCmdArgs.ViewModel
 
         public static void RestorePrevState()
         {
+            if (!_vm.CmdArgsPackage.IsEnabled)
+                return;
+
             if (_buffer.MoveForward())
             {
                 RestoreCurrentState();

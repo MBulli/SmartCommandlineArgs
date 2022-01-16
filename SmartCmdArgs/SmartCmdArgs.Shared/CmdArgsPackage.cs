@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.PlatformUI;
@@ -25,13 +26,13 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
 using EnvDTE;
+using Newtonsoft.Json;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
 using System.Threading;
 
 using Task = System.Threading.Tasks.Task;
-using Microsoft.Build.Evaluation;
 
 namespace SmartCmdArgs
 {
@@ -80,6 +81,23 @@ namespace SmartCmdArgs
 
         public static CmdArgsPackage Instance { get; private set; }
 
+        /// <summary>
+        /// While the extension is disabled we do nothing.
+        /// The user is asked to enable the extension.
+        /// This solves the issue that the extension accidentilly overrides user changes.
+        /// </summary>
+        private bool _isEnabled;
+        public bool IsEnabled {
+            get => _isEnabled;
+            set {
+                if (_isEnabled != value)
+                {
+                    _isEnabled = value;
+                    IsEnabledChanged();
+                }
+            }
+        }
+
         public SettingsViewModel Settings => ToolWindowViewModel.SettingsViewModel;
         public CmdArgsOptionPage Options => GetDialogPage<CmdArgsOptionPage>();
 
@@ -101,13 +119,15 @@ namespace SmartCmdArgs
         public bool DeleteEmptyFilesAutomatically => Options.DeleteEmptyFilesAutomatically;
         public bool DeleteUnnecessaryFilesAutomatically => Options.DeleteUnnecessaryFilesAutomatically;
 
+        public bool IsSolutionOpen => vsHelper.IsSolutionOpen;
+
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.
         // As the parser needs a initialized instance of vsHelper,
         // the json string from the suo is saved in this variable and
         // processed later.
-        private string toolWindowStateFromSolutionJsonStr;
-        private SuoDataJson toolWindowStateLoadedFromSolution;
+        private string suoDataStr;
+        private SuoDataJson suoDataJson;
 
         private readonly Debouncer _updateIsActiveDebouncer;
 
@@ -255,20 +275,16 @@ namespace SmartCmdArgs
             await Commands.InitializeAsync(this);
 
             vsHelper = new VisualStudioHelper(this);
+            fileStorage = new FileStorage(this, vsHelper);
+
+            // we want to know about changes to the solution state even if the extension is disabled
+            // so we can update our interface
             vsHelper.SolutionAfterOpen += VsHelper_SolutionOpend;
             vsHelper.SolutionBeforeClose += VsHelper_SolutionWillClose;
             vsHelper.SolutionAfterClose += VsHelper_SolutionClosed;
-            vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
-            vsHelper.ProjectConfigurationChanged += VsHelper_ProjectConfigurationChanged;
-            vsHelper.ProjectBeforeRun += VsHelper_ProjectWillRun;
-            vsHelper.LaunchProfileChanged += VsHelper_LaunchProfileChanged;
 
-            vsHelper.ProjectAfterOpen += VsHelper_ProjectAdded;
-            vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
-            vsHelper.ProjectAfterRename += VsHelper_ProjectRenamed;
-            vsHelper.ProjectAfterLoad += VsHelper_ProjectAfterLoad;
-
-            fileStorage = new FileStorage(this, vsHelper);
+            // has to be registered here to listen to settings changes even if the extension is disabled
+            // so we can reload them if neccessary to give the user the correct values if he wants to enable the extension
             fileStorage.FileStorageChanged += FileStorage_FileStorageChanged;
 
             await vsHelper.InitializeAsync();
@@ -276,21 +292,15 @@ namespace SmartCmdArgs
             // Switch to main thread
             await JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            ToolWindowViewModel.SettingsViewModel.PropertyChanged += SettingsViewModel_PropertyChanged;
-            GetDialogPage<CmdArgsOptionPage>().PropertyChanged += CmdArgsOptionPage_PropertyChanged;
-
             // Extension window was opend while a solution is already open
-            if (vsHelper.IsSolutionOpen)
+            if (IsSolutionOpen)
             {
                 Logger.Info("Package.Initialize called while solution was already open.");
 
-                InitializeForSolution();
+                InitializeConfigForSolution();
             }
 
-            ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
-            ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
-            ToolWindowViewModel.TreeViewModel.TreeChangedThrottled += OnTreeChangedThrottled;
-            ToolWindowViewModel.TreeViewModel.TreeChanged += OnTreeChanged;
+            UpdateDisabledScreen();
 
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
             ToolWindowViewModel.DisplayTagForCla = DisplayTagForCla;
@@ -347,7 +357,7 @@ namespace SmartCmdArgs
                     var project = vsHelper.HierarchyForProjectGuid(projectGuid);
                     fileStorage.SaveProject(project);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     string msg = $"Failed to save json for project '{projectGuid}' with error: {ex}";
                     Logger.Error(msg);
@@ -366,6 +376,57 @@ namespace SmartCmdArgs
         private void OnTreeChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
             UpdateIsActiveForArgumentsDebounced();
+        }
+
+        private void AttachToEvents()
+        {
+            // events registered here are only called while the extension is enabled
+
+            vsHelper.StartupProjectChanged += VsHelper_StartupProjectChanged;
+            vsHelper.ProjectConfigurationChanged += VsHelper_ProjectConfigurationChanged;
+            vsHelper.ProjectBeforeRun += VsHelper_ProjectWillRun;
+            vsHelper.LaunchProfileChanged += VsHelper_LaunchProfileChanged;
+
+            vsHelper.ProjectAfterOpen += VsHelper_ProjectAdded;
+            vsHelper.ProjectBeforeClose += VsHelper_ProjectRemoved;
+            vsHelper.ProjectAfterRename += VsHelper_ProjectRenamed;
+            vsHelper.ProjectAfterLoad += VsHelper_ProjectAfterLoad;
+
+            Settings.PropertyChanged += SettingsViewModel_PropertyChanged;
+            Options.PropertyChanged += CmdArgsOptionPage_PropertyChanged;
+
+            ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
+            ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
+            ToolWindowViewModel.TreeViewModel.TreeChangedThrottled += OnTreeChangedThrottled;
+            ToolWindowViewModel.TreeViewModel.TreeChanged += OnTreeChanged;
+        }
+
+        private void DetachFromEvents()
+        {
+            // all events regitered in AttachToEvents should be unregisterd here
+
+            vsHelper.StartupProjectChanged -= VsHelper_StartupProjectChanged;
+            vsHelper.ProjectConfigurationChanged -= VsHelper_ProjectConfigurationChanged;
+            vsHelper.ProjectBeforeRun -= VsHelper_ProjectWillRun;
+            vsHelper.LaunchProfileChanged -= VsHelper_LaunchProfileChanged;
+
+            vsHelper.ProjectAfterOpen -= VsHelper_ProjectAdded;
+            vsHelper.ProjectBeforeClose -= VsHelper_ProjectRemoved;
+            vsHelper.ProjectAfterRename -= VsHelper_ProjectRenamed;
+            vsHelper.ProjectAfterLoad -= VsHelper_ProjectAfterLoad;
+
+            Settings.PropertyChanged -= SettingsViewModel_PropertyChanged;
+            Options.PropertyChanged -= CmdArgsOptionPage_PropertyChanged;
+
+            ToolWindowViewModel.TreeViewModel.ItemSelectionChanged -= OnItemSelectionChanged;
+            ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled -= OnTreeContentChangedThrottled;
+            ToolWindowViewModel.TreeViewModel.TreeChangedThrottled -= OnTreeChangedThrottled;
+            ToolWindowViewModel.TreeViewModel.TreeChanged -= OnTreeChanged;
+        }
+
+        private void UpdateDisabledScreen()
+        {
+            ToolWindowViewModel.ShowDisabledScreen = !IsEnabled && IsSolutionOpen;
         }
 
         private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
@@ -388,8 +449,16 @@ namespace SmartCmdArgs
             if (key == SolutionOptionKey)
             {
                 StreamReader sr = new StreamReader(stream); // don't free
-                toolWindowStateFromSolutionJsonStr = sr.ReadToEnd();
+                suoDataStr = sr.ReadToEnd();
             }
+        }
+
+        private void UpdateSuoData()
+        {
+            suoDataJson = SuoDataSerializer.Serialize(ToolWindowViewModel);
+            suoDataJson.IsEnabled = IsEnabled;
+
+            suoDataStr = JsonConvert.SerializeObject(suoDataJson);
         }
 
         protected override void OnSaveOptions(string key, Stream stream)
@@ -398,7 +467,12 @@ namespace SmartCmdArgs
             if (key == SolutionOptionKey)
             {
                 Logger.Info("Saving commands to suo file.");
-                toolWindowStateLoadedFromSolution = SuoDataSerializer.Serialize(ToolWindowViewModel, stream);
+                if (IsEnabled)
+                    UpdateSuoData();
+
+                StreamWriter sw = new StreamWriter(stream);
+                sw.Write(suoDataStr);
+                sw.Flush();
                 Logger.Info("All Commands saved to suo file.");
             }
         }
@@ -412,7 +486,7 @@ namespace SmartCmdArgs
 
         private void UpdateConfigurationForProject(IVsHierarchy project)
         {
-            if (project == null)
+            if (!IsEnabled || project == null)
                 return;
 
             var commandLineArgs = ManageCommandLineArgs ? CreateCommandLineArgsForProject(project) : null;
@@ -668,6 +742,9 @@ namespace SmartCmdArgs
                     return;
                 }
 
+                if (!IsEnabled)
+                    return;
+
                 if (e.IsSolutionWide != IsUseSolutionDirEnabled)
                     return;
 
@@ -712,7 +789,7 @@ namespace SmartCmdArgs
             var areSettingsFromFile = settings != null;
 
             if (settings == null)
-                settings = toolWindowStateLoadedFromSolution.Settings;
+                settings = suoDataJson.Settings;
 
             if (settings == null)
                 settings = new SettingsJson();
@@ -725,10 +802,13 @@ namespace SmartCmdArgs
 
         private void UpdateCommandsForProject(IVsHierarchy project)
         {
+            if (!IsEnabled)
+                return;
+
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
 
-            Logger.Info($"Update commands for project '{project?.GetName()}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={toolWindowStateLoadedFromSolution?.ProjectArguments?.Count}.");
+            Logger.Info($"Update commands for project '{project?.GetName()}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={suoDataJson?.ProjectArguments?.Count}.");
 
             var projectGuid = project.GetGuid();
             if (projectGuid == Guid.Empty)
@@ -737,7 +817,7 @@ namespace SmartCmdArgs
                 return;
             }
 
-            var solutionData = toolWindowStateLoadedFromSolution ?? new SuoDataJson();
+            var solutionData = suoDataJson ?? new SuoDataJson();
 
             // joins data from solution and project
             //  => overrides solution commands for a project if a project json file exists
@@ -751,7 +831,7 @@ namespace SmartCmdArgs
                 projectData = fileStorage.ReadDataForProject(project);
             }
 
-            // project json overrides if it exists
+            // data in project json overrides current data if it exists to respond to changes made by git to the file
             if (projectData != null)
             {
                 Logger.Info($"Setting {projectData?.Items?.Count} commands for project '{project.GetName()}' from json-file.");
@@ -817,13 +897,8 @@ namespace SmartCmdArgs
             {
                 return;
             }
-            else if (IsVcsSupportEnabled)
-            {
-                projectData = new ProjectDataJson();
-                Logger.Info("Will clear all data because of missing json file and enabled VCS support.");
-            }
-            // we try to read the suo file data
-            else if (solutionData.ProjectArguments.TryGetValue(projectGuid, out projectData))
+            // if we dont have VCS enabld we try to read the suo file data
+            else if (!IsVcsSupportEnabled && solutionData.ProjectArguments.TryGetValue(projectGuid, out projectData))
             {
                 Logger.Info($"Will use commands from suo file for project '{project.GetName()}'.");
                 var argumentDataFromProject = projectData.AllArguments;
@@ -847,11 +922,12 @@ namespace SmartCmdArgs
                 projectData.Expanded = solutionData.ExpandedContainer.Contains(projectData.Id);
                 projectData.Selected = solutionData.SelectedItems.Contains(projectData.Id);
             }
+            // if we don't have suo or json data we read cmd args from the project configs
             else
             {
-                Logger.Info($"Gathering commands from configurations for project '{project.GetName()}'.");
-                // if we don't have suo file data we read cmd args from the project configs
                 projectData = new ProjectDataJson();
+
+                Logger.Info($"Gathering commands from configurations for project '{project.GetName()}'.");
                 projectData.Items.AddRange(ReadCommandlineArgumentsFromProject(project));
             }
 
@@ -861,15 +937,40 @@ namespace SmartCmdArgs
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
         }
 
-        private void InitializeForSolution()
+        private void IsEnabledChanged()
         {
-            toolWindowStateLoadedFromSolution = Logic.SuoDataSerializer.Deserialize(toolWindowStateFromSolutionJsonStr, vsHelper);
+            UpdateDisabledScreen();
 
-            ToolWindowViewModel.TreeViewModel.ShowAllProjects = toolWindowStateLoadedFromSolution.ShowAllProjects;
+            if (IsEnabled)
+            {
+                AttachToEvents();
+                InitializeDataForSolution();
+            }
+            else
+            {
+                // captures the state right after disableing the extension
+                // changes after this point are ignored
+                UpdateSuoData();
+                DetachFromEvents();
+                FinalizeDataForSolution();
+            }
+        }
+
+        private void InitializeConfigForSolution()
+        {
+            suoDataJson = Logic.SuoDataSerializer.Deserialize(suoDataStr, vsHelper);
 
             LoadSettings();
-
             SettingsLoaded = true;
+
+            IsEnabled = suoDataJson.IsEnabled || Options.EnabledByDefault;
+        }
+
+        private void InitializeDataForSolution()
+        {
+            Debug.Assert(IsEnabled);
+
+            ToolWindowViewModel.TreeViewModel.ShowAllProjects = suoDataJson.ShowAllProjects;
 
             foreach (var project in vsHelper.GetSupportedProjects())
             {
@@ -880,12 +981,30 @@ namespace SmartCmdArgs
             UpdateIsActiveForArgumentsDebounced();
         }
 
+        private void FinalizeDataForSolution()
+        {
+            Debug.Assert(!IsEnabled);
+
+            fileStorage.RemoveAllProjects();
+            ToolWindowViewModel.Reset();
+        }
+
+        private void FinalizeConfigForSolution()
+        {
+            IsEnabled = false;
+            UpdateDisabledScreen();
+            suoDataStr = "";
+            suoDataJson = null;
+            SettingsLoaded = false;
+        }
+
         #region VS Events
         private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Solution opened.");
 
-            InitializeForSolution();
+            UpdateDisabledScreen();
+            InitializeConfigForSolution();
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
@@ -899,9 +1018,7 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Solution closed.");
 
-            ToolWindowViewModel.Reset();
-            toolWindowStateLoadedFromSolution = null;
-            SettingsLoaded = false;
+            FinalizeConfigForSolution();
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)

@@ -97,6 +97,9 @@ namespace SmartCmdArgs.Logic
 
         public void SaveSettings()
         {
+            if (!cmdPackage.IsEnabled)
+                return;
+
             string jsonFilename = GetSettingsPath();
 
             if (jsonFilename == null) return;
@@ -201,6 +204,9 @@ namespace SmartCmdArgs.Logic
 
         public void DeleteAllUnusedArgFiles()
         {
+            if (!cmdPackage.IsEnabled)
+                return;
+
             if (!cmdPackage.DeleteUnnecessaryFilesAutomatically)
                 return;
 
@@ -241,7 +247,7 @@ namespace SmartCmdArgs.Logic
 
         private void SaveJsonForSolution()
         {
-            if (!cmdPackage.IsVcsSupportEnabled)
+            if (!cmdPackage.IsEnabled || !cmdPackage.IsVcsSupportEnabled)
                 return;
 
             string jsonFilename = FullFilenameForSolutionJsonFile();
@@ -288,7 +294,7 @@ namespace SmartCmdArgs.Logic
 
         private void SaveJsonForProject(IVsHierarchy project)
         {
-            if (!cmdPackage.IsVcsSupportEnabled || project == null)
+            if (!cmdPackage.IsEnabled || !cmdPackage.IsVcsSupportEnabled || project == null)
                 return;
 
             var guid = project.GetGuid();

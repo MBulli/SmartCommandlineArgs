@@ -42,6 +42,7 @@ namespace SmartCmdArgs
             }
         }
 
+        private bool _enabledByDefault;
         private RelativePathRootOption _relativePathRoot;
 
         private bool _useMonospaceFont;
@@ -56,6 +57,16 @@ namespace SmartCmdArgs
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
+
+        [Category("General")]
+        [DisplayName("Enabled by default")]
+        [Description("Enables this extension by default if a solution is opend for the first time on this machine with this extension. (This information is saved within the '.suo' file inside the '.vs' directory.)")]
+        [DefaultValue(false)]
+        public bool EnabledByDefault
+        {
+            get => _enabledByDefault;
+            set => SetAndNotify(value, ref _enabledByDefault);
+        }
 
         [Category("General")]
         [DisplayName("Relative path root")]

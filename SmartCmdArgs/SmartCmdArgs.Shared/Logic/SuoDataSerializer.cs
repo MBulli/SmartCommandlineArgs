@@ -124,21 +124,5 @@ namespace SmartCmdArgs.Logic
 
             return data;
         }
-
-        public static SuoDataJson Serialize(ToolWindowViewModel vm, Stream stream)
-        {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            var data = Serialize(vm);
-
-            string jsonStr = JsonConvert.SerializeObject(data);
-
-            StreamWriter sw = new StreamWriter(stream);
-            sw.Write(jsonStr);
-            sw.Flush();
-
-            return data;
-        }
     }
 }

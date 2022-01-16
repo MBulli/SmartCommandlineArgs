@@ -79,18 +79,11 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _macroEvaluationEnabled);
         }
 
-        public RelayCommand OpenOptionsCommand { get; }
-
         public CmdArgsPackage Package => _package;
 
         public SettingsViewModel(CmdArgsPackage package)
         {
             _package = package;
-
-            OpenOptionsCommand = new RelayCommand(() =>
-            {
-                package.ShowOptionPage(typeof(CmdArgsOptionPage));
-            });
         }
 
         public SettingsViewModel(SettingsViewModel other) : this(other._package)
