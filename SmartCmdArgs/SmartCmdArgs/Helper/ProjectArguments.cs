@@ -162,6 +162,75 @@ namespace SmartCmdArgs.Helper
             }
         }
 
+        private static string VFFormatConfigName(EnvDTE.Configuration vcCfg)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            return $"{vcCfg.ConfigurationName}|{vcCfg.PlatformName}";
+        }
+
+        // We have to get the active configuration form ConfigurationManager.ActiveConfiguration
+        // (because `Project.Object.ActiveConfiguration` trows an `RuntimeBinderException`)
+        // but there the `Properties` property is `null`. Therefore we have to go a different
+        // route to set the arguments. We generate a name from the `Configuration` and use it
+        // to optain the right configurations object from `Project.Object.Configurations`
+        // this object is simmilar to the VCProjEngine configuration and has `DebugSettings`
+        // which contain the CommandArguments which we can use to set the args.
+        private static void SetVFProjEngineArguments(EnvDTE.Project project, string arguments)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var vcCfg = project?.ConfigurationManager?.ActiveConfiguration; // is VCConfiguration
+
+            if (vcCfg == null)
+            {
+                Logger.Info("SetVFProjEngineArguments: VCProject?.ConfigurationManager?.ActiveConfiguration returned null");
+                return;
+            }
+
+            // Use late binding to support VS2015 and VS2017
+            dynamic activeFortranConfig = ((dynamic)project.Object).Configurations.Item(VFFormatConfigName(vcCfg));
+
+            dynamic vfDbg = activeFortranConfig.DebugSettings;  // is VCDebugSettings
+            if (vfDbg != null)
+                vfDbg.CommandArguments = arguments;
+            else
+                Logger.Info("SetVCProjEngineArguments: VCProject?.ActiveConfiguration?.DebugSettings returned null");
+        }
+
+        // Here we go the same way as in SetVFProjEngineArguments because we need the `ConfigurationName`
+        // which isn't included in the objects obtained form `Project.Object.Configurations`. It's a bit
+        // missleading because a property called `ConfigurationName` exists there but when called throws
+        // an NotImplementedException.
+        private static void GetVFProjEngineAllArguments(EnvDTE.Project project, List<CmdArgumentJson> allArgs)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            dynamic vcPrj = (dynamic)project.Object; // is VCProject
+            dynamic configs = vcPrj?.Configurations;  // is IVCCollection
+            var cfgManager = project?.ConfigurationManager;
+
+            if (configs == null)
+            {
+                Logger.Info("GetVCProjEngineAllArguments: VCProject.Configurations is null");
+                return;
+            }
+
+            for (int index = 1; index <= cfgManager.Count; index++)
+            {
+                var vcCfg = cfgManager.Item(index);
+                dynamic vfCfg = configs.Item(VFFormatConfigName(vcCfg)); // is VCConfiguration
+                dynamic dbg = vfCfg.DebugSettings;  // is VCDebugSettings
+
+                if (!string.IsNullOrEmpty(dbg?.CommandArguments))
+                {
+                    var configGrp = new CmdArgumentJson { Command = vcCfg.ConfigurationName, ProjectConfig = vcCfg.ConfigurationName, Items = new List<CmdArgumentJson>() };
+                    configGrp.Items.Add(new CmdArgumentJson { Command = dbg.CommandArguments });
+                    allArgs.Add(configGrp);
+                }
+            }
+        }
+
         private static void SetCpsProjectArguments(EnvDTE.Project project, string arguments)
         {
             // Should only be called in VS 2017 or higher
@@ -220,6 +289,11 @@ namespace SmartCmdArgs.Helper
             {ProjectKinds.FS, new ProjectArgumentsHandlers() {
                 SetArguments = (project, arguments) => SetMultiConfigArguments(project, arguments, "StartArguments"),
                 GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
+            } },
+            // Fortran
+            {ProjectKinds.Fortran, new ProjectArgumentsHandlers() {
+                SetArguments = (project, arguments) => SetVFProjEngineArguments(project, arguments),
+                GetAllArguments = (project, allArgs) => GetVFProjEngineAllArguments(project, allArgs)
             } },
         };
 
@@ -288,6 +362,7 @@ namespace SmartCmdArgs.Helper
         public static readonly Guid Py = Guid.Parse("{888888a0-9f3d-457c-b088-3a5042f75d52}");
         public static readonly Guid Node = Guid.Parse("{9092aa53-fb77-4645-b42d-1ccca6bd08bd}");
         public static readonly Guid FS = Guid.Parse("{f2a71f9b-5d33-465a-a702-920d77279786}");
+        public static readonly Guid Fortran = Guid.Parse("{7c1dcf51-7319-4793-8f63-17f648d2e313}");
 
         /// <summary>
         /// Lagacy project type GUID for C# .Net core projects.
