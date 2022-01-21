@@ -21,6 +21,8 @@ namespace SmartCmdArgs.Helper
             public GetAllArgumentsDelegate GetAllArguments;
         }
 
+        #region SingleConfig
+
         private static void SetSingleConfigArgument(EnvDTE.Project project, string arguments, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -43,6 +45,10 @@ namespace SmartCmdArgs.Helper
             }
             catch (Exception ex) { Logger.Error($"Failed to get single config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
+
+        #endregion SingleConfig
+
+        #region MultiConfig
 
         private static void SetMultiConfigArguments(EnvDTE.Project project, string arguments, string propertyName)
         {
@@ -75,7 +81,10 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        
+        #endregion MultiConfig
+
+        #region VCProjEngine (C/C++)
+
         private static readonly List<(string RuleName, string PropName)> VCArgLocations = new List<(string RuleName, string PropName)>
         {
             ("WindowsLocalDebugger", "LocalDebuggerCommandArguments"),
@@ -162,6 +171,10 @@ namespace SmartCmdArgs.Helper
             }
         }
 
+        #endregion VCProjEngine (C/C++)
+
+        #region VFProjEngine (Fortran)
+
         private static string VFFormatConfigName(EnvDTE.Configuration vcCfg)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -231,6 +244,10 @@ namespace SmartCmdArgs.Helper
             }
         }
 
+        #endregion VFProjEngine (Fortran)
+
+        #region Common Project System (CPS)
+
         private static void SetCpsProjectArguments(EnvDTE.Project project, string arguments)
         {
             // Should only be called in VS 2017 or higher
@@ -252,6 +269,8 @@ namespace SmartCmdArgs.Helper
 
             allArgs.AddRange(profileGrps);
         }
+
+        #endregion Common Project System (CPS)
 
         private static Dictionary<Guid, ProjectArgumentsHandlers> supportedProjects = new Dictionary<Guid, ProjectArgumentsHandlers>()
         {
