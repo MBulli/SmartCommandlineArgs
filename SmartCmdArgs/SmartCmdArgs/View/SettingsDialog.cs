@@ -23,6 +23,7 @@ namespace SmartCmdArgs.View
             _settingsControl = new SettingsControl();
             _settingsControl.DataContext = settingsViewModel;
 
+            Title = "Smart Commandline Arguments Settings";
             Content = _settingsControl;
         }
     }
