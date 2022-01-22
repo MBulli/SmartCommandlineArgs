@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartCmdArgs.Helper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SmartCmdArgs.ViewModel
 {
-    public class SettingsViewModel
+    public class SettingsViewModel : PropertyChangedBase
     {
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
@@ -19,7 +20,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 if (_vcsSupportEnabled != value)
                 {
-                    _vcsSupportEnabled = value;
+                    SetAndNotify(value, ref _vcsSupportEnabled);
                     VcsSupportEnabledChanged?.Invoke(this, value);
                 }
             }
@@ -32,7 +33,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 if (_useSolutionDir != value)
                 {
-                    _useSolutionDir = value;
+                    SetAndNotify(value, ref _useSolutionDir);
                     UseSolutionDirChanged?.Invoke(this, value);
                 }
             }
@@ -45,7 +46,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 if (_macroEvaluationEnabled != value)
                 {
-                    _macroEvaluationEnabled = value;
+                    SetAndNotify(value, ref _macroEvaluationEnabled);
                     MacroEvaluationEnabledChanged?.Invoke(this, value);
                 }
             }
