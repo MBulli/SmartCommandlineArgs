@@ -196,9 +196,9 @@ FakesAssemblies/
 *.opt
 
 # include everything from test solutions
-!/SmartCmdArgs/TestSolutions/
-!/SmartCmdArgs/TestSolutions/*
-!/SmartCmdArgs/TestSolutions/**
+!/SmartCmdArgs/Testing/TestSolutions/
+!/SmartCmdArgs/Testing/TestSolutions/*
+!/SmartCmdArgs/Testing/TestSolutions/**
 
 # Ignore .args.json files for TestProjects
 /TestProjects/**/*.args.json
