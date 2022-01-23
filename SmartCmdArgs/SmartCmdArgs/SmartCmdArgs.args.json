@@ -8,7 +8,8 @@
     },
     {
       "Id": "ac3f6619-4027-4417-935c-824c3a45e604",
-      "Command": "/RootSuffix Exp"
+      "Command": "/RootSuffix Exp",
+      "DefaultChecked": true
     },
     {
       "Id": "aeed5fa2-574f-49e2-92ea-771e3364d1e1",
