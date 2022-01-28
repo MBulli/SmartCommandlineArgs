@@ -8,7 +8,7 @@ namespace Project1
         static void Main(string[] args)
         {
             var argString = string.Join(" ", args);
-            File.WriteAllText("../CmdLineArgs.txt", argString);
+            File.WriteAllText("../../../../CmdLineArgs.txt", argString);
         }
     }
 }
