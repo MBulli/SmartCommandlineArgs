@@ -40,16 +40,16 @@ namespace SmartCmdArgs.Logic
                 return new SuoDataJson();
             }
 
-            // At the moment there are two json formats.
-            // The 'old' format and the new one.
-            // The FileVersion property was introduced with the new format
-            // Hence, a missing FileVersion indicates the old format.
-            var obj = JObject.Parse(jsonStr);
-            int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
-            Logger.Info($"Suo json file version is '{fileVersion}'");
-
             try
             {
+                // At the moment there are two json formats.
+                // The 'old' format and the new one.
+                // The FileVersion property was introduced with the new format
+                // Hence, a missing FileVersion indicates the old format.
+                var obj = JObject.Parse(jsonStr);
+                int fileVersion = ((int?)obj["FileVersion"]).GetValueOrDefault();
+                Logger.Info($"Suo json file version is '{fileVersion}'");
+
                 if (fileVersion < 2)
                 {
                     return ParseOldJsonFormat(obj, vsHelper);
