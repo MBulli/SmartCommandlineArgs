@@ -93,6 +93,14 @@ namespace SmartCmdArgs.ViewModel
         }
     }
 
+    public class ProjectPlatformChangedEvent : GenericChangedEventArgs<string>
+    {
+        public ProjectPlatformChangedEvent(CmdBase sender, string oldValue, string newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
+
     public class LaunchProfileChangedEvent : GenericChangedEventArgs<string>
     {
         public LaunchProfileChangedEvent(CmdBase sender, string oldValue, string newValue)

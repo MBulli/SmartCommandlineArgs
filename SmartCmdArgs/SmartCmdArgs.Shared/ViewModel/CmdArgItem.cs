@@ -52,6 +52,10 @@ namespace SmartCmdArgs.ViewModel
         public string ProjectConfig { get => _projectConfig; protected set => OnProjectConfigChanged(this._projectConfig, value); }
         public string UsedProjectConfig => _projectConfig ?? Parent?.UsedProjectConfig;
 
+        private string _projectPlatform = null;
+        public string ProjectPlatform { get => _projectPlatform; protected set => OnProjectPlatformChanged(this._projectPlatform, value); }
+        public string UsedProjectPlatform => _projectPlatform ?? Parent?.UsedProjectPlatform;
+
         private string _launchProfile = null;
         public string LaunchProfile { get => _launchProfile; protected set => OnLaunchProfileChanged(this._launchProfile, value); }
         public string UsedLaunchProfile => _launchProfile ?? Parent?.UsedLaunchProfile;
@@ -151,6 +155,16 @@ namespace SmartCmdArgs.ViewModel
             if (oldValue != newValue)
             {
                 BubbleEvent(new ProjectConfigChangedEvent(this, oldValue, newValue));
+            }
+        }
+
+        private void OnProjectPlatformChanged(string oldValue, string newValue)
+        {
+            SetAndNotify(newValue, ref _projectPlatform, nameof(ProjectPlatform));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new ProjectPlatformChangedEvent(this, oldValue, newValue));
             }
         }
 
@@ -696,26 +710,33 @@ namespace SmartCmdArgs.ViewModel
             set => base.ProjectConfig = value;
         }
 
+        public new string ProjectPlatform
+        {
+            get => base.ProjectPlatform;
+            set => base.ProjectPlatform = value;
+        }
+
         public new string LaunchProfile
         {
             get => base.LaunchProfile;
             set => base.LaunchProfile = value;
         }
 
-        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string projConf, string launchProfile, string delimiter) 
+        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string projConf, string projPlatform, string launchProfile, string delimiter)
             : base(id, name, items, isExpanded, exclusiveMode, delimiter)
         {
             base.ProjectConfig = projConf;
+            base.ProjectPlatform = projPlatform;
             base.LaunchProfile = launchProfile;
         }
 
-        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string projConf = null, string launchProfile = null, string delimiter = " ") 
-            : this(Guid.NewGuid(), name, items, isExpanded, exclusiveMode, projConf, launchProfile, delimiter)
+        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string projConf = null, string projPlatform = null, string launchProfile = null, string delimiter = " ")
+            : this(Guid.NewGuid(), name, items, isExpanded, exclusiveMode, projConf, projPlatform, launchProfile, delimiter)
         { }
 
         public override CmdBase Copy()
         {
-            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy()), isExpanded, ExclusiveMode, ProjectConfig, LaunchProfile, Delimiter);
+            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy()), isExpanded, ExclusiveMode, ProjectConfig, ProjectPlatform, LaunchProfile, Delimiter);
         }
     }
 

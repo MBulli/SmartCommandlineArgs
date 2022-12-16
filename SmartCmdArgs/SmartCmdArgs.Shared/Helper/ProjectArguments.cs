@@ -72,7 +72,7 @@ namespace SmartCmdArgs.Helper
                     string cmdarg = config.Properties.Item(propertyName).Value as string;
                     if (!string.IsNullOrEmpty(cmdarg))
                     {
-                        var configGrp = new CmdArgumentJson { Command = config.ConfigurationName, ProjectConfig = config.ConfigurationName, Items = new List<CmdArgumentJson>() };
+                        var configGrp = new CmdArgumentJson { Command = config.ConfigurationName, ProjectConfig = config.ConfigurationName, ProjectPlatform = config.PlatformName, Items = new List<CmdArgumentJson>() };
                         configGrp.Items.Add(new CmdArgumentJson { Command = cmdarg, Enabled = true });
                         allArgs.Add(configGrp);
                     }
@@ -162,7 +162,7 @@ namespace SmartCmdArgs.Helper
 
                 if (items.Count > 0)
                 {
-                    var configGrp = new CmdArgumentJson { Command = cfg.ConfigurationName, ProjectConfig = cfg.ConfigurationName, Items = new List<CmdArgumentJson>() };
+                    var configGrp = new CmdArgumentJson { Command = cfg.ConfigurationName, ProjectConfig = cfg.ConfigurationName, ProjectPlatform = cfg.PlatformName, Items = new List<CmdArgumentJson>() };
 
                     configGrp.Items.AddRange(items.Distinct().Select(arg => new CmdArgumentJson { Command = arg, Enabled = true }));
 
@@ -237,7 +237,7 @@ namespace SmartCmdArgs.Helper
 
                 if (!string.IsNullOrEmpty(dbg?.CommandArguments))
                 {
-                    var configGrp = new CmdArgumentJson { Command = vcCfg.ConfigurationName, ProjectConfig = vcCfg.ConfigurationName, Items = new List<CmdArgumentJson>() };
+                    var configGrp = new CmdArgumentJson { Command = vcCfg.ConfigurationName, ProjectConfig = vcCfg.ConfigurationName, ProjectPlatform = vcCfg.PlatformName, Items = new List<CmdArgumentJson>() };
                     configGrp.Items.Add(new CmdArgumentJson { Command = dbg.CommandArguments });
                     allArgs.Add(configGrp);
                 }
