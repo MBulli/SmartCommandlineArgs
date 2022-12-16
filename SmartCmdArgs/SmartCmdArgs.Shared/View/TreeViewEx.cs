@@ -96,6 +96,10 @@ namespace SmartCmdArgs.View
             nameof(SetProjectConfigCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand SetProjectConfigCommand { get { return (ICommand)GetValue(SetProjectConfigCommandProperty); } set { SetValue(SetProjectConfigCommandProperty, value); } }
 
+        public static readonly DependencyProperty SetProjectPlatformCommandProperty = DependencyProperty.Register(
+            nameof(SetProjectPlatformCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
+        public ICommand SetProjectPlatformCommand { get { return (ICommand)GetValue(SetProjectPlatformCommandProperty); } set { SetValue(SetProjectPlatformCommandProperty, value); } }
+
         public static readonly DependencyProperty SetLaunchProfileCommandProperty = DependencyProperty.Register(
             nameof(SetLaunchProfileCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand SetLaunchProfileCommand { get { return (ICommand)GetValue(SetLaunchProfileCommandProperty); } set { SetValue(SetLaunchProfileCommandProperty, value); } }
@@ -155,6 +159,7 @@ namespace SmartCmdArgs.View
         private MenuItem _newGroupFromArgumentsMenuItem;
         private MenuItem _setAsStartupProjectMenuItem;
         private MenuItem _projConfigMenuItem;
+        private MenuItem _projPlatformMenuItem;
         private MenuItem _launchProfileMenuItem;
         private MenuItem _defaultCheckedMenuItem;
         private MenuItem _resetToDefaultMenuItem;
@@ -176,6 +181,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as single Startup Project" });
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
+            ContextMenu.Items.Add(_projPlatformMenuItem = new MenuItem { Header = "Project Platform" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
             ContextMenu.Items.Add(_defaultCheckedMenuItem = new MenuItem { Header = "Default Checked", IsCheckable = true });
             ContextMenu.Items.Add(_resetToDefaultMenuItem = new MenuItem { Header = "Reset to default checked" });
@@ -184,6 +190,7 @@ namespace SmartCmdArgs.View
             CollapseWhenDisbaled(_splitArgumentMenuItem);
             CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
             CollapseWhenDisbaled(_projConfigMenuItem);
+            CollapseWhenDisbaled(_projPlatformMenuItem);
             CollapseWhenDisbaled(_launchProfileMenuItem);
             CollapseWhenDisbaled(_defaultCheckedMenuItem);
             CollapseWhenDisbaled(_resetToDefaultMenuItem);
@@ -239,9 +246,11 @@ namespace SmartCmdArgs.View
         private void OnContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             _projConfigMenuItem.Items.Clear();
+            _projPlatformMenuItem.Items.Clear();
             _launchProfileMenuItem.Items.Clear();
 
             _projConfigMenuItem.IsEnabled = false;
+            _projPlatformMenuItem.IsEnabled = false;
             _launchProfileMenuItem.IsEnabled = false;
 
             _defaultCheckedMenuItem.IsChecked = SelectedTreeViewItems.Select(x => x.Item).OfType<CmdArgument>().Any(x => x.DefaultChecked);
@@ -303,6 +312,36 @@ namespace SmartCmdArgs.View
                     }
                 }
 
+                if (SetProjectPlatformCommand.CanExecute(null))
+                {
+                    var platforms = CmdArgsPackage.Instance.GetProjectPlatforms(proj.Id);
+
+                    if (platforms.Count > 0 || group.ProjectPlatform != null)
+                    {
+                        _projPlatformMenuItem.IsEnabled = true;
+
+                        _projPlatformMenuItem.Items.Add(new MenuItem
+                        {
+                            Header = "All",
+                            Command = SetProjectPlatformCommand,
+                            CommandParameter = null,
+                            IsChecked = group.ProjectPlatform == null,
+                            IsCheckable = true
+                        });
+
+                        foreach (var platform in platforms)
+                        {
+                            _projPlatformMenuItem.Items.Add(new MenuItem
+                            {
+                                Header = platform,
+                                Command = SetProjectPlatformCommand,
+                                CommandParameter = platform,
+                                IsChecked = group.ProjectPlatform == platform,
+                                IsCheckable = true
+                            });
+                        }
+                    }
+                }
 
                 if (SetLaunchProfileCommand.CanExecute(null))
                 {

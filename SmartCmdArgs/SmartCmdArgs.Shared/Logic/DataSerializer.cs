@@ -19,6 +19,7 @@ namespace SmartCmdArgs.Logic
                     Id = item.Id,
                     Command = item.Value,
                     ProjectConfig = item.ProjectConfig,
+                    ProjectPlatform = item.ProjectPlatform,
                     LaunchProfile = item.LaunchProfile,
 
                     // not in JSON

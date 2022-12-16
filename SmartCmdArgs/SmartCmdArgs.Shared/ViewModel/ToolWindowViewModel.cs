@@ -71,6 +71,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand<string> SetProjectConfigCommand { get; }
 
+        public RelayCommand<string> SetProjectPlatformCommand { get; }
+
         public RelayCommand<string> SetLaunchProfileCommand { get; }
 
         public RelayCommand ToggleExclusiveModeCommand { get; }
@@ -231,6 +233,16 @@ namespace SmartCmdArgs.ViewModel
                 {
                     ToolWindowHistory.SaveState();
                     grp.ProjectConfig = configName;
+                }
+            }, _ => HasSingleSelectedItemOfType<CmdGroup>());
+
+            SetProjectPlatformCommand = new RelayCommand<string>(platformName =>
+            {
+                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                if (selectedItem is CmdGroup grp)
+                {
+                    ToolWindowHistory.SaveState();
+                    grp.ProjectPlatform = platformName;
                 }
             }, _ => HasSingleSelectedItemOfType<CmdGroup>());
 
@@ -485,7 +497,7 @@ namespace SmartCmdArgs.ViewModel
                 if (item.Items == null)
                     result = new CmdArgument(item.Id, item.Command, item.Enabled, item.DefaultChecked);
                 else
-                    result = new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.LaunchProfile, item.Delimiter);
+                    result = new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.ProjectPlatform, item.LaunchProfile, item.Delimiter);
 
                 result.IsSelected = item.Selected;
                 yield return result;

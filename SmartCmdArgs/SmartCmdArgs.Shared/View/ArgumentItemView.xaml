@@ -26,12 +26,14 @@
                 <TextBlock.Text>
                     <MultiBinding Converter="{c:StringConcatConverter Seperator=' | '}">
                         <Binding Path="ProjectConfig" Mode="OneWay"/>
+                        <Binding Path="ProjectPlatform" Mode="OneWay"/>
                         <Binding Path="LaunchProfile" Mode="OneWay"/>
                     </MultiBinding>
                 </TextBlock.Text>
                 <TextBlock.Visibility>
                     <MultiBinding Converter="{c:NullToVisibilityMultiConverter VisibleCondition=AnyNotNull, HideVisibility=Collapsed}">
                         <Binding Path="ProjectConfig" Mode="OneWay"/>
+                        <Binding Path="ProjectPlatform" Mode="OneWay"/>
                         <Binding Path="LaunchProfile" Mode="OneWay"/>
                     </MultiBinding>
                 </TextBlock.Visibility>
