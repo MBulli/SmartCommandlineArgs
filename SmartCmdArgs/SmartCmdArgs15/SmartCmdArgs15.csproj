@@ -87,6 +87,7 @@
     </VSCTCompile>
     <Content Include="..\SharedResources\Resources\BigIcon.png">
       <Link>Resources\BigIcon.png</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="..\SharedResources\Resources\SmartCommandLineIcon.ico">
       <Link>Resources\SmartCommandLineIcon.ico</Link>
@@ -96,6 +97,7 @@
     </Content>
     <Content Include="..\SharedResources\Resources\vsix_preview_image.png">
       <Link>Resources\vsix_preview_image.png</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="..\SharedResources\Resources\VSMeuIcon.png">
       <Link>Resources\VSMeuIcon.png</Link>
