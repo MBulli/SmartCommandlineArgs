@@ -162,6 +162,9 @@ namespace SmartCmdArgs
                 throw new VisualStudioHelperException("GetSolutionInfo", hr);
             }
 
+            if (slnDir == null || slnFile == null)
+                return null;
+
             return System.IO.Path.Combine(slnDir, slnFile);
         }
 

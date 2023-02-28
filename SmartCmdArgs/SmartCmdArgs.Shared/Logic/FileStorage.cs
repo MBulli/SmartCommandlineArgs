@@ -99,12 +99,18 @@ namespace SmartCmdArgs.Logic
         private string GetSettingsPath()
         {
             string slnFilename = vsHelper.GetSolutionFilename();
+
+            if (slnFilename == null)
+                return null;
+
             return Path.ChangeExtension(slnFilename, "ArgsCfg.json");
         }
 
         public void SaveSettings()
         {
             string jsonFilename = GetSettingsPath();
+
+            if (jsonFilename == null) return;
 
             string jsonStr = SettingsSerializer.Serialize(cmdPackage.ToolWindowViewModel.SettingsViewModel);
 
@@ -118,7 +124,7 @@ namespace SmartCmdArgs.Logic
         {
             string jsonFilename = GetSettingsPath();
 
-            if (File.Exists(jsonFilename))
+            if (jsonFilename != null && File.Exists(jsonFilename))
             {
                 string jsonStr = File.ReadAllText(jsonFilename);
 
