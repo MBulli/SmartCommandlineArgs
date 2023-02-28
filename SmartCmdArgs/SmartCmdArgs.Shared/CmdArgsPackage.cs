@@ -204,7 +204,7 @@ namespace SmartCmdArgs
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)
         {
             if (toolWindowType == typeof(ToolWindow))
-                return new ToolWindow(ToolWindowViewModel);
+                return new ToolWindow(ToolWindowViewModel) { Package = this };
             else
                 return base.InstantiateToolWindow(toolWindowType);
         }
