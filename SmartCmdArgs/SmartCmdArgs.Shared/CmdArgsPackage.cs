@@ -81,8 +81,11 @@ namespace SmartCmdArgs
 
         public bool IsVcsSupportEnabled => ToolWindowViewModel.SettingsViewModel.VcsSupportEnabled;
         private bool IsMacroEvaluationEnabled => ToolWindowViewModel.SettingsViewModel.MacroEvaluationEnabled;
+        public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && ToolWindowViewModel.SettingsViewModel.UseSolutionDir;
+
         private bool IsUseMonospaceFontEnabled => GetDialogPage<CmdArgsOptionPage>().UseMonospaceFont;
-        public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && ToolWindowViewModel.SettingsViewModel.UseSolutionDir; 
+        public bool DeleteEmptyFilesAutomatically => GetDialogPage<CmdArgsOptionPage>().DeleteEmptyFilesAutomatically;
+        public bool DeleteUnnecessaryFilesAutomatically => GetDialogPage<CmdArgsOptionPage>().DeleteUnnecessaryFilesAutomatically;
 
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.

@@ -184,6 +184,9 @@ namespace SmartCmdArgs.Logic
 
         public void DeleteAllUnusedArgFiles()
         {
+            if (!cmdPackage.DeleteUnnecessaryFilesAutomatically)
+                return;
+
             IEnumerable<string> fileNames;
             if (cmdPackage.IsUseSolutionDirEnabled)
                 fileNames = vsHelper.GetSupportedProjects().Select(FullFilenameForProjectJsonFileFromProject);
@@ -228,7 +231,7 @@ namespace SmartCmdArgs.Logic
 
             using (solutionFsWatcher?.TemporarilyDisable())
             {
-                if (cmdPackage.ToolWindowViewModel.TreeViewModel.AllArguments.Any())
+                if (cmdPackage.ToolWindowViewModel.TreeViewModel.AllArguments.Any() || !cmdPackage.DeleteEmptyFilesAutomatically)
                 {
                     if (!vsHelper.CanEditFile(jsonFilename))
                     {
@@ -275,7 +278,7 @@ namespace SmartCmdArgs.Logic
             string filePath = FullFilenameForProjectJsonFileFromProject(project);
             FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(guid);
 
-            if (vm != null && vm.Items.Any())
+            if (vm != null && (vm.Items.Any() || !cmdPackage.DeleteEmptyFilesAutomatically))
             {
                 using (fsWatcher?.TemporarilyDisable())
                 {
@@ -302,7 +305,7 @@ namespace SmartCmdArgs.Logic
                     }
                 }
             }
-            else if (File.Exists(filePath))
+            else if (File.Exists(filePath) && cmdPackage.DeleteEmptyFilesAutomatically)
             {
                 Logger.Info("Deleting json file because command list is empty but json-file exists.");
 
