@@ -31,37 +31,21 @@ namespace SmartCmdArgs.Logic
 
         public void AddProject(IVsHierarchy project)
         {
-            if (!cmdPackage.IsUseSolutionDirEnabled)
-            {
-                AttachFsWatcherToProject(project);
-            }
-            else
-            {
-                AttachSolutionWatcher();
-            }
+            AttachFsWatcherToProject(project);
+            AttachSolutionWatcher();
 
             SaveProject(project);
         }
 
-
         public void RemoveAllProjects()
         {
-            if (!cmdPackage.IsUseSolutionDirEnabled)
-            {
-                DetachFsWatcherFromAllProjects();
-            }
-            else
-            {
-                DetachSolutionWatcher();
-            }
+            DetachFsWatcherFromAllProjects();
+            DetachSolutionWatcher();
         }
 
         public void RemoveProject(IVsHierarchy project)
         {
-            if (!cmdPackage.IsUseSolutionDirEnabled)
-            {
-                DetachFsWatcherFromProject(project);
-            }
+            DetachFsWatcherFromProject(project);
         }
 
         public void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName)
@@ -432,6 +416,10 @@ namespace SmartCmdArgs.Logic
             if (solutionFsWatcher == null)
             {
                 string slnFilename = vsHelper.GetSolutionFilename();
+
+                if (slnFilename == null)
+                    return;
+
                 string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
 
                 try

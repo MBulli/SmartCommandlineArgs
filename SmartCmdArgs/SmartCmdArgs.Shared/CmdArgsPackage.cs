@@ -332,7 +332,7 @@ namespace SmartCmdArgs
         private void FileStorage_FileStorageChanged(object sender, FileStorageChangedEventArgs e)
         {
             // This event is triggered on non-main thread!
-            
+
             Logger.Info($"Dispatching update commands function call");
 
             JoinableTaskFactory.RunAsync(async delegate
@@ -347,6 +347,9 @@ namespace SmartCmdArgs
                 // their guid is empty.
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (e.IsSolutionWide != IsUseSolutionDirEnabled)
+                    return;
 
                 if (!IsVcsSupportEnabled)
                     return;
