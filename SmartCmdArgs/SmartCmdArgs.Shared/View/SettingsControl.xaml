@@ -7,22 +7,31 @@
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              mc:Ignorable="d" 
-             d:DesignHeight="350" d:DesignWidth="600" d:DataContext="{x:Type vm:SettingsViewModel}">
-    <Grid>
-        <Label Content="Smart Commandline Arguments Settings" Margin="10,5,10,0" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
-        <ScrollViewer VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,47,10,35">
+             d:DesignHeight="370" d:DesignWidth="600" d:DataContext="{x:Type vm:SettingsViewModel}">
+    <Grid Margin="10,5,10,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Content="Smart Commandline Arguments Settings" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
+        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,0,5">Default values can be configured under Tools → Options → Smart Commandline Arguments</TextBlock>
+        <ScrollViewer Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <CheckBox Content="Save Settings to JSON" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,5,5,5" FontWeight="Bold" IsChecked="{Binding SaveSettingsToJson}" IsThreeState="True"/>
-                <TextBlock Margin="25,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled then the settings configured here are saved to a JSON file next to the Solution."/></TextBlock>
-                <CheckBox Content="Enable version control support" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,5,5,5" FontWeight="Bold" IsChecked="{Binding VcsSupportEnabled}" IsThreeState="True"/>
-                <TextBlock Margin="25,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control. The default value for this setting is True."/></TextBlock>
-                <CheckBox Content="Use Solution Directory" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,10,5,5" FontWeight="Bold" IsChecked="{Binding UseSolutionDir}" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}" IsThreeState="True"/>
-                <TextBlock Margin="25,0,10,5" TextWrapping="WrapWithOverflow" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}"><Run Text="If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)"/></TextBlock>
-                <CheckBox Content="Enable Macro evaluation" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,10,5,5" FontWeight="Bold" IsChecked="{Binding MacroEvaluationEnabled}" IsThreeState="True"/>
-                <TextBlock Margin="25,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string."/></TextBlock>
+                <CheckBox Content="Save Settings to JSON" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding SaveSettingsToJson}" IsThreeState="True"/>
+                <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled then the settings configured here are saved to a JSON file next to the Solution."/></TextBlock>
+                <CheckBox Content="Enable version control support" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding VcsSupportEnabled}" IsThreeState="True"/>
+                <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control. The default value for this setting is True."/></TextBlock>
+                <CheckBox Content="Use Solution Directory" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding UseSolutionDir}" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}" IsThreeState="True"/>
+                <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}"><Run Text="If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)"/></TextBlock>
+                <CheckBox Content="Enable Macro evaluation" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding MacroEvaluationEnabled}" IsThreeState="True"/>
+                <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string."/></TextBlock>
             </StackPanel>
         </ScrollViewer>
-        <Button x:Name="BtnCancel" Content="Cancel" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="75" Click="BtnCancel_Click"/>
-        <Button x:Name="BtnOK" Content="OK" HorizontalAlignment="Right" Margin="0,0,90,10" VerticalAlignment="Bottom" Width="75" Click="BtnOK_Click"/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+            <Button x:Name="BtnOK" Content="OK" Width="75" Click="BtnOK_Click" Margin="0,0,5,0"/>
+            <Button x:Name="BtnCancel" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="BtnCancel_Click" Margin="0,0,10,0"/>
+        </StackPanel>
     </Grid>
 </UserControl>
