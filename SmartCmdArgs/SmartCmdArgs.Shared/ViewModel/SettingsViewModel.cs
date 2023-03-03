@@ -9,52 +9,27 @@ namespace SmartCmdArgs.ViewModel
 {
     public class SettingsViewModel : PropertyChangedBase
     {
-        private bool _vcsSupportEnabled;
-        private bool _useSolutionDir;
-        private bool _macroEvaluationEnabled;
+        private bool? _vcsSupportEnabled;
+        private bool? _useSolutionDir;
+        private bool? _macroEvaluationEnabled;
 
-        public bool VcsSupportEnabled
+        public bool? VcsSupportEnabled
         {
             get => _vcsSupportEnabled;
-            set
-            {
-                if (_vcsSupportEnabled != value)
-                {
-                    SetAndNotify(value, ref _vcsSupportEnabled);
-                    VcsSupportEnabledChanged?.Invoke(this, value);
-                }
-            }
+            set => SetAndNotify(value, ref _vcsSupportEnabled);
         }
 
-        public bool UseSolutionDir
+        public bool? UseSolutionDir
         {
             get => _useSolutionDir;
-            set
-            {
-                if (_useSolutionDir != value)
-                {
-                    SetAndNotify(value, ref _useSolutionDir);
-                    UseSolutionDirChanged?.Invoke(this, value);
-                }
-            }
+            set => SetAndNotify(value, ref _useSolutionDir);
         }
 
-        public bool MacroEvaluationEnabled
+        public bool? MacroEvaluationEnabled
         {
             get => _macroEvaluationEnabled;
-            set
-            {
-                if (_macroEvaluationEnabled != value)
-                {
-                    SetAndNotify(value, ref _macroEvaluationEnabled);
-                    MacroEvaluationEnabledChanged?.Invoke(this, value);
-                }
-            }
+            set => SetAndNotify(value, ref _macroEvaluationEnabled);
         }
-
-        public event EventHandler<bool> VcsSupportEnabledChanged;
-        public event EventHandler<bool> UseSolutionDirChanged;
-        public event EventHandler<bool> MacroEvaluationEnabledChanged;
 
         public SettingsViewModel() { }
 
@@ -65,9 +40,9 @@ namespace SmartCmdArgs.ViewModel
 
         public void Assign(SettingsViewModel other)
         {
-            VcsSupportEnabled = other.VcsSupportEnabled;
-            UseSolutionDir = other.UseSolutionDir;
-            MacroEvaluationEnabled = other.MacroEvaluationEnabled;
+            typeof(SettingsViewModel)
+                .GetProperties()
+                .ForEach(p => p.SetValue(this, p.GetValue(other)));
         }
     }
 }

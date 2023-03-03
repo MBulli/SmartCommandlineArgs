@@ -1,35 +1,40 @@
 ﻿using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
+using SmartCmdArgs.Helper;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SmartCmdArgs
 {
-    public class CmdArgsOptionPage : DialogPage
+    public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
-        private bool _useMonospaceFont = false;
-        private bool _deleteEmptyFilesAutomatically = true;
-        private bool _deleteUnnecessaryFilesAutomatically = true;
+        public CmdArgsOptionPage()
+        {
+            ResetSettings();
+        }
 
-        [Category("General")]
+        private bool _useMonospaceFont;
+        private bool _deleteEmptyFilesAutomatically;
+        private bool _deleteUnnecessaryFilesAutomatically;
+
+        private bool _vcsSupportEnabled;
+        private bool _useSolutionDir;
+        private bool _macroEvaluationEnabled;
+
+        [Category("Appearance")]
         [DisplayName("Use Monospace Font")]
         [Description("If enabled the fontfamily is changed to 'Consolas'.")]
         [DefaultValue(false)]
         public bool UseMonospaceFont
         {
             get => _useMonospaceFont;
-            set
-            {
-                if (_useMonospaceFont != value)
-                {
-                    _useMonospaceFont = value;
-                    UseMonospaceFontChanged?.Invoke(this, value);
-                }
-            }
+            set => SetAndNotify(value, ref _useMonospaceFont);
         }
 
         [Category("Cleanup")]
@@ -39,14 +44,7 @@ namespace SmartCmdArgs
         public bool DeleteEmptyFilesAutomatically
         {
             get => _deleteEmptyFilesAutomatically;
-            set
-            {
-                if (_deleteEmptyFilesAutomatically != value)
-                {
-                    _deleteEmptyFilesAutomatically = value;
-                    DeleteEmptyFilesAutomaticallyChanged?.Invoke(this, value);
-                }
-            }
+            set => SetAndNotify(value, ref _deleteEmptyFilesAutomatically);
         }
 
         [Category("Cleanup")]
@@ -56,27 +54,60 @@ namespace SmartCmdArgs
         public bool DeleteUnnecessaryFilesAutomatically
         {
             get => _deleteUnnecessaryFilesAutomatically;
-            set
-            {
-                if (_deleteUnnecessaryFilesAutomatically != value)
-                {
-                    _deleteUnnecessaryFilesAutomatically = value;
-                    DeleteUnnecessaryFilesAutomaticallyChanged?.Invoke(this, value);
-                }
-            }
+            set => SetAndNotify(value, ref _deleteUnnecessaryFilesAutomatically);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Enable version control support")]
+        [Description("If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control. The default value for this setting is True.")]
+        [DefaultValue(true)]
+        public bool VcsSupportEnabled
+        {
+            get => _vcsSupportEnabled;
+            set => SetAndNotify(value, ref _vcsSupportEnabled);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Use Solution Directory")]
+        [Description("If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)")]
+        [DefaultValue(false)]
+        public bool UseSolutionDir
+        {
+            get => _useSolutionDir;
+            set => SetAndNotify(value, ref _useSolutionDir);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Enable Macro evaluation")]
+        [Description("If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string.")]
+        [DefaultValue(true)]
+        public bool MacroEvaluationEnabled
+        {
+            get => _macroEvaluationEnabled;
+            set => SetAndNotify(value, ref _macroEvaluationEnabled);
         }
 
         public override void ResetSettings()
         {
             base.ResetSettings();
-            
-            UseMonospaceFont = false;
-            DeleteEmptyFilesAutomatically = true;
-            DeleteUnnecessaryFilesAutomatically = true;
+
+            foreach (var prop in GetType().GetProperties())
+            {
+                var attribute = prop.GetCustomAttributes<DefaultValueAttribute>().FirstOrDefault();
+                if (attribute != null)
+                {
+                    prop.SetValue(this, attribute.Value);
+                }
+            }
         }
-        
-        public event EventHandler<bool> UseMonospaceFontChanged;
-        public event EventHandler<bool> DeleteEmptyFilesAutomaticallyChanged;
-        public event EventHandler<bool> DeleteUnnecessaryFilesAutomaticallyChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void SetAndNotify<T>(T newValue, ref T field, [CallerMemberName] string propertyName = null)
+        {
+            if (Equals(newValue, field)) return;
+            field = newValue;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

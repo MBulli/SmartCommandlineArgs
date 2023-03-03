@@ -79,13 +79,16 @@ namespace SmartCmdArgs
 
         public static CmdArgsPackage Instance { get; private set; }
 
-        public bool IsVcsSupportEnabled => ToolWindowViewModel.SettingsViewModel.VcsSupportEnabled;
-        private bool IsMacroEvaluationEnabled => ToolWindowViewModel.SettingsViewModel.MacroEvaluationEnabled;
-        public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && ToolWindowViewModel.SettingsViewModel.UseSolutionDir;
+        public SettingsViewModel Settings => ToolWindowViewModel.SettingsViewModel;
+        public CmdArgsOptionPage Options => GetDialogPage<CmdArgsOptionPage>();
 
-        private bool IsUseMonospaceFontEnabled => GetDialogPage<CmdArgsOptionPage>().UseMonospaceFont;
-        public bool DeleteEmptyFilesAutomatically => GetDialogPage<CmdArgsOptionPage>().DeleteEmptyFilesAutomatically;
-        public bool DeleteUnnecessaryFilesAutomatically => GetDialogPage<CmdArgsOptionPage>().DeleteUnnecessaryFilesAutomatically;
+        public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
+        private bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
+        public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
+
+        private bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
+        public bool DeleteEmptyFilesAutomatically => Options.DeleteEmptyFilesAutomatically;
+        public bool DeleteUnnecessaryFilesAutomatically => Options.DeleteUnnecessaryFilesAutomatically;
 
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.
@@ -157,9 +160,8 @@ namespace SmartCmdArgs
             // Switch to main thread
             await JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            ToolWindowViewModel.SettingsViewModel.VcsSupportEnabledChanged += OptionPage_VcsSupportChanged;
-            ToolWindowViewModel.SettingsViewModel.UseSolutionDirChanged += CmdArgsPackage_UseSolutionDirChanged;
-            GetDialogPage<CmdArgsOptionPage>().UseMonospaceFontChanged += OptionPage_UseMonospaceFontChanged;
+            ToolWindowViewModel.SettingsViewModel.PropertyChanged += SettingsViewModel_PropertyChanged;
+            GetDialogPage<CmdArgsOptionPage>().PropertyChanged += CmdArgsOptionPage_PropertyChanged;
 
             // Extension window was opend while a solution is already open
             if (vsHelper.IsSolutionOpen)
@@ -175,6 +177,25 @@ namespace SmartCmdArgs
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
 
             await base.InitializeAsync(cancellationToken, progress);
+        }
+
+        private void CmdArgsOptionPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
+                case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
+                case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
+            }
+        }
+
+        private void SettingsViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(SettingsViewModel.VcsSupportEnabled): VcsSupportChanged(); break;
+                case nameof(SettingsViewModel.UseSolutionDir): UseSolutionDirChanged(); break;
+            }
         }
 
         private void OnTreeContentChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
@@ -645,9 +666,9 @@ namespace SmartCmdArgs
         #endregion
 
         #region OptionPage Events
-        private void OptionPage_VcsSupportChanged(object sender, bool enabled)
+        private void VcsSupportChanged()
         {
-            if (!enabled)
+            if (!IsVcsSupportEnabled)
                 return;
 
             ToolWindowHistory.SaveState();
@@ -659,15 +680,14 @@ namespace SmartCmdArgs
             fileStorage.SaveAllProjects();
         }
 
-        private void OptionPage_UseMonospaceFontChanged(object sender, bool enabled)
+        private void UseMonospaceFontChanged()
         {
-            ToolWindowViewModel.UseMonospaceFont = enabled;
+            ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
         }
 
-        private void CmdArgsPackage_UseSolutionDirChanged(object sender, bool e)
+        private void UseSolutionDirChanged()
         {
             fileStorage.DeleteAllUnusedArgFiles();
-
             fileStorage.SaveAllProjects();
         }
 

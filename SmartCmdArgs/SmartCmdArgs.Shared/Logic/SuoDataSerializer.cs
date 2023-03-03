@@ -95,6 +95,8 @@ namespace SmartCmdArgs.Logic
 
             var data = new SuoDataJson();
 
+            data.Settings = new SettingsJson(vm.SettingsViewModel);
+
             data.ShowAllProjects = vm.TreeViewModel.ShowAllProjects;
             data.CheckedArguments = new HashSet<Guid>(vm.TreeViewModel.AllProjects.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
             data.ExpandedContainer = new HashSet<Guid>(vm.TreeViewModel.AllItems.OfType<CmdContainer>().Where(con => con.IsExpanded).Select(p => p.Id));

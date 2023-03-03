@@ -17,15 +17,7 @@ namespace SmartCmdArgs.Logic
             if (vm == null)
                 throw new ArgumentNullException(nameof(vm));
 
-            var data = new SettingsJson
-            {
-                VcsSupportEnabled = vm.VcsSupportEnabled,
-                UseSolutionDir = vm.UseSolutionDir,
-                MacroEvaluationEnabled = vm.MacroEvaluationEnabled
-            };
-
-            if (data.IsDefault())
-                return null;
+            var data = new SettingsJson(vm);
 
             return JsonConvert.SerializeObject(data, Formatting.Indented);
         }

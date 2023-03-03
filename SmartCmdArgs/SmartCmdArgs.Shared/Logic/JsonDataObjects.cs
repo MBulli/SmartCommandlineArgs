@@ -9,20 +9,22 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.Logic
 {
     public class SettingsJson
     {
-        public bool VcsSupportEnabled = true;
-        public bool UseSolutionDir = false;
-        public bool MacroEvaluationEnabled = true;
+        public bool? VcsSupportEnabled { get; set; }
+        public bool? UseSolutionDir { get; set; }
+        public bool? MacroEvaluationEnabled { get; set; }
 
-        public bool IsDefault()
-        {
-            return VcsSupportEnabled == true
-                && UseSolutionDir == false
-                && MacroEvaluationEnabled == true;
+        public SettingsJson() { }
+
+        public SettingsJson(SettingsViewModel settingsViewModel) {
+            VcsSupportEnabled = settingsViewModel.VcsSupportEnabled;
+            UseSolutionDir = settingsViewModel.UseSolutionDir;
+            MacroEvaluationEnabled = settingsViewModel.MacroEvaluationEnabled;
         }
     }
 
@@ -36,6 +38,9 @@ namespace SmartCmdArgs.Logic
         public HashSet<Guid> ExpandedContainer = new HashSet<Guid>();
         
         public Dictionary<Guid, ProjectDataJson> ProjectArguments = new Dictionary<Guid, ProjectDataJson>();
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public SettingsJson Settings = new SettingsJson();
     }
 
     public class SolutionDataJson
