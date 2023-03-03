@@ -383,6 +383,14 @@ namespace SmartCmdArgs
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                if (e.Type == FileStorageChanedType.Settings)
+                {
+                    if (SaveSettingsToJson)
+                        LoadSettings();
+
+                    return;
+                }
+
                 if (e.IsSolutionWide != IsUseSolutionDirEnabled)
                     return;
 

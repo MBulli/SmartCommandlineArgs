@@ -18,6 +18,7 @@ namespace SmartCmdArgs.Logic
         private readonly CmdArgsPackage cmdPackage;
         private readonly VisualStudioHelper vsHelper;
 
+        private FileSystemWatcher settingsFsWatcher;
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
         private FileSystemWatcher solutionFsWatcher;
 
@@ -96,23 +97,28 @@ namespace SmartCmdArgs.Logic
 
             if (jsonFilename == null) return;
 
-            if (cmdPackage.SaveSettingsToJson)
+            using (settingsFsWatcher?.TemporarilyDisable())
             {
-                string jsonStr = SettingsSerializer.Serialize(cmdPackage.ToolWindowViewModel.SettingsViewModel);
+                if (cmdPackage.SaveSettingsToJson)
+                {
+                    string jsonStr = SettingsSerializer.Serialize(cmdPackage.ToolWindowViewModel.SettingsViewModel);
 
-                if (jsonStr == "{}")
-                    File.Delete(jsonFilename);
+                    if (jsonStr == "{}")
+                        File.Delete(jsonFilename);
+                    else
+                        File.WriteAllText(jsonFilename, jsonStr);
+                }
                 else
-                    File.WriteAllText(jsonFilename, jsonStr);
-            }
-            else 
-            {
-                File.Delete(jsonFilename);
+                {
+                    File.Delete(jsonFilename);
+                }
             }
         }
 
         public SettingsJson ReadSettings()
         {
+            AttachSettingsWatcher();
+
             string jsonFilename = GetSettingsPath();
 
             if (jsonFilename != null && File.Exists(jsonFilename))
@@ -343,7 +349,7 @@ namespace SmartCmdArgs.Logic
             {
                 return FullFilenameForProjectJsonFileFromProjectPath(project.GetProjectDir(), project.GetName());
             }
-        }
+        } 
 
         private string FullFilenameForSolutionJsonFile()
         {
@@ -360,6 +366,11 @@ namespace SmartCmdArgs.Logic
         private void FireFileStorageChanged(IVsHierarchy project)
         {
             FileStorageChanged?.Invoke(this, new FileStorageChangedEventArgs(project));
+        }
+
+        private void FireFileStorageChanged(FileStorageChanedType type)
+        {
+            FileStorageChanged?.Invoke(this, new FileStorageChangedEventArgs(type));
         }
 
         private void AttachFsWatcherToProject(IVsHierarchy project)
@@ -471,21 +482,78 @@ namespace SmartCmdArgs.Logic
                 solutionFsWatcher = null;
             }
         }
+
+        private void AttachSettingsWatcher()
+        {
+            if (settingsFsWatcher != null)
+                return;
+
+            var jsonFilename = GetSettingsPath();
+
+            if (jsonFilename == null)
+                return;
+
+            try
+            {
+                settingsFsWatcher = new FileSystemWatcher();
+                settingsFsWatcher.Path = Path.GetDirectoryName(jsonFilename);
+                settingsFsWatcher.Filter = Path.GetFileName(jsonFilename);
+
+                settingsFsWatcher.EnableRaisingEvents = true;
+
+                settingsFsWatcher.Changed += (fsWatcher, args) => {
+                    Logger.Info($"SystemFileWatcher file Change '{args.FullPath}'");
+                    FireFileStorageChanged(FileStorageChanedType.Settings);
+                };
+                settingsFsWatcher.Created += (fsWatcher, args) => {
+                    Logger.Info($"SystemFileWatcher file Created '{args.FullPath}'");
+                    FireFileStorageChanged(FileStorageChanedType.Settings);
+                };
+                settingsFsWatcher.Renamed += (fsWatcher, args) =>
+                {
+                    Logger.Info($"FileWachter file Renamed '{args.FullPath}'. filename='{jsonFilename}'");
+                    if (jsonFilename == args.FullPath)
+                        FireFileStorageChanged(FileStorageChanedType.Settings);
+                };
+
+                Logger.Info($"Attached FileSystemWatcher to file '{jsonFilename}' for settings.");
+            }
+            catch (Exception e)
+            {
+                Logger.Warn($"Failed to attach FileSystemWatcher to file '{jsonFilename}' for settings with error '{e}'.");
+            }
+        }
+    }
+
+    enum FileStorageChanedType
+    {
+        Project,
+        Solution,
+        Settings,
     }
 
     class FileStorageChangedEventArgs : EventArgs
     {
+        public readonly FileStorageChanedType Type;
+
         /// <summary>
         /// The project for that the event was triggered.
         /// Can be null if solution file triggered the event.
         /// </summary>
         public readonly IVsHierarchy Project;
 
-        public bool IsSolutionWide => Project == null;
+        public bool IsSolutionWide => Type == FileStorageChanedType.Solution;
 
         public FileStorageChangedEventArgs(IVsHierarchy project)
         {
             Project = project;
+            Type = project == null ? FileStorageChanedType.Solution : FileStorageChanedType.Project;
+        }
+
+        public FileStorageChangedEventArgs(FileStorageChanedType type)
+        {
+            Project = null;
+            Type = type;
         }
     }
 }
