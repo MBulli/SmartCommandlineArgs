@@ -115,7 +115,7 @@ namespace SmartCmdArgs.Logic
                 return SettingsSerializer.Deserialize(jsonStr);
             }
 
-            return new SettingsJson();
+            return null;
         }
 
         public ProjectDataJson ReadDataForProject(IVsHierarchy project)

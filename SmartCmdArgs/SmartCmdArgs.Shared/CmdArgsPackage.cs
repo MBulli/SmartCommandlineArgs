@@ -412,6 +412,13 @@ namespace SmartCmdArgs
         public void LoadSettings()
         {
             var settings = fileStorage.ReadSettings();
+
+            if (settings == null)
+                settings = toolWindowStateLoadedFromSolution.Settings;
+
+            if (settings == null)
+                settings = new SettingsJson();
+
             var vm = ToolWindowViewModel.SettingsViewModel;
 
             vm.MacroEvaluationEnabled = settings.MacroEvaluationEnabled;
