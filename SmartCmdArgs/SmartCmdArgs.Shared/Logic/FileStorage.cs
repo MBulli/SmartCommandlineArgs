@@ -96,12 +96,19 @@ namespace SmartCmdArgs.Logic
 
             if (jsonFilename == null) return;
 
-            string jsonStr = SettingsSerializer.Serialize(cmdPackage.ToolWindowViewModel.SettingsViewModel);
+            if (cmdPackage.SaveSettingsToJson)
+            {
+                string jsonStr = SettingsSerializer.Serialize(cmdPackage.ToolWindowViewModel.SettingsViewModel);
 
-            if (string.IsNullOrEmpty(jsonStr))
+                if (jsonStr == "{}")
+                    File.Delete(jsonFilename);
+                else
+                    File.WriteAllText(jsonFilename, jsonStr);
+            }
+            else 
+            {
                 File.Delete(jsonFilename);
-            else
-                File.WriteAllText(jsonFilename, jsonStr);
+            }
         }
 
         public SettingsJson ReadSettings()

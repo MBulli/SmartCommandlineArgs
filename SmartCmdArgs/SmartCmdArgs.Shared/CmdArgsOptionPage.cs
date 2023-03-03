@@ -14,7 +14,7 @@ namespace SmartCmdArgs
 {
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
-        public CmdArgsOptionPage()
+        public CmdArgsOptionPage() : base()
         {
             ResetSettings();
         }
@@ -23,6 +23,7 @@ namespace SmartCmdArgs
         private bool _deleteEmptyFilesAutomatically;
         private bool _deleteUnnecessaryFilesAutomatically;
 
+        private bool _saveSettingsToJson;
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
@@ -55,6 +56,16 @@ namespace SmartCmdArgs
         {
             get => _deleteUnnecessaryFilesAutomatically;
             set => SetAndNotify(value, ref _deleteUnnecessaryFilesAutomatically);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Save Settings to JSON")]
+        [Description("If enabled then the settings configured here are saved to a JSON file next to the Solution.")]
+        [DefaultValue(false)]
+        public bool SaveSettingsToJson
+        {
+            get => _saveSettingsToJson;
+            set => SetAndNotify(value, ref _saveSettingsToJson);
         }
 
         [Category("Settings Defaults")]

@@ -82,6 +82,9 @@ namespace SmartCmdArgs
         public SettingsViewModel Settings => ToolWindowViewModel.SettingsViewModel;
         public CmdArgsOptionPage Options => GetDialogPage<CmdArgsOptionPage>();
 
+        private bool settingsLoaded = false;
+
+        public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         private bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
@@ -181,8 +184,12 @@ namespace SmartCmdArgs
 
         private void CmdArgsOptionPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (!settingsLoaded)
+                return;
+
             switch (e.PropertyName)
             {
+                case nameof(CmdArgsOptionPage.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
                 case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
                 case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
@@ -191,8 +198,12 @@ namespace SmartCmdArgs
 
         private void SettingsViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (!settingsLoaded)
+                return;
+
             switch (e.PropertyName)
             {
+                case nameof(SettingsViewModel.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
                 case nameof(SettingsViewModel.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(SettingsViewModel.UseSolutionDir): UseSolutionDirChanged(); break;
             }
@@ -421,9 +432,11 @@ namespace SmartCmdArgs
 
             var vm = ToolWindowViewModel.SettingsViewModel;
 
+            // the order here is important
             vm.MacroEvaluationEnabled = settings.MacroEvaluationEnabled;
-            vm.UseSolutionDir = settings.UseSolutionDir;
             vm.VcsSupportEnabled = settings.VcsSupportEnabled;
+            vm.UseSolutionDir = settings.UseSolutionDir;                    // has to be done after VcsSupportEnabled because it depends on it
+            vm.SaveSettingsToJson = settings.SaveSettingsToJson;            // has to be done at the end because all settings should be correctly set before to be saved to a file
         }
 
         private void UpdateCommandsForProject(IVsHierarchy project)
@@ -570,6 +583,8 @@ namespace SmartCmdArgs
 
             LoadSettings();
 
+            settingsLoaded = true;
+
             foreach (var project in vsHelper.GetSupportedProjects())
             {
                 UpdateCommandsForProject(project);
@@ -599,6 +614,7 @@ namespace SmartCmdArgs
 
             ToolWindowViewModel.Reset();
             toolWindowStateLoadedFromSolution = null;
+            settingsLoaded = false;
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)
@@ -673,6 +689,11 @@ namespace SmartCmdArgs
         #endregion
 
         #region OptionPage Events
+        private void SaveSettingsToJsonChanged()
+        {
+            SaveSettings();
+        }
+
         private void VcsSupportChanged()
         {
             if (!IsVcsSupportEnabled)

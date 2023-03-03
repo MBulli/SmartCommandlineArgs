@@ -9,9 +9,16 @@ namespace SmartCmdArgs.ViewModel
 {
     public class SettingsViewModel : PropertyChangedBase
     {
+        private bool? _saveSettingsToJson;
         private bool? _vcsSupportEnabled;
         private bool? _useSolutionDir;
         private bool? _macroEvaluationEnabled;
+
+        public bool? SaveSettingsToJson
+        {
+            get => _saveSettingsToJson;
+            set => SetAndNotify(value, ref _saveSettingsToJson);
+        }
 
         public bool? VcsSupportEnabled
         {

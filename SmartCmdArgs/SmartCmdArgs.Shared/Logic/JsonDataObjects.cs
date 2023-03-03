@@ -15,13 +15,16 @@ namespace SmartCmdArgs.Logic
 {
     public class SettingsJson
     {
+        public bool? SaveSettingsToJson { get; set; }
         public bool? VcsSupportEnabled { get; set; }
         public bool? UseSolutionDir { get; set; }
         public bool? MacroEvaluationEnabled { get; set; }
 
         public SettingsJson() { }
 
-        public SettingsJson(SettingsViewModel settingsViewModel) {
+        public SettingsJson(SettingsViewModel settingsViewModel)
+        {
+            SaveSettingsToJson = settingsViewModel.SaveSettingsToJson;
             VcsSupportEnabled = settingsViewModel.VcsSupportEnabled;
             UseSolutionDir = settingsViewModel.UseSolutionDir;
             MacroEvaluationEnabled = settingsViewModel.MacroEvaluationEnabled;
