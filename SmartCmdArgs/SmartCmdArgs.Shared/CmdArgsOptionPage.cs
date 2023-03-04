@@ -14,9 +14,19 @@ namespace SmartCmdArgs
 {
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
+        private bool _dontSave = false;
+
         public CmdArgsOptionPage() : base()
         {
-            ResetSettings();
+            _dontSave = true;
+            try
+            {
+                ResetSettings();
+            }
+            finally
+            {
+                _dontSave = false;
+            }
         }
 
         private bool _useMonospaceFont;
@@ -96,6 +106,14 @@ namespace SmartCmdArgs
         {
             get => _macroEvaluationEnabled;
             set => SetAndNotify(value, ref _macroEvaluationEnabled);
+        }
+
+        public override void SaveSettingsToStorage()
+        {
+            if (_dontSave)
+                return;
+
+            base.SaveSettingsToStorage();
         }
 
         public override void ResetSettings()
