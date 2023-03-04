@@ -16,7 +16,7 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Content="Smart Commandline Arguments Settings" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
-        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,0,5">Default values can be configured under Tools → Options → Smart Commandline Arguments</TextBlock>
+        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,0,5">Default values can be configured under <Hyperlink Command="{Binding OpenOptionsCommand}">Tools → Options → Smart Commandline Arguments</Hyperlink></TextBlock>
         <ScrollViewer Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
                 <CheckBox Content="Save Settings to JSON" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding SaveSettingsToJson}" IsThreeState="True"/>
