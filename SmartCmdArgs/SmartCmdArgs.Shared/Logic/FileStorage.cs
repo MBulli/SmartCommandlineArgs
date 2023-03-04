@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -242,7 +243,8 @@ namespace SmartCmdArgs.Logic
 
             using (solutionFsWatcher?.TemporarilyDisable())
             {
-                if (cmdPackage.ToolWindowViewModel.TreeViewModel.AllArguments.Any() || !cmdPackage.DeleteEmptyFilesAutomatically)
+                var allItemsExceptProjects = cmdPackage.ToolWindowViewModel.TreeViewModel.AllItems.Where(i => !(i is CmdProject));
+                if (allItemsExceptProjects.Any() || !cmdPackage.DeleteEmptyFilesAutomatically)
                 {
                     if (!vsHelper.CanEditFile(jsonFilename))
                     {
