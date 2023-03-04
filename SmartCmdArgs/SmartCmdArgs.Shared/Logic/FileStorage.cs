@@ -34,8 +34,6 @@ namespace SmartCmdArgs.Logic
         {
             AttachFsWatcherToProject(project);
             AttachSolutionWatcher();
-
-            SaveProject(project);
         }
 
         public void RemoveAllProjects()
