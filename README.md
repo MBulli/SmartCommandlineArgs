@@ -1,16 +1,14 @@
 
 # <img src="Doc/SmartCommandLineIcon-Readme.png">  Smart Command Line Arguments 
-A Visual Studio Extension which aims to provide a better UI to manage your command line arguments  
+A Visual Studio Extension which aims to provide a better UI to manage your command line arguments
 
 > "The only smart way to pass standard command arguments to programs." - [A happy user](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments#review-details)
 
 ## Install
 
-For VS 2022 download the vsix manually from: [Release v2.3.2](https://github.com/MBulli/SmartCommandlineArgs/releases/tag/v2.3.2)
+Install the extension inside Visual Studio or download it from the Visual Studio Marketplace [for VS2022](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments2022) or [v2.3.2 for VS2015, VS20217 and VS2019](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments).
 
-Install the extension inside Visual Studio or download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MBulli.SmartCommandlineArguments "Visual Studio Marketplace").
-
-Visual Studio 2015, 2017 and 2019 and the following project types are supported:
+Visual Studio 2017, 2019 and 2022 and the following project types are supported:
 - C# .Net Framework
 - C# .Net Core
 - VB .Net
@@ -18,41 +16,47 @@ Visual Studio 2015, 2017 and 2019 and the following project types are supported:
 - C/C++
 - Node.js
 - Python
+- Fortran
 - Remote WSL Debugger
 - Android Native Debugger
+- Oasis NX Debugger
 
 If you're using Cmake make sure to read the [Cmake support wiki page](https://github.com/MBulli/SmartCommandlineArgs/wiki/Cmake-support "Cmake").
 
 ## Usage
 Open the window via:  
 View → Other Windows → Commandline Arguments  
-  
+
 If the Window is open or minimized the commandline arguments should not be edited via the project properties.  
 Changes which are made in the window are applied to all project configurations (Release/Debug etc.) of the current startup project.
 
-## Version Control Support
-The extension stores the commandline arguments inside a json file at the same location as the related project file.  
-If this new behavior is not welcomed one can fallback to the 'old' mode where the commandline arguments have been stored inside the solutions .suo-file:  
-Tools → Options → Smart Commandline Arguments → General → Enable version control support
-
 ## Interface
-![Add button](Doc/Images/AddIcon.png "Add Button"): Add new line  
-![Remove button](Doc/Images/RemoveIcon.png "Remove Button"): Remove selected lines  
-![Add group button](Doc/Images/AddGroupIcon.png "Add Group Button"): Add new group  
-![Up/Down button](Doc/Images/MoveUpIcon.png "Move Up Button") / ![alt text](Doc/Images/MoveDownIcon.png "Move Down Button"): Move selected lines  
-![Copy cmd](Doc/Images/CopyCommandlineIcon.png "Copy commandline to clipboard"): Copy command line to clipboard. In the example below, the string `-f input_image.png -l latest.log -o out_image.png` is copied to the clipboard.  
-![Show all projects](Doc/Images/ShowAllProjectsIcon.png "Show all Projects"): Toggle 'Show all projects' to also display non-startup projects.
+- ![Add button](Doc/Images/AddIcon.png "Add Button"): Add new line
+- ![Remove button](Doc/Images/RemoveIcon.png "Remove Button"): Remove selected lines
+- ![Add group button](Doc/Images/AddGroupIcon.png "Add Group Button"): Add new group
+- ![Up/Down button](Doc/Images/MoveUpIcon.png "Move Up Button") / ![alt text](Doc/Images/MoveDownIcon.png "Move Down Button"): Move selected lines
+- ![Copy cmd](Doc/Images/CopyCommandlineIcon.png "Copy commandline to clipboard"): Copy command line to clipboard. In the example below, the string `-f input_image.png -l latest.log -o out_image.png` is copied to the clipboard.
+- ![Show all projects](Doc/Images/ShowAllProjectsIcon.png "Show all Projects"): Toggle 'Show all projects' to also display non-startup projects.
+- ![Settings](Doc/Images/SettingsIcon.png): Open the [Settings](#settings) dialog
 
 ![Window](Doc/Images/MainWindow.png "Command Line Arguments window, showning all projects")
 
+## Settings
+If the checkboxes are filled with a square the default value is used.
+The default value for these settings can be configured under `Tools → Options → Smart Commandline Arguments → Settings Defaults`.
+
+- **Save Settings to JSON**: If true then the these settings are stored in a JSON file next to the solution file.
+- **Enable version control support**: If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions `.suo-file` which is usally ignored by version control. The default value for this setting is True.
+- **Use Solution Directory**: If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)
+- **Enable Macro evaluation**: If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string.
 
 ## Hotkeys
-<kbd>CTRL</kbd>+<kbd>↑</kbd> / <kbd>CTRL</kbd>+<kbd>↓</kbd>: Move selected items.  
-<kbd>Space</kbd>: Disable/Enable selected items.  
-<kbd>Delete</kbd>: Remove selected items.  
-<kbd>Insert</kbd>: Add a new item.  
-<kbd>Alt</kbd>+<kbd>Insert</kbd>: Add a new group.  
-<kbd>Alt</kbd>+<kbd>Enable/Disable Item</kbd>: Disable all other Items (useful if only one item should be enabled).
+- <kbd>CTRL</kbd>+<kbd>↑</kbd> / <kbd>CTRL</kbd>+<kbd>↓</kbd>: Move selected items.
+- <kbd>Space</kbd>: Disable/Enable selected items.
+- <kbd>Delete</kbd>: Remove selected items.
+- <kbd>Insert</kbd>: Add a new item.
+- <kbd>Alt</kbd>+<kbd>Insert</kbd>: Add a new group.
+- <kbd>Alt</kbd>+<kbd>Enable/Disable Item</kbd>: Disable all other Items (useful if only one item should be enabled).
 
 ## Paste
 
@@ -64,15 +68,18 @@ There are also three different types of data which can be pasted:
 
 ## Context Menu
 
-![Context Menu](Doc/Images/ContextMenu.png "Context Menu with a single group selected")
+![Context Menu](Doc/Images/ContextMenuGroup.png "Context Menu with a single group selected")
 
-**Cut** / **Copy** / **Delete**: Cuts/Copies/Deletes the selected items.  
-**Paste**: Pastes the previously copied/cut items, text, or files (see [Paste](#paste)).
-
-**New Group from Selection**: Creates a new Group and moves the selected items into it.  
-**Split Argument** (only available while ONE argument is selected): Splits the argument with the typical cmd line parsing rules (e.g. `-o "C:\Test Folder\Output.png"` is split into two arguments `-o` and `"C:\Test Folder\Output.png"`).  
-**Project Configuration** / **Launch Profile** (only available while ONE group is selected): Shows a sub menu to select a Project Configuration/Launch Profile. If a Project Configuration/Launch Profile is set for a group, it is only evaluated if this Project Configuration/Launch Profile is active.  
-**Set as single Startup Project** (only available while ONE project is selected): Sets the selected project as the startup project.
+- **Cut** / **Copy** / **Delete**: Cuts/Copies/Deletes the selected items.
+- **Paste**: Pastes the previously copied/cut items, text, or files (see [Paste](#paste)).
+- **Space Delimiter** (only available while ONE group or project is selected): If this is checked then each argument in the group is seperated by a space when passed to the application.
+- **Exclusive Mode** (only available while ONE group or project is selected): If this is checked then the group switches to a radio button mode where only one argument can be checked at any given time.
+- **New Group from Selection**: Creates a new Group and moves the selected items into it.
+- **Reset to default checked**: Resets every selected arguemnt to the checked state given by the _Default Dhecked_ option.
+- **Default Checked**: If this is checked then the argument sould be chekd by default e.g. if someone opens up the project for the first time.
+- **Split Argument** (only available while ONE argument is selected): Splits the argument with the typical cmd line parsing rules (e.g. `-o "C:\Test Folder\Output.png"` is split into two arguments `-o` and `"C:\Test Folder\Output.png"`).
+- **Project Configuration** / **Launch Profile** / **Project Platform** (only available while ONE group is selected): Shows a sub menu to select a Project Configuration/Launch Profile/Project Platform. If this is set for a group, it is only evaluated if the right Project Configuration/Launch Profile/Project Platform is active.
+- **Set as single Startup Project** (only available while ONE project is selected): Sets the selected project as the startup project.
 
 ## Donation
 If you like this extension you can buy us a cup of coffee or a coke! :D
