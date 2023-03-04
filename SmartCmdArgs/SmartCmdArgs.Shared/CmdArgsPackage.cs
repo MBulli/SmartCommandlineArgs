@@ -52,15 +52,15 @@ namespace SmartCmdArgs
     /// </para>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [InstalledProductRegistration("#110", "#112", "2.4.0", IconResourceID = 400)] // Info on this package for Help/About
+    [InstalledProductRegistration("#110", "#112", "2.4.1", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(ToolWindow), Window = ToolWindow.ToolWindowGuidString)]
-    [ProvideOptionPage(typeof(CmdArgsOptionPage), "Smart Command Line Arguments", "General", 1000, 1001, false)]   
+    [ProvideOptionPage(typeof(CmdArgsOptionPage), "Smart Command Line Arguments", "General", 1000, 1001, false)]
     [ProvideBindingPath]
     [ProvideKeyBindingTable(ToolWindow.ToolWindowGuidString, 200)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(CmdArgsPackage.PackageGuidString)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]   
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class CmdArgsPackage : AsyncPackage
     {
         /// <summary>
@@ -100,7 +100,7 @@ namespace SmartCmdArgs
         // processed later.
         private string toolWindowStateFromSolutionJsonStr;
         private SuoDataJson toolWindowStateLoadedFromSolution;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
@@ -275,13 +275,13 @@ namespace SmartCmdArgs
 
         private void UpdateConfigurationForProject(IVsHierarchy project)
         {
-            if (project == null) 
+            if (project == null)
                 return;
 
             var commandLineArgs = CreateCommandLineArgsForProject(project);
             if (commandLineArgs == null)
                 return;
-            
+
             ProjectArguments.SetArguments(project, commandLineArgs);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
@@ -334,11 +334,11 @@ namespace SmartCmdArgs
         {
             return CreateCommandLineArgsForProject(vsHelper.HierarchyForProjectGuid(guid));
         }
-        
+
         public List<string> GetProjectConfigurations(Guid projGuid)
         {
             IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
-            
+
             var configs = (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>().ToList();
             return configs ?? new List<string>();
         }
@@ -396,7 +396,7 @@ namespace SmartCmdArgs
 
                 if (!IsVcsSupportEnabled)
                     return;
-                
+
                 ToolWindowHistory.SaveState();
 
                 IEnumerable<IVsHierarchy> projects;
@@ -479,7 +479,7 @@ namespace SmartCmdArgs
             if (projectData != null)
             {
                 Logger.Info($"Setting {projectData?.Items?.Count} commands for project '{project.GetName()}' from json-file.");
-                
+
                 var projectListViewModel = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(projectGuid);
 
                 var projHasSuoData = solutionData.ProjectArguments.ContainsKey(projectGuid);
@@ -640,7 +640,7 @@ namespace SmartCmdArgs
         private void VsHelper_ProjectWillRun(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Startup project will run.");
-            
+
             foreach (var startupProject in ToolWindowViewModel.TreeViewModel.StartupProjects)
             {
                 var project = vsHelper.HierarchyForProjectGuid(startupProject.Id);
