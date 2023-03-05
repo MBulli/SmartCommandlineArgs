@@ -35,6 +35,7 @@
                           DeleteCommand="{Binding RemoveEntriesCommand}"
                           SplitArgumentCommand="{Binding SplitArgumentCommand}"
                           RevealFileInExplorerCommand="{Binding RevealFileInExplorerCommand}"
+                          OpenFileCommand="{Binding OpenFileCommand}"
                           NewGroupFromArgumentsCommand="{Binding NewGroupFromArgumentsCommand}"
                           SetAsStartupProjectCommand="{Binding SetAsStartupProjectCommand}"
                           SetProjectConfigCommand="{Binding SetProjectConfigCommand}"

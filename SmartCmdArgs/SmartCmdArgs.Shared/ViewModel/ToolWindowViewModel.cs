@@ -67,6 +67,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand RevealFileInExplorerCommand { get; }
 
+        public RelayCommand OpenFileCommand { get; }
+
         public RelayCommand NewGroupFromArgumentsCommand { get; }
 
         public RelayCommand SetAsStartupProjectCommand { get; }
@@ -195,21 +197,20 @@ namespace SmartCmdArgs.ViewModel
             RevealFileInExplorerCommand = new RelayCommand(() =>
             {
                 var fileName = ExtractFileNameFromSelectedArgument();
+                if (fileName != null)
+                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fileName}\"");
+            },
+            canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && IsFileNameInSelectedArgument());
+
+            OpenFileCommand = new RelayCommand(() =>
+            {
+                var fileName = ExtractFileNameFromSelectedArgument();
                 if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
                 {
-                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fileName}\"");
+                    System.Diagnostics.Process.Start(fileName);
                 }
             },
-            canExecute: _ =>
-            {
-                if (HasSingleSelectedItemOfType<CmdArgument>())
-                {
-                    var fileName = ExtractFileNameFromSelectedArgument();
-                    return !string.IsNullOrEmpty(fileName) && File.Exists(fileName);
-                }
-
-                return false;
-            });
+            canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && IsFileNameInSelectedArgument());
 
             NewGroupFromArgumentsCommand = new RelayCommand(() =>
             {
@@ -445,6 +446,12 @@ namespace SmartCmdArgs.ViewModel
             }
 
             return null;
+        }
+
+        private bool IsFileNameInSelectedArgument()
+        {
+            var fileName = ExtractFileNameFromSelectedArgument();
+            return !string.IsNullOrEmpty(fileName) && File.Exists(fileName);
         }
 
         private void RemoveSelectedItems()
