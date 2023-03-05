@@ -34,6 +34,7 @@
                           CutCommand="{Binding CutItemsCommand}"
                           DeleteCommand="{Binding RemoveEntriesCommand}"
                           SplitArgumentCommand="{Binding SplitArgumentCommand}"
+                          RevealFileInExplorerCommand="{Binding RevealFileInExplorerCommand}"
                           NewGroupFromArgumentsCommand="{Binding NewGroupFromArgumentsCommand}"
                           SetAsStartupProjectCommand="{Binding SetAsStartupProjectCommand}"
                           SetProjectConfigCommand="{Binding SetProjectConfigCommand}"

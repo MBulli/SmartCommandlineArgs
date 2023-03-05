@@ -75,13 +75,18 @@ namespace SmartCmdArgs.View
         public static readonly DependencyProperty SelectItemCommandProperty = DependencyProperty.Register(
             nameof(SelectItemCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand SelectItemCommand { get => (ICommand)GetValue(SelectItemCommandProperty); set => SetValue(SelectItemCommandProperty, value); }
-        
+
 
         public static readonly DependencyProperty SplitArgumentCommandProperty = DependencyProperty.Register(
-            nameof(SplitArgumentCommand), typeof(ICommand), typeof(TreeViewEx), 
+            nameof(SplitArgumentCommand), typeof(ICommand), typeof(TreeViewEx),
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._splitArgumentMenuItem.Command = (ICommand)e.NewValue));
         public ICommand SplitArgumentCommand { get { return (ICommand)GetValue(SplitArgumentCommandProperty); } set { SetValue(SplitArgumentCommandProperty, value); } }
-        
+
+        public static readonly DependencyProperty RevealFileInExplorerCommandProperty = DependencyProperty.Register(
+            nameof(RevealFileInExplorerCommand), typeof(ICommand), typeof(TreeViewEx),
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._revealFileInExplorerMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand RevealFileInExplorerCommand { get { return (ICommand)GetValue(RevealFileInExplorerCommandProperty); } set { SetValue(RevealFileInExplorerCommandProperty, value); } }
+
         public static readonly DependencyProperty NewGroupFromArgumentsCommandProperty = DependencyProperty.Register(
             nameof(NewGroupFromArgumentsCommand), typeof(ICommand), typeof(TreeViewEx), 
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._newGroupFromArgumentsMenuItem.Command = (ICommand)e.NewValue));
@@ -156,6 +161,7 @@ namespace SmartCmdArgs.View
         private MenuItem _exclusiveModeMenuItem;
         private Separator _spacer1MenuItem;
         private MenuItem _splitArgumentMenuItem;
+        private MenuItem _revealFileInExplorerMenuItem;
         private MenuItem _newGroupFromArgumentsMenuItem;
         private MenuItem _setAsStartupProjectMenuItem;
         private MenuItem _projConfigMenuItem;
@@ -179,6 +185,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_spacer1MenuItem = new Separator());
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
+            ContextMenu.Items.Add(_revealFileInExplorerMenuItem = new MenuItem { Header = "Reveal File in Explorer" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as single Startup Project" });
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_projPlatformMenuItem = new MenuItem { Header = "Project Platform" });
@@ -188,6 +195,7 @@ namespace SmartCmdArgs.View
 
             CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
+            CollapseWhenDisbaled(_revealFileInExplorerMenuItem);
             CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
             CollapseWhenDisbaled(_projConfigMenuItem);
             CollapseWhenDisbaled(_projPlatformMenuItem);

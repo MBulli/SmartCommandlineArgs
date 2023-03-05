@@ -65,6 +65,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand SplitArgumentCommand { get; }
 
+        public RelayCommand RevealFileInExplorerCommand { get; }
+
         public RelayCommand NewGroupFromArgumentsCommand { get; }
 
         public RelayCommand SetAsStartupProjectCommand { get; }
@@ -180,9 +182,8 @@ namespace SmartCmdArgs.ViewModel
                 {
                     ToolWindowHistory.SaveState();
 
-                    var newItems = SplitArgumentRegex.Matches(argument.Value)
-                                   .Cast<Match>()
-                                   .Select((m) => new CmdArgument(m.Value, argument.IsChecked, argument.DefaultChecked))
+                    var newItems = SplitArgument(argument.Value)
+                                   .Select((s) => new CmdArgument(s, argument.IsChecked, argument.DefaultChecked))
                                    .ToList();
 
                     TreeViewModel.AddItemsAt(selectedItem, newItems);
@@ -190,6 +191,25 @@ namespace SmartCmdArgs.ViewModel
                     TreeViewModel.SelectItems(newItems);
                 }
             }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>());
+
+            RevealFileInExplorerCommand = new RelayCommand(() =>
+            {
+                var fileName = ExtractFileNameFromSelectedArgument();
+                if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fileName}\"");
+                }
+            },
+            canExecute: _ =>
+            {
+                if (HasSingleSelectedItemOfType<CmdArgument>())
+                {
+                    var fileName = ExtractFileNameFromSelectedArgument();
+                    return !string.IsNullOrEmpty(fileName) && File.Exists(fileName);
+                }
+
+                return false;
+            });
 
             NewGroupFromArgumentsCommand = new RelayCommand(() =>
             {
@@ -407,6 +427,24 @@ namespace SmartCmdArgs.ViewModel
         private bool HasStartupProjectAndSelectedItems()
         {
             return HasStartupProject() && HasSelectedItems();
+        }
+
+        private IEnumerable<string> SplitArgument(string argument) => SplitArgumentRegex.Matches(argument).Cast<Match>().Select(x => x.Value);
+
+        private string ExtractFileNameFromSelectedArgument()
+        {
+            var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+            if (selectedItem is CmdArgument argument)
+            {
+                foreach (var part in SplitArgument(argument.Value))
+                {
+                    var trimmed = part.Trim('"');
+                    if (File.Exists(trimmed))
+                        return trimmed;
+                }
+            }
+
+            return null;
         }
 
         private void RemoveSelectedItems()
