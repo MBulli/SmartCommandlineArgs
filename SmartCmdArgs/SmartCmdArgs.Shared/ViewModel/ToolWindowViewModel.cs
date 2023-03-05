@@ -69,6 +69,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand OpenFileCommand { get; }
 
+        public RelayCommand OpenFileInVSCommand { get; }
+
         public RelayCommand OpenDirectoryCommand { get; }
 
         public RelayCommand NewGroupFromArgumentsCommand { get; }
@@ -209,6 +211,15 @@ namespace SmartCmdArgs.ViewModel
                 if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
                 {
                     System.Diagnostics.Process.Start(fileName);
+                }
+            }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
+
+            OpenFileInVSCommand = new RelayCommand(() =>
+            {
+                var fileName = ExtractFileNameFromSelectedArgument();
+                if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
+                {
+                    var task = CmdArgsPackage.OpenFileInVisualStudioAsync(fileName);
                 }
             }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
 

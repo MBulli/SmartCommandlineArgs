@@ -36,6 +36,7 @@
                           SplitArgumentCommand="{Binding SplitArgumentCommand}"
                           RevealFileInExplorerCommand="{Binding RevealFileInExplorerCommand}"
                           OpenFileCommand="{Binding OpenFileCommand}"
+                          OpenFileInVSCommand="{Binding OpenFileInVSCommand}"
                           OpenDirectoryCommand="{Binding OpenDirectoryCommand}"
                           NewGroupFromArgumentsCommand="{Binding NewGroupFromArgumentsCommand}"
                           SetAsStartupProjectCommand="{Binding SetAsStartupProjectCommand}"

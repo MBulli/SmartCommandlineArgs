@@ -92,6 +92,11 @@ namespace SmartCmdArgs.View
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._openFileMenuItem.Command = (ICommand)e.NewValue));
         public ICommand OpenFileCommand { get { return (ICommand)GetValue(OpenFileCommandProperty); } set { SetValue(OpenFileCommandProperty, value); } }
 
+        public static readonly DependencyProperty OpenFileInVSCommandProperty = DependencyProperty.Register(
+            nameof(OpenFileInVSCommand), typeof(ICommand), typeof(TreeViewEx),
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._openFileInVSMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand OpenFileInVSCommand { get { return (ICommand)GetValue(OpenFileInVSCommandProperty); } set { SetValue(OpenFileInVSCommandProperty, value); } }
+
         public static readonly DependencyProperty OpenDirectoryCommandProperty = DependencyProperty.Register(
             nameof(OpenDirectoryCommand), typeof(ICommand), typeof(TreeViewEx),
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._openDirectoryMenuItem.Command = (ICommand)e.NewValue));
@@ -174,6 +179,7 @@ namespace SmartCmdArgs.View
         private MenuItem _fileMenuItem;
         private MenuItem _revealFileInExplorerMenuItem;
         private MenuItem _openFileMenuItem;
+        private MenuItem _openFileInVSMenuItem;
         private MenuItem _openDirectoryMenuItem;
         private MenuItem _newGroupFromArgumentsMenuItem;
         private MenuItem _setAsStartupProjectMenuItem;
@@ -200,6 +206,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_fileMenuItem = new MenuItem { Header = "File" });
             _fileMenuItem.Items.Add(_openFileMenuItem = new MenuItem { Header = "Open..." });
+            _fileMenuItem.Items.Add(_openFileInVSMenuItem = new MenuItem { Header = "Open in Visual Studio" });
             _fileMenuItem.Items.Add(_revealFileInExplorerMenuItem = new MenuItem { Header = "Reveal in Explorer" });
             ContextMenu.Items.Add(_openDirectoryMenuItem = new MenuItem { Header = "Open Directory in Explorer" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as single Startup Project" });

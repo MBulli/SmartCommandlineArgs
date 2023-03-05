@@ -378,6 +378,13 @@ namespace SmartCmdArgs
             }
         }
 
+        public async Task OpenFileInVisualStudioAsync(string path)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            appObject.ItemOperations.OpenFile(path);
+        }
+
 
         Timer _startupProjectCheckTimer = null;
         private void OnStartupProjectChanged(IVsHierarchy startupProjectHierarchy)

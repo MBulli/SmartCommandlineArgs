@@ -744,5 +744,7 @@ namespace SmartCmdArgs
             ToolWindowViewModel.TreeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
             ToolWindowViewModel.TreeViewModel.UpdateTree();
         }
+
+        public Task OpenFileInVisualStudioAsync(string path) => vsHelper.OpenFileInVisualStudioAsync(path);
     }
 }
