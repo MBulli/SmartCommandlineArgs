@@ -92,6 +92,11 @@ namespace SmartCmdArgs.View
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._openFileMenuItem.Command = (ICommand)e.NewValue));
         public ICommand OpenFileCommand { get { return (ICommand)GetValue(OpenFileCommandProperty); } set { SetValue(OpenFileCommandProperty, value); } }
 
+        public static readonly DependencyProperty OpenDirectoryCommandProperty = DependencyProperty.Register(
+            nameof(OpenDirectoryCommand), typeof(ICommand), typeof(TreeViewEx),
+            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._openDirectoryMenuItem.Command = (ICommand)e.NewValue));
+        public ICommand OpenDirectoryCommand { get { return (ICommand)GetValue(OpenDirectoryCommandProperty); } set { SetValue(OpenDirectoryCommandProperty, value); } }
+
         public static readonly DependencyProperty NewGroupFromArgumentsCommandProperty = DependencyProperty.Register(
             nameof(NewGroupFromArgumentsCommand), typeof(ICommand), typeof(TreeViewEx), 
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._newGroupFromArgumentsMenuItem.Command = (ICommand)e.NewValue));
@@ -169,6 +174,7 @@ namespace SmartCmdArgs.View
         private MenuItem _fileMenuItem;
         private MenuItem _revealFileInExplorerMenuItem;
         private MenuItem _openFileMenuItem;
+        private MenuItem _openDirectoryMenuItem;
         private MenuItem _newGroupFromArgumentsMenuItem;
         private MenuItem _setAsStartupProjectMenuItem;
         private MenuItem _projConfigMenuItem;
@@ -195,6 +201,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_fileMenuItem = new MenuItem { Header = "File" });
             _fileMenuItem.Items.Add(_openFileMenuItem = new MenuItem { Header = "Open..." });
             _fileMenuItem.Items.Add(_revealFileInExplorerMenuItem = new MenuItem { Header = "Reveal in Explorer" });
+            ContextMenu.Items.Add(_openDirectoryMenuItem = new MenuItem { Header = "Open Directory in Explorer" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as single Startup Project" });
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_projPlatformMenuItem = new MenuItem { Header = "Project Platform" });
@@ -205,6 +212,7 @@ namespace SmartCmdArgs.View
             CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
             CollapseWhenDisbaled(_fileMenuItem);
+            CollapseWhenDisbaled(_openDirectoryMenuItem);
             CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
             CollapseWhenDisbaled(_projConfigMenuItem);
             CollapseWhenDisbaled(_projPlatformMenuItem);

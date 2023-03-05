@@ -69,6 +69,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand OpenFileCommand { get; }
 
+        public RelayCommand OpenDirectoryCommand { get; }
+
         public RelayCommand NewGroupFromArgumentsCommand { get; }
 
         public RelayCommand SetAsStartupProjectCommand { get; }
@@ -199,8 +201,7 @@ namespace SmartCmdArgs.ViewModel
                 var fileName = ExtractFileNameFromSelectedArgument();
                 if (fileName != null)
                     System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fileName}\"");
-            },
-            canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && IsFileNameInSelectedArgument());
+            }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
 
             OpenFileCommand = new RelayCommand(() =>
             {
@@ -209,8 +210,14 @@ namespace SmartCmdArgs.ViewModel
                 {
                     System.Diagnostics.Process.Start(fileName);
                 }
-            },
-            canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && IsFileNameInSelectedArgument());
+            }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
+
+            OpenDirectoryCommand = new RelayCommand(() =>
+            {
+                var directoryName = ExtractDirectoryNameFromSelectedArgument();
+                if (directoryName != null)
+                    System.Diagnostics.Process.Start("explorer.exe", $"\"{directoryName}\"");
+            }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>() && ExtractDirectoryNameFromSelectedArgument() != null);
 
             NewGroupFromArgumentsCommand = new RelayCommand(() =>
             {
@@ -432,26 +439,25 @@ namespace SmartCmdArgs.ViewModel
 
         private IEnumerable<string> SplitArgument(string argument) => SplitArgumentRegex.Matches(argument).Cast<Match>().Select(x => x.Value);
 
-        private string ExtractFileNameFromSelectedArgument()
+        private IEnumerable<string> ExtractSingleArgsFromSelectedArgument()
         {
             var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
             if (selectedItem is CmdArgument argument)
             {
-                foreach (var part in SplitArgument(argument.Value))
-                {
-                    var trimmed = part.Trim('"');
-                    if (File.Exists(trimmed))
-                        return trimmed;
-                }
+                return SplitArgument(argument.Value).Select(s => s.Trim('"'));
             }
 
-            return null;
+            return Enumerable.Empty<string>();
         }
 
-        private bool IsFileNameInSelectedArgument()
+        private string ExtractFileNameFromSelectedArgument()
         {
-            var fileName = ExtractFileNameFromSelectedArgument();
-            return !string.IsNullOrEmpty(fileName) && File.Exists(fileName);
+            return ExtractSingleArgsFromSelectedArgument().Where(File.Exists).FirstOrDefault();
+        }
+
+        private string ExtractDirectoryNameFromSelectedArgument()
+        {
+            return ExtractSingleArgsFromSelectedArgument().Where(Directory.Exists).FirstOrDefault();
         }
 
         private void RemoveSelectedItems()
