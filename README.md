@@ -84,5 +84,5 @@ There are also three different types of data which can be pasted:
 ## Donation
 If you like this extension you can buy us a cup of coffee or a coke! :D
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/SmartCLIArgs/5)
+[![Donate via PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=FQWPXELLL26GS)
 
