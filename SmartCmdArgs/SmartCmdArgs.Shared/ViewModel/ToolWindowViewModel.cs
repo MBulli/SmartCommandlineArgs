@@ -450,12 +450,24 @@ namespace SmartCmdArgs.ViewModel
 
         private IEnumerable<string> SplitArgument(string argument) => SplitArgumentRegex.Matches(argument).Cast<Match>().Select(x => x.Value);
 
-        private IEnumerable<string> ExtractSingleArgsFromSelectedArgument()
+        private IEnumerable<string> ExtractPathFromSelectedArgument()
         {
             var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
             if (selectedItem is CmdArgument argument)
             {
-                return SplitArgument(argument.Value).Select(s => s.Trim('"'));
+                var projectGuid = argument.ProjectGuid;
+                if (projectGuid == Guid.Empty)
+                    return Enumerable.Empty<string>();
+
+                IVsHierarchy project = CmdArgsPackage.GetProjectForArg(argument);
+
+                var buildConfig = selectedItem.UsedProjectConfig;
+
+                return SplitArgument(CmdArgsPackage.EvaluateMacros(argument.Value, project))
+                    .Select(s => s.Trim('"'))
+                    .Where(s => s.IndexOfAny(Path.GetInvalidPathChars()) < 0)
+                    .Select(s => CmdArgsPackage.MakePathAbsoluteBasedOnTargetDir(s, project, buildConfig))
+                    .Where(s => !string.IsNullOrEmpty(s));
             }
 
             return Enumerable.Empty<string>();
@@ -463,12 +475,12 @@ namespace SmartCmdArgs.ViewModel
 
         private string ExtractFileNameFromSelectedArgument()
         {
-            return ExtractSingleArgsFromSelectedArgument().Where(File.Exists).FirstOrDefault();
+            return ExtractPathFromSelectedArgument().Where(File.Exists).FirstOrDefault();
         }
 
         private string ExtractDirectoryNameFromSelectedArgument()
         {
-            return ExtractSingleArgsFromSelectedArgument().Where(Directory.Exists).FirstOrDefault();
+            return ExtractPathFromSelectedArgument().Where(Directory.Exists).FirstOrDefault();
         }
 
         private void RemoveSelectedItems()

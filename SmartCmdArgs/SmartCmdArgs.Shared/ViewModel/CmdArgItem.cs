@@ -62,6 +62,8 @@ namespace SmartCmdArgs.ViewModel
 
         public bool InExclusiveModeContainer => Parent?.ExclusiveMode ?? false;
 
+        public virtual Guid ProjectGuid => Parent?.ProjectGuid ?? Guid.Empty;
+
         public CmdBase(Guid id, string value, bool? isChecked = false)
         {
             if (id == Guid.Empty)
@@ -677,6 +679,8 @@ namespace SmartCmdArgs.ViewModel
         {
             get => filter; set { filter = value; RefreshFilters(); }
         }
+
+        public override Guid ProjectGuid => Id;
 
         public Guid Kind { get; set; }
         

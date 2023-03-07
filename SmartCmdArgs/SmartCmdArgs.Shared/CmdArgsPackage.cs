@@ -286,6 +286,65 @@ namespace SmartCmdArgs
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
+        public IVsHierarchy GetProjectForArg(CmdBase cmdBase)
+        {
+            var projectGuid = cmdBase.ProjectGuid;
+
+            if (projectGuid == Guid.Empty)
+                return null;
+
+            return vsHelper.HierarchyForProjectGuid(projectGuid);
+        }
+
+        public string MakePathAbsoluteBasedOnTargetDir(string path, IVsHierarchy project, string buildConfig)
+        {
+            string baseDir = null;
+            if (project != null)
+            {
+                if (string.IsNullOrEmpty(buildConfig))
+                    baseDir = vsHelper.GetMSBuildPropertyValueForActiveConfig(project, "TargetDir");
+                else
+                    baseDir = vsHelper.GetMSBuildPropertyValue(project, "TargetDir", buildConfig);
+            }
+
+            return MakePathAbsolute(path, baseDir);
+        }
+
+        public string MakePathAbsolute(string path, string baseDir)
+        {
+            var drive = Path.GetPathRoot(path);
+
+            if (!Path.IsPathRooted(path))
+            {
+                if (baseDir == null)
+                    return null;
+
+                path = Path.Combine(baseDir, path);
+            }
+            else if (drive == "\\")
+            {
+                if (baseDir == null)
+                    return null;
+
+                var baseDrive = Path.GetPathRoot(baseDir);
+                path = Path.Combine(baseDrive, path.Substring(1));
+            }
+
+            return Path.GetFullPath(path);
+        }
+
+        public string EvaluateMacros(string arg, IVsHierarchy project)
+        {
+            if (!IsMacroEvaluationEnabled)
+                return arg;
+
+            if (project == null)
+                return arg;
+
+            return msBuildPropertyRegex.Replace(arg,
+                match => vsHelper.GetMSBuildPropertyValueForActiveConfig(project, match.Groups["propertyName"].Value) ?? match.Value);
+        }
+
         private string CreateCommandLineArgsForProject(IVsHierarchy project)
         {
             if (project == null)
@@ -302,15 +361,6 @@ namespace SmartCmdArgs
             if (project.IsCpsProject())
                 activeLaunchProfile = CpsProjectSupport.GetActiveLaunchProfileName(project.GetProject());
 
-            string MacroEvaluation(string arg)
-            {
-                if (!IsMacroEvaluationEnabled)
-                    return arg;
-
-                return msBuildPropertyRegex.Replace(arg,
-                    match => vsHelper.GetMSBuildPropertyValueForActiveConfig(project, match.Groups["propertyName"].Value) ?? match.Value);
-            }
-
             string JoinContainer(CmdContainer con)
             {
                 IEnumerable<CmdBase> items = con.Items.Where(x => x.IsChecked != false);
@@ -324,7 +374,7 @@ namespace SmartCmdArgs
                 if (activeLaunchProfile != null)
                     items = items.Where(x => { var prof = x.UsedLaunchProfile; return prof == null || prof == activeLaunchProfile; });
 
-                return string.Join(con.Delimiter, items.Select(x => x is CmdContainer c ? JoinContainer(c) : MacroEvaluation(x.Value)));
+                return string.Join(con.Delimiter, items.Select(x => x is CmdContainer c ? JoinContainer(c) : EvaluateMacros(x.Value, project)));
             }
 
             return JoinContainer(projectCmd);
