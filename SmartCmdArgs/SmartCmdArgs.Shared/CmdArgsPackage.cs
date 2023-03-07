@@ -296,6 +296,25 @@ namespace SmartCmdArgs
             return vsHelper.HierarchyForProjectGuid(projectGuid);
         }
 
+        public string MakePathAbsolute(string path, IVsHierarchy project, string buildConfig = null)
+        {
+            switch (Options.RelativePathRoot) {
+                case RelativePathRootOption.BuildTargetDirectory:
+                    return MakePathAbsoluteBasedOnTargetDir(path, project, buildConfig);
+                
+                case RelativePathRootOption.ProjectDirectory:
+                    return MakePathAbsoluteBasedOnProjectDir(path, project);
+
+                default: return null;
+            }
+        }
+
+        public string MakePathAbsoluteBasedOnProjectDir(string path, IVsHierarchy project)
+        {
+            string baseDir = project?.GetProjectDir();
+            return MakePathAbsolute(path, baseDir);
+        }
+
         public string MakePathAbsoluteBasedOnTargetDir(string path, IVsHierarchy project, string buildConfig)
         {
             string baseDir = null;

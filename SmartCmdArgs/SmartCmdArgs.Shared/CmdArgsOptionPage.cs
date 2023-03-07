@@ -12,6 +12,12 @@ using System.Threading.Tasks;
 
 namespace SmartCmdArgs
 {
+    public enum RelativePathRootOption
+    {
+        BuildTargetDirectory,
+        ProjectDirectory
+    }
+
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
         private bool _dontSave = false;
@@ -29,6 +35,8 @@ namespace SmartCmdArgs
             }
         }
 
+        private RelativePathRootOption _relativePathRoot;
+
         private bool _useMonospaceFont;
         private bool _deleteEmptyFilesAutomatically;
         private bool _deleteUnnecessaryFilesAutomatically;
@@ -37,6 +45,16 @@ namespace SmartCmdArgs
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
+
+        [Category("General")]
+        [DisplayName("Relative path root")]
+        [Description("Sets the base path that is used to resolve relative paths for the open/reveal file/folder context menu option.")]
+        [DefaultValue(RelativePathRootOption.BuildTargetDirectory)]
+        public RelativePathRootOption RelativePathRoot
+        {
+            get => _relativePathRoot;
+            set => SetAndNotify(value, ref _relativePathRoot);
+        }
 
         [Category("Appearance")]
         [DisplayName("Use Monospace Font")]

@@ -466,7 +466,7 @@ namespace SmartCmdArgs.ViewModel
                 return SplitArgument(CmdArgsPackage.EvaluateMacros(argument.Value, project))
                     .Select(s => s.Trim('"'))
                     .Where(s => s.IndexOfAny(Path.GetInvalidPathChars()) < 0)
-                    .Select(s => CmdArgsPackage.MakePathAbsoluteBasedOnTargetDir(s, project, buildConfig))
+                    .Select(s => CmdArgsPackage.MakePathAbsolute(s, project, buildConfig))
                     .Where(s => !string.IsNullOrEmpty(s));
             }
 
