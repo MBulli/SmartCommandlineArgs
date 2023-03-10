@@ -79,7 +79,8 @@
     
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
-        <Icon guid="guidToolBarImages" id="bmpAddIcon" />
+        <Icon guid="ImageCatalogGuid" id="Add" />
+		<CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Add new row</ButtonText>
         </Strings>
@@ -94,7 +95,8 @@
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
-        <Icon guid="guidToolBarImages" id="bmpRemoveIcon" />
+		<Icon guid="ImageCatalogGuid" id="Remove" />
+		<CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Remove selected rows</ButtonText>
         </Strings>
