@@ -15,6 +15,7 @@ namespace SmartCmdArgs.ViewModel
         private CmdArgsPackage _package;
 
         private bool? _saveSettingsToJson;
+        private string _jsonRootPath;
         private bool? _vcsSupportEnabled;
         private bool? _useSolutionDir;
         private bool? _macroEvaluationEnabled;
@@ -23,6 +24,12 @@ namespace SmartCmdArgs.ViewModel
         {
             get => _saveSettingsToJson;
             set => SetAndNotify(value, ref _saveSettingsToJson);
+        }
+
+        public string JsonRootPath
+        {
+            get => _jsonRootPath;
+            set => SetAndNotify(value, ref _jsonRootPath);
         }
 
         public bool? VcsSupportEnabled
@@ -44,7 +51,8 @@ namespace SmartCmdArgs.ViewModel
         }
 
         public RelayCommand OpenOptionsCommand { get; }
-		public CmdArgsPackage Package => _package;
+
+        public CmdArgsPackage Package => _package;
 
         public SettingsViewModel(CmdArgsPackage package)
         {

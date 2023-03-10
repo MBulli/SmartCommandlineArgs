@@ -85,6 +85,7 @@ namespace SmartCmdArgs
         public bool SettingsLoaded { get; private set; } = false;
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
+        public string JsonRootPath => Settings.JsonRootPath == String.Empty ? Options.JsonRootPath : Settings.JsonRootPath;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         public bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
@@ -190,6 +191,7 @@ namespace SmartCmdArgs
             switch (e.PropertyName)
             {
                 case nameof(CmdArgsOptionPage.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
+                case nameof(CmdArgsOptionPage.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
                 case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
@@ -301,7 +303,6 @@ namespace SmartCmdArgs
             switch (Options.RelativePathRoot) {
                 case RelativePathRootOption.BuildTargetDirectory:
                     return MakePathAbsoluteBasedOnTargetDir(path, project, buildConfig);
-                
                 case RelativePathRootOption.ProjectDirectory:
                     return MakePathAbsoluteBasedOnProjectDir(path, project);
 
@@ -752,6 +753,11 @@ namespace SmartCmdArgs
 
         #region OptionPage Events
         private void SaveSettingsToJsonChanged()
+        {
+            SaveSettings();
+        }
+
+        private void JsonRootPathChanged()
         {
             SaveSettings();
         }
