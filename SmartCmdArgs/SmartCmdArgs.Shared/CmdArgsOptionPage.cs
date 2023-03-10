@@ -24,6 +24,7 @@ namespace SmartCmdArgs
         private bool _deleteUnnecessaryFilesAutomatically;
 
         private bool _saveSettingsToJson;
+        private string _jsonRootPath;
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
@@ -60,12 +61,22 @@ namespace SmartCmdArgs
 
         [Category("Settings Defaults")]
         [DisplayName("Save Settings to JSON")]
-        [Description("If enabled then the settings configured here are saved to a JSON file next to the Solution.")]
+        [Description("If enabled then the settings configured here are saved to a JSON file.")]
         [DefaultValue(false)]
         public bool SaveSettingsToJson
         {
             get => _saveSettingsToJson;
             set => SetAndNotify(value, ref _saveSettingsToJson);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("JSON Root Path")]
+        [Description("The Root Path to store JSON Settings files. If empty, files will be stored at the same location as the related project file.")]
+        [DefaultValue(String.Empty)]
+        public string JsonRootPath
+        {
+            get => _jsonRootPath;
+            set => SetAndNotify(value, ref _jsonRootPath);
         }
 
         [Category("Settings Defaults")]

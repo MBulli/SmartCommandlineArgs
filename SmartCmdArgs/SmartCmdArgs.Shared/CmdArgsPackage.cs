@@ -85,6 +85,7 @@ namespace SmartCmdArgs
         private bool settingsLoaded = false;
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
+        public string JsonRootPath => Settings.JsonRootPath ?? Options.JsonRootPath;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         private bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
@@ -190,6 +191,7 @@ namespace SmartCmdArgs
             switch (e.PropertyName)
             {
                 case nameof(CmdArgsOptionPage.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
+                case nameof(CmdArgsOptionPage.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
                 case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
@@ -284,6 +286,84 @@ namespace SmartCmdArgs
             
             ProjectArguments.SetArguments(project, commandLineArgs);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
+        }
+
+        public IVsHierarchy GetProjectForArg(CmdBase cmdBase)
+        {
+            var projectGuid = cmdBase.ProjectGuid;
+
+            if (projectGuid == Guid.Empty)
+                return null;
+
+            return vsHelper.HierarchyForProjectGuid(projectGuid);
+        }
+
+        public string MakePathAbsolute(string path, IVsHierarchy project, string buildConfig = null)
+        {
+            switch (Options.RelativePathRoot) {
+                case RelativePathRootOption.BuildTargetDirectory:
+                    return MakePathAbsoluteBasedOnTargetDir(path, project, buildConfig);
+
+                case RelativePathRootOption.ProjectDirectory:
+                    return MakePathAbsoluteBasedOnProjectDir(path, project);
+
+                default: return null;
+            }
+        }
+
+        public string MakePathAbsoluteBasedOnProjectDir(string path, IVsHierarchy project)
+        {
+            string baseDir = project?.GetProjectDir();
+            return MakePathAbsolute(path, baseDir);
+        }
+
+        public string MakePathAbsoluteBasedOnTargetDir(string path, IVsHierarchy project, string buildConfig)
+        {
+            string baseDir = null;
+            if (project != null)
+            {
+                if (string.IsNullOrEmpty(buildConfig))
+                    baseDir = vsHelper.GetMSBuildPropertyValueForActiveConfig(project, "TargetDir");
+                else
+                    baseDir = vsHelper.GetMSBuildPropertyValue(project, "TargetDir", buildConfig);
+            }
+
+            return MakePathAbsolute(path, baseDir);
+        }
+
+        public string MakePathAbsolute(string path, string baseDir)
+        {
+            var drive = Path.GetPathRoot(path);
+
+            if (!Path.IsPathRooted(path))
+            {
+                if (baseDir == null)
+                    return null;
+
+                path = Path.Combine(baseDir, path);
+            }
+            else if (drive == "\\")
+            {
+                if (baseDir == null)
+                    return null;
+
+                var baseDrive = Path.GetPathRoot(baseDir);
+                path = Path.Combine(baseDrive, path.Substring(1));
+            }
+
+            return Path.GetFullPath(path);
+        }
+
+        public string EvaluateMacros(string arg, IVsHierarchy project)
+        {
+            if (!IsMacroEvaluationEnabled)
+                return arg;
+
+            if (project == null)
+                return arg;
+
+            return msBuildPropertyRegex.Replace(arg,
+                match => vsHelper.GetMSBuildPropertyValueForActiveConfig(project, match.Groups["propertyName"].Value) ?? match.Value);
         }
 
         private string CreateCommandLineArgsForProject(IVsHierarchy project)
@@ -698,6 +778,11 @@ namespace SmartCmdArgs
 
         #region OptionPage Events
         private void SaveSettingsToJsonChanged()
+        {
+            SaveSettings();
+        }
+
+        private void JsonRootPathChanged()
         {
             SaveSettings();
         }

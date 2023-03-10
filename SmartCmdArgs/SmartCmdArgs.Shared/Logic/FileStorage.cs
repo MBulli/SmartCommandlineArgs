@@ -205,7 +205,7 @@ namespace SmartCmdArgs.Logic
                 fileNames = vsHelper.GetSupportedProjects().Select(FullFilenameForProjectJsonFileFromProject);
             else
                 fileNames = new[] { FullFilenameForSolutionJsonFile() };
-            
+
             foreach (var fileName in fileNames)
             {
                 try
@@ -347,9 +347,15 @@ namespace SmartCmdArgs.Logic
             }
             else
             {
-                return FullFilenameForProjectJsonFileFromProjectPath(project.GetProjectDir(), project.GetName());
+                string jsonDir = project.GetProjectDir();
+                if (cmdPackage.JsonRootPath != String.Empty)
+                {
+                    // Ensure absolute path
+                    jsonDir = Path.GetFullPath(cmdPackage.JsonRootPath);
+                }
+                return FullFilenameForProjectJsonFileFromProjectPath(jsonDir, project.GetName());
             }
-        } 
+        }
 
         private string FullFilenameForSolutionJsonFile()
         {
@@ -357,10 +363,10 @@ namespace SmartCmdArgs.Logic
             return Path.ChangeExtension(slnFilename, "args.json");
         }
 
-        private string FullFilenameForProjectJsonFileFromProjectPath(string projectDir, string projectName)
+        private string FullFilenameForProjectJsonFileFromProjectPath(string jsonDir, string projectName)
         {
             string filename = $"{projectName}.args.json";
-            return Path.Combine(projectDir, filename);
+            return Path.Combine(jsonDir, filename);
         }
 
         private void FireFileStorageChanged(IVsHierarchy project)
