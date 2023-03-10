@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CmdArgsOptionPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CmdArgsPackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomMonikers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\BindingListEx.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\CpsProjectSupport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\DelayExecution.cs" />

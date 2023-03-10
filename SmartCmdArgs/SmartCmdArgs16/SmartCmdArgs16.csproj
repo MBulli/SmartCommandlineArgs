@@ -51,6 +51,9 @@
     <None Include="..\SharedResources\Key.snk">
       <Link>Key.snk</Link>
     </None>
+    <Content Include="SmartCmdArgs16.imagemanifest">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -108,10 +111,17 @@
       <Link>VSPackage.resx</Link>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\SharedResources\Monikers\FoProjectNodeOld.xaml">
+      <Link>Monikers\FoProjectNodeOld.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Resource>
+  </ItemGroup>
   <Import Project="..\SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

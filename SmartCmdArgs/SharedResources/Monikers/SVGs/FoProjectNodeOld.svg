@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg2"
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   sodipodi:docname="FoProjectNode16.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.1559538"
+     inkscape:cx="139.27892"
+     inkscape:cy="346.89967"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g8" />
+  <g
+     inkscape:groupmode="layer"
+     inkscape:label="Image"
+     id="g8">
+    <path
+       style="fill:#fcf7f6"
+       d="M 0,256 V 32 H 256 512 V 256 480 H 256 0 Z"
+       id="path186"
+       sodipodi:nodetypes="ccccccccc" />
+    <path
+       style="fill:#f4f9ed"
+       d="M 64,256 V 96 H 256 448 V 256 416 H 256 64 Z"
+       id="path184"
+       sodipodi:nodetypes="ccccccccc" />
+    <path
+       style="fill:#9c4e98"
+       d="M 32,256 V 64 H 256 480 V 256 448 H 256 32 Z m 416,0 V 96 H 256 64 v 160 160 h 192 192 z"
+       id="path178" />
+    <path
+       style="fill:#414141"
+       d="m 96,256 v -96 h 64 64 v 17.5 17.5 h -39.5181 -39.5181 l 0.2681,23.75 0.2681,23.75 35.75,0.26263 35.75,0.26263 V 260.01263 277 H 181 145 V 314.5 352 H 120.5 96 Z"
+       id="path174"
+       sodipodi:nodetypes="ccccccccccccccccccccc" />
+    <path
+       id="path339"
+       style="fill:#414141;fill-opacity:1;stroke:none;stroke-width:2.87427;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 336 224 A 64 64 0 0 0 272 288 A 64 64 0 0 0 336 352 A 64 64 0 0 0 400 288 A 64 64 0 0 0 336 224 z M 336 256 A 32 32 0 0 1 368 288 A 32 32 0 0 1 336 320 A 32 32 0 0 1 304 288 A 32 32 0 0 1 336 256 z " />
+  </g>
+</svg>

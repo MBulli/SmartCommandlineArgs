@@ -33,6 +33,7 @@ namespace SmartCmdArgs.View.Converter
                 if (prj.Kind == ProjectKinds.FS) return KnownMonikers.FSProjectNode;
                 if (prj.Kind == ProjectKinds.Node) return KnownMonikers.JSProjectNode;
                 if (prj.Kind == ProjectKinds.Py) return KnownMonikers.PYProjectNode;
+                if (prj.Kind == ProjectKinds.Fortran) return CustomMonikers.FoProjectNode;
                 return KnownMonikers.CSProjectNode;
             }
             return null;

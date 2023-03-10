@@ -1,0 +1,24 @@
+<Viewbox Width="16" Height="16" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Rectangle Width="16" Height="16">
+    <Rectangle.Fill>
+      <DrawingBrush>
+        <DrawingBrush.Drawing>
+          <DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+            <GeometryDrawing Geometry="F1 M512,512z M0,0z M448,256L448,96.000002 256,96.000002 64,96.000002 64,256 64,416 256,416 448,416z">
+              <GeometryDrawing.Brush>
+                <SolidColorBrush Color="#FF1A1A1A" Opacity="0.08" />
+              </GeometryDrawing.Brush>
+            </GeometryDrawing>
+            <GeometryDrawing Geometry="F1 M512,512z M0,0z M40.227922,439.72911L32,431.45822 32,255.95703 32,80.455844 40.270888,72.227922 48.541775,64 256.04297,64 463.54416,64 471.77208,72.270888 480,80.541775 480,256.04297 480,431.54416 471.72911,439.77208 463.45822,448 255.95703,448 48.455844,448z M448,256L448,96 256,96 64,96 64,256 64,416 256,416 448,416z">
+              <GeometryDrawing.Brush>
+                <SolidColorBrush Color="#FF030303" Opacity="0.75" />
+              </GeometryDrawing.Brush>
+            </GeometryDrawing>
+            <GeometryDrawing Brush="#FF712469" Geometry="F1 M512,512z M0,0z M128,256L128,160 179.5,160 231,160 231,173.5 231,187 195.5,187 160,187 160,221.5 160,256 193,256 226,256 226,269.5 226,283 193,283 160,283 160,317.5 160,352 144,352 128,352z" />
+            <GeometryDrawing Brush="#FF712469" Geometry="F1 M512,512z M0,0z M320,224A64,64,0,0,0,256,288A64,64,0,0,0,320,352A64,64,0,0,0,384,288A64,64,0,0,0,320,224z M320,256A32,32,0,0,1,352,288A32,32,0,0,1,320,320A32,32,0,0,1,288,288A32,32,0,0,1,320,256z" />
+          </DrawingGroup>
+        </DrawingBrush.Drawing>
+      </DrawingBrush>
+    </Rectangle.Fill>
+  </Rectangle>
+</Viewbox>

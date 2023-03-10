@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg2"
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   sodipodi:docname="FoProjectNode17.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview16"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.4183568"
+     inkscape:cx="246.4119"
+     inkscape:cy="278.49128"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs6" />
+  <path
+     d="M 448,256 V 96.000002 H 256 64 V 256 416 h 192 192 z"
+     style="fill:#1a1a1a;fill-opacity:0.08"
+     id="path507" />
+  <path
+     style="fill:#030303;fill-opacity:0.75"
+     d="M 40.227922,439.72911 32,431.45822 V 255.95703 80.455844 L 40.270888,72.227922 48.541775,64 H 256.04297 463.54416 l 8.22792,8.270888 L 480,80.541775 V 256.04297 431.54416 l -8.27089,8.22792 L 463.45822,448 H 255.95703 48.455844 Z M 448,256 V 96 H 256 64 v 160 160 h 192 192 z"
+     id="path229"
+     sodipodi:nodetypes="cccccccccccccccccccccccccc" />
+  <path
+     style="fill:#712469;fill-opacity:1"
+     d="M 128,256 V 160 H 179.5 231 V 173.5 187 H 195.5 160 v 34.5 34.5 h 33 33 v 13.5 13.5 h -33 -33 v 34.5 34.5 h -16 -16 z"
+     id="path225" />
+  <path
+     id="path7576"
+     style="fill:#712469;fill-opacity:1;stroke-width:1.02616"
+     d="m 320,224 a 64,64 0 0 0 -64,64 64,64 0 0 0 64,64 64,64 0 0 0 64,-64 64,64 0 0 0 -64,-64 z m 0,32 a 32,32 0 0 1 32,32 32,32 0 0 1 -32,32 32,32 0 0 1 -32,-32 32,32 0 0 1 32,-32 z" />
+</svg>
