@@ -7,7 +7,10 @@
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              mc:Ignorable="d" 
-             d:DesignHeight="370" d:DesignWidth="600" d:DataContext="{x:Type vm:SettingsViewModel}">
+             d:DesignHeight="400" d:DesignWidth="600" d:DataContext="{x:Type vm:SettingsViewModel}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </UserControl.Resources>
     <Grid Margin="10,5,10,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -21,6 +24,13 @@
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
                 <CheckBox Content="Save Settings to JSON" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding SaveSettingsToJson}" IsThreeState="True"/>
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled then the settings configured here are saved to a JSON file next to the Solution."/></TextBlock>
+                <CheckBox Visibility="{Binding Path=SaveSettingsToJson, Converter={StaticResource BoolToVisibility}}" Content="Use Custom JSON Root Path" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding UseCustomJsonRoot}"/>
+                <TextBlock Visibility="{Binding Path=SaveSettingsToJson, Converter={StaticResource BoolToVisibility}}" Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled then the settings configured here are saved to a JSON file next to the Solution."/></TextBlock>
+                <TextBlock Visibility="{Binding Path=UseCustomJsonRoot, Converter={StaticResource BoolToVisibility}}" Margin="5,5,5,0" TextWrapping="WrapWithOverflow" FontWeight="Bold"><Run Text="Root Path of where to save Json Settings"/></TextBlock>
+                <StackPanel Visibility="{Binding Path=UseCustomJsonRoot, Converter={StaticResource BoolToVisibility}}" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBox Name="JsonRootPathTextbox" IsEnabled="False" Visibility="{Binding Path=UseCustomJsonRoot, Converter={StaticResource BoolToVisibility}}" Text="{Binding JsonRootPath}" Width="445" Margin="5,5,5,5"/>
+                    <Button Name="BtnOpen" Margin="0,5,5,5" Padding="2,2" Content="Open" Click="BtnOpen_Click"/>
+                </StackPanel>
                 <CheckBox Content="Enable version control support" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding VcsSupportEnabled}" IsThreeState="True"/>
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control. The default value for this setting is True."/></TextBlock>
                 <CheckBox Content="Use Solution Directory" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding UseSolutionDir}" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}" IsThreeState="True"/>

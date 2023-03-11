@@ -15,6 +15,7 @@ namespace SmartCmdArgs.ViewModel
         private CmdArgsPackage _package;
 
         private bool? _saveSettingsToJson;
+        private bool? _useCustomJsonRoot;
         private string _jsonRootPath;
         private bool? _vcsSupportEnabled;
         private bool? _useSolutionDir;
@@ -24,6 +25,12 @@ namespace SmartCmdArgs.ViewModel
         {
             get => _saveSettingsToJson;
             set => SetAndNotify(value, ref _saveSettingsToJson);
+        }
+
+        public bool? UseCustomJsonRoot
+        {
+            get => _useCustomJsonRoot;
+            set => SetAndNotify(value, ref _useCustomJsonRoot);
         }
 
         public string JsonRootPath
