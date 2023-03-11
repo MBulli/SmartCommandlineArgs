@@ -347,11 +347,17 @@ namespace SmartCmdArgs.Logic
             }
             else
             {
-                string jsonDir = project.GetProjectDir();
-                if (cmdPackage.JsonRootPath != String.Empty)
+                string jsonDir = project.GetProjectDir();   
+                if (cmdPackage.UseCustomJsonRoot &&
+                    cmdPackage.JsonRootPath != null &&
+                    cmdPackage.JsonRootPath != String.Empty)
                 {
                     // Ensure absolute path
                     jsonDir = Path.GetFullPath(cmdPackage.JsonRootPath);
+                    string solutionName = Path.GetFileNameWithoutExtension(vsHelper.GetSolutionFilename());
+                    jsonDir = Path.Combine(jsonDir, solutionName);
+                    jsonDir = Path.Combine(jsonDir, project.GetName());
+                    System.IO.Directory.CreateDirectory(jsonDir);
                 }
                 return FullFilenameForProjectJsonFileFromProjectPath(jsonDir, project.GetName());
             }
