@@ -85,7 +85,7 @@ namespace SmartCmdArgs
         private bool settingsLoaded = false;
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
-        public string JsonRootPath => Settings.JsonRootPath ?? Options.JsonRootPath;
+        public string JsonRootPath => Settings.JsonRootPath == String.Empty ? Options.JsonRootPath : Settings.JsonRootPath;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         private bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);

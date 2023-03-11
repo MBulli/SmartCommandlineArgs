@@ -1,16 +1,21 @@
-﻿using SmartCmdArgs.Helper;
+﻿using Microsoft.VisualStudio.Shell;
+using SmartCmdArgs.Helper;
 using System;
 using System.Collections.Generic;
+using System.IO.Packaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace SmartCmdArgs.ViewModel
 {
     public class SettingsViewModel : PropertyChangedBase
     {
+        private CmdArgsPackage _package;
+
         private bool? _saveSettingsToJson;
-        private string? _jsonRootPath;
+        private string _jsonRootPath;
         private bool? _vcsSupportEnabled;
         private bool? _useSolutionDir;
         private bool? _macroEvaluationEnabled;
@@ -21,7 +26,7 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _saveSettingsToJson);
         }
 
-        public string? JsonRootPath
+        public string JsonRootPath
         {
             get => _jsonRootPath;
             set => SetAndNotify(value, ref _jsonRootPath);
@@ -45,9 +50,19 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _macroEvaluationEnabled);
         }
 
-        public SettingsViewModel() { }
+        public RelayCommand OpenOptionsCommand { get; }
 
-        public SettingsViewModel(SettingsViewModel other)
+        public SettingsViewModel(CmdArgsPackage package)
+        {
+            _package = package;
+
+            OpenOptionsCommand = new RelayCommand(() =>
+            {
+                package.ShowOptionPage(typeof(CmdArgsOptionPage));
+            });
+        }
+
+        public SettingsViewModel(SettingsViewModel other) : this(other._package)
         {
             Assign(other);
         }
@@ -56,6 +71,7 @@ namespace SmartCmdArgs.ViewModel
         {
             typeof(SettingsViewModel)
                 .GetProperties()
+                .Where(p => p.CanRead && p.CanWrite)
                 .ForEach(p => p.SetValue(this, p.GetValue(other)));
         }
     }

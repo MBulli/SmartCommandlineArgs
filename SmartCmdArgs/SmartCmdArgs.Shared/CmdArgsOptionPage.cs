@@ -72,7 +72,7 @@ namespace SmartCmdArgs
         [Category("Settings Defaults")]
         [DisplayName("JSON Root Path")]
         [Description("The Root Path to store JSON Settings files. If empty, files will be stored at the same location as the related project file.")]
-        [DefaultValue(String.Empty)]
+        [DefaultValue("")]
         public string JsonRootPath
         {
             get => _jsonRootPath;
