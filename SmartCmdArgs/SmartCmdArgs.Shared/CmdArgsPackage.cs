@@ -85,7 +85,8 @@ namespace SmartCmdArgs
         public bool SettingsLoaded { get; private set; } = false;
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
-        public string JsonRootPath => Settings.JsonRootPath == String.Empty ? Options.JsonRootPath : Settings.JsonRootPath;
+        public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot ?? Options.UseCustomJsonRoot;
+        public string JsonRootPath => Settings.JsonRootPath ?? Options.JsonRootPath;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         public bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
@@ -191,6 +192,7 @@ namespace SmartCmdArgs
             switch (e.PropertyName)
             {
                 case nameof(CmdArgsOptionPage.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
+                case nameof(CmdArgsOptionPage.UseCustomJsonRoot): UseCustomJsonRootChanged(); break;
                 case nameof(CmdArgsOptionPage.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
@@ -206,6 +208,8 @@ namespace SmartCmdArgs
             switch (e.PropertyName)
             {
                 case nameof(SettingsViewModel.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
+                case nameof(SettingsViewModel.UseCustomJsonRoot): UseCustomJsonRootChanged(); break;
+                case nameof(SettingsViewModel.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(SettingsViewModel.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(SettingsViewModel.UseSolutionDir): UseSolutionDirChanged(); break;
             }
@@ -497,6 +501,8 @@ namespace SmartCmdArgs
             vm.MacroEvaluationEnabled = settings.MacroEvaluationEnabled;
             vm.VcsSupportEnabled = settings.VcsSupportEnabled;
             vm.UseSolutionDir = settings.UseSolutionDir;                    // has to be done after VcsSupportEnabled because it depends on it
+            vm.UseCustomJsonRoot = settings.UseCustomJsonRoot;
+            vm.JsonRootPath = settings.JsonRootPath;
             vm.SaveSettingsToJson = settings.SaveSettingsToJson;            // has to be done at the end because all settings should be correctly set before to be saved to a file
         }
 
@@ -753,6 +759,11 @@ namespace SmartCmdArgs
 
         #region OptionPage Events
         private void SaveSettingsToJsonChanged()
+        {
+            SaveSettings();
+        }
+
+        private void UseCustomJsonRootChanged()
         {
             SaveSettings();
         }
