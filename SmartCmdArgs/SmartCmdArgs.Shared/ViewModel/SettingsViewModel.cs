@@ -1,12 +1,9 @@
-﻿using Microsoft.VisualStudio.Shell;
-using SmartCmdArgs.Helper;
+﻿using SmartCmdArgs.Helper;
 using System;
 using System.Collections.Generic;
-using System.IO.Packaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace SmartCmdArgs.ViewModel
 {
@@ -57,19 +54,9 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _macroEvaluationEnabled);
         }
 
-        public RelayCommand OpenOptionsCommand { get; }
+        public SettingsViewModel() { }
 
-        public SettingsViewModel(CmdArgsPackage package)
-        {
-            _package = package;
-
-            OpenOptionsCommand = new RelayCommand(() =>
-            {
-                package.ShowOptionPage(typeof(CmdArgsOptionPage));
-            });
-        }
-
-        public SettingsViewModel(SettingsViewModel other) : this(other._package)
+        public SettingsViewModel(SettingsViewModel other)
         {
             Assign(other);
         }
@@ -78,7 +65,6 @@ namespace SmartCmdArgs.ViewModel
         {
             typeof(SettingsViewModel)
                 .GetProperties()
-                .Where(p => p.CanRead && p.CanWrite)
                 .ForEach(p => p.SetValue(this, p.GetValue(other)));
         }
     }

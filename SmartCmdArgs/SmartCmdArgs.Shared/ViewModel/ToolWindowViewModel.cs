@@ -89,7 +89,7 @@ namespace SmartCmdArgs.ViewModel
 
             TreeViewModel = new TreeViewModel();
 
-            SettingsViewModel = new SettingsViewModel(package);
+            SettingsViewModel = new SettingsViewModel();
 
             ToolWindowHistory.Init(this);
 
