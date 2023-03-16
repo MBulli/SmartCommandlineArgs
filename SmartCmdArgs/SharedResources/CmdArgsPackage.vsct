@@ -84,7 +84,7 @@
         <Strings>
           <ButtonText>Add new row</ButtonText>
         </Strings>
-	  </Button>
+      </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="ImageCatalogGuid" id="AddFolder" />
@@ -119,7 +119,8 @@
       </Button>
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarCopyCommandlineCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" />
-        <Icon guid="guidToolBarImages" id="bmpCopyIcon" />
+        <Icon guid="guidCustomMonikers" id="CopyCmdLineIcon" />
+		<CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Copy whole command line to clipboard</ButtonText>
         </Strings>
@@ -149,7 +150,6 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidToolBarImages" href="Resources\ToolBarIconStrip.png" usedList="bmpAddIcon, bmpRemoveIcon, bmpUpArrowIcon, bmpDownArrowIcon, bmpCopyIcon"/>
       <Bitmap guid="guidImages" href="Resources\VSMeuIcon.png" usedList="bmpVSMenuIcon"/>
     </Bitmaps>
   </Commands>
@@ -191,18 +191,13 @@
       <IDSymbol name="TWToolbarEdit" value="0x1052" />
       <IDSymbol name="TWToolbarSettings" value="0x1053" />
     </GuidSymbol>
-    
-    
+
+    <GuidSymbol name="guidCustomMonikers" value="{cafdbdaf-1847-4824-8957-a169d25d0cfb}">
+	  <IDSymbol name="CopyCmdLineIcon" value="1"/>
+    </GuidSymbol>
+
     <GuidSymbol name="guidImages" value="{B7F63ABD-939F-4912-912E-E98C7CC9EF6F}" >
       <IDSymbol name="bmpVSMenuIcon" value="1" />
-    </GuidSymbol>
-    
-    <GuidSymbol name="guidToolBarImages" value="{F87D8310-848A-43A7-9FAB-AFB633CB98C3}" >
-      <IDSymbol name="bmpAddIcon" value="1" />
-      <IDSymbol name="bmpRemoveIcon" value="2" />
-      <IDSymbol name="bmpUpArrowIcon" value="3" />
-      <IDSymbol name="bmpDownArrowIcon" value="4" />
-      <IDSymbol name="bmpCopyIcon" value="5" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

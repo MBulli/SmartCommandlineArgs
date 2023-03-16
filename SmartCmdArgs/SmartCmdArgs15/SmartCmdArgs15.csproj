@@ -95,9 +95,6 @@
     <Content Include="..\SharedResources\Resources\SmartCommandLineIcon.ico">
       <Link>Resources\SmartCommandLineIcon.ico</Link>
     </Content>
-    <Content Include="..\SharedResources\Resources\ToolBarIconStrip.png">
-      <Link>Resources\ToolBarIconStrip.png</Link>
-    </Content>
     <Content Include="..\SharedResources\Resources\vsix_preview_image.png">
       <Link>Resources\vsix_preview_image.png</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -114,6 +111,13 @@
   <ItemGroup>
     <Resource Include="..\SharedResources\Monikers\FoProjectNodeOld.xaml">
       <Link>Monikers\FoProjectNodeOld.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\SharedResources\Monikers\CopyCmdLine.xaml">
+      <Link>Monikers\CopyCmdLine.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Resource>
