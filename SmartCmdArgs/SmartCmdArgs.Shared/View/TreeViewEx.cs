@@ -134,6 +134,14 @@ namespace SmartCmdArgs.View
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._spaceDelimiterMenuItem.Command = (ICommand)e.NewValue));
         public ICommand ToggleSpaceDelimiterCommand { get { return (ICommand)GetValue(SetSpaceDelimiterCommandProperty); } set { SetValue(SetSpaceDelimiterCommandProperty, value); } }
 
+        public static readonly DependencyProperty SetArgumentTypeCommandProperty = DependencyProperty.Register(
+            nameof(SetArgumentTypeCommand), typeof(ICommand), typeof(TreeViewEx),
+            new PropertyMetadata(default(ICommand), (d, e) => {
+                ((TreeViewEx)d)._argumentTypeCmdArgMenuItem.Command = (ICommand)e.NewValue;
+                ((TreeViewEx)d)._argumentTypeEnvVarMenuItem.Command = (ICommand)e.NewValue;
+            }));
+        public ICommand SetArgumentTypeCommand { get { return (ICommand)GetValue(SetArgumentTypeCommandProperty); } set { SetValue(SetArgumentTypeCommandProperty, value); } }
+
         public static readonly DependencyProperty ToggleDefaultCheckedCommandProperty = DependencyProperty.Register(
             nameof(ToggleDefaultCheckedCommand), typeof(ICommand), typeof(TreeViewEx),
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._defaultCheckedMenuItem.Command = (ICommand)e.NewValue));
@@ -188,6 +196,9 @@ namespace SmartCmdArgs.View
         private MenuItem _launchProfileMenuItem;
         private MenuItem _defaultCheckedMenuItem;
         private MenuItem _resetToDefaultMenuItem;
+        private MenuItem _argumentTypeMenuItem;
+        private MenuItem _argumentTypeCmdArgMenuItem;
+        private MenuItem _argumentTypeEnvVarMenuItem;
 
         private TreeViewModel ViewModel => DataContext as TreeViewModel;
 
@@ -213,8 +224,21 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_projPlatformMenuItem = new MenuItem { Header = "Project Platform" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
+            ContextMenu.Items.Add(_argumentTypeMenuItem = new MenuItem { Header = "Item Type" });
             ContextMenu.Items.Add(_defaultCheckedMenuItem = new MenuItem { Header = "Default Checked", IsCheckable = true });
             ContextMenu.Items.Add(_resetToDefaultMenuItem = new MenuItem { Header = "Reset to default checked" });
+
+            _argumentTypeMenuItem.Items.Add(_argumentTypeCmdArgMenuItem = new MenuItem {
+                Header = "Command Line Argument",
+                CommandParameter = ArgumentType.CmdArg,
+                IsCheckable = true,
+            });
+            _argumentTypeMenuItem.Items.Add(_argumentTypeEnvVarMenuItem = new MenuItem
+            {
+                Header = "Environment Variable",
+                CommandParameter = ArgumentType.EnvVar,
+                IsCheckable = true,
+            });
 
             CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
@@ -226,6 +250,7 @@ namespace SmartCmdArgs.View
             CollapseWhenDisbaled(_launchProfileMenuItem);
             CollapseWhenDisbaled(_defaultCheckedMenuItem);
             CollapseWhenDisbaled(_resetToDefaultMenuItem);
+            CollapseWhenDisbaled(_argumentTypeMenuItem);
 
             DataContextChanged += OnDataContextChanged;
             ContextMenuOpening += OnContextMenuOpening;
@@ -286,6 +311,7 @@ namespace SmartCmdArgs.View
             _projConfigMenuItem.IsEnabled = false;
             _projPlatformMenuItem.IsEnabled = false;
             _launchProfileMenuItem.IsEnabled = false;
+            _argumentTypeMenuItem.IsEnabled = false;
 
             _defaultCheckedMenuItem.IsChecked = SelectedTreeViewItems.Select(x => x.Item).OfType<CmdArgument>().Any(x => x.DefaultChecked);
 
@@ -408,6 +434,14 @@ namespace SmartCmdArgs.View
                         }
                     }
                 }
+            }
+
+            if (fistItem is CmdArgument argument)
+            {
+                _argumentTypeMenuItem.IsEnabled = true;
+
+                _argumentTypeCmdArgMenuItem.IsChecked = argument.ArgumentType == ArgumentType.CmdArg;
+                _argumentTypeEnvVarMenuItem.IsChecked = argument.ArgumentType == ArgumentType.EnvVar;
             }
         }
 

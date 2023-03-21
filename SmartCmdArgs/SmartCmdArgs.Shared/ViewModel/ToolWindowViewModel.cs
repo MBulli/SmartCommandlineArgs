@@ -96,6 +96,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand ToggleSpaceDelimiterCommand { get; }
 
+        public RelayCommand<ArgumentType> SetArgumentTypeCommand { get; }
+
         public RelayCommand ToggleDefaultCheckedCommand { get; }
 
         public RelayCommand ResetToDefaultCheckedCommand { get; }
@@ -334,6 +336,12 @@ namespace SmartCmdArgs.ViewModel
                         con.Delimiter = "";
                 }
             }, _ => HasSingleSelectedItemOfType<CmdContainer>());
+
+            SetArgumentTypeCommand = new RelayCommand<ArgumentType>(type =>
+            {
+                var items = TreeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
+                items.ForEach(x => x.ArgumentType = type);
+            }, _ => HasSelectedItemOfType<CmdArgument>());
 
             ToggleDefaultCheckedCommand = new RelayCommand(() =>
             {

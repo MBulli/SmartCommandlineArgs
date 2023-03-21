@@ -45,6 +45,7 @@
                           SetLaunchProfileCommand="{Binding SetLaunchProfileCommand}"
                           ToggleExclusiveModeCommand="{Binding ToggleExclusiveModeCommand}"
                           ToggleSpaceDelimiterCommand="{Binding ToggleSpaceDelimiterCommand}"
+                          SetArgumentTypeCommand="{Binding SetArgumentTypeCommand}"
                           ToggleDefaultCheckedCommand="{Binding ToggleDefaultCheckedCommand}"
                           ResetToDefaultCheckedCommand="{Binding ResetToDefaultCheckedCommand}">
             <local:TreeViewEx.ItemContainerStyleSelector>
