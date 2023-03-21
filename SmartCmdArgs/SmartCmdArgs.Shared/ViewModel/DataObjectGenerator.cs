@@ -119,7 +119,7 @@ namespace SmartCmdArgs.ViewModel
                     groupStack.Push(group);
                 }
                 else
-                    groupStack.Peek().Add(new CmdArgument(trimmedItem));
+                    groupStack.Peek().Add(new CmdArgument(ArgumentType.CmdArg, trimmedItem));
             }
             return rootGroup.Items;
         }
@@ -150,6 +150,9 @@ namespace SmartCmdArgs.ViewModel
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public bool DefaultChecked { get; set; } = false;
 
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(ArgumentType.CmdArg)]
+            public ArgumentType Type { get; set; } = ArgumentType.CmdArg;
+
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public IEnumerable<DataObjectJsonItem> Items { get; set; } = null;
 
@@ -160,7 +163,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     if (cmd is CmdArgument arg)
                     {
-                        yield return new DataObjectJsonItem {Enabled = arg.IsChecked, Value = arg.Value, DefaultChecked = arg.DefaultChecked};
+                        yield return new DataObjectJsonItem {Type = arg.ArgumentType, Enabled = arg.IsChecked, Value = arg.Value, DefaultChecked = arg.DefaultChecked};
                     }
                     else if (cmd is CmdGroup grp)
                     {
@@ -175,7 +178,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     if (item.Items == null)
                     {
-                        yield return new CmdArgument(item.Value, item.Enabled ?? false, item.DefaultChecked);
+                        yield return new CmdArgument(item.Type, item.Value, item.Enabled ?? false, item.DefaultChecked);
                     }
                     else
                     {

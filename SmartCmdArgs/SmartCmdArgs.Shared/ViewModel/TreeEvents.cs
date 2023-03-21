@@ -132,4 +132,12 @@ namespace SmartCmdArgs.ViewModel
         {
         }
     }
+
+    public class ArgumentTypeChangedEvent : GenericChangedEventArgs<ArgumentType>
+    {
+        public ArgumentTypeChangedEvent(CmdArgument sender, ArgumentType oldValue, ArgumentType newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
 }

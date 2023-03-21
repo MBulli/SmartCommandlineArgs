@@ -368,6 +368,9 @@ namespace SmartCmdArgs.ViewModel
                 case DefaultCheckedChangedEvent e:
                     FireTreeChanged(e);
                     break;
+                case ArgumentTypeChangedEvent e:
+                    FireTreeChanged(e);
+                    break;
                 default:
                     break;
             }

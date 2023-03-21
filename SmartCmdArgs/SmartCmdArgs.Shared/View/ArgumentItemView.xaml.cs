@@ -40,6 +40,8 @@ namespace SmartCmdArgs.View
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             BindingOperations.ClearBinding(Icon, CrispImage.MonikerProperty);
+            BindingOperations.ClearBinding(ItemTagText, Run.TextProperty);
+            BindingOperations.ClearBinding(ItemTag, Border.VisibilityProperty);
 
             if (e.OldValue != null)
             {
@@ -64,6 +66,40 @@ namespace SmartCmdArgs.View
                         Path = new PropertyPath(nameof(CmdContainer.IsExpanded))
                     });
                     Icon.SetBinding(CrispImage.MonikerProperty, bind);
+                }
+
+                if (e.NewValue is CmdArgument arg)
+                {
+                    var itemTagTextBinding = new Binding {
+                        Source = arg,
+                        Path = new PropertyPath(nameof(CmdArgument.ArgumentType)),
+                        Converter = new ItemTagTextConverter(),
+                    };
+                    ItemTagText.SetBinding(Run.TextProperty, itemTagTextBinding);
+
+                    var toolWindow = TreeHelper.FindAncestorOrSelf<ToolWindowControl>(this);
+
+                    var itemTagVisibilityBinding = new MultiBinding
+                    {
+                        Mode = BindingMode.OneWay,
+                        Converter = new ItemTagVisibilityConverter(),
+                        Bindings =
+                        {
+                            new Binding {
+                                Source = arg,
+                                Path = new PropertyPath(nameof(CmdArgument.ArgumentType)),
+                            },
+                            new Binding {
+                                Source = toolWindow.DataContext,
+                                Path = new PropertyPath(nameof(ToolWindowViewModel.DisplayTagForCla)),
+                            },
+                        }
+                    };
+                    ItemTag.SetBinding(Border.VisibilityProperty, itemTagVisibilityBinding);
+                }
+                else
+                {
+                    ItemTag.Visibility = Visibility.Collapsed;
                 }
             }
         }

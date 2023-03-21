@@ -38,6 +38,8 @@ namespace SmartCmdArgs
         private RelativePathRootOption _relativePathRoot;
 
         private bool _useMonospaceFont;
+        private bool _displayTagForCla;
+
         private bool _deleteEmptyFilesAutomatically;
         private bool _deleteUnnecessaryFilesAutomatically;
 
@@ -64,6 +66,16 @@ namespace SmartCmdArgs
         {
             get => _useMonospaceFont;
             set => SetAndNotify(value, ref _useMonospaceFont);
+        }
+
+        [Category("Appearance")]
+        [DisplayName("Display Tags for CLAs")]
+        [Description("If enabled the item tag 'CLA' is displayed for Command Line Arguments. Normally the tag 'ENV' is only displayed for environment varibales.")]
+        [DefaultValue(false)]
+        public bool DisplayTagForCla
+        {
+            get => _displayTagForCla;
+            set => SetAndNotify(value, ref _displayTagForCla);
         }
 
         [Category("Cleanup")]

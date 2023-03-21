@@ -50,6 +50,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\ArgumentItemView.xaml.cs">
       <DependentUpon>ArgumentItemView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ItemTagTextConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BooleanBoldFontConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BoolToBoolConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BoolToVisibilityMultiConverter.cs" />
@@ -57,7 +58,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BoolToVisibilityConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ConverterBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\EmptyToVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\FontSizeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ItemMonikerConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ItemTagVisibilityConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ItemVisibilityConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\MultiConverterBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\NullToVisibilityConverter.cs" />

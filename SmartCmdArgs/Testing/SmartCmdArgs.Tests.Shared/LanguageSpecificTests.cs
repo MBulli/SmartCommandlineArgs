@@ -63,7 +63,7 @@ namespace SmartCmdArgs.Tests.LanguageSpecificTests
 
             Assert.NotNull(project);
 
-            project.InsertRange(0, args.Select(x => new ViewModel.CmdArgument(arg: x.Arg, isChecked: x.Enabled)));
+            project.InsertRange(0, args.Select(x => new ViewModel.CmdArgument(argType: ViewModel.ArgumentType.CmdArg, arg: x.Arg, isChecked: x.Enabled)));
 
             Dte.Solution.SolutionBuild.Build(true);
 

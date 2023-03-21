@@ -35,6 +35,7 @@ namespace SmartCmdArgs
         public const int TWToolbar = 0x1000;
         public const int TWToolbarGroup = 0x1050;
         public const int ToolbarAddCommandId = 0x1100;
+        public const int ToolbarAddEnvVarId = 0x1108;
         public const int ToolbarRemoveCommandId = 0x1101;
         public const int ToolbarMoveUpCommandId = 0x1102;
         public const int ToolbarMoveDownCommandId = 0x1103;
@@ -83,6 +84,7 @@ namespace SmartCmdArgs
                 AddCommandToService(commandService, VSMenuCmdSet, ToolWindowCommandId, this.ShowToolWindow);
 
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddCommandId, package.ToolWindowViewModel.AddEntryCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddEnvVarId, package.ToolWindowViewModel.AddEnvVarCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddGroupCommandId, package.ToolWindowViewModel.AddGroupCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, package.ToolWindowViewModel.RemoveEntriesCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, package.ToolWindowViewModel.MoveEntriesUpCommand);

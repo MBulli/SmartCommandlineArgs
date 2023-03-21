@@ -91,6 +91,8 @@ namespace SmartCmdArgs.Logic
         public List<CmdArgumentJson> Items = null;
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public bool DefaultChecked = false;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(ArgumentType.CmdArg)]
+        public ArgumentType Type = ArgumentType.CmdArg;
 
         [JsonIgnore]
         public bool Enabled = false;

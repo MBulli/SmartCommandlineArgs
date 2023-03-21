@@ -35,7 +35,16 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref useMonospaceFont);
         }
 
+        private bool _displayTagForCla;
+        public bool DisplayTagForCla
+        {
+            get => _displayTagForCla;
+            set => SetAndNotify(value, ref _displayTagForCla);
+        }
+
         public RelayCommand AddEntryCommand { get; }
+
+        public RelayCommand AddEnvVarCommand { get; }
 
         public RelayCommand AddGroupCommand { get; }
 
@@ -104,7 +113,15 @@ namespace SmartCmdArgs.ViewModel
             AddEntryCommand = new RelayCommand(
                 () => {
                     ToolWindowHistory.SaveState();
-                    var newArg = new CmdArgument(arg: "", isChecked: true);
+                    var newArg = new CmdArgument(ArgumentType.CmdArg, arg: "", isChecked: true);
+                    TreeViewModel.AddItemAtFocusedItem(newArg);
+                    TreeViewModel.SelectItemCommand.SafeExecute(newArg);
+                }, canExecute: _ => HasStartupProject());
+
+            AddEnvVarCommand = new RelayCommand(
+                () => {
+                    ToolWindowHistory.SaveState();
+                    var newArg = new CmdArgument(ArgumentType.EnvVar, arg: "", isChecked: true);
                     TreeViewModel.AddItemAtFocusedItem(newArg);
                     TreeViewModel.SelectItemCommand.SafeExecute(newArg);
                 }, canExecute: _ => HasStartupProject());
@@ -189,7 +206,7 @@ namespace SmartCmdArgs.ViewModel
                     ToolWindowHistory.SaveState();
 
                     var newItems = SplitArgument(argument.Value)
-                                   .Select((s) => new CmdArgument(s, argument.IsChecked, argument.DefaultChecked))
+                                   .Select((s) => new CmdArgument(argument.ArgumentType, s, argument.IsChecked, argument.DefaultChecked))
                                    .ToList();
 
                     TreeViewModel.AddItemsAt(selectedItem, newItems);
@@ -570,7 +587,7 @@ namespace SmartCmdArgs.ViewModel
             foreach (var item in list)
             {
                 if (item.Items == null)
-                    result = new CmdArgument(item.Id, item.Command, item.Enabled, item.DefaultChecked);
+                    result = new CmdArgument(item.Id, item.Type, item.Command, item.Enabled, item.DefaultChecked);
                 else
                     result = new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.ProjectPlatform, item.LaunchProfile, item.Delimiter);
 

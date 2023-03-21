@@ -92,6 +92,8 @@ namespace SmartCmdArgs
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
 
         public bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
+        public bool DisplayTagForCla => Options.DisplayTagForCla;
+
         public bool DeleteEmptyFilesAutomatically => Options.DeleteEmptyFilesAutomatically;
         public bool DeleteUnnecessaryFilesAutomatically => Options.DeleteUnnecessaryFilesAutomatically;
 
@@ -180,6 +182,7 @@ namespace SmartCmdArgs
             ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
 
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
+            ToolWindowViewModel.DisplayTagForCla = DisplayTagForCla;
 
             await base.InitializeAsync(cancellationToken, progress);
         }
@@ -195,6 +198,7 @@ namespace SmartCmdArgs
                 case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
                 case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
+                case nameof(CmdArgsOptionPage.DisplayTagForCla): DisplayTagForClaChanged(); break;
             }
         }
 
@@ -283,10 +287,15 @@ namespace SmartCmdArgs
                 return;
 
             var commandLineArgs = CreateCommandLineArgsForProject(project);
-            if (commandLineArgs == null)
+            var envVars = GetEnvVarsForProject(project);
+
+            if (commandLineArgs is null && envVars is null)
                 return;
 
-            ProjectArguments.SetArguments(project, commandLineArgs);
+            commandLineArgs = commandLineArgs ?? "";
+            envVars = envVars ?? new Dictionary<string, string>();
+
+            ProjectConfigHelper.SetConfig(project, commandLineArgs, envVars);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
@@ -356,14 +365,14 @@ namespace SmartCmdArgs
                 match => vsHelper.GetMSBuildPropertyValueForActiveConfig(project, match.Groups["propertyName"].Value) ?? match.Value);
         }
 
-        private string CreateCommandLineArgsForProject(IVsHierarchy project)
+        private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchy project, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
         {
             if (project == null)
-                return null;
+                return default;
 
             var projectCmd = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid());
             if (projectCmd == null)
-                return null;
+                return default;
 
             string projConfig = project.GetProject()?.ConfigurationManager?.ActiveConfiguration?.ConfigurationName;
             string projPlatform = project.GetProject()?.ConfigurationManager?.ActiveConfiguration?.PlatformName;
@@ -372,9 +381,10 @@ namespace SmartCmdArgs
             if (project.IsCpsProject())
                 activeLaunchProfile = CpsProjectSupport.GetActiveLaunchProfileName(project.GetProject());
 
-            string JoinContainer(CmdContainer con)
+            TResult JoinContainer(CmdContainer con)
             {
-                IEnumerable<CmdBase> items = con.Items.Where(x => x.IsChecked != false);
+                IEnumerable<CmdBase> items = con.Items
+                    .Where(x => x.IsChecked != false);
 
                 if (projConfig != null)
                     items = items.Where(x => { var conf = x.UsedProjectConfig; return conf == null || conf == projConfig; });
@@ -385,10 +395,55 @@ namespace SmartCmdArgs
                 if (activeLaunchProfile != null)
                     items = items.Where(x => { var prof = x.UsedLaunchProfile; return prof == null || prof == activeLaunchProfile; });
 
-                return string.Join(con.Delimiter, items.Select(x => x is CmdContainer c ? JoinContainer(c) : EvaluateMacros(x.Value, project)));
+                return joinItems(items, JoinContainer, con);
             }
 
             return JoinContainer(projectCmd);
+        }
+
+        private string CreateCommandLineArgsForProject(IVsHierarchy project)
+        {
+            return AggregateComamndLineItemsForProject<string>(project,
+                (items, joinContainer, parentContainer) =>
+                {
+                    var strings = items
+                        .Where(x => !(x is CmdArgument arg) || arg.ArgumentType == ArgumentType.CmdArg)
+                        .Select(x => x is CmdContainer c ? joinContainer(c) : EvaluateMacros(x.Value, project))
+                        .Where(x => !string.IsNullOrEmpty(x));
+
+                    return string.Join(parentContainer.Delimiter, strings);
+                });
+        }
+
+        private IDictionary<string, string> GetEnvVarsForProject(IVsHierarchy project)
+        {
+            return AggregateComamndLineItemsForProject<IDictionary<string, string>>(project,
+                (items, joinContainer, parentContainer) =>
+                {
+                    var result = new Dictionary<string, string>();
+                    
+                    items
+                        .Where(x => !(x is CmdArgument arg) || arg.ArgumentType == ArgumentType.EnvVar)
+                        .SelectMany(x =>
+                        {
+                            if (x is CmdContainer c)
+                            {
+                                return joinContainer(c);
+                            }
+                            else
+                            {
+                                var parts = x.Value.Split(new[] { '=' }, 2);
+
+                                if (parts.Length != 2)
+                                    return Enumerable.Empty<KeyValuePair<string, string>>();
+
+                                return new[] { new KeyValuePair<string, string>(parts[0], EvaluateMacros(parts[1], project)) };
+                            }
+                        })
+                        .ForEach(x => result[x.Key] = x.Value);
+
+                    return result;
+                });
         }
 
         public string CreateCommandLineArgsForProject(Guid guid)
@@ -799,6 +854,11 @@ namespace SmartCmdArgs
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
         }
 
+        private void DisplayTagForClaChanged()
+        {
+            ToolWindowViewModel.DisplayTagForCla = DisplayTagForCla;
+        }
+
         private void UseSolutionDirChanged()
         {
             fileStorage.DeleteAllUnusedArgFiles();
@@ -810,7 +870,7 @@ namespace SmartCmdArgs
         private List<CmdArgumentJson> ReadCommandlineArgumentsFromProject(IVsHierarchy project)
         {
             var prjCmdArgs = new List<CmdArgumentJson>();
-            Helper.ProjectArguments.AddAllArguments(project, prjCmdArgs);
+            Helper.ProjectConfigHelper.AddAllArguments(project, prjCmdArgs);
             return prjCmdArgs;
         }
 

@@ -32,15 +32,15 @@ namespace SmartCmdArgs.View
             RegisterCommand(ApplicationCommands.Undo, UndoCommandProperty);
             RegisterCommand(ApplicationCommands.Redo, RedoCommandProperty);
 
-            CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx), new CommandBinding(ApplicationCommands.SelectAll, 
+            CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx), new CommandBinding(ApplicationCommands.SelectAll,
                 (sender, args) => ((TreeViewEx)sender).SelectAllItems(args), (sender, args) => args.CanExecute = ((TreeViewEx)sender).HasItems));
 
             void RegisterCommand(RoutedUICommand routedUiCommand, DependencyProperty commandProperty)
             {
-                CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx), 
+                CommandManager.RegisterClassCommandBinding(typeof(TreeViewEx),
                     new CommandBinding(
-                        routedUiCommand, 
-                        (sender, args) => ((ICommand)((DependencyObject)sender).GetValue(commandProperty))?.Execute(args.Parameter), 
+                        routedUiCommand,
+                        (sender, args) => ((ICommand)((DependencyObject)sender).GetValue(commandProperty))?.Execute(args.Parameter),
                         (sender, args) => args.CanExecute = ((ICommand)((DependencyObject)sender).GetValue(commandProperty)).CanExecute(args.Parameter)));
             }
         }
@@ -103,12 +103,12 @@ namespace SmartCmdArgs.View
         public ICommand OpenDirectoryCommand { get { return (ICommand)GetValue(OpenDirectoryCommandProperty); } set { SetValue(OpenDirectoryCommandProperty, value); } }
 
         public static readonly DependencyProperty NewGroupFromArgumentsCommandProperty = DependencyProperty.Register(
-            nameof(NewGroupFromArgumentsCommand), typeof(ICommand), typeof(TreeViewEx), 
+            nameof(NewGroupFromArgumentsCommand), typeof(ICommand), typeof(TreeViewEx),
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._newGroupFromArgumentsMenuItem.Command = (ICommand)e.NewValue));
         public ICommand NewGroupFromArgumentsCommand { get { return (ICommand)GetValue(NewGroupFromArgumentsCommandProperty); } set { SetValue(NewGroupFromArgumentsCommandProperty, value); } }
-        
+
         public static readonly DependencyProperty SetAsStartupProjectCommandProperty = DependencyProperty.Register(
-            nameof(SetAsStartupProjectCommand), typeof(ICommand), typeof(TreeViewEx), 
+            nameof(SetAsStartupProjectCommand), typeof(ICommand), typeof(TreeViewEx),
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._setAsStartupProjectMenuItem.Command = (ICommand)e.NewValue));
         public ICommand SetAsStartupProjectCommand { get { return (ICommand)GetValue(SetAsStartupProjectCommandProperty); } set { SetValue(SetAsStartupProjectCommandProperty, value); } }
 
@@ -123,9 +123,9 @@ namespace SmartCmdArgs.View
         public static readonly DependencyProperty SetLaunchProfileCommandProperty = DependencyProperty.Register(
             nameof(SetLaunchProfileCommand), typeof(ICommand), typeof(TreeViewEx), new PropertyMetadata(default(ICommand)));
         public ICommand SetLaunchProfileCommand { get { return (ICommand)GetValue(SetLaunchProfileCommandProperty); } set { SetValue(SetLaunchProfileCommandProperty, value); } }
-        
+
         public static readonly DependencyProperty SetExclusiveModeCommandProperty = DependencyProperty.Register(
-            nameof(ToggleExclusiveModeCommand), typeof(ICommand), typeof(TreeViewEx), 
+            nameof(ToggleExclusiveModeCommand), typeof(ICommand), typeof(TreeViewEx),
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._exclusiveModeMenuItem.Command = (ICommand)e.NewValue));
         public ICommand ToggleExclusiveModeCommand { get { return (ICommand)GetValue(SetExclusiveModeCommandProperty); } set { SetValue(SetExclusiveModeCommandProperty, value); } }
 
@@ -289,8 +289,9 @@ namespace SmartCmdArgs.View
 
             _defaultCheckedMenuItem.IsChecked = SelectedTreeViewItems.Select(x => x.Item).OfType<CmdArgument>().Any(x => x.DefaultChecked);
 
-            var container = SelectedTreeViewItems.FirstOrDefault()?.Item as CmdContainer;
-            if (container != null)
+            var fistItem = SelectedTreeViewItems.FirstOrDefault()?.Item;
+
+            if (fistItem is CmdContainer container)
             {
                 _spacer1MenuItem.Visibility = Visibility.Visible;
 
@@ -308,7 +309,7 @@ namespace SmartCmdArgs.View
                 _spaceDelimiterMenuItem.Visibility = Visibility.Collapsed;
             }
 
-            if (container is CmdGroup group)
+            if (fistItem is CmdGroup group)
             {
                 CmdContainer con = group.Parent;
                 while (!(con is CmdProject))

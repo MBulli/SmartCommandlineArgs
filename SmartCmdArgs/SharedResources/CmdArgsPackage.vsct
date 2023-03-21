@@ -41,6 +41,16 @@
           <CommandName>Test Toolbar</CommandName>
         </Strings>
       </Menu>
+
+      <Menu guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddMenuController" priority="0x0100" type="MenuController">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
+        <CommandFlag>TextChanges</CommandFlag>
+        <CommandFlag>TextIsAnchorCommand</CommandFlag>
+        <Strings>
+          <ButtonText>Add CLA/ENV</ButtonText>
+          <CommandName>Add CLA/ENV</CommandName>
+        </Strings>
+      </Menu>
     </Menus>
 
     <Groups>
@@ -55,6 +65,10 @@
       </Group>
       <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarSettings" priority="0x0000">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbar" />
+      </Group>
+
+      <Group guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAdd" priority="0x000">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddMenuController" />
       </Group>
     </Groups>
     
@@ -78,14 +92,22 @@
       </Button>
     
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAdd" />
         <Icon guid="ImageCatalogGuid" id="Add" />
         <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>FixMenuController</CommandFlag>
         <Strings>
-          <ButtonText>Add new row</ButtonText>
+          <ButtonText>Add Command Line Argument</ButtonText>
         </Strings>
       </Button>
-      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupCommandId" priority="0x0100" type="Button">
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddEnvVarId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAdd" />
+        <Strings>
+          <ButtonText>Add Environment Variable</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupCommandId" priority="0x0102" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="ImageCatalogGuid" id="AddFolder" />
         <CommandFlag>IconIsMoniker</CommandFlag>
@@ -93,7 +115,7 @@
           <ButtonText>Add new group</ButtonText>
         </Strings>
       </Button>
-      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" priority="0x0100" type="Button">
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarRemoveCommandId" priority="0x0101" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
         <Icon guid="ImageCatalogGuid" id="Remove" />
         <CommandFlag>IconIsMoniker</CommandFlag>
@@ -120,7 +142,7 @@
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarCopyCommandlineCommandId" priority="0x0100" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarEdit" />
         <Icon guid="guidCustomMonikers" id="CopyCmdLineIcon" />
-		<CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>IconIsMoniker</CommandFlag>
         <Strings>
           <ButtonText>Copy whole command line to clipboard</ButtonText>
         </Strings>
@@ -176,7 +198,9 @@
     
     <!-- This is the guid used to group toolbar commands together -->
     <GuidSymbol name="guidCmdArgsToolBarCmdSet" value="{53D59879-7413-491E-988C-938117B773E3}">
+      <IDSymbol name="ToolbarAddMenuController" value="0x1109"/>
       <IDSymbol name="ToolbarAddCommandId" value="0x1100"/>
+      <IDSymbol name="ToolbarAddEnvVarId" value="0x1108"/>
       <IDSymbol name="ToolbarRemoveCommandId" value="0x1101"/>
       <IDSymbol name="ToolbarMoveUpCommandId" value="0x1102"/>
       <IDSymbol name="ToolbarMoveDownCommandId" value="0x1103"/>
@@ -186,6 +210,7 @@
       <IDSymbol name="ToolbarOpenSettingsCommandId" value="0x1107"/>
       
       <IDSymbol name="TWToolbar" value="0x1000" />
+      <IDSymbol name="TWToolbarGroupAdd" value="0x1054" />
       <IDSymbol name="TWToolbarGroupAddRemove" value="0x1050" />
       <IDSymbol name="TWToolbarGroupMove" value="0x1051" />
       <IDSymbol name="TWToolbarEdit" value="0x1052" />
@@ -193,7 +218,7 @@
     </GuidSymbol>
 
     <GuidSymbol name="guidCustomMonikers" value="{cafdbdaf-1847-4824-8957-a169d25d0cfb}">
-	  <IDSymbol name="CopyCmdLineIcon" value="1"/>
+      <IDSymbol name="CopyCmdLineIcon" value="1"/>
     </GuidSymbol>
 
     <GuidSymbol name="guidImages" value="{B7F63ABD-939F-4912-912E-E98C7CC9EF6F}" >

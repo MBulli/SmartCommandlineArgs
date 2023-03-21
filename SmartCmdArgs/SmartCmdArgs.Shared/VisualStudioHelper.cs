@@ -199,7 +199,7 @@ namespace SmartCmdArgs
             uint fetched = 0;
             for (enumerator.Reset(); enumerator.Next(1, hierarchy, out fetched) == VSConstants.S_OK && fetched == 1; /*nothing*/)
             {
-                if (ProjectArguments.IsSupportedProject(hierarchy[0]))
+                if (ProjectConfigHelper.IsSupportedProject(hierarchy[0]))
                 {
                     yield return hierarchy[0];
                 }
@@ -507,7 +507,7 @@ namespace SmartCmdArgs
 
         int IVsSolutionEvents.OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded)
         {
-            if (!ProjectArguments.IsSupportedProject(pHierarchy))
+            if (!ProjectConfigHelper.IsSupportedProject(pHierarchy))
                 return LogIgnoringUnsupportedProjectType();
 
             Guid projectGuid = pHierarchy.GetGuid();
@@ -525,7 +525,7 @@ namespace SmartCmdArgs
 
         int IVsSolutionEvents.OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved)
         {
-            if (!ProjectArguments.IsSupportedProject(pHierarchy))
+            if (!ProjectConfigHelper.IsSupportedProject(pHierarchy))
                 return LogIgnoringUnsupportedProjectType();
             
             Guid projectGuid = pHierarchy.GetGuid();
@@ -544,7 +544,7 @@ namespace SmartCmdArgs
 
         int IVsSolutionEvents.OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
         {
-            if (!ProjectArguments.IsSupportedProject(pRealHierarchy))
+            if (!ProjectConfigHelper.IsSupportedProject(pRealHierarchy))
                 return LogIgnoringUnsupportedProjectType();
             
             ProjectStateMap[pRealHierarchy.GetGuid()].IsLoaded = true;
@@ -556,7 +556,7 @@ namespace SmartCmdArgs
 
         int IVsSolutionEvents.OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
         {
-            if (!ProjectArguments.IsSupportedProject(pRealHierarchy))
+            if (!ProjectConfigHelper.IsSupportedProject(pRealHierarchy))
                 return LogIgnoringUnsupportedProjectType();
 
             ProjectStateMap[pRealHierarchy.GetGuid()].IsLoaded = false;
@@ -569,7 +569,7 @@ namespace SmartCmdArgs
 
         int IVsSolutionEvents4.OnAfterRenameProject(IVsHierarchy pHierarchy)
         {
-            if (!ProjectArguments.IsSupportedProject(pHierarchy))
+            if (!ProjectConfigHelper.IsSupportedProject(pHierarchy))
                 return LogIgnoringUnsupportedProjectType();
 
             Guid projectGuid = pHierarchy.GetGuid();

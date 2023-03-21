@@ -13,6 +13,12 @@ using SmartCmdArgs.Helper;
 
 namespace SmartCmdArgs.ViewModel
 {
+    public enum ArgumentType
+    {
+        CmdArg,
+        EnvVar,
+    }
+
     public class CmdBase : PropertyChangedBase
     {
         public Guid Id { get; }
@@ -754,17 +760,21 @@ namespace SmartCmdArgs.ViewModel
             set => base.IsChecked = value;
         }
 
+        private ArgumentType argumentType;
+        public ArgumentType ArgumentType { get => argumentType; set => OnArgumentTypeChanged(argumentType, value); }
+
         private bool defaultChecked;
         public bool DefaultChecked { get => defaultChecked; set => OnDefaultCheckedChanged(defaultChecked, value); }
 
-        public CmdArgument(Guid id, string arg, bool isChecked = false, bool defaultChecked = false)
+        public CmdArgument(Guid id, ArgumentType argType, string arg, bool isChecked = false, bool defaultChecked = false)
             : base(id, arg, isChecked)
         {
+            ArgumentType = argType;
             DefaultChecked = defaultChecked;
         }
 
-        public CmdArgument(string arg, bool isChecked = false, bool defaultChecked = false)
-            : this(Guid.NewGuid(), arg, isChecked, defaultChecked)
+        public CmdArgument(ArgumentType argType, string arg, bool isChecked = false, bool defaultChecked = false)
+            : this(Guid.NewGuid(), argType, arg, isChecked, defaultChecked)
         { }
 
         private void OnDefaultCheckedChanged(bool oldValue, bool newValue)
@@ -777,9 +787,19 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
+        private void OnArgumentTypeChanged(ArgumentType oldValue, ArgumentType newValue)
+        {
+            SetAndNotify(newValue, ref argumentType, nameof(ArgumentType));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new ArgumentTypeChangedEvent(this, oldValue, newValue));
+            }
+        }
+
         public override CmdBase Copy()
         {
-            return new CmdArgument(Value, IsChecked, DefaultChecked);
+            return new CmdArgument(ArgumentType, Value, IsChecked, DefaultChecked);
         }
     }
 }

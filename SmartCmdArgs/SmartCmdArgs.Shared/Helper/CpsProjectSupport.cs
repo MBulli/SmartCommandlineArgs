@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
+using SmartCmdArgs.Logic;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -64,7 +65,7 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static void SetCpsProjectArguments(EnvDTE.Project project, string arguments)
+        public static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -79,6 +80,7 @@ namespace SmartCmdArgs.Helper
 
                 WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile);
                 writableLaunchProfile.CommandLineArgs = arguments;
+                writableLaunchProfile.EnvironmentVariables = envVars.ToImmutableDictionary();
 
                 // Does not work on VS2015, which should be okay ...
                 // We don't hold references for VS2015, where the interface is called IThreadHandling
@@ -90,12 +92,12 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        public static Dictionary<string, string> GetCpsProjectAllArguments(EnvDTE.Project project)
+        public static List<CmdArgumentJson> GetCpsProjectAllArguments(EnvDTE.Project project)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
 
-            var result = new Dictionary<string, string>();
+            var result = new List<CmdArgumentJson>();
 
             if (TryGetProjectServices(project, out unconfiguredProjectServices, out projectServices))
             {
@@ -107,8 +109,16 @@ namespace SmartCmdArgs.Helper
 
                 foreach (var profile in launchProfiles)
                 {
-                    if (!string.IsNullOrEmpty(profile.CommandLineArgs))
-                        result.Add(profile.Name, profile.CommandLineArgs);
+                    var profileGrp = new CmdArgumentJson { Command = profile.Name, LaunchProfile = profile.Name, Items = new List<CmdArgumentJson>() };
+
+                    profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = profile.CommandLineArgs, Enabled = true });
+
+                    foreach (var envVarPair in profile.EnvironmentVariables)
+                    {
+                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
+                    }
+
+                    result.Add(profileGrp);
                 }
             }
 

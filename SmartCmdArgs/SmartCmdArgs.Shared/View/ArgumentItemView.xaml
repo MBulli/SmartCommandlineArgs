@@ -5,12 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:c="clr-namespace:SmartCmdArgs.View.Converter"
+             xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{d:DesignData CmdBase}"
              >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <Style x:Key="ItemTagBorderStyle" TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource {x:Static vs:EnvironmentColors.BrandedUIBackgroundBrushKey}}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vs:EnvironmentColors.BrandedUIBorderBrushKey}}" />
+                <Setter Property="CornerRadius" Value="3" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="2,0,2,0" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
     
     <!-- The textbox determines the size of a row, because 
          the textsize depends on system settings like scaling and high contrast.
@@ -20,6 +32,9 @@
             <CheckBox x:Name="checkbox" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}" Visibility="{Binding InExclusiveModeContainer, Mode=OneWay, Converter={c:BoolToVisibilityConverter Inverted=True, HideVisibility=Collapsed}}"/>
             <RadioButton x:Name="radiobutton" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}" Visibility="{Binding InExclusiveModeContainer, Mode=OneWay, Converter={c:BoolToVisibilityConverter Inverted=False, HideVisibility=Collapsed}}"/>
             <imaging:CrispImage x:Name="Icon" Visibility="{Binding Converter={c:ItemVisibilityConverter}}"/>
+            <Border x:Name="ItemTag" Style="{StaticResource ItemTagBorderStyle}" VerticalAlignment="Center">
+                <TextBlock><Run x:Name="ItemTagText" FontFamily="Arial Narrow, Arial" FontSize="{Binding FontSize, ElementName=textblock, Converter={c:FontSizeConverter Ratio=0.8}}"/></TextBlock>
+            </Border>
         </StackPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
             <TextBlock x:Name="projectConfig" Margin="4,0,0,0" FontStyle="Italic">
