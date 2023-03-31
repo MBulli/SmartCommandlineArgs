@@ -82,7 +82,7 @@ namespace SmartCmdArgs
         public SettingsViewModel Settings => ToolWindowViewModel.SettingsViewModel;
         public CmdArgsOptionPage Options => GetDialogPage<CmdArgsOptionPage>();
 
-        private bool settingsLoaded = false;
+        public bool SettingsLoaded { get; private set; } = false;
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
@@ -184,7 +184,7 @@ namespace SmartCmdArgs
 
         private void CmdArgsOptionPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (!settingsLoaded)
+            if (!SettingsLoaded)
                 return;
 
             switch (e.PropertyName)
@@ -198,7 +198,7 @@ namespace SmartCmdArgs
 
         private void SettingsViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (!settingsLoaded)
+            if (!SettingsLoaded)
                 return;
 
             switch (e.PropertyName)
@@ -662,7 +662,7 @@ namespace SmartCmdArgs
 
             LoadSettings();
 
-            settingsLoaded = true;
+            SettingsLoaded = true;
 
             foreach (var project in vsHelper.GetSupportedProjects())
             {
@@ -693,7 +693,7 @@ namespace SmartCmdArgs
 
             ToolWindowViewModel.Reset();
             toolWindowStateLoadedFromSolution = null;
-            settingsLoaded = false;
+            SettingsLoaded = false;
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)

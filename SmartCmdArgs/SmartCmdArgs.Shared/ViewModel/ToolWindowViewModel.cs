@@ -152,7 +152,7 @@ namespace SmartCmdArgs.ViewModel
                 () => {
                     ToolWindowHistory.SaveState();
                     TreeViewModel.ShowAllProjects = !TreeViewModel.ShowAllProjects;
-                });
+                }, canExecute: _ => CmdArgsPackage.SettingsLoaded);
 
             ShowSettingsCommand = new RelayCommand(
                 () => {
@@ -162,7 +162,7 @@ namespace SmartCmdArgs.ViewModel
                         SettingsViewModel.Assign(settingsClone);
                         package.SaveSettings();
                     }
-                });
+                }, canExecute: _ => CmdArgsPackage.SettingsLoaded);
 
             ToggleSelectedCommand = new RelayCommand(
                 () => {
