@@ -352,26 +352,23 @@ namespace SmartCmdArgs.Logic
             }
             else
             {
-                string jsonDir = project.GetProjectDir();   
-                if (cmdPackage.UseCustomJsonRoot &&
-                    cmdPackage.JsonRootPath != null &&
-                    cmdPackage.JsonRootPath != String.Empty)
-                {
-                    // Ensure absolute path
-                    jsonDir = Path.GetFullPath(cmdPackage.JsonRootPath);
-                    string solutionName = Path.GetFileNameWithoutExtension(vsHelper.GetSolutionFilename());
-                    jsonDir = Path.Combine(jsonDir, solutionName);
-                    jsonDir = Path.Combine(jsonDir, project.GetName());
-                    System.IO.Directory.CreateDirectory(jsonDir);
-                }
-                return FullFilenameForProjectJsonFileFromProjectPath(jsonDir, project.GetName());
+                return FullFilenameForProjectJsonFileFromProjectPath(project.GetProjectDir(), project.GetName());
             }
         }
 
         private string FullFilenameForSolutionJsonFile()
         {
             string slnFilename = vsHelper.GetSolutionFilename();
-            return Path.ChangeExtension(slnFilename, "args.json");
+            string jsonFileName = Path.ChangeExtension(slnFilename, "args.json");
+
+            if (cmdPackage.UseCustomJsonRoot)
+            {
+                var absoluteCustomJsonPath = cmdPackage.MakePathAbsoluteBasedOnSolutionDir(cmdPackage.JsonRootPath);
+                if (!string.IsNullOrWhiteSpace(absoluteCustomJsonPath))
+                    jsonFileName = Path.Combine(absoluteCustomJsonPath, Path.GetFileName(jsonFileName));
+            }
+            
+            return jsonFileName;
         }
 
         private string FullFilenameForProjectJsonFileFromProjectPath(string jsonDir, string projectName)
