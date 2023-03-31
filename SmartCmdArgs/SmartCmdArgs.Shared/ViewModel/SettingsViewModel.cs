@@ -81,6 +81,7 @@ namespace SmartCmdArgs.ViewModel
             typeof(SettingsViewModel)
                 .GetProperties()
                 .Where(p => p.CanRead && p.CanWrite)
+                .Reverse()  // Dependencies are defined from top to bottom, so settings should be applied from bottom to top to avoid unnecessary operations.
                 .ForEach(p => p.SetValue(this, p.GetValue(other)));
         }
     }
