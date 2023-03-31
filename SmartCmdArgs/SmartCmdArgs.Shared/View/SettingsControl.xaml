@@ -3,7 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:c="clr-namespace:SmartCmdArgs.View.Converter"
              xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:local="clr-namespace:SmartCmdArgs.View"
              xmlns:uc="clr-namespace:SmartCmdArgs.View.UserControls"
@@ -11,6 +14,28 @@
              d:DesignHeight="400" d:DesignWidth="600" d:DataContext="{x:Type vm:SettingsViewModel}">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style TargetType="TextBlock">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground">
+                        <Setter.Value>
+                            <DynamicResource ResourceKey="{x:Static SystemColors.GrayTextBrushKey}" />
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="CheckBox">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground">
+                        <Setter.Value>
+                            <DynamicResource ResourceKey="{x:Static SystemColors.GrayTextBrushKey}" />
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <Grid Margin="10,5,10,10">
         <Grid.RowDefinitions>
@@ -20,41 +45,65 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Content="Smart Commandline Arguments Settings" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
-        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,0,5">Default values shown in parenthesis and can be configured under <Hyperlink Command="{Binding OpenOptionsCommand}">Tools → Options → Smart Commandline Arguments</Hyperlink></TextBlock>
-        <ScrollViewer Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
+        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,5,0">Default values shown in parenthesis and can be configured under <Hyperlink Command="{Binding OpenOptionsCommand}">Tools → Options → Smart Commandline Arguments</Hyperlink></TextBlock>
+        <ScrollViewer Grid.Row="2" Margin="0,10,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" LabelText="Save Settings to JSON" IsChecked="{Binding SaveSettingsToJson}" DefaultValue="{Binding Package.Options.SaveSettingsToJson, Mode=OneWay}" />
-                <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow">
-                    If enabled then the settings configured here are saved to a JSON file next to the Solution.
-                </TextBlock>
+                <!-- Save Settings to JSON -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,0,5,0" LabelText="Save Settings to JSON" IsChecked="{Binding SaveSettingsToJson}" DefaultValue="{Binding Package.Options.SaveSettingsToJson, Mode=OneWay}" 
+                                     Description="If enabled then the settings configured here are saved to a JSON file next to the Solution."/>
 
-                <CheckBox Visibility="{Binding Path=SaveSettingsToJson, Converter={StaticResource BoolToVisibility}}" Content="Use Custom JSON Root Path" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding UseCustomJsonRoot}"/>
-                <TextBlock Visibility="{Binding Path=SaveSettingsToJson, Converter={StaticResource BoolToVisibility}}" Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled then the settings configured here are saved to a JSON file next to the Solution."/></TextBlock>
-                <TextBlock Visibility="{Binding Path=UseCustomJsonRoot, Converter={StaticResource BoolToVisibility}}" Margin="5,5,5,0" TextWrapping="WrapWithOverflow" FontWeight="Bold"><Run Text="Root Path of where to save Json Settings"/></TextBlock>
-                <StackPanel Visibility="{Binding Path=UseCustomJsonRoot, Converter={StaticResource BoolToVisibility}}" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBox Name="JsonRootPathTextbox" IsEnabled="False" Visibility="{Binding Path=UseCustomJsonRoot, Converter={StaticResource BoolToVisibility}}" Text="{Binding JsonRootPath}" Width="445" Margin="5,5,5,5"/>
-                    <Button Name="BtnOpen" Margin="0,5,5,5" Padding="2,2" Content="Open" Click="BtnOpen_Click"/>
+                <!-- Enable version control support -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable version control support" IsChecked="{Binding VcsSupportEnabled}" DefaultValue="{Binding Package.Options.VcsSupportEnabled, Mode=OneWay}"
+                                     Description="If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control."/>
+
+                <!-- Use Solution Directory -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Use Solution Directory" IsChecked="{Binding UseSolutionDir}" DefaultValue="{Binding Package.Options.UseSolutionDir, Mode=OneWay}" RequiredDisplayName="Version Control Support" RequiredValue="{Binding VcsSupportEnabled}"
+                                     Description="If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)"/>
+
+                <!-- Use Custom JSON Path -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Use Custom JSON Path" IsChecked="{Binding UseCustomJsonRoot}" RequiredDisplayName="Use Solution Directory"
+                                     Description="If enabled the *.args.json file is saved at a custom location. Relative paths are based on the solution directory. (Only if 'Use Solution Directory' is enabled)">
+                    <uc:SettingsCheckBox.RequiredValue>
+                        <MultiBinding Converter="{c:BoolToBoolMultiConverter TrueCondition=AllTrue, NullValue=True}">
+                            <Binding Path="VcsSupportEnabled"/>
+                            <Binding Path="UseSolutionDir"/>
+                        </MultiBinding>
+                    </uc:SettingsCheckBox.RequiredValue>
+                </uc:SettingsCheckBox>
+
+                <!-- Path where to save the arguments JSON file -->
+                <StackPanel Margin="15,5,5,0">
+                    <StackPanel.Visibility>
+                        <MultiBinding Converter="{c:BoolToVisibilityMultiConverter VisibleCondition=AllTrue, NullValue=True}">
+                            <Binding Path="VcsSupportEnabled"/>
+                            <Binding Path="UseSolutionDir"/>
+                            <Binding Path="UseCustomJsonRoot"/>
+                        </MultiBinding>
+                    </StackPanel.Visibility>
+                    <TextBlock TextWrapping="WrapWithOverflow" FontWeight="Bold">
+                        <Run Text="Path where to save the arguments JSON file"/>
+                    </TextBlock>
+                    <DockPanel Margin="0,2,0,2" LastChildFill="True">
+                        <Button DockPanel.Dock="Right" Name="BtnOpen" Margin="0,0,5,0" Padding="2,2" Click="BtnOpen_Click">
+                            <imaging:CrispImage Moniker="{x:Static catalog:KnownMonikers.FolderBrowserDialogControl}"/>
+                        </Button>
+                        <TextBox Margin="0,0,5,0" x:Name="CustomRootPath" Text="{Binding JsonRootPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" TextChanged="CustomRootPathChanged"/>
+                    </DockPanel>
+                    <DockPanel LastChildFill="True">
+                        <TextBlock Margin="0,0,3,0" DockPanel.Dock="Left">Full Path:</TextBlock>
+                        <TextBlock TextWrapping="WrapWithOverflow">
+                            <Hyperlink x:Name="FullCustomRootPathLink" Click="FullCustomRootPathClicked" ToolTip="Open folder in explorer"/>
+                            <Run Foreground="#db2e2e" x:Name="FullCustomRootPathInvalid"/>
+                        </TextBlock>
+                    </DockPanel>
                 </StackPanel>
 
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" LabelText="Enable version control support" IsChecked="{Binding VcsSupportEnabled}" DefaultValue="{Binding Package.Options.VcsSupportEnabled, Mode=OneWay}" />
-                <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow">
-                    If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file.
-                    That way the command line arguments might be version controlled by a VCS.
-                    If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control.
-                </TextBlock>
-
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" LabelText="Use Solution Directory" IsChecked="{Binding UseSolutionDir}" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}" DefaultValue="{Binding Package.Options.UseSolutionDir, Mode=OneWay}" />
-                <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}">
-                    If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)
-                </TextBlock>
-
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" LabelText="Enable Macro evaluation" IsChecked="{Binding MacroEvaluationEnabled}" DefaultValue="{Binding Package.Options.MacroEvaluationEnabled, Mode=OneWay}" />
-                <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow">
-                    If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string.
-                </TextBlock>
+                <!-- Enable Macro evaluation -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable Macro evaluation" IsChecked="{Binding MacroEvaluationEnabled}" DefaultValue="{Binding Package.Options.MacroEvaluationEnabled, Mode=OneWay}"
+                                     Description="If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string."/>
             </StackPanel>
         </ScrollViewer>
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
             <Button x:Name="BtnOK" Content="OK" Width="75" Click="BtnOK_Click" Margin="0,0,5,0"/>
             <Button x:Name="BtnCancel" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="BtnCancel_Click" Margin="0,0,10,0"/>
         </StackPanel>

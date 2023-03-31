@@ -312,6 +312,12 @@ namespace SmartCmdArgs
             }
         }
 
+        public string MakePathRelativeBasedOnSolutionDir(string path)
+        {
+            string baseDir = Path.GetDirectoryName(vsHelper.GetSolutionFilename());
+            return PathHelper.MakeRelativePath(path, baseDir);
+        }
+
         public string MakePathAbsoluteBasedOnSolutionDir(string path)
         {
             string baseDir = Path.GetDirectoryName(vsHelper.GetSolutionFilename());

@@ -47,5 +47,25 @@ namespace SmartCmdArgs.Helper
                 return null;
             }
         }
+
+        public static string MakeRelativePath(string targetPath, string basePath)
+        {
+            if (string.IsNullOrEmpty(targetPath)) throw new ArgumentNullException("targetPath");
+            if (string.IsNullOrEmpty(basePath)) throw new ArgumentNullException("basePath");
+
+            // Make sure the paths end with a directory separator
+            if (!basePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                basePath += Path.DirectorySeparatorChar;
+
+            if (!targetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                targetPath += Path.DirectorySeparatorChar;
+
+            var baseUri = new Uri(basePath);
+            var targetUri = new Uri(targetPath);
+            var relativeUri = baseUri.MakeRelativeUri(targetUri);
+            var relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+            return relativePath.Replace('/', Path.DirectorySeparatorChar);
+        }
     }
 }

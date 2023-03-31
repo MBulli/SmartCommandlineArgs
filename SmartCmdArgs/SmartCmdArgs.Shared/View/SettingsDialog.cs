@@ -17,8 +17,8 @@ namespace SmartCmdArgs.View
             MinWidth = 600;
             MinHeight = 350;
 
-            Width = 610;
-            Height = 400;
+            Width = 670;
+            Height = 440;
 
             _settingsControl = new SettingsControl();
             _settingsControl.DataContext = settingsViewModel;

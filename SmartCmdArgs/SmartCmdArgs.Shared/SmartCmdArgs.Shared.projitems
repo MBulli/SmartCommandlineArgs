@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helper\DelayExecution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\FileSystemWatcherDisabledContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\FolderSelectDialog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\IVsHierarchyExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\Logger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableCollectionEx.cs" />
@@ -50,6 +51,9 @@
       <DependentUpon>ArgumentItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BooleanBoldFontConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BoolToBoolConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BoolToVisibilityMultiConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BoolToBoolMultiConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\BoolToVisibilityConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\ConverterBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\EmptyToVisibilityConverter.cs" />

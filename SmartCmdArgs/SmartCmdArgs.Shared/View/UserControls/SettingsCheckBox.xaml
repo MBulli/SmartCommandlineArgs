@@ -5,13 +5,20 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="16" d:DesignWidth="300">
-    <CheckBox IsChecked="{Binding IsChecked, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" IsThreeState="True">
-        <StackPanel Orientation="Horizontal">
-            <TextBlock FontWeight="Bold" Text="{Binding LabelText, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"/>
-            <TextBlock Margin="5,0,0,0" Visibility="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type CheckBox}}, Converter={c:NullToVisibilityConverter HideVisibility=Collapsed, Inverted=True}}">
-                (Default: <Run Text="{Binding DefaultValue, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />)
-            </TextBlock>
-        </StackPanel>
-    </CheckBox>
+             d:DesignHeight="16" d:DesignWidth="300"
+             x:Name="SettingsCheckBoxControl">
+    <StackPanel>
+        <CheckBox x:Name="MainCheckBox" IsChecked="{Binding IsChecked, ElementName=SettingsCheckBoxControl}" IsEnabled="{Binding RequiredValue, ElementName=SettingsCheckBoxControl}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock FontWeight="Bold" Text="{Binding LabelText, ElementName=SettingsCheckBoxControl}"/>
+                <TextBlock Margin="5,0,0,0" Visibility="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type CheckBox}}, Converter={c:NullToVisibilityConverter HideVisibility=Collapsed, Inverted=True}}">
+                (Default: <Run Text="{Binding DefaultValue, ElementName=SettingsCheckBoxControl}" />)
+                </TextBlock>
+                <TextBlock Margin="5,0,0,0" Visibility="{Binding RequiredValue, ElementName=SettingsCheckBoxControl, Converter={c:BoolToVisibilityConverter HideVisibility=Collapsed, Inverted=True}}">
+                (Requires: <Run x:Name="RequiredDisplayNameRun"></Run>)
+                </TextBlock>
+            </StackPanel>
+        </CheckBox>
+        <TextBlock x:Name="DescriptionTextBlock" Margin="15,5,10,0" TextWrapping="WrapWithOverflow" Visibility="Collapsed" />
+    </StackPanel>
 </UserControl>

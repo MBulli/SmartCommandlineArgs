@@ -14,6 +14,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Helper;
+using System.IO;
+using System.Windows.Interop;
 
 namespace SmartCmdArgs.View
 {
@@ -22,6 +25,8 @@ namespace SmartCmdArgs.View
     /// </summary>
     public partial class SettingsControl : UserControl
     {
+        private SettingsViewModel ViewModel => DataContext as SettingsViewModel;
+
         public SettingsControl()
         {
             InitializeComponent();
@@ -49,12 +54,48 @@ namespace SmartCmdArgs.View
 
         private void BtnOpen_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FolderBrowserDialog folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            var result = folderBrowser.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            var curPath = ViewModel?.JsonRootPath;
+
+            if (string.IsNullOrWhiteSpace(curPath))
+                curPath = ".";
+
+            curPath = CmdArgsPackage.Instance.MakePathAbsoluteBasedOnSolutionDir(curPath);
+
+            var window = TreeHelper.FindAncestorOrSelf<Window>(this);
+
+            var dialog = new FolderSelectDialog();
+            dialog.InitialDirectory = curPath;
+            if (dialog.Show(new WindowInteropHelper(window).Handle))
             {
                 SettingsViewModel settings = this.DataContext as SettingsViewModel;
-                settings.JsonRootPath = folderBrowser.SelectedPath;
+                settings.JsonRootPath = CmdArgsPackage.Instance.MakePathRelativeBasedOnSolutionDir(dialog.FileName);
+            }
+        }
+
+        private string GetFullCustomRootPath()
+        {
+            return CmdArgsPackage.Instance.MakePathAbsoluteBasedOnSolutionDir(ViewModel?.JsonRootPath);
+        }
+
+        private void CustomRootPathChanged(object sender, RoutedEventArgs e)
+        {
+            FullCustomRootPathLink.Inlines.Clear();
+            FullCustomRootPathInvalid.Text = null;
+
+            var path = GetFullCustomRootPath();
+
+            if (!string.IsNullOrWhiteSpace(path))
+                FullCustomRootPathLink.Inlines.Add(path);
+            else
+                FullCustomRootPathInvalid.Text = "<invalid path>";
+        }
+
+        private void FullCustomRootPathClicked(object sender, RoutedEventArgs e)
+        {
+            var directoryName = GetFullCustomRootPath();
+            if (Directory.Exists(directoryName))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"\"{directoryName}\"");
             }
         }
     }

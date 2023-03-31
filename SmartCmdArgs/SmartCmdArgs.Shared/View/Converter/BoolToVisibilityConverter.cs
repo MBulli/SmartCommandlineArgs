@@ -11,7 +11,7 @@ namespace SmartCmdArgs.View.Converter
     {
         public bool Inverted { get; set; } = false;
 
-        public System.Windows.Visibility HideVisibility { get; set; } = System.Windows.Visibility.Hidden;
+        public System.Windows.Visibility HideVisibility { get; set; } = System.Windows.Visibility.Collapsed;
 
         public override object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
