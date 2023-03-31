@@ -64,17 +64,22 @@ namespace SmartCmdArgs.Logic
 
                     Logger.Info($"Renaming json-file '{oldFileName}' to new name '{newFileName}'");
 
-                    if (File.Exists(newFileName))
+                    if (newFileName != oldFileName)
                     {
-                        File.Delete(oldFileName);
+                        if (File.Exists(newFileName))
+                        {
+                            File.Delete(oldFileName);
 
-                        FireFileStorageChanged(project);
+                            FireFileStorageChanged(project);
+                        }
+                        else if (File.Exists(oldFileName))
+                        {
+                            File.Move(oldFileName, newFileName);
+                        }
+
+                        fsWatcher.Path = Path.GetDirectoryName(newFileName); ;
+                        fsWatcher.Filter = Path.GetFileName(newFileName);
                     }
-                    else if (File.Exists(oldFileName))
-                    {
-                        File.Move(oldFileName, newFileName);
-                    }
-                    fsWatcher.Filter = Path.GetFileName(newFileName);
                 }
                 projectFsWatchers.Add(guid, fsWatcher);
             }
