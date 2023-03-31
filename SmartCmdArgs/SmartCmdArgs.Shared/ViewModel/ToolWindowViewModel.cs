@@ -339,6 +339,7 @@ namespace SmartCmdArgs.ViewModel
         /// </summary>
         public void Reset()
         {
+            TreeViewModel.ShowAllProjects = false;
             TreeViewModel.Projects.Clear();
             ToolWindowHistory.Clear();
         }

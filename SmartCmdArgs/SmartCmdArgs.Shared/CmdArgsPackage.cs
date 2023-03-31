@@ -658,6 +658,8 @@ namespace SmartCmdArgs
         {
             toolWindowStateLoadedFromSolution = Logic.SuoDataSerializer.Deserialize(toolWindowStateFromSolutionJsonStr, vsHelper);
 
+            ToolWindowViewModel.TreeViewModel.ShowAllProjects = toolWindowStateLoadedFromSolution.ShowAllProjects;
+
             LoadSettings();
 
             settingsLoaded = true;
