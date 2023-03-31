@@ -16,7 +16,7 @@ namespace SmartCmdArgs.Logic
     public class SettingsJson
     {
         public bool? SaveSettingsToJson { get; set; }
-        public bool? UseCustomJsonRoot { get; set; }
+        public bool UseCustomJsonRoot { get; set; }
         public string JsonRootPath { get; set; }
         public bool? VcsSupportEnabled { get; set; }
         public bool? UseSolutionDir { get; set; }
@@ -27,11 +27,13 @@ namespace SmartCmdArgs.Logic
         public SettingsJson(SettingsViewModel settingsViewModel)
         {
             SaveSettingsToJson = settingsViewModel.SaveSettingsToJson;
-            UseCustomJsonRoot = settingsViewModel.UseCustomJsonRoot;
-            JsonRootPath = settingsViewModel.JsonRootPath;
             VcsSupportEnabled = settingsViewModel.VcsSupportEnabled;
             UseSolutionDir = settingsViewModel.UseSolutionDir;
             MacroEvaluationEnabled = settingsViewModel.MacroEvaluationEnabled;
+            UseCustomJsonRoot = settingsViewModel.UseCustomJsonRoot;
+
+            if (UseCustomJsonRoot)
+                JsonRootPath = settingsViewModel.JsonRootPath;
         }
     }
 

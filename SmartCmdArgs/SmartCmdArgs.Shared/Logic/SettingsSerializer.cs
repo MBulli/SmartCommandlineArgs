@@ -19,7 +19,7 @@ namespace SmartCmdArgs.Logic
 
             var data = new SettingsJson(vm);
 
-            return JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+            return JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore });
         }
 
         public static SettingsJson Deserialize(string jsonStr)

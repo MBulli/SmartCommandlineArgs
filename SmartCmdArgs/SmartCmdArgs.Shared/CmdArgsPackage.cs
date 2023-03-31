@@ -85,8 +85,8 @@ namespace SmartCmdArgs
         public bool SettingsLoaded { get; private set; } = false;
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
-        public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot ?? Options.UseCustomJsonRoot;
-        public string JsonRootPath => Settings.JsonRootPath ?? Options.JsonRootPath;
+        public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot;
+        public string JsonRootPath => Settings.JsonRootPath;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         public bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
@@ -192,8 +192,6 @@ namespace SmartCmdArgs
             switch (e.PropertyName)
             {
                 case nameof(CmdArgsOptionPage.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
-                case nameof(CmdArgsOptionPage.UseCustomJsonRoot): UseCustomJsonRootChanged(); break;
-                case nameof(CmdArgsOptionPage.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
                 case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
