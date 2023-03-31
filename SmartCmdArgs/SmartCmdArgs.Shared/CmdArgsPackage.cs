@@ -772,12 +772,12 @@ namespace SmartCmdArgs
 
         private void UseCustomJsonRootChanged()
         {
-            SaveSettings();
+            fileStorage.SaveAllProjects();
         }
 
         private void JsonRootPathChanged()
         {
-            SaveSettings();
+            fileStorage.SaveAllProjects();
         }
 
         private void VcsSupportChanged()
