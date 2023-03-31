@@ -487,6 +487,9 @@ namespace SmartCmdArgs
         {
             var settings = fileStorage.ReadSettings();
 
+            if (settings != null && !Options.SaveSettingsToJson)
+                settings.SaveSettingsToJson = true;
+
             if (settings == null)
                 settings = toolWindowStateLoadedFromSolution.Settings;
 
