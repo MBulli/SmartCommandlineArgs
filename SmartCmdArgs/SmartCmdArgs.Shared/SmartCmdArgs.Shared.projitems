@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableItemsRangeCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableRangeCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\PathHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ProjectArguments.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\PropertyChangedBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\RelayCommand.cs" />

@@ -309,10 +309,16 @@ namespace SmartCmdArgs
             }
         }
 
+        public string MakePathAbsoluteBasedOnSolutionDir(string path)
+        {
+            string baseDir = Path.GetDirectoryName(vsHelper.GetSolutionFilename());
+            return PathHelper.MakePathAbsolute(path, baseDir);
+        }
+
         public string MakePathAbsoluteBasedOnProjectDir(string path, IVsHierarchy project)
         {
             string baseDir = project?.GetProjectDir();
-            return MakePathAbsolute(path, baseDir);
+            return PathHelper.MakePathAbsolute(path, baseDir);
         }
 
         public string MakePathAbsoluteBasedOnTargetDir(string path, IVsHierarchy project, string buildConfig)
@@ -326,30 +332,7 @@ namespace SmartCmdArgs
                     baseDir = vsHelper.GetMSBuildPropertyValue(project, "TargetDir", buildConfig);
             }
 
-            return MakePathAbsolute(path, baseDir);
-        }
-
-        public string MakePathAbsolute(string path, string baseDir)
-        {
-            var drive = Path.GetPathRoot(path);
-
-            if (!Path.IsPathRooted(path))
-            {
-                if (baseDir == null)
-                    return null;
-
-                path = Path.Combine(baseDir, path);
-            }
-            else if (drive == "\\")
-            {
-                if (baseDir == null)
-                    return null;
-
-                var baseDrive = Path.GetPathRoot(baseDir);
-                path = Path.Combine(baseDrive, path.Substring(1));
-            }
-
-            return Path.GetFullPath(path);
+            return PathHelper.MakePathAbsolute(path, baseDir);
         }
 
         public string EvaluateMacros(string arg, IVsHierarchy project)
