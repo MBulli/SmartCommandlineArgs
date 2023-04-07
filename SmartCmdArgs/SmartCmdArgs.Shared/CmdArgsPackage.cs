@@ -87,6 +87,8 @@ namespace SmartCmdArgs
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         private bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
+		public bool AreWeEnabled => Settings.WeAreEnabled ?? Options.WeAreEnabled;
+		public bool CPSCustomProjectEnabled => Settings.CPSCustomProjectEnabled ?? Options.CPSCustomProjectEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
 
         private bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
@@ -282,7 +284,7 @@ namespace SmartCmdArgs
             if (commandLineArgs == null)
                 return;
 
-            ProjectArguments.SetArguments(project, commandLineArgs);
+            ProjectArguments.SetArguments(project, commandLineArgs, CPSCustomProjectEnabled);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
@@ -710,6 +712,8 @@ namespace SmartCmdArgs
 
         private void VsHelper_ProjectWillRun(object sender, EventArgs e)
         {
+			if (!AreWeEnabled)
+				return;
             Logger.Info("VS-Event: Startup project will run.");
 
             foreach (var startupProject in ToolWindowViewModel.TreeViewModel.StartupProjects)

@@ -16,6 +16,7 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Content="Smart Commandline Arguments Settings" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
+		<CheckBox Content="Enabled"  HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding WeAreEnabled}" IsThreeState="True"/>
         <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,0,5">Default values can be configured under <Hyperlink Command="{Binding OpenOptionsCommand}">Tools → Options → Smart Commandline Arguments</Hyperlink></TextBlock>
         <ScrollViewer Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
@@ -27,6 +28,8 @@
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}"><Run Text="If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)"/></TextBlock>
                 <CheckBox Content="Enable Macro evaluation" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding MacroEvaluationEnabled}" IsThreeState="True"/>
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string."/></TextBlock>
+				<CheckBox Content="Custom CPS Project Profile" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding CPSCustomProjectEnabled}" IsThreeState="True"/>
+				<TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow">(<Run Text="{Binding Package.CPSCustomProjectEnabled, Mode=OneWay}" />) <Run Text="If enabled CPS style projects will have an additional in memory 'Smart CLI Command' profile added, and our custom args will only run when its selected rather than overriding the active profile."/></TextBlock>
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">

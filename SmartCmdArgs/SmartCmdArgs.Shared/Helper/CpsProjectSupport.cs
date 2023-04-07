@@ -64,7 +64,7 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static void SetCpsProjectArguments(EnvDTE.Project project, string arguments)
+        public static void SetCpsProjectArguments(EnvDTE.Project project, string arguments, bool cpsUseCustomProfile)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -77,19 +77,25 @@ namespace SmartCmdArgs.Helper
                 if (activeLaunchProfile == null)
                     return;
 
-                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile);
+                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile,cpsUseCustomProfile);
                 writableLaunchProfile.CommandLineArgs = arguments;
-
+				
                 // Does not work on VS2015, which should be okay ...
                 // We don't hold references for VS2015, where the interface is called IThreadHandling
                 IProjectThreadingService projectThreadingService = projectServices.ThreadingPolicy;
                 projectThreadingService.ExecuteSynchronously(() =>
                 {
-                    return launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
+					var tsk = launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
+					if (cpsUseCustomProfile && IsVeryFirstRun) {
+						tsk = tsk.ContinueWith(_ => launchSettingsProvider.SetActiveProfileAsync(WritableLaunchProfile.CustomProfileName));
+					IsVeryFirstRun = false;
+					}
+					
+                    return tsk;
                 });
             }
         }
-
+		private static bool IsVeryFirstRun=true;
         public static Dictionary<string, string> GetCpsProjectAllArguments(EnvDTE.Project project)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
@@ -117,7 +123,10 @@ namespace SmartCmdArgs.Helper
     }
 
     class WritableLaunchProfile : ILaunchProfile
-    {
+#if VS17
+		, Microsoft.VisualStudio.ProjectSystem.Debug.IPersistOption
+#endif
+	{
         public string Name { set; get; }
         public string CommandName { set; get; }
         public string ExecutablePath { set; get; }
@@ -127,10 +136,17 @@ namespace SmartCmdArgs.Helper
         public string LaunchUrl { set; get; }
         public ImmutableDictionary<string, string> EnvironmentVariables { set; get; }
         public ImmutableDictionary<string, object> OtherSettings { set; get; }
+		public bool DoNotPersist { get; set; }
 
-        public WritableLaunchProfile(ILaunchProfile launchProfile)
+		public const string CustomProfileName = "Smart CLI Args";
+		public WritableLaunchProfile(ILaunchProfile launchProfile, bool cpsUseCustomProfile)
         {
-            Name = launchProfile.Name;
+			if (!cpsUseCustomProfile)
+				Name = launchProfile.Name;
+			else {
+				Name = CustomProfileName;
+				DoNotPersist = true;
+			}
             ExecutablePath = launchProfile.ExecutablePath;
             CommandName = launchProfile.CommandName;
             CommandLineArgs = launchProfile.CommandLineArgs;

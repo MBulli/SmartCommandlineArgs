@@ -19,6 +19,8 @@ namespace SmartCmdArgs.Logic
         public bool? VcsSupportEnabled { get; set; }
         public bool? UseSolutionDir { get; set; }
         public bool? MacroEvaluationEnabled { get; set; }
+		public bool? CPSCustomProjectEnabled { get; set; }
+		public bool? WeAreEnabled { get; set; }
 
         public SettingsJson() { }
 
@@ -28,6 +30,8 @@ namespace SmartCmdArgs.Logic
             VcsSupportEnabled = settingsViewModel.VcsSupportEnabled;
             UseSolutionDir = settingsViewModel.UseSolutionDir;
             MacroEvaluationEnabled = settingsViewModel.MacroEvaluationEnabled;
+			CPSCustomProjectEnabled = settingsViewModel.CPSCustomProjectEnabled;
+			WeAreEnabled = settingsViewModel.WeAreEnabled;
         }
     }
 
