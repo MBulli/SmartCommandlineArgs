@@ -55,6 +55,7 @@ namespace SmartCmdArgs.ViewModel
 			set => SetAndNotify(value, ref _CPSCustomProjectEnabled);
 		}
         public RelayCommand OpenOptionsCommand { get; }
+		public CmdArgsPackage Package => _package;
 
         public SettingsViewModel(CmdArgsPackage package)
         {

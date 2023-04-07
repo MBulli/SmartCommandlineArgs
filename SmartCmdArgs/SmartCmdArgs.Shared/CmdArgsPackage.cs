@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // <copyright file="CmdArgsPackage.cs" company="Company">
 //     Copyright (c) Company.  All rights reserved.
 // </copyright>
@@ -86,12 +86,12 @@ namespace SmartCmdArgs
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
-        private bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
+        public bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
 		public bool AreWeEnabled => Settings.WeAreEnabled ?? Options.WeAreEnabled;
 		public bool CPSCustomProjectEnabled => Settings.CPSCustomProjectEnabled ?? Options.CPSCustomProjectEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
 
-        private bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
+        public bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
         public bool DeleteEmptyFilesAutomatically => Options.DeleteEmptyFilesAutomatically;
         public bool DeleteUnnecessaryFilesAutomatically => Options.DeleteUnnecessaryFilesAutomatically;
 
@@ -516,6 +516,8 @@ namespace SmartCmdArgs
             vm.VcsSupportEnabled = settings.VcsSupportEnabled;
             vm.UseSolutionDir = settings.UseSolutionDir;                    // has to be done after VcsSupportEnabled because it depends on it
             vm.SaveSettingsToJson = settings.SaveSettingsToJson;            // has to be done at the end because all settings should be correctly set before to be saved to a file
+			vm.CPSCustomProjectEnabled = settings.CPSCustomProjectEnabled;
+			vm.WeAreEnabled = settings.WeAreEnabled;
         }
 
         private void UpdateCommandsForProject(IVsHierarchy project)
