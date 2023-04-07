@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using System;
@@ -53,6 +53,7 @@ namespace SmartCmdArgs.Helper
             }
             return null;
         }
+		public static bool IsActiveLaunchProfileCustomProfile(EnvDTE.Project project) => GetActiveLaunchProfileName(project) == WritableLaunchProfile.CustomProfileName;
 
         public static IEnumerable<string> GetLaunchProfileNames(EnvDTE.Project project)
         {
@@ -63,8 +64,11 @@ namespace SmartCmdArgs.Helper
             }
             return null;
         }
+		public static void EnsureCustomProfileCreated(EnvDTE.Project project, bool SetActive) {
+			SetCpsProjectArguments(project, "", true, SetActive);
+		}
 
-        public static void SetCpsProjectArguments(EnvDTE.Project project, string arguments, bool cpsUseCustomProfile)
+        public static void SetCpsProjectArguments(EnvDTE.Project project, string arguments, bool cpsUseCustomProfile, bool setActive=false)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -86,16 +90,13 @@ namespace SmartCmdArgs.Helper
                 projectThreadingService.ExecuteSynchronously(() =>
                 {
 					var tsk = launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
-					if (cpsUseCustomProfile && IsVeryFirstRun) {
-						tsk = tsk.ContinueWith(_ => launchSettingsProvider.SetActiveProfileAsync(WritableLaunchProfile.CustomProfileName));
-					IsVeryFirstRun = false;
-					}
+					if (setActive)
+						tsk = tsk.ContinueWith(_ => launchSettingsProvider.SetActiveProfileAsync(writableLaunchProfile.Name));
 					
                     return tsk;
                 });
             }
         }
-		private static bool IsVeryFirstRun=true;
         public static Dictionary<string, string> GetCpsProjectAllArguments(EnvDTE.Project project)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;

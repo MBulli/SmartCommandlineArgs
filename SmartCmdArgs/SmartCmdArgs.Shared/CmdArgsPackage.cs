@@ -120,10 +120,34 @@ namespace SmartCmdArgs
 
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
+			ToolWindowViewModel.TreeViewModel.TreeContentChanged += (_,e) => CPSCreateAndSetProfileIfUsed(e.AffectedProject?.Id ?? Guid.Empty);
         }
 
-        #region Package Members
-        internal Interface GetService<Service, Interface>()
+		private object CustomProfileActivatorAmLatest;
+		private async void CPSCreateAndSetProfileIfUsed(Guid ProjectGuid) {
+			if (!CPSCustomProjectEnabled || ProjectGuid == Guid.Empty)
+				return;
+			var us = CustomProfileActivatorAmLatest = new object();
+			
+			await Task.Delay(100);//debounce
+			if (us != CustomProfileActivatorAmLatest)
+				return;
+			if (! ToolWindowViewModel.TreeViewModel.AllItems.Any(a=>a is CmdArgument))
+				return;
+			if (!CPSCustomProjectEnabled)
+				return;
+			var ivProject = vsHelper.HierarchyForProjectGuid((Guid)ProjectGuid);
+			if (!ivProject.IsCpsProject())
+				return;
+			var project = ivProject.GetProject();
+			if (CpsProjectSupport.IsActiveLaunchProfileCustomProfile(project))
+				return;
+			CpsProjectSupport.EnsureCustomProfileCreated(project, true);
+			
+		}
+
+		#region Package Members
+		internal Interface GetService<Service, Interface>()
         {
             return (Interface)base.GetService(typeof(Service));
         }
@@ -535,7 +559,7 @@ namespace SmartCmdArgs
             }
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new SuoDataJson();
-
+			CPSCreateAndSetProfileIfUsed(project.GetGuid());
             // joins data from solution and project
             //  => overrides solution commands for a project if a project json file exists
             //  => keeps all data from the suo file for projects without a json
