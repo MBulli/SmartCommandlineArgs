@@ -73,10 +73,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem">
-      <Version>15.8.243</Version>
+      <Version>17.2.402-pre</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Managed">
-      <Version>2.0.6142705</Version>
+      <Version>17.5.3-gbf0428edc0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.31902.203" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5233" />
