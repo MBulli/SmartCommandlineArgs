@@ -86,10 +86,10 @@ namespace SmartCmdArgs
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
-        private bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
+        public bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
 
-        private bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
+        public bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
         public bool DeleteEmptyFilesAutomatically => Options.DeleteEmptyFilesAutomatically;
         public bool DeleteUnnecessaryFilesAutomatically => Options.DeleteUnnecessaryFilesAutomatically;
 
