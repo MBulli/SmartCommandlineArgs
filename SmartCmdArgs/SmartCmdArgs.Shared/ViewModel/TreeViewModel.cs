@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using SmartCmdArgs.Helper;
@@ -303,6 +304,22 @@ namespace SmartCmdArgs.ViewModel
 
         public event EventHandler<CmdBase> ItemSelectionChanged;
         public event EventHandler<TreeChangedEventArgs> TreeContentChanged;
+		/// <summary>
+		/// attempt to only fire when a user action has changed the tree content
+		/// </summary>
+		public event EventHandler<TreeChangedEventArgs> TreeContentUserChanged;
+		protected volatile bool TreeContentChangesCurrentlyNotByUser;
+#pragma warning disable VSTHRD100 // Avoid async void methods
+		public async void TreeContentChangeUserEventIgnore(int howLongMS=100) {
+			TreeContentChangesCurrentlyNotByUser = true;
+			var us = TreeContentChangeUserEventIgnoreDeBounce = new object();
+			await Task.Delay(howLongMS);
+			if (us != TreeContentChangeUserEventIgnoreDeBounce)
+				return;
+			TreeContentChangesCurrentlyNotByUser = false;
+		}
+#pragma warning restore VSTHRD100 // Avoid async void methods
+		private object TreeContentChangeUserEventIgnoreDeBounce;
 
         public virtual void OnItemSelectionChanged(CmdBase item)
         {
@@ -313,7 +330,10 @@ namespace SmartCmdArgs.ViewModel
         {
             void FireTreeChanged(TreeEventBase e)
             {
-                TreeContentChanged?.Invoke(this, new TreeChangedEventArgs(e.Sender, e.AffectedProject));
+				var args = new TreeChangedEventArgs(e.Sender, e.AffectedProject);
+                TreeContentChanged?.Invoke(this, args);
+				if (!TreeContentChangesCurrentlyNotByUser)
+					TreeContentUserChanged?.Invoke(this, args);
             }
             
             switch (treeEvent)

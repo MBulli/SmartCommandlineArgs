@@ -249,11 +249,11 @@ namespace SmartCmdArgs.Helper
 
         #region Common Project System (CPS)
 
-        private static void SetCpsProjectArguments(EnvDTE.Project project, string arguments)
+        private static void SetCpsProjectArguments(EnvDTE.Project project, string arguments, bool cpsUseCustomProfile)
         {
             // Should only be called in VS 2017 or higher
             // .Net Core 2 is not supported by VS 2015, so this should not cause problems
-            CpsProjectSupport.SetCpsProjectArguments(project, arguments);
+            CpsProjectSupport.SetCpsProjectArguments(project, arguments, cpsUseCustomProfile);
         }
 
         private static void GetCpsProjectAllArguments(EnvDTE.Project project, List<CmdArgumentJson> allArgs)
@@ -302,7 +302,7 @@ namespace SmartCmdArgs.Helper
             } },
             // C# - Lagacy DotNetCore
             {ProjectKinds.CSCore, new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetCpsProjectArguments(project, arguments),
+                SetArguments = (project, arguments) => SetCpsProjectArguments(project, arguments, false),
                 GetAllArguments = (project, allArgs) => GetCpsProjectAllArguments(project, allArgs)
             } },
             // F#
@@ -356,12 +356,12 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        public static void SetArguments(IVsHierarchy project, string arguments)
+        public static void SetArguments(IVsHierarchy project, string arguments, bool CpsUseCustomProfile=false)
         {
             if (project.IsCpsProject())
             {
                 Logger.Info($"Setting arguments on CPS project of type '{project.GetKind()}'.");
-                SetCpsProjectArguments(project.GetProject(), arguments);
+                SetCpsProjectArguments(project.GetProject(), arguments, CpsUseCustomProfile);
             }
             else
             {

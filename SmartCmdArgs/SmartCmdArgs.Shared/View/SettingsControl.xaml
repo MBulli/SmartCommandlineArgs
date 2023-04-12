@@ -27,6 +27,10 @@
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}"><Run Text="If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)"/></TextBlock>
                 <CheckBox Content="Enable Macro evaluation" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding MacroEvaluationEnabled}" IsThreeState="True"/>
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string."/></TextBlock>
+                <CheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding CPSCustomProjectEnabled}" IsThreeState="True">
+                    <TextBlock>Custom CPS Project Profile (<Run Text="{Binding Package.CPSCustomProjectEnabled, Mode=OneWay}" />)</TextBlock>
+                </CheckBox>
+				<TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled CPS style projects will have an additional in memory 'Smart CLI Command' profile added, and our custom args will only run when its selected rather than overriding the active profile."/></TextBlock>
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">

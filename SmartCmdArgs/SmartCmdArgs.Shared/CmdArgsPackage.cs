@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // <copyright file="CmdArgsPackage.cs" company="Company">
 //     Copyright (c) Company.  All rights reserved.
 // </copyright>
@@ -87,6 +87,7 @@ namespace SmartCmdArgs
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         private bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
+        public bool CPSCustomProjectEnabled => Settings.CPSCustomProjectEnabled ?? Options.CPSCustomProjectEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
 
         private bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
@@ -118,6 +119,33 @@ namespace SmartCmdArgs
 
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
+            ToolWindowViewModel.TreeViewModel.TreeContentUserChanged += (__, e) => CPSCreateAndSetProfileIfUsed(e.AffectedProject?.Id ?? Guid.Empty);
+            
+        }
+
+        private object CustomProfileActivatorAmLatest;
+        private async void CPSCreateAndSetProfileIfUsed(Guid ProjectGuid, bool noDebounce=false) {
+            Debug.WriteLine($"{DateTime.Now}: CPSCreateAndSetProfileIfUsed called");
+            if (!CPSCustomProjectEnabled || ProjectGuid == Guid.Empty)
+                return;
+            var us = CustomProfileActivatorAmLatest = new object();
+            if (!noDebounce) {
+                await Task.Delay(100);//debounce
+                if (us != CustomProfileActivatorAmLatest)
+                    return;
+            }
+            if (! ToolWindowViewModel.TreeViewModel.AllItems.Any(a=>a is CmdArgument))
+                return;
+            if (!CPSCustomProjectEnabled)
+                return;
+            var ivProject = vsHelper.HierarchyForProjectGuid((Guid)ProjectGuid);
+            if (!ivProject.IsCpsProject())
+                return;
+            var project = ivProject.GetProject();
+            if (CpsProjectSupport.IsActiveLaunchProfileCustomProfile(project))
+                return;
+            CpsProjectSupport.EnsureCustomProfileCreated(project, true);
+            
         }
 
         #region Package Members
@@ -282,7 +310,7 @@ namespace SmartCmdArgs
             if (commandLineArgs == null)
                 return;
 
-            ProjectArguments.SetArguments(project, commandLineArgs);
+            ProjectArguments.SetArguments(project, commandLineArgs, CPSCustomProjectEnabled);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
@@ -438,7 +466,7 @@ namespace SmartCmdArgs
             // This event is triggered on non-main thread!
 
             Logger.Info($"Dispatching update commands function call");
-
+            ToolWindowViewModel.TreeViewModel.TreeContentChangeUserEventIgnore();
             JoinableTaskFactory.RunAsync(async delegate
             {
                 // git branch and merge might lead to a race condition here.
@@ -531,7 +559,7 @@ namespace SmartCmdArgs
             }
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new SuoDataJson();
-
+            CPSCreateAndSetProfileIfUsed(project.GetGuid());
             // joins data from solution and project
             //  => overrides solution commands for a project if a project json file exists
             //  => keeps all data from the suo file for projects without a json
@@ -657,7 +685,7 @@ namespace SmartCmdArgs
         private void InitializeForSolution()
         {
             toolWindowStateLoadedFromSolution = Logic.SuoDataSerializer.Deserialize(toolWindowStateFromSolutionJsonStr, vsHelper);
-
+            ToolWindowViewModel.TreeViewModel.TreeContentChangeUserEventIgnore();
             ToolWindowViewModel.TreeViewModel.ShowAllProjects = toolWindowStateLoadedFromSolution.ShowAllProjects;
 
             LoadSettings();
@@ -726,7 +754,7 @@ namespace SmartCmdArgs
 
             if (e.IsSolutionOpenProcess)
                 return;
-
+            ToolWindowViewModel.TreeViewModel.TreeContentChangeUserEventIgnore();
             ToolWindowHistory.SaveState();
 
             UpdateCommandsForProject(e.Project);
@@ -739,7 +767,7 @@ namespace SmartCmdArgs
 
             if (e.IsSolutionCloseProcess)
                 return;
-
+            ToolWindowViewModel.TreeViewModel.TreeContentChangeUserEventIgnore();
             fileStorage.SaveProject(e.Project);
 
             ToolWindowViewModel.TreeViewModel.Projects.Remove(e.Project.GetGuid());
@@ -750,7 +778,7 @@ namespace SmartCmdArgs
         private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectAfterRenameEventArgs e)
         {
             Logger.Info($"VS-Event: Project '{e.OldProjectName}' renamed to '{e.Project.GetName()}'.");
-
+            ToolWindowViewModel.TreeViewModel.TreeContentChangeUserEventIgnore();
             fileStorage.RenameProject(e.Project, e.OldProjectDir, e.OldProjectName);
 
             ToolWindowViewModel.RenameProject(e.Project);
@@ -775,6 +803,7 @@ namespace SmartCmdArgs
 
         private void VcsSupportChanged()
         {
+            ToolWindowViewModel.TreeViewModel.TreeContentChangeUserEventIgnore();
             if (!IsVcsSupportEnabled)
                 return;
 
@@ -809,11 +838,15 @@ namespace SmartCmdArgs
 
         private void UpdateCurrentStartupProject()
         {
+            ToolWindowViewModel.TreeViewModel.TreeContentChangeUserEventIgnore();
             var startupProjectGuids = new HashSet<Guid>(vsHelper.StartupProjectUniqueNames()
                 .Select(vsHelper.HierarchyForProjectName).Select(hierarchy => hierarchy.GetGuid()));
-
+            ToolWindowViewModel.TreeViewModel.TreeContentChangeUserEventIgnore();
             ToolWindowViewModel.TreeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
             ToolWindowViewModel.TreeViewModel.UpdateTree();
+
+            startupProjectGuids.ForEach(guid => CPSCreateAndSetProfileIfUsed(guid, true));//we don't have to worry if we are empty or not it will check that for us
+
         }
 
         public Task OpenFileInVisualStudioAsync(string path) => vsHelper.OpenFileInVisualStudioAsync(path);
