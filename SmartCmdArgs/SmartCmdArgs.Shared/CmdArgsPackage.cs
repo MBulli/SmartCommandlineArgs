@@ -331,25 +331,33 @@ namespace SmartCmdArgs
 
         public string MakePathAbsolute(string path, string baseDir)
         {
-            var drive = Path.GetPathRoot(path);
-
-            if (!Path.IsPathRooted(path))
+            try
             {
-                if (baseDir == null)
-                    return null;
+                var drive = Path.GetPathRoot(path);
 
-                path = Path.Combine(baseDir, path);
+                if (!Path.IsPathRooted(path))
+                {
+                    if (baseDir == null)
+                        return null;
+
+                    path = Path.Combine(baseDir, path);
+                }
+                else if (drive == "\\")
+                {
+                    if (baseDir == null)
+                        return null;
+
+                    var baseDrive = Path.GetPathRoot(baseDir);
+                    path = Path.Combine(baseDrive, path.Substring(1));
+                }
+
+                return Path.GetFullPath(path);
             }
-            else if (drive == "\\")
+            catch(Exception)
             {
-                if (baseDir == null)
-                    return null;
-
-                var baseDrive = Path.GetPathRoot(baseDir);
-                path = Path.Combine(baseDrive, path.Substring(1));
+                return path;
             }
-
-            return Path.GetFullPath(path);
+                
         }
 
         public string EvaluateMacros(string arg, IVsHierarchy project)
