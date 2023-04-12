@@ -45,6 +45,7 @@ namespace SmartCmdArgs
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
+        private bool _CPSCustomProjectEnabled;
 
         [Category("General")]
         [DisplayName("Relative path root")]
@@ -124,6 +125,15 @@ namespace SmartCmdArgs
         {
             get => _macroEvaluationEnabled;
             set => SetAndNotify(value, ref _macroEvaluationEnabled);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("CPS Custom Project Profile")]
+        [Description("If enabled CPS style projects will have an additional in memory 'Smart CLI Command' profile added, and our custom args will only run when its selected rather than overriding the active profile.")]
+        [DefaultValue(false)]
+        public bool CPSCustomProjectEnabled {
+            get => _CPSCustomProjectEnabled;
+            set => SetAndNotify(value, ref _CPSCustomProjectEnabled);
         }
 
         public override void SaveSettingsToStorage()

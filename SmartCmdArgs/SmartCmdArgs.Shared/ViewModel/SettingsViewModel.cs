@@ -18,6 +18,7 @@ namespace SmartCmdArgs.ViewModel
         private bool? _vcsSupportEnabled;
         private bool? _useSolutionDir;
         private bool? _macroEvaluationEnabled;
+        private bool? _CPSCustomProjectEnabled;
 
         public bool? SaveSettingsToJson
         {
@@ -43,8 +44,16 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _macroEvaluationEnabled);
         }
 
+
+        public bool? CPSCustomProjectEnabled
+        {
+            get => _CPSCustomProjectEnabled;
+            set => SetAndNotify(value, ref _CPSCustomProjectEnabled);
+        }
+
         public RelayCommand OpenOptionsCommand { get; }
-		public CmdArgsPackage Package => _package;
+
+        public CmdArgsPackage Package => _package;
 
         public SettingsViewModel(CmdArgsPackage package)
         {

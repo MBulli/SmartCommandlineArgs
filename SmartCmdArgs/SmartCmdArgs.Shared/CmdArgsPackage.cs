@@ -87,6 +87,7 @@ namespace SmartCmdArgs
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         public bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
+        public bool CPSCustomProjectEnabled => Settings.CPSCustomProjectEnabled ?? Options.CPSCustomProjectEnabled;
         public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
 
         public bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
@@ -118,6 +119,24 @@ namespace SmartCmdArgs
 
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
+        }
+
+        private void CPSCreateAndSetProfileIfUsed(Guid ProjectGuid) {
+            if (!CPSCustomProjectEnabled || ProjectGuid == Guid.Empty)
+                return;
+
+            if (! ToolWindowViewModel.TreeViewModel.AllItems.Any(a=>a is CmdArgument))
+                return;
+
+            var ivProject = vsHelper.HierarchyForProjectGuid(ProjectGuid);
+            if (!ivProject.IsCpsProject())
+                return;
+
+            var project = ivProject.GetProject();
+            if (CpsProjectSupport.IsActiveLaunchProfileCustomProfile(project))
+                return;
+
+            CpsProjectSupport.EnsureCustomProfileCreated(project, true);
         }
 
         #region Package Members
@@ -211,6 +230,8 @@ namespace SmartCmdArgs
 
         private void OnTreeContentChangedThrottled(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
+            CPSCreateAndSetProfileIfUsed(e.AffectedProject?.Id ?? Guid.Empty);
+
             if (IsVcsSupportEnabled)
             {
                 Logger.Info($"Tree content changed and VCS support is enabled. Saving all project commands to json file for project '{e.AffectedProject.Id}'.");
@@ -282,7 +303,7 @@ namespace SmartCmdArgs
             if (commandLineArgs == null)
                 return;
 
-            ProjectArguments.SetArguments(project, commandLineArgs);
+            ProjectArguments.SetArguments(project, commandLineArgs, CPSCustomProjectEnabled);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
@@ -529,6 +550,8 @@ namespace SmartCmdArgs
                 Logger.Info("Skipping project because guid euqals empty.");
                 return;
             }
+
+            CPSCreateAndSetProfileIfUsed(project.GetGuid());
 
             var solutionData = toolWindowStateLoadedFromSolution ?? new SuoDataJson();
 
@@ -814,6 +837,9 @@ namespace SmartCmdArgs
 
             ToolWindowViewModel.TreeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
             ToolWindowViewModel.TreeViewModel.UpdateTree();
+
+            //we don't have to worry if we are empty or not it will check that for us
+            startupProjectGuids.ForEach(guid => CPSCreateAndSetProfileIfUsed(guid));
         }
 
         public Task OpenFileInVisualStudioAsync(string path) => vsHelper.OpenFileInVisualStudioAsync(path);
