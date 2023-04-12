@@ -16,16 +16,24 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Content="Smart Commandline Arguments Settings" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
-        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,0,5">Default values can be configured under <Hyperlink Command="{Binding OpenOptionsCommand}">Tools → Options → Smart Commandline Arguments</Hyperlink></TextBlock>
+        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,0,5">Default values shown in parenthesis and can be configured under <Hyperlink Command="{Binding OpenOptionsCommand}">Tools → Options → Smart Commandline Arguments</Hyperlink></TextBlock>
         <ScrollViewer Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <CheckBox Content="Save Settings to JSON" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding SaveSettingsToJson}" IsThreeState="True"/>
+                <CheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding SaveSettingsToJson}" IsThreeState="True">
+                    <TextBlock>Save Settings to JSON (<Run Text="{Binding Package.SaveSettingsToJson, Mode=OneWay}" />)</TextBlock>
+                </CheckBox>
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled then the settings configured here are saved to a JSON file next to the Solution."/></TextBlock>
-                <CheckBox Content="Enable version control support" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding VcsSupportEnabled}" IsThreeState="True"/>
+                <CheckBox  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,5,5" FontWeight="Bold" IsChecked="{Binding VcsSupportEnabled}" IsThreeState="True">
+                    <TextBlock>Enable version control support (<Run Text="{Binding Package.IsVcsSupportEnabled, Mode=OneWay}" />)</TextBlock>
+                </CheckBox>
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control. The default value for this setting is True."/></TextBlock>
-                <CheckBox Content="Use Solution Directory" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding UseSolutionDir}" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}" IsThreeState="True"/>
+                <CheckBox  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding UseSolutionDir}" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}" IsThreeState="True">
+                    <TextBlock>Use Solution Directory (<Run Text="{Binding Package.IsUseSolutionDirEnabled, Mode=OneWay}" />)</TextBlock>
+                </CheckBox>
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow" IsEnabled="{Binding VcsSupportEnabled, Mode=OneWay}"><Run Text="If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)"/></TextBlock>
-                <CheckBox Content="Enable Macro evaluation" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding MacroEvaluationEnabled}" IsThreeState="True"/>
+                <CheckBox  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,5" FontWeight="Bold" IsChecked="{Binding MacroEvaluationEnabled}" IsThreeState="True">
+                    <TextBlock>Enable Macro evaluation (<Run Text="{Binding Package.IsMacroEvaluationEnabled, Mode=OneWay}" />)</TextBlock>
+                </CheckBox>
                 <TextBlock Margin="15,0,10,5" TextWrapping="WrapWithOverflow"><Run Text="If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string."/></TextBlock>
             </StackPanel>
         </ScrollViewer>
