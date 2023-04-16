@@ -70,6 +70,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\TreeItemStyleSelector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\TreeViewEx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\UserControls\SettingsCheckBox.xaml.cs">
+      <DependentUpon>SettingsCheckBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)VisualStudioHelper.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -86,6 +89,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\TreeViewStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\UserControls\SettingsCheckBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
