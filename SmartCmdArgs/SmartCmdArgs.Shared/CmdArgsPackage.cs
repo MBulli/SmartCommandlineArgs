@@ -175,7 +175,7 @@ namespace SmartCmdArgs
             }
 
             ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
-            ToolWindowViewModel.TreeViewModel.TreeContentChanged += OnTreeContentChanged;
+            ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
 
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
 
@@ -209,7 +209,7 @@ namespace SmartCmdArgs
             }
         }
 
-        private void OnTreeContentChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
+        private void OnTreeContentChangedThrottled(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
             if (IsVcsSupportEnabled)
             {

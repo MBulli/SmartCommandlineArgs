@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CustomMonikers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\BindingListEx.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\CpsProjectSupport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)helper\Debouncer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\DelayExecution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\FileSystemWatcherDisabledContext.cs" />

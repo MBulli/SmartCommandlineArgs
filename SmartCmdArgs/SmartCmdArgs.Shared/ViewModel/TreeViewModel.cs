@@ -303,17 +303,21 @@ namespace SmartCmdArgs.ViewModel
 
         public event EventHandler<CmdBase> ItemSelectionChanged;
         public event EventHandler<TreeChangedEventArgs> TreeContentChanged;
+        public event EventHandler<TreeChangedEventArgs> TreeContentChangedThrottled;
 
         public virtual void OnItemSelectionChanged(CmdBase item)
         {
             ItemSelectionChanged?.Invoke(this, item);
         }
 
+        private DebouncerTable<CmdProject> _treeContentChangedDebouncerTable = new DebouncerTable<CmdProject>(TimeSpan.FromMilliseconds(100));
+
         public void OnTreeEvent(TreeEventBase treeEvent)
         {
             void FireTreeChanged(TreeEventBase e)
             {
                 TreeContentChanged?.Invoke(this, new TreeChangedEventArgs(e.Sender, e.AffectedProject));
+                _treeContentChangedDebouncerTable.Debounce(e.AffectedProject, () => TreeContentChangedThrottled?.Invoke(this, new TreeChangedEventArgs(null, e.AffectedProject)));
             }
             
             switch (treeEvent)
