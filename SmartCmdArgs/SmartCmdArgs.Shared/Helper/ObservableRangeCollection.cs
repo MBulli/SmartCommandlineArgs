@@ -74,7 +74,7 @@ namespace SmartCmdArgs.Helper
             if (collection == null)
                 throw new ArgumentNullException(nameof(collection));
 
-            InsertRange(Items.Count, collection);
+            InsertRange(Items.Count, collection, notificationMode);
         }
 
         /// <summary>
