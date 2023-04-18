@@ -302,7 +302,7 @@ namespace SmartCmdArgs.Helper
             } },
             // C# - Lagacy DotNetCore
             {ProjectKinds.CSCore, new ProjectArgumentsHandlers() {
-                SetArguments = (project, arguments) => SetCpsProjectArguments(project, arguments, false),
+                SetArguments = (project, arguments) => SetCpsProjectArguments(project, arguments, cpsUseCustomProfile: false),
                 GetAllArguments = (project, allArgs) => GetCpsProjectAllArguments(project, allArgs)
             } },
             // F#
@@ -356,12 +356,12 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        public static void SetArguments(IVsHierarchy project, string arguments, bool CpsUseCustomProfile=false)
+        public static void SetArguments(IVsHierarchy project, string arguments, bool cpsUseCustomProfile)
         {
             if (project.IsCpsProject())
             {
                 Logger.Info($"Setting arguments on CPS project of type '{project.GetKind()}'.");
-                SetCpsProjectArguments(project.GetProject(), arguments, CpsUseCustomProfile);
+                SetCpsProjectArguments(project.GetProject(), arguments, cpsUseCustomProfile);
             }
             else
             {

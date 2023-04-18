@@ -125,11 +125,11 @@ namespace SmartCmdArgs
             if (!CPSCustomProjectEnabled || ProjectGuid == Guid.Empty)
                 return;
 
-            if (! ToolWindowViewModel.TreeViewModel.AllItems.Any(a=>a is CmdArgument))
-                return;
-
             var ivProject = vsHelper.HierarchyForProjectGuid(ProjectGuid);
             if (!ivProject.IsCpsProject())
+                return;
+
+            if (!ToolWindowViewModel.TreeViewModel.AllArguments.Any())
                 return;
 
             var project = ivProject.GetProject();
@@ -551,8 +551,6 @@ namespace SmartCmdArgs
                 return;
             }
 
-            CPSCreateAndSetProfileIfUsed(project.GetGuid());
-
             var solutionData = toolWindowStateLoadedFromSolution ?? new SuoDataJson();
 
             // joins data from solution and project
@@ -673,6 +671,8 @@ namespace SmartCmdArgs
 
             // push projectData to the ViewModel
             ToolWindowViewModel.PopulateFromProjectData(project, projectData);
+
+            CPSCreateAndSetProfileIfUsed(project.GetGuid());
 
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
         }

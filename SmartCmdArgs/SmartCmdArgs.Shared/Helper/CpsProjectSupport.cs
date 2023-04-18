@@ -1,17 +1,21 @@
 ﻿using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
+using Microsoft.VisualStudio.RpcContracts.Build;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SmartCmdArgs.Helper
 {
     public static class CpsProjectSupport
     {
+        public const string CustomProfileName = "Smart CLI Args";
+
         private static bool TryGetProjectServices(EnvDTE.Project project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
@@ -84,19 +88,24 @@ namespace SmartCmdArgs.Helper
                 if (activeLaunchProfile == null)
                     return;
 
-                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile, cpsUseCustomProfile);
+                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile);
                 writableLaunchProfile.CommandLineArgs = arguments;
+
+                if (cpsUseCustomProfile)
+                {
+                    writableLaunchProfile.Name = CustomProfileName;
+                    writableLaunchProfile.DoNotPersist = true;
+                }
 
                 // Does not work on VS2015, which should be okay ...
                 // We don't hold references for VS2015, where the interface is called IThreadHandling
                 IProjectThreadingService projectThreadingService = projectServices.ThreadingPolicy;
-                projectThreadingService.ExecuteSynchronously(() =>
+                projectThreadingService.ExecuteSynchronously(async () =>
                 {
-                    var task = launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
-                    if (setActive)
-                        task = task.ContinueWith(_ => launchSettingsProvider.SetActiveProfileAsync(writableLaunchProfile.Name));
+                    await launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
 
-                    return task;
+                    if (setActive)
+                        await launchSettingsProvider.SetActiveProfileAsync(writableLaunchProfile.Name);
                 });
             }
         }
@@ -129,7 +138,7 @@ namespace SmartCmdArgs.Helper
 
     class WritableLaunchProfile : ILaunchProfile
 #if VS17
-        , Microsoft.VisualStudio.ProjectSystem.Debug.IPersistOption
+        , IPersistOption
 #endif
     {
         public string Name { set; get; }
@@ -141,32 +150,30 @@ namespace SmartCmdArgs.Helper
         public string LaunchUrl { set; get; }
         public ImmutableDictionary<string, string> EnvironmentVariables { set; get; }
         public ImmutableDictionary<string, object> OtherSettings { set; get; }
+
+        // IPersistOption
         public bool DoNotPersist { get; set; }
 
-        public const string CustomProfileName = "Smart CLI Args";
-        public WritableLaunchProfile(ILaunchProfile launchProfile, bool cpsUseCustomProfile)
+        // copy constructor
+        public WritableLaunchProfile(ILaunchProfile launchProfile)
         {
-            if (!cpsUseCustomProfile)
-            {
-                Name = launchProfile.Name;
-                CommandLineArgs = launchProfile.CommandLineArgs;
-            } else
-            {
-                Name = CustomProfileName;
-                DoNotPersist = true;
-                if (launchProfile.Name == CustomProfileName)
-                    CommandLineArgs = launchProfile.CommandLineArgs;
-                else
-                    CommandLineArgs = "";//ensure we dont get into an odd state where hidden args are being applied
-
-            }
+            Name = launchProfile.Name;
             ExecutablePath = launchProfile.ExecutablePath;
             CommandName = launchProfile.CommandName;
+            CommandLineArgs = launchProfile.CommandLineArgs;
             WorkingDirectory = launchProfile.WorkingDirectory;
             LaunchBrowser = launchProfile.LaunchBrowser;
             LaunchUrl = launchProfile.LaunchUrl;
             EnvironmentVariables = launchProfile.EnvironmentVariables;
             OtherSettings = launchProfile.OtherSettings;
+
+#if VS17
+            if (launchProfile is IPersistOption persistOptionLaunchProfile)
+            {
+                // IPersistOption
+                DoNotPersist = persistOptionLaunchProfile.DoNotPersist;
+            }
+#endif
         }
     }
 }
