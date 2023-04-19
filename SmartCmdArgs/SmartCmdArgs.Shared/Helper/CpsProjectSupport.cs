@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.ProjectSystem;
+﻿using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using SmartCmdArgs.Logic;
@@ -79,8 +80,12 @@ namespace SmartCmdArgs.Helper
                     return;
 
                 WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile);
-                writableLaunchProfile.CommandLineArgs = arguments;
-                writableLaunchProfile.EnvironmentVariables = envVars.ToImmutableDictionary();
+
+                if (arguments != null)
+                    writableLaunchProfile.CommandLineArgs = arguments;
+                
+                if (envVars != null)
+                    writableLaunchProfile.EnvironmentVariables = envVars.ToImmutableDictionary();
 
                 // Does not work on VS2015, which should be okay ...
                 // We don't hold references for VS2015, where the interface is called IThreadHandling

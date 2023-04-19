@@ -85,6 +85,8 @@ namespace SmartCmdArgs
         public bool SettingsLoaded { get; private set; } = false;
 
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
+        public bool ManageCommandLineArgs => Settings.ManageCommandLineArgs ?? Options.ManageCommandLineArgs;
+        public bool ManageEnvironmentVars => Settings.ManageEnvironmentVars ?? Options.ManageEnvironmentVars;
         public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot;
         public string JsonRootPath => Settings.JsonRootPath;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
@@ -286,14 +288,11 @@ namespace SmartCmdArgs
             if (project == null)
                 return;
 
-            var commandLineArgs = CreateCommandLineArgsForProject(project);
-            var envVars = GetEnvVarsForProject(project);
+            var commandLineArgs = ManageCommandLineArgs ? CreateCommandLineArgsForProject(project) : null;
+            var envVars = ManageEnvironmentVars ? GetEnvVarsForProject(project) : null;
 
             if (commandLineArgs is null && envVars is null)
                 return;
-
-            commandLineArgs = commandLineArgs ?? "";
-            envVars = envVars ?? new Dictionary<string, string>();
 
             ProjectConfigHelper.SetConfig(project, commandLineArgs, envVars);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");

@@ -43,6 +43,8 @@ namespace SmartCmdArgs
         private bool _deleteEmptyFilesAutomatically;
         private bool _deleteUnnecessaryFilesAutomatically;
 
+        private bool _manageCommandLineArgs;
+        private bool _manageEnvironmentVars;
         private bool _saveSettingsToJson;
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
@@ -106,6 +108,26 @@ namespace SmartCmdArgs
         {
             get => _saveSettingsToJson;
             set => SetAndNotify(value, ref _saveSettingsToJson);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Manage Command Line Arguments")]
+        [Description("If enabled the arguments are set automatically when a project is started/debugged.")]
+        [DefaultValue(true)]
+        public bool ManageCommandLineArgs
+        {
+            get => _manageCommandLineArgs;
+            set => SetAndNotify(value, ref _manageCommandLineArgs);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Manage Environment Variables")]
+        [Description("If enabled the environment variables are set automatically when a project is started/debugged.")]
+        [DefaultValue(false)]
+        public bool ManageEnvironmentVars
+        {
+            get => _manageEnvironmentVars;
+            set => SetAndNotify(value, ref _manageEnvironmentVars);
         }
 
         [Category("Settings Defaults")]

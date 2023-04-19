@@ -16,6 +16,8 @@ namespace SmartCmdArgs.Logic
     public class SettingsJson
     {
         public bool? SaveSettingsToJson { get; set; }
+        public bool? ManageCommandLineArgs { get; set; }
+        public bool? ManageEnvironmentVars { get; set; }
         public bool UseCustomJsonRoot { get; set; }
         public string JsonRootPath { get; set; }
         public bool? VcsSupportEnabled { get; set; }
@@ -27,6 +29,8 @@ namespace SmartCmdArgs.Logic
         public SettingsJson(SettingsViewModel settingsViewModel)
         {
             SaveSettingsToJson = settingsViewModel.SaveSettingsToJson;
+            ManageCommandLineArgs = settingsViewModel.ManageCommandLineArgs;
+            ManageEnvironmentVars = settingsViewModel.ManageEnvironmentVars;
             VcsSupportEnabled = settingsViewModel.VcsSupportEnabled;
             UseSolutionDir = settingsViewModel.UseSolutionDir;
             MacroEvaluationEnabled = settingsViewModel.MacroEvaluationEnabled;

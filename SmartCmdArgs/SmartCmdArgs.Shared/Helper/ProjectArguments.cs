@@ -37,6 +37,9 @@ namespace SmartCmdArgs.Helper
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (arguments == null)
+                return;
+
             try { project.Properties.Item(propertyName).Value = arguments; }
             catch (Exception ex) { Logger.Error($"Failed to set single config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
@@ -48,6 +51,9 @@ namespace SmartCmdArgs.Helper
         private static void SetSingleConfigEnvVars(EnvDTE.Project project, IDictionary<string, string> envVars, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (envVars == null)
+                return;
 
             try
             {
@@ -116,6 +122,9 @@ namespace SmartCmdArgs.Helper
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (arguments == null)
+                return;
+
             // Set the arguments only on the active configuration
             EnvDTE.Properties properties = project.ConfigurationManager?.ActiveConfiguration?.Properties;
             try { properties.Item(propertyName).Value = arguments; }
@@ -171,14 +180,17 @@ namespace SmartCmdArgs.Helper
                 return;
             }
 
-            var environmentString = GetEnvVarStringFromDict(envVars);
+            var environmentString = envVars == null ? null : GetEnvVarStringFromDict(envVars);
 
             // apply it first using the old way, in case the new way doesn't work for this type of projects (platforms other than Windows, for example)
             dynamic vcDbg = vcCfg.DebugSettings;  // is VCDebugSettings
             if (vcDbg != null)
             {
-                vcDbg.CommandArguments = arguments;
-                vcDbg.Environment = environmentString;
+                if (arguments != null)
+                    vcDbg.CommandArguments = arguments;
+                
+                if (environmentString != null)
+                    vcDbg.Environment = environmentString;
             }
             else
                 Logger.Info("SetVCProjEngineArguments: VCProject?.ActiveConfiguration?.DebugSettings returned null");
@@ -188,12 +200,11 @@ namespace SmartCmdArgs.Helper
                 dynamic rule = vcCfg.Rules.Item(vcPropInfo.RuleName); // is IVCRulePropertyStorage
                 if (rule != null)
                 {
-                    rule.SetPropertyValue(vcPropInfo.ArgsPropName, arguments);
+                    if (arguments != null)
+                        rule.SetPropertyValue(vcPropInfo.ArgsPropName, arguments);
 
-                    if (vcPropInfo.EnvPropName != null)
-                    {
+                    if (vcPropInfo.EnvPropName != null && environmentString != null)
                         rule.SetPropertyValue(vcPropInfo.EnvPropName, environmentString);
-                    }
                 }
                 else
                     Logger.Info($"SetVCProjEngineArguments: ProjectConfig Rule '{vcPropInfo.RuleName}' returned null");
@@ -296,8 +307,11 @@ namespace SmartCmdArgs.Helper
             dynamic vfDbg = activeFortranConfig.DebugSettings;  // is VCDebugSettings
             if (vfDbg != null)
             {
-                vfDbg.CommandArguments = arguments;
-                vfDbg.Environment = GetEnvVarStringFromDict(envVars);
+                if (arguments != null)
+                    vfDbg.CommandArguments = arguments;
+                
+                if (envVars != null)
+                    vfDbg.Environment = GetEnvVarStringFromDict(envVars);
             }
             else
                 Logger.Info("SetVCProjEngineArguments: VCProject?.ActiveConfiguration?.DebugSettings returned null");

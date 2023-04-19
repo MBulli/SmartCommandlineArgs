@@ -52,6 +52,14 @@
                 <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,0,5,0" LabelText="Save Settings to JSON" IsChecked="{Binding SaveSettingsToJson}" DefaultValue="{Binding Package.Options.SaveSettingsToJson, Mode=OneWay}" 
                                      Description="If enabled then the settings configured here are saved to a JSON file next to the Solution."/>
 
+                <!-- Manage Command Line Arguments -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Command Line Arguments" IsChecked="{Binding ManageCommandLineArgs}" DefaultValue="{Binding Package.Options.ManageCommandLineArgs, Mode=OneWay}" 
+                                     Description="If enabled the arguments are set automatically when a project is started/debugged."/>
+
+                <!-- Manage Environment Variables -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Environment Variables" IsChecked="{Binding ManageEnvironmentVars}" DefaultValue="{Binding Package.Options.ManageEnvironmentVars, Mode=OneWay}" 
+                                     Description="If enabled the environment variables are set automatically when a project is started/debugged."/>
+
                 <!-- Enable version control support -->
                 <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable version control support" IsChecked="{Binding VcsSupportEnabled}" DefaultValue="{Binding Package.Options.VcsSupportEnabled, Mode=OneWay}"
                                      Description="If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control."/>
