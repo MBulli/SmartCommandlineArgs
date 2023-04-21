@@ -35,6 +35,7 @@ namespace SmartCmdArgs.View
             InitializeComponent();
 
             DataContextChanged += OnDataContextChanged;
+            Loaded += OnLoaded;
         }
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -43,16 +44,22 @@ namespace SmartCmdArgs.View
             BindingOperations.ClearBinding(ItemTagText, Run.TextProperty);
             BindingOperations.ClearBinding(ItemTag, Border.VisibilityProperty);
 
-            if (e.OldValue != null)
+            if (e.OldValue is CmdBase oldCmdBase)
             {
-                WeakEventManager<CmdBase, CmdBase.EditModeChangedEventArgs>.RemoveHandler((CmdBase)e.OldValue, nameof(CmdBase.EditModeChanged), OnItemEditModeChanged);
+                WeakEventManager<CmdBase, CmdBase.EditModeChangedEventArgs>.RemoveHandler(oldCmdBase, nameof(CmdBase.EditModeChanged), OnItemEditModeChanged);
+
+                oldCmdBase.PropertyChanged -= OnViewModelPropertyChanged;
             }
 
-            if (e.NewValue != null)
+            if (e.NewValue is CmdBase cmdBase)
             {
-                WeakEventManager<CmdBase, CmdBase.EditModeChangedEventArgs>.AddHandler((CmdBase)e.NewValue, nameof(CmdBase.EditModeChanged), OnItemEditModeChanged);
+                WeakEventManager<CmdBase, CmdBase.EditModeChangedEventArgs>.AddHandler(cmdBase, nameof(CmdBase.EditModeChanged), OnItemEditModeChanged);
 
-                if (e.NewValue is CmdContainer con)
+                cmdBase.PropertyChanged += OnViewModelPropertyChanged;
+
+                UpdateRedBorderOverlay(cmdBase);
+
+                if (cmdBase is CmdContainer con)
                 {
                     MultiBinding bind = new MultiBinding
                     {
@@ -68,7 +75,7 @@ namespace SmartCmdArgs.View
                     Icon.SetBinding(CrispImage.MonikerProperty, bind);
                 }
 
-                if (e.NewValue is CmdArgument arg)
+                if (cmdBase is CmdArgument arg)
                 {
                     var itemTagTextBinding = new Binding {
                         Source = arg,
@@ -100,6 +107,55 @@ namespace SmartCmdArgs.View
                 else
                 {
                     ItemTag.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CmdBase cmdBase)
+                UpdateRedBorderOverlay(cmdBase);
+        }
+
+        private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (sender is CmdArgument cmdArg)
+            {
+                if (e.PropertyName == nameof(CmdArgument.Value)
+                    || e.PropertyName == nameof(CmdArgument.ArgumentType)
+                    || e.PropertyName == nameof(CmdArgument.IsInEditMode))
+                {
+                    UpdateRedBorderOverlay(cmdArg);
+                }
+            }
+        }
+
+        private RedBorderAdorner _redBorderAdorner;
+
+        public void UpdateRedBorderOverlay(CmdBase cmdBase)
+        {
+            var adornerLayer = AdornerLayer.GetAdornerLayer(MainPanel);
+            if (adornerLayer == null)
+                return;
+
+            var shouldShow = false;
+            if (cmdBase is CmdArgument cmdArg && cmdArg.ArgumentType == ArgumentType.EnvVar)
+            {
+                shouldShow = !cmdArg.IsInEditMode && !string.IsNullOrEmpty(cmdArg.Value) && !cmdArg.Value.Contains('=');
+            }
+
+            var isShown = _redBorderAdorner != null;
+            if (shouldShow != isShown)
+            {
+                if (shouldShow)
+                {
+                    _redBorderAdorner = new RedBorderAdorner(MainPanel);
+                    adornerLayer.Add(_redBorderAdorner);
+                }
+                else
+                {
+                    adornerLayer.Remove(_redBorderAdorner);
+                    _redBorderAdorner = null;
                 }
             }
         }

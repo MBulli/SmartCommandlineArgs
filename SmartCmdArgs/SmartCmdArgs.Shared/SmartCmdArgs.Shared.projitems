@@ -69,6 +69,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\TreeLevelMarginConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\DragDrop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\DropTargetAdorner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\RedBorderAdorner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\SettingsControl.xaml.cs">
       <DependentUpon>SettingsControl.xaml</DependentUpon>
     </Compile>

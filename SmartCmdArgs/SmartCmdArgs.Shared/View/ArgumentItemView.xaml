@@ -27,12 +27,12 @@
     <!-- The textbox determines the size of a row, because 
          the textsize depends on system settings like scaling and high contrast.
          The textblock and everything else have to follow. -->
-    <DockPanel Height="Auto">
+    <DockPanel x:Name="MainPanel" Height="Auto">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
             <CheckBox x:Name="checkbox" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}" Visibility="{Binding InExclusiveModeContainer, Mode=OneWay, Converter={c:BoolToVisibilityConverter Inverted=True, HideVisibility=Collapsed}}"/>
             <RadioButton x:Name="radiobutton" Focusable="False" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay}" Visibility="{Binding InExclusiveModeContainer, Mode=OneWay, Converter={c:BoolToVisibilityConverter Inverted=False, HideVisibility=Collapsed}}"/>
             <imaging:CrispImage x:Name="Icon" Visibility="{Binding Converter={c:ItemVisibilityConverter}}"/>
-            <Border x:Name="ItemTag" Style="{StaticResource ItemTagBorderStyle}" VerticalAlignment="Center">
+            <Border x:Name="ItemTag" Margin="1,0,0,0" Style="{StaticResource ItemTagBorderStyle}" VerticalAlignment="Center">
                 <TextBlock><Run x:Name="ItemTagText" FontFamily="Arial Narrow, Arial" FontSize="{Binding FontSize, ElementName=textblock, Converter={c:FontSizeConverter Ratio=0.8}}"/></TextBlock>
             </Border>
         </StackPanel>
