@@ -213,7 +213,7 @@ namespace SmartCmdArgs.ViewModel
                     RemoveItems(new[] { selectedItem });
                     TreeViewModel.SelectItems(newItems);
                 }
-            }, canExecute: _ => HasSingleSelectedItemOfType<CmdArgument>());
+            }, canExecute: _ => HasSingleSelectedArgumentOfType(ArgumentType.CmdArg));
 
             RevealFileInExplorerCommand = new RelayCommand(() =>
             {
@@ -460,6 +460,17 @@ namespace SmartCmdArgs.ViewModel
         /// <summary>
         /// Helper method for CanExecute condition of the commands
         /// </summary>
+        /// <returns>True if axactly one line is selected and it is a argument of the given type.</returns>
+        private bool HasSingleSelectedArgumentOfType(ArgumentType argumentType)
+        {
+            return HasSingleSelectedItem() 
+                && TreeViewModel.SelectedItems.FirstOrDefault() is CmdArgument arg 
+                && arg.ArgumentType == argumentType;
+        }
+
+        /// <summary>
+        /// Helper method for CanExecute condition of the commands
+        /// </summary>
         /// <returns>True if a valid startup project is set and any line is selected</returns>
         private bool HasStartupProjectAndSelectedItems()
         {
@@ -481,7 +492,22 @@ namespace SmartCmdArgs.ViewModel
 
                 var buildConfig = selectedItem.UsedProjectConfig;
 
-                return SplitArgument(CmdArgsPackage.EvaluateMacros(argument.Value, project))
+                var parts = Enumerable.Empty<string>();
+
+                switch (argument.ArgumentType)
+                {
+                    case ArgumentType.CmdArg:
+                        parts = SplitArgument(CmdArgsPackage.EvaluateMacros(argument.Value, project));
+                        break;
+
+                    case ArgumentType.EnvVar:
+                        var envVarParts = argument.Value.Split(new[] { '=' }, 2);
+                        if (envVarParts.Length == 2)
+                            parts = new[] { CmdArgsPackage.EvaluateMacros(envVarParts[1], project) };
+                        break;
+                }
+
+                return parts
                     .Select(s => s.Trim('"'))
                     .Where(s => s.IndexOfAny(Path.GetInvalidPathChars()) < 0)
                     .Select(s => CmdArgsPackage.MakePathAbsolute(s, project, buildConfig))

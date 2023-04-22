@@ -199,7 +199,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Paste });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
             ContextMenu.Items.Add(new Separator());
-            ContextMenu.Items.Add(_spaceDelimiterMenuItem = new MenuItem { Header = "Space Delimiter", IsCheckable = true });
+            ContextMenu.Items.Add(_spaceDelimiterMenuItem = new MenuItem { Header = "CLA Space Delimiter", IsCheckable = true });
             ContextMenu.Items.Add(_exclusiveModeMenuItem = new MenuItem { Header = "Exclusive Mode", IsCheckable = true });
             ContextMenu.Items.Add(_spacer1MenuItem = new Separator());
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
