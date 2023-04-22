@@ -84,7 +84,7 @@ namespace SmartCmdArgs
 
         public bool SettingsLoaded { get; private set; } = false;
 
-        public bool SaveSettingsToJson => Settings.SaveSettingsToJson ?? Options.SaveSettingsToJson;
+        public bool SaveSettingsToJson => Settings.SaveSettingsToJson;
         public bool ManageCommandLineArgs => Settings.ManageCommandLineArgs ?? Options.ManageCommandLineArgs;
         public bool ManageEnvironmentVars => Settings.ManageEnvironmentVars ?? Options.ManageEnvironmentVars;
         public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot;
@@ -196,7 +196,6 @@ namespace SmartCmdArgs
 
             switch (e.PropertyName)
             {
-                case nameof(CmdArgsOptionPage.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
                 case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
                 case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
@@ -547,8 +546,7 @@ namespace SmartCmdArgs
         {
             var settings = fileStorage.ReadSettings();
 
-            if (settings != null && !Options.SaveSettingsToJson)
-                settings.SaveSettingsToJson = true;
+            var areSettingsFromFile = settings != null;
 
             if (settings == null)
                 settings = toolWindowStateLoadedFromSolution.Settings;
@@ -564,7 +562,7 @@ namespace SmartCmdArgs
             vm.UseSolutionDir = settings.UseSolutionDir;                    // has to be done after VcsSupportEnabled because it depends on it
             vm.UseCustomJsonRoot = settings.UseCustomJsonRoot;
             vm.JsonRootPath = settings.JsonRootPath;
-            vm.SaveSettingsToJson = settings.SaveSettingsToJson;            // has to be done at the end because all settings should be correctly set before to be saved to a file
+            vm.SaveSettingsToJson = areSettingsFromFile;                    // has to be done at the end because all settings should be correctly set before to be saved to a file
         }
 
         private void UpdateCommandsForProject(IVsHierarchy project)

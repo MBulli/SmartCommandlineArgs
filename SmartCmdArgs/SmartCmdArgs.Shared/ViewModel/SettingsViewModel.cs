@@ -14,7 +14,7 @@ namespace SmartCmdArgs.ViewModel
     {
         private CmdArgsPackage _package;
 
-        private bool? _saveSettingsToJson;
+        private bool _saveSettingsToJson;
         private bool? _manageCommandLineArgs;
         private bool? _manageEnvironmentVars;
         private bool _useCustomJsonRoot;
@@ -23,7 +23,7 @@ namespace SmartCmdArgs.ViewModel
         private bool? _useSolutionDir;
         private bool? _macroEvaluationEnabled;
 
-        public bool? SaveSettingsToJson
+        public bool SaveSettingsToJson
         {
             get => _saveSettingsToJson;
             set => SetAndNotify(value, ref _saveSettingsToJson);

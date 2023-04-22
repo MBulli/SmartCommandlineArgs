@@ -101,16 +101,6 @@ namespace SmartCmdArgs
         }
 
         [Category("Settings Defaults")]
-        [DisplayName("Save Settings to JSON")]
-        [Description("If enabled then the settings configured here are saved to a JSON file.")]
-        [DefaultValue(false)]
-        public bool SaveSettingsToJson
-        {
-            get => _saveSettingsToJson;
-            set => SetAndNotify(value, ref _saveSettingsToJson);
-        }
-
-        [Category("Settings Defaults")]
         [DisplayName("Manage Command Line Arguments")]
         [Description("If enabled the arguments are set automatically when a project is started/debugged.")]
         [DefaultValue(true)]

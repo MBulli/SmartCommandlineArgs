@@ -49,7 +49,7 @@
         <ScrollViewer Grid.Row="2" Margin="0,10,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
                 <!-- Save Settings to JSON -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,0,5,0" LabelText="Save Settings to JSON" IsChecked="{Binding SaveSettingsToJson}" DefaultValue="{Binding Package.Options.SaveSettingsToJson, Mode=OneWay}" 
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,0,5,0" LabelText="Save Settings to JSON" IsChecked="{Binding SaveSettingsToJson}" 
                                      Description="If enabled then the settings configured here are saved to a JSON file next to the Solution."/>
 
                 <Separator Margin="0,10,0,0"/>
