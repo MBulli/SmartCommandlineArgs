@@ -35,7 +35,6 @@ namespace SmartCmdArgs
         public const int TWToolbar = 0x1000;
         public const int TWToolbarGroup = 0x1050;
         public const int ToolbarAddCommandId = 0x1100;
-        public const int ToolbarAddEnvVarId = 0x1108;
         public const int ToolbarRemoveCommandId = 0x1101;
         public const int ToolbarMoveUpCommandId = 0x1102;
         public const int ToolbarMoveDownCommandId = 0x1103;
@@ -43,6 +42,9 @@ namespace SmartCmdArgs
         public const int ToolbarAddGroupCommandId = 0x1105;
         public const int ToolbarShowAllProjectsCommandId = 0x1106;
         public const int ToolbarOpenSettingsCommandId = 0x1107;
+        public const int ToolbarAddEnvVarId = 0x1108;
+        public const int ToolbarCopyEnvVarsForPSCommandId = 0x1109;
+        public const int ToolbarCopyEnvVarsForCMDCommandId = 0x110A;
 
         public static readonly Guid KeyBindingsCmdSet = new Guid("886F463E-7F96-4BA4-BA88-F36D63044A00");
 
@@ -90,6 +92,8 @@ namespace SmartCmdArgs
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, package.ToolWindowViewModel.MoveEntriesUpCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, package.ToolWindowViewModel.MoveEntriesDownCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyCommandlineCommandId, package.ToolWindowViewModel.CopyCommandlineCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyEnvVarsForPSCommandId, package.ToolWindowViewModel.CopyEnvVarsForCommadlineCommand, "PS");
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyEnvVarsForCMDCommandId, package.ToolWindowViewModel.CopyEnvVarsForCommadlineCommand, "CMD");
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarOpenSettingsCommandId, package.ToolWindowViewModel.ShowSettingsCommand);
 
                 AddToggleCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarShowAllProjectsCommandId, 
@@ -113,17 +117,17 @@ namespace SmartCmdArgs
             service.AddCommand(menuCommand);
         }
 
-        private void AddCommandToService(OleMenuCommandService service, Guid cmdSet, int cmdId, RelayCommand relayCommand)
+        private void AddCommandToService<T>(OleMenuCommandService service, Guid cmdSet, int cmdId, RelayCommand<T> relayCommand, T commandParameter = default)
         {
             var commandId = new CommandID(cmdSet, cmdId);
             var menuCommand = new OleMenuCommand((sender, args) =>
             {
-                relayCommand.SafeExecute();
+                relayCommand.SafeExecute(commandParameter);
             }, commandId);
 
             menuCommand.BeforeQueryStatus += (sender, args) =>
             {
-                menuCommand.Enabled = relayCommand.CanExecute(null);
+                menuCommand.Enabled = relayCommand.CanExecute(commandParameter);
             };
 
             service.AddCommand(menuCommand);

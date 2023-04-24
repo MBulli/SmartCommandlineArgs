@@ -449,6 +449,11 @@ namespace SmartCmdArgs
             return CreateCommandLineArgsForProject(vsHelper.HierarchyForProjectGuid(guid));
         }
 
+        public IDictionary<string, string> GetEnvVarsForProject(Guid guid)
+        {
+            return GetEnvVarsForProject(vsHelper.HierarchyForProjectGuid(guid));
+        }
+
         public List<string> GetProjectConfigurations(Guid projGuid)
         {
             IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);

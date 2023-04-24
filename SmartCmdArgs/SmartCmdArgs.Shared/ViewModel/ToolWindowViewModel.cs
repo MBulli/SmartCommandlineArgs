@@ -56,6 +56,8 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand CopyCommandlineCommand { get; }
 
+        public RelayCommand<string> CopyEnvVarsForCommadlineCommand { get; }
+
         public RelayCommand ShowAllProjectsCommand { get; }
 
         public RelayCommand ShowSettingsCommand { get; }
@@ -165,6 +167,37 @@ namespace SmartCmdArgs.ViewModel
                     
                     // copy=false see #58
                     Clipboard.SetDataObject(prjCmdArgs, copy: false);                   
+                }, canExecute: _ => HasStartupProject());
+
+            var cmdEscapeRegex = new Regex("([&|(=<>^])", RegexOptions.Compiled);
+            CopyEnvVarsForCommadlineCommand = new RelayCommand<string>(
+                commandLineType => {
+                    var focusedProject = TreeViewModel.FocusedProject;
+                    if (focusedProject == null)
+                        return;
+
+                    var prjEnvVars = CmdArgsPackage.GetEnvVarsForProject(focusedProject.Id);
+                    if (prjEnvVars == null)
+                        return;
+
+                    string envVarStr;
+                    switch (commandLineType)
+                    {
+                        case "PS":
+                            envVarStr = string.Join(" ", prjEnvVars.Select(x => $"$env:{x.Key} = '{x.Value.Replace("'", "''")}';"));
+                            break;
+
+                        case "CMD":
+                            envVarStr = string.Join(" && ", prjEnvVars.Select(x => $"set {x.Key}={cmdEscapeRegex.Replace(x.Value, "^$1")}"));
+                            break;
+
+                        default:
+                            envVarStr = "";
+                            break;
+                    }
+
+                    // copy=false see #58
+                    Clipboard.SetDataObject(envVarStr, copy: false);
                 }, canExecute: _ => HasStartupProject());
 
             ShowAllProjectsCommand = new RelayCommand(
