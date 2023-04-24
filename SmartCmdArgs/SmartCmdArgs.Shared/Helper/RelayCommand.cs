@@ -52,51 +52,16 @@ namespace SmartCmdArgs.Helper
         #endregion
     }
 
-    public class RelayCommand : ICommand
+    public class RelayCommand : RelayCommand<object>
     {
-        #region Fields
-
-        readonly Action execute;
-        readonly Predicate<object> canExecute;
-
-        #endregion
-
         #region Constructors
 
         public RelayCommand(Action execute)
             : this(execute, null)
-        {
-        }
+        {}
 
         public RelayCommand(Action execute, Predicate<object> canExecute)
-        {
-            if (execute == null)
-                throw new ArgumentNullException("execute");
-
-            this.execute = execute;
-            this.canExecute = canExecute;
-        }
-        #endregion
-
-        #region ICommand Members
-
-        [DebuggerStepThrough]
-        public bool CanExecute(object parameter)
-        {
-            return canExecute == null || canExecute(parameter);
-        }
-
-        public event EventHandler CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
-
-        public void Execute(object parameter)
-        {
-            execute();
-        }
-
+            : base(x => execute(), canExecute) {}
         #endregion
     }
 
