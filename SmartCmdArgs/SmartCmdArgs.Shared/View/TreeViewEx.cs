@@ -17,6 +17,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.View.Converter;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View
@@ -182,7 +183,6 @@ namespace SmartCmdArgs.View
 
         private MenuItem _spaceDelimiterMenuItem;
         private MenuItem _exclusiveModeMenuItem;
-        private Separator _spacer1MenuItem;
         private MenuItem _splitArgumentMenuItem;
         private MenuItem _fileMenuItem;
         private MenuItem _revealFileInExplorerMenuItem;
@@ -212,7 +212,7 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_spaceDelimiterMenuItem = new MenuItem { Header = "CLA Space Delimiter", IsCheckable = true });
             ContextMenu.Items.Add(_exclusiveModeMenuItem = new MenuItem { Header = "Exclusive Mode", IsCheckable = true });
-            ContextMenu.Items.Add(_spacer1MenuItem = new Separator());
+            ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
             ContextMenu.Items.Add(_splitArgumentMenuItem = new MenuItem { Header = "Split Argument" });
             ContextMenu.Items.Add(_fileMenuItem = new MenuItem { Header = "File" });
@@ -221,10 +221,13 @@ namespace SmartCmdArgs.View
             _fileMenuItem.Items.Add(_revealFileInExplorerMenuItem = new MenuItem { Header = "Reveal in Explorer" });
             ContextMenu.Items.Add(_openDirectoryMenuItem = new MenuItem { Header = "Open Directory in Explorer" });
             ContextMenu.Items.Add(_setAsStartupProjectMenuItem = new MenuItem { Header = "Set as single Startup Project" });
+            ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_projConfigMenuItem = new MenuItem { Header = "Project Configuration" });
             ContextMenu.Items.Add(_projPlatformMenuItem = new MenuItem { Header = "Project Platform" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
+            ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_argumentTypeMenuItem = new MenuItem { Header = "Item Type" });
+            ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_defaultCheckedMenuItem = new MenuItem { Header = "Default Checked", IsCheckable = true });
             ContextMenu.Items.Add(_resetToDefaultMenuItem = new MenuItem { Header = "Reset to default checked" });
 
@@ -239,6 +242,8 @@ namespace SmartCmdArgs.View
                 CommandParameter = ArgumentType.EnvVar,
                 IsCheckable = true,
             });
+
+            CollapseAllSeperatorsWhenNotNeeded(ContextMenu.Items);
 
             CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
@@ -319,8 +324,6 @@ namespace SmartCmdArgs.View
 
             if (fistItem is CmdContainer container)
             {
-                _spacer1MenuItem.Visibility = Visibility.Visible;
-
                 _exclusiveModeMenuItem.IsEnabled = true;
                 _exclusiveModeMenuItem.IsChecked = container.ExclusiveMode;
 
@@ -330,7 +333,6 @@ namespace SmartCmdArgs.View
             }
             else
             {
-                _spacer1MenuItem.Visibility = Visibility.Collapsed;
                 _exclusiveModeMenuItem.IsEnabled = false;
                 _spaceDelimiterMenuItem.Visibility = Visibility.Collapsed;
             }
@@ -454,6 +456,45 @@ namespace SmartCmdArgs.View
                 Mode = BindingMode.OneWay,
                 Converter = new BooleanToVisibilityConverter()
             });
+        }
+
+        private void CollapseAllSeperatorsWhenNotNeeded(ItemCollection items)
+        {
+            var itemsForSeperator = new List<FrameworkElement>();
+            foreach (var item in items.OfType<FrameworkElement>().Reverse())
+            {
+                if (item is Separator separator)
+                {
+                    if (itemsForSeperator.Count == 0)
+                        continue;
+
+                    var multiBinding = new MultiBinding
+                    {
+                        Converter = new BoolToVisibilityMultiConverter
+                        {
+                            VisibleCondition = BoolToVisibilityMultiConverter.VisibleCond.AnyTrue
+                        }
+                    };
+
+                    foreach (var itemForSeperator in itemsForSeperator)
+                    {
+                        multiBinding.Bindings.Add(new Binding
+                        {
+                            Source = itemForSeperator,
+                            Path = new PropertyPath(nameof(IsVisible)),
+                            Mode = BindingMode.OneWay,
+                        });
+                    }
+
+                    separator.SetBinding(VisibilityProperty, multiBinding);
+
+                    itemsForSeperator.Clear();
+                }
+                else
+                {
+                    itemsForSeperator.Add(item);
+                }
+            }
         }
 
         public void ChangedFocusedItem(TreeViewItemEx item)
