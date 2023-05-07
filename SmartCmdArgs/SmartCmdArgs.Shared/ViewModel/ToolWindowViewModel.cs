@@ -96,7 +96,7 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand ToggleExclusiveModeCommand { get; }
 
-        public RelayCommand ToggleSpaceDelimiterCommand { get; }
+        public RelayCommand<string> ToggleSpaceDelimiterCommand { get; }
 
         public RelayCommand<ArgumentType> SetArgumentTypeCommand { get; }
 
@@ -357,16 +357,13 @@ namespace SmartCmdArgs.ViewModel
                 }
             }, _ => HasSingleSelectedItemOfType<CmdContainer>());
 
-            ToggleSpaceDelimiterCommand = new RelayCommand(() =>
+            ToggleSpaceDelimiterCommand = new RelayCommand<string>(delimiter =>
             {
                 var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
-                if (selectedItem is CmdContainer con)
+                if (selectedItem is CmdContainer con && con.Delimiter != delimiter)
                 {
                     ToolWindowHistory.SaveState();
-                    if (con.Delimiter == "")
-                        con.Delimiter = " ";
-                    else if (con.Delimiter == " ")
-                        con.Delimiter = "";
+                    con.Delimiter = delimiter;
                 }
             }, _ => HasSingleSelectedItemOfType<CmdContainer>());
 

@@ -16,6 +16,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Microsoft.VisualStudio.Shell;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.View.Converter;
 using SmartCmdArgs.ViewModel;
@@ -132,7 +133,10 @@ namespace SmartCmdArgs.View
 
         public static readonly DependencyProperty SetSpaceDelimiterCommandProperty = DependencyProperty.Register(
             nameof(ToggleSpaceDelimiterCommand), typeof(ICommand), typeof(TreeViewEx),
-            new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._spaceDelimiterMenuItem.Command = (ICommand)e.NewValue));
+            new PropertyMetadata(default(ICommand), (d, e) => {
+                ((TreeViewEx)d)._argsSpaceDelimiterMenuItem.Command = (ICommand)e.NewValue;
+                ((TreeViewEx)d)._argsNoDelimiterMenuItem.Command = (ICommand)e.NewValue;
+            }));
         public ICommand ToggleSpaceDelimiterCommand { get { return (ICommand)GetValue(SetSpaceDelimiterCommandProperty); } set { SetValue(SetSpaceDelimiterCommandProperty, value); } }
 
         public static readonly DependencyProperty SetArgumentTypeCommandProperty = DependencyProperty.Register(
@@ -181,7 +185,10 @@ namespace SmartCmdArgs.View
 
         public IEnumerable<TreeViewItemEx> VisibleTreeViewItems => GetTreeViewItems(this, false);
 
-        private MenuItem _spaceDelimiterMenuItem;
+        private MenuItem _argsDelimiterMenuItem;
+        private MenuItem _argsSpaceDelimiterMenuItem;
+        private MenuItem _argsNoDelimiterMenuItem;
+        private MenuItem _argsCustomDelimiterMenuItem;
         private MenuItem _exclusiveModeMenuItem;
         private MenuItem _splitArgumentMenuItem;
         private MenuItem _fileMenuItem;
@@ -210,7 +217,10 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Paste });
             ContextMenu.Items.Add(new MenuItem { Command = ApplicationCommands.Delete });
             ContextMenu.Items.Add(new Separator());
-            ContextMenu.Items.Add(_spaceDelimiterMenuItem = new MenuItem { Header = "CLA Space Delimiter", IsCheckable = true });
+            ContextMenu.Items.Add(_argsDelimiterMenuItem = new MenuItem { Header = "CLA Delimiter"});
+            _argsDelimiterMenuItem.Items.Add(_argsSpaceDelimiterMenuItem = new MenuItem { Header = "Space (default)", IsCheckable = true, CommandParameter = " " });
+            _argsDelimiterMenuItem.Items.Add(_argsNoDelimiterMenuItem = new MenuItem { Header = "None", IsCheckable = true, CommandParameter = "" });
+            _argsDelimiterMenuItem.Items.Add(_argsCustomDelimiterMenuItem = new MenuItem { Header = "Custom", IsCheckable = true });
             ContextMenu.Items.Add(_exclusiveModeMenuItem = new MenuItem { Header = "Exclusive Mode", IsCheckable = true });
             ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_newGroupFromArgumentsMenuItem = new MenuItem { Header = "New Group from Selection" });
@@ -243,8 +253,11 @@ namespace SmartCmdArgs.View
                 IsCheckable = true,
             });
 
+            _argsCustomDelimiterMenuItem.Click += CustomDelimiterMenuItemClicked;
+
             CollapseAllSeperatorsWhenNotNeeded(ContextMenu.Items);
 
+            CollapseWhenDisbaled(_argsDelimiterMenuItem);
             CollapseWhenDisbaled(_exclusiveModeMenuItem);
             CollapseWhenDisbaled(_splitArgumentMenuItem);
             CollapseWhenDisbaled(_fileMenuItem);
@@ -327,14 +340,19 @@ namespace SmartCmdArgs.View
                 _exclusiveModeMenuItem.IsEnabled = true;
                 _exclusiveModeMenuItem.IsChecked = container.ExclusiveMode;
 
-                _spaceDelimiterMenuItem.Visibility = Visibility.Visible;
-                _spaceDelimiterMenuItem.IsEnabled = container.Delimiter == " " || container.Delimiter == "";
-                _spaceDelimiterMenuItem.IsChecked = container.Delimiter == " ";
+                _argsDelimiterMenuItem.IsEnabled = true;
+                _argsSpaceDelimiterMenuItem.IsChecked = container.Delimiter == " ";
+                _argsNoDelimiterMenuItem.IsChecked = container.Delimiter == "";
+                _argsCustomDelimiterMenuItem.IsChecked = !_argsSpaceDelimiterMenuItem.IsChecked && !_argsNoDelimiterMenuItem.IsChecked;
+                _argsCustomDelimiterMenuItem.Header =
+                    _argsCustomDelimiterMenuItem.IsChecked
+                    ? $"Custom: \"{container.Delimiter}\""
+                    : "Custom";
             }
             else
             {
                 _exclusiveModeMenuItem.IsEnabled = false;
-                _spaceDelimiterMenuItem.Visibility = Visibility.Collapsed;
+                _argsDelimiterMenuItem.IsEnabled = false;
             }
 
             if (fistItem is CmdGroup group)
@@ -493,6 +511,23 @@ namespace SmartCmdArgs.View
                 else
                 {
                     itemsForSeperator.Add(item);
+                }
+            }
+        }
+
+        private void CustomDelimiterMenuItemClicked(object sender, RoutedEventArgs e)
+        {
+            var fistItem = SelectedTreeViewItems.FirstOrDefault()?.Item;
+            if (fistItem is CmdContainer container)
+            {
+                var vm = new SetCustomDelimiterViewModel
+                {
+                    Delimiter = container.Delimiter,
+                };
+
+                if (new SetCustomDelimiterDialog(vm).ShowModal() == true)
+                {
+                    container.Delimiter = vm.Delimiter;
                 }
             }
         }
