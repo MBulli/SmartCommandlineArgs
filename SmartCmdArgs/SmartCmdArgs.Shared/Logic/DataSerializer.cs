@@ -40,6 +40,8 @@ namespace SmartCmdArgs.Logic
                     newElement.Items = TransformCmdList(container.Items);
                     newElement.ExclusiveMode = container.ExclusiveMode;
                     newElement.Delimiter = container.Delimiter;
+                    newElement.Prefix = container.Prefix;
+                    newElement.Postfix = container.Postfix;
 
                     // not in JSON
                     newElement.Expanded = container.IsExpanded;

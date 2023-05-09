@@ -5,10 +5,14 @@
     xmlns:local="using:SmartCmdArgs.View"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" d:DesignHeight="75" d:DesignWidth="253">
+    mc:Ignorable="d" d:DesignWidth="253" Height="125">
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="5"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
@@ -18,10 +22,16 @@
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,165,0">Delimiter:</TextBlock>
-        <TextBox x:Name="DelimiterTextBox" Grid.Column="1" Text="{Binding Delimiter}"/>
+        <TextBlock Grid.Row="0" Grid.Column="0">Delimiter:</TextBlock>
+        <TextBox x:Name="DelimiterTextBox" Grid.Row="0" Grid.Column="1" Text="{Binding Delimiter}"/>
 
-        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <TextBlock Grid.Row="2" Grid.Column="0">Prefix:</TextBlock>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Prefix}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0">Postfix:</TextBlock>
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Postfix}"/>
+
+        <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="BtnOK" Content="OK" IsDefault="True" Width="75" Click="BtnOK_Click" Margin="0,0,5,0"/>
             <Button x:Name="BtnCancel" Content="Cancel" IsCancel="True" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="BtnCancel_Click"/>
         </StackPanel>

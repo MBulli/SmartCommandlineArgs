@@ -365,6 +365,12 @@ namespace SmartCmdArgs.ViewModel
                 case DelimiterChangedEvent e:
                     FireTreeChanged(e);
                     break;
+                case PrefixChangedEvent e:
+                    FireTreeChanged(e);
+                    break;
+                case PostfixChangedEvent e:
+                    FireTreeChanged(e);
+                    break;
                 case DefaultCheckedChangedEvent e:
                     FireTreeChanged(e);
                     break;

@@ -131,13 +131,13 @@ namespace SmartCmdArgs.View
             new PropertyMetadata(default(ICommand), (d, e) => ((TreeViewEx)d)._exclusiveModeMenuItem.Command = (ICommand)e.NewValue));
         public ICommand ToggleExclusiveModeCommand { get { return (ICommand)GetValue(SetExclusiveModeCommandProperty); } set { SetValue(SetExclusiveModeCommandProperty, value); } }
 
-        public static readonly DependencyProperty SetSpaceDelimiterCommandProperty = DependencyProperty.Register(
-            nameof(ToggleSpaceDelimiterCommand), typeof(ICommand), typeof(TreeViewEx),
+        public static readonly DependencyProperty SetDelimiterCommandProperty = DependencyProperty.Register(
+            nameof(SetDelimiterCommand), typeof(ICommand), typeof(TreeViewEx),
             new PropertyMetadata(default(ICommand), (d, e) => {
                 ((TreeViewEx)d)._argsSpaceDelimiterMenuItem.Command = (ICommand)e.NewValue;
                 ((TreeViewEx)d)._argsNoDelimiterMenuItem.Command = (ICommand)e.NewValue;
             }));
-        public ICommand ToggleSpaceDelimiterCommand { get { return (ICommand)GetValue(SetSpaceDelimiterCommandProperty); } set { SetValue(SetSpaceDelimiterCommandProperty, value); } }
+        public ICommand SetDelimiterCommand { get { return (ICommand)GetValue(SetDelimiterCommandProperty); } set { SetValue(SetDelimiterCommandProperty, value); } }
 
         public static readonly DependencyProperty SetArgumentTypeCommandProperty = DependencyProperty.Register(
             nameof(SetArgumentTypeCommand), typeof(ICommand), typeof(TreeViewEx),
@@ -523,11 +523,15 @@ namespace SmartCmdArgs.View
                 var vm = new SetCustomDelimiterViewModel
                 {
                     Delimiter = container.Delimiter,
+                    Prefix = container.Prefix,
+                    Postfix = container.Postfix,
                 };
 
                 if (new SetCustomDelimiterDialog(vm).ShowModal() == true)
                 {
                     container.Delimiter = vm.Delimiter;
+                    container.Prefix = vm.Prefix;
+                    container.Postfix = vm.Postfix;
                 }
             }
         }

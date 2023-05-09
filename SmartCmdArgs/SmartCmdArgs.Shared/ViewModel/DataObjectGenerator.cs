@@ -147,6 +147,12 @@ namespace SmartCmdArgs.ViewModel
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(" ")]
             public string Delimiter { get; set; } = " ";
 
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, NullValueHandling = NullValueHandling.Ignore), DefaultValue("")]
+            public string Prefix { get; set; } = "";
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, NullValueHandling = NullValueHandling.Ignore), DefaultValue("")]
+            public string Postfix { get; set; } = "";
+
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public bool DefaultChecked { get; set; } = false;
 
@@ -163,11 +169,26 @@ namespace SmartCmdArgs.ViewModel
                 {
                     if (cmd is CmdArgument arg)
                     {
-                        yield return new DataObjectJsonItem {Type = arg.ArgumentType, Enabled = arg.IsChecked, Value = arg.Value, DefaultChecked = arg.DefaultChecked};
+                        yield return new DataObjectJsonItem {
+                            Type = arg.ArgumentType,
+                            Enabled = arg.IsChecked,
+                            Value = arg.Value,
+                            DefaultChecked = arg.DefaultChecked
+                        };
                     }
                     else if (cmd is CmdGroup grp)
                     {
-                        yield return new DataObjectJsonItem {Value = grp.Value, ProjectConfig = grp.ProjectConfig, ProjectPlatform = grp.ProjectPlatform, LaunchProfile = grp.LaunchProfile, ExclusiveMode = grp.ExclusiveMode, Delimiter = grp.Delimiter, Items = Convert(grp.Items)};
+                        yield return new DataObjectJsonItem {
+                            Value = grp.Value,
+                            ProjectConfig = grp.ProjectConfig,
+                            ProjectPlatform = grp.ProjectPlatform,
+                            LaunchProfile = grp.LaunchProfile,
+                            ExclusiveMode = grp.ExclusiveMode,
+                            Delimiter = grp.Delimiter,
+                            Prefix = grp.Prefix,
+                            Postfix = grp.Postfix,
+                            Items = Convert(grp.Items)
+                        };
                     }
                 }
             }
@@ -178,11 +199,24 @@ namespace SmartCmdArgs.ViewModel
                 {
                     if (item.Items == null)
                     {
-                        yield return new CmdArgument(item.Type, item.Value, item.Enabled ?? false, item.DefaultChecked);
+                        yield return new CmdArgument(
+                            item.Type,
+                            item.Value,
+                            item.Enabled ?? false,
+                            item.DefaultChecked);
                     }
                     else
                     {
-                        yield return new CmdGroup(item.Value, Convert(item.Items), exclusiveMode: item.ExclusiveMode, projConf: item.ProjectConfig, projPlatform: item.ProjectPlatform, launchProfile: item.LaunchProfile, delimiter: item.Delimiter);
+                        yield return new CmdGroup(
+                            item.Value,
+                            Convert(item.Items),
+                            exclusiveMode: item.ExclusiveMode,
+                            projConf: item.ProjectConfig,
+                            projPlatform: item.ProjectPlatform,
+                            launchProfile: item.LaunchProfile,
+                            delimiter: item.Delimiter,
+                            postfix: item.Postfix,
+                            prefix: item.Prefix);
                     }
                 }
             }

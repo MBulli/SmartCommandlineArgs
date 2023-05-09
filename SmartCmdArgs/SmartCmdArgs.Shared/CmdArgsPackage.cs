@@ -409,7 +409,11 @@ namespace SmartCmdArgs
                         .Select(x => x is CmdContainer c ? joinContainer(c) : EvaluateMacros(x.Value, project))
                         .Where(x => !string.IsNullOrEmpty(x));
 
-                    return string.Join(parentContainer.Delimiter, strings);
+                    var joinedString = string.Join(parentContainer.Delimiter, strings);
+
+                    return joinedString != string.Empty
+                        ? parentContainer.Prefix + joinedString + parentContainer.Postfix
+                        : string.Empty;
                 });
         }
 

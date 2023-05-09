@@ -89,6 +89,10 @@ namespace SmartCmdArgs.Logic
         public bool ExclusiveMode = false;
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(" ")]
         public string Delimiter = " ";
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, NullValueHandling = NullValueHandling.Ignore), DefaultValue("")]
+        public string Postfix = "";
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, NullValueHandling = NullValueHandling.Ignore), DefaultValue("")]
+        public string Prefix = "";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<CmdArgumentJson> Items = null;
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]

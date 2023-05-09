@@ -125,6 +125,22 @@ namespace SmartCmdArgs.ViewModel
         }
     }
 
+    public class PrefixChangedEvent : GenericChangedEventArgs<string>
+    {
+        public PrefixChangedEvent(CmdBase sender, string oldValue, string newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
+
+    public class PostfixChangedEvent : GenericChangedEventArgs<string>
+    {
+        public PostfixChangedEvent(CmdBase sender, string oldValue, string newValue)
+            : base(sender, oldValue, newValue)
+        {
+        }
+    }
+
     public class DefaultCheckedChangedEvent : GenericChangedEventArgs<bool>
     {
         public DefaultCheckedChangedEvent(CmdBase sender, bool oldValue, bool newValue)

@@ -338,6 +338,20 @@ namespace SmartCmdArgs.ViewModel
             set => OnDelimiterChanged(delimiter, value);
         }
 
+        protected string prefix;
+        public string Prefix
+        {
+            get => prefix ?? "";
+            set => OnPrefixChanged(prefix, value);
+        }
+
+        protected string postfix;
+        public string Postfix
+        {
+            get => postfix ?? "";
+            set => OnPostfixChanged(postfix, value);
+        }
+
         public ObservableRangeCollection<CmdBase> Items { get; }
         public ICollectionView ItemsView { get; }
         protected virtual Predicate<CmdBase> FilterPredicate => Parent?.FilterPredicate;
@@ -350,12 +364,14 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdBase> SelectedItems => this.Where(item => item.IsSelected);
 
-        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> subItems, bool isExpanded, bool exclusiveMode, string delimiter)
+        public CmdContainer(Guid id, string value, IEnumerable<CmdBase> subItems, bool isExpanded, bool exclusiveMode, string delimiter, string prefix, string postfix)
             : base(id, value)
         {
             this.isExpanded = isExpanded;
             this.exclusiveMode = exclusiveMode;
             this.delimiter = delimiter;
+            this.prefix = prefix;
+            this.postfix = postfix;
 
             Items = new ObservableRangeCollection<CmdBase>();
 
@@ -374,8 +390,8 @@ namespace SmartCmdArgs.ViewModel
                 AddRange(subItems);
         }
 
-        public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string delimiter = " ") 
-            : this(Guid.NewGuid(), value, items, isExpanded, exclusiveMode, delimiter)
+        public CmdContainer(string value, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string delimiter = " ", string prefix = "", string postfix = "") 
+            : this(Guid.NewGuid(), value, items, isExpanded, exclusiveMode, delimiter, prefix, postfix)
         { }
 
         private void ItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -446,6 +462,26 @@ namespace SmartCmdArgs.ViewModel
             if (oldValue != newValue)
             {
                 BubbleEvent(new DelimiterChangedEvent(this, oldValue, newValue));
+            }
+        }
+
+        private void OnPrefixChanged(string oldValue, string newValue)
+        {
+            SetAndNotify(newValue, ref prefix, nameof(Prefix));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new PrefixChangedEvent(this, oldValue, newValue));
+            }
+        }
+
+        private void OnPostfixChanged(string oldValue, string newValue)
+        {
+            SetAndNotify(newValue, ref postfix, nameof(Postfix));
+
+            if (oldValue != newValue)
+            {
+                BubbleEvent(new PostfixChangedEvent(this, oldValue, newValue));
             }
         }
 
@@ -690,8 +726,8 @@ namespace SmartCmdArgs.ViewModel
 
         public Guid Kind { get; set; }
         
-        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string delimiter)
-            : base(id, displayName, items, isExpanded, exclusiveMode, delimiter)
+        public CmdProject(Guid id, Guid kind, string displayName, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string delimiter, string prefix, string postfix)
+            : base(id, displayName, items, isExpanded, exclusiveMode, delimiter, prefix, postfix)
         {
             Kind = kind;
         }
@@ -732,21 +768,31 @@ namespace SmartCmdArgs.ViewModel
             set => base.LaunchProfile = value;
         }
 
-        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string projConf, string projPlatform, string launchProfile, string delimiter)
-            : base(id, name, items, isExpanded, exclusiveMode, delimiter)
+        public CmdGroup(Guid id, string name, IEnumerable<CmdBase> items, bool isExpanded, bool exclusiveMode, string projConf, string projPlatform, string launchProfile, string delimiter, string prefix, string postfix)
+            : base(id, name, items, isExpanded, exclusiveMode, delimiter, prefix, postfix)
         {
             base.ProjectConfig = projConf;
             base.ProjectPlatform = projPlatform;
             base.LaunchProfile = launchProfile;
         }
 
-        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string projConf = null, string projPlatform = null, string launchProfile = null, string delimiter = " ")
-            : this(Guid.NewGuid(), name, items, isExpanded, exclusiveMode, projConf, projPlatform, launchProfile, delimiter)
+        public CmdGroup(string name, IEnumerable<CmdBase> items = null, bool isExpanded = true, bool exclusiveMode = false, string projConf = null, string projPlatform = null, string launchProfile = null, string delimiter = " ", string prefix = "", string postfix = "")
+            : this(Guid.NewGuid(), name, items, isExpanded, exclusiveMode, projConf, projPlatform, launchProfile, delimiter, prefix, postfix)
         { }
 
         public override CmdBase Copy()
         {
-            return new CmdGroup(Value, Items.Select(cmd => cmd.Copy()), isExpanded, ExclusiveMode, ProjectConfig, ProjectPlatform, LaunchProfile, Delimiter);
+            return new CmdGroup(
+                Value,
+                Items.Select(cmd => cmd.Copy()),
+                isExpanded,
+                ExclusiveMode,
+                ProjectConfig,
+                ProjectPlatform,
+                LaunchProfile,
+                Delimiter,
+                Postfix,
+                Prefix);
         }
     }
 

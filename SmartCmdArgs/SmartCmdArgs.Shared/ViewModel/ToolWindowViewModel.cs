@@ -96,7 +96,7 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand ToggleExclusiveModeCommand { get; }
 
-        public RelayCommand<string> ToggleSpaceDelimiterCommand { get; }
+        public RelayCommand<string> SetDelimiterCommand { get; }
 
         public RelayCommand<ArgumentType> SetArgumentTypeCommand { get; }
 
@@ -357,7 +357,7 @@ namespace SmartCmdArgs.ViewModel
                 }
             }, _ => HasSingleSelectedItemOfType<CmdContainer>());
 
-            ToggleSpaceDelimiterCommand = new RelayCommand<string>(delimiter =>
+            SetDelimiterCommand = new RelayCommand<string>(delimiter =>
             {
                 var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdContainer con && con.Delimiter != delimiter)
@@ -616,13 +616,16 @@ namespace SmartCmdArgs.ViewModel
         {
             var guid = project.GetGuid();
 
-            var cmdPrj = new CmdProject(guid,
-                                        project.GetKind(),
-                                        project.GetDisplayName(), 
-                                        ListEntriesToCmdObjects(data.Items),
-                                        data.Expanded,
-                                        data.ExclusiveMode,
-                                        data.Delimiter);
+            var cmdPrj = new CmdProject(
+                guid,
+                project.GetKind(),
+                project.GetDisplayName(), 
+                ListEntriesToCmdObjects(data.Items),
+                data.Expanded,
+                data.ExclusiveMode,
+                data.Delimiter,
+                data.Prefix,
+                data.Postfix);
 
             // Assign TreeViewModel after AddRange to not get a lot of ParentChanged events
             cmdPrj.ParentTreeViewModel = TreeViewModel; 
@@ -640,6 +643,8 @@ namespace SmartCmdArgs.ViewModel
                 cmdPrj.IsExpanded = data.Expanded;
                 cmdPrj.IsSelected = data.Selected;
                 cmdPrj.Delimiter = data.Delimiter;
+                cmdPrj.Prefix = data.Prefix;
+                cmdPrj.Postfix = data.Postfix;
 
                 cmdPrj.Items.ReplaceRange(ListEntriesToCmdObjects(data.Items));
             }
@@ -653,7 +658,18 @@ namespace SmartCmdArgs.ViewModel
                 if (item.Items == null)
                     result = new CmdArgument(item.Id, item.Type, item.Command, item.Enabled, item.DefaultChecked);
                 else
-                    result = new CmdGroup(item.Id, item.Command, ListEntriesToCmdObjects(item.Items), item.Expanded, item.ExclusiveMode, item.ProjectConfig, item.ProjectPlatform, item.LaunchProfile, item.Delimiter);
+                    result = new CmdGroup(
+                        item.Id,
+                        item.Command,
+                        ListEntriesToCmdObjects(item.Items),
+                        item.Expanded,
+                        item.ExclusiveMode,
+                        item.ProjectConfig,
+                        item.ProjectPlatform,
+                        item.LaunchProfile,
+                        item.Delimiter,
+                        item.Prefix,
+                        item.Postfix);
 
                 result.IsSelected = item.Selected;
                 yield return result;
