@@ -80,7 +80,7 @@ There are also three different types of data which can be pasted:
 
 - **Cut** / **Copy** / **Delete**: Cuts/Copies/Deletes the selected items.
 - **Paste**: Pastes the previously copied/cut items, text, or files (see [Paste](#paste)).
-- **CLA Space Delimiter** (only available while ONE group or project is selected): If this is checked then each argument in the group is seperated by a space when passed to the application.
+- **CLA Delimiter** (only available while ONE group or project is selected): Options to set the string that each argument in the group is separated by. It can be set to a single space which is the default, none or something custom. If custom is selected you can also set a pre- and postfix that is prepend/append if the group is not empty.
 - **Exclusive Mode** (only available while ONE group or project is selected): If this is checked then the group switches to a radio button mode where only one item can be checked at any given time.
 - **New Group from Selection**: Creates a new Group and moves the selected items into it.
 - **Split Argument** (only available while ONE argument is selected): Splits the argument with the typical cmd line parsing rules (e.g. `-o "C:\Test Folder\Output.png"` is split into two arguments `-o` and `"C:\Test Folder\Output.png"`).
