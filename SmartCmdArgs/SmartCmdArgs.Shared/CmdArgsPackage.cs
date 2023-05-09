@@ -52,7 +52,7 @@ namespace SmartCmdArgs
     /// </para>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [InstalledProductRegistration("#110", "#112", "2.5.0", IconResourceID = 400)] // Info on this package for Help/About
+    [InstalledProductRegistration("#110", "#112", "2.6.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(ToolWindow), Window = ToolWindow.ToolWindowGuidString)]
     [ProvideOptionPage(typeof(CmdArgsOptionPage), "Smart Command Line Arguments", "General", 1000, 1001, false)]
@@ -423,7 +423,7 @@ namespace SmartCmdArgs
                 (items, joinContainer, parentContainer) =>
                 {
                     var result = new Dictionary<string, string>();
-                    
+
                     items
                         .Where(x => !(x is CmdArgument arg) || arg.ArgumentType == ArgumentType.EnvVar)
                         .SelectMany(x =>
