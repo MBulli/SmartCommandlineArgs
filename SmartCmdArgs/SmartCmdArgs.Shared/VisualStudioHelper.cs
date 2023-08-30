@@ -46,7 +46,7 @@ namespace SmartCmdArgs
         public event EventHandler ProjectBeforeRun;
 
         public event EventHandler StartupProjectChanged;
-        public event EventHandler StartupProjectConfigurationChanged;
+        public event EventHandler<IVsHierarchy> ProjectConfigurationChanged;
         public event EventHandler<IVsHierarchy> LaunchProfileChanged;
 
         public event EventHandler SolutionAfterOpen;
@@ -493,10 +493,7 @@ namespace SmartCmdArgs
             // This method is called for each Hierarchy element (e.g. project and folders), thus we filter for the startup project
             // to only trigger the config changed event once.
 
-            if (GetUniqueName(pIVsHierarchy) == StartupProjectUniqueName())
-            {
-                StartupProjectConfigurationChanged?.Invoke(this, EventArgs.Empty);
-            }
+            ProjectConfigurationChanged?.Invoke(this, pIVsHierarchy);
 
             return S_OK;
         }

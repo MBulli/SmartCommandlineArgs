@@ -60,8 +60,20 @@
                    Height="{Binding ElementName=textbox, Path=Height}"
                    Margin="4,0,0,0"
                    Text="{Binding Value, Mode=OneWay}"
-                   FontWeight="{Binding FontWeight, ElementName=argView}" />
-        
+                   IsEnabled="{Binding IsActive}"
+                   FontWeight="{Binding FontWeight, ElementName=argView}">
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Style.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground"
+                            Value="{StaticResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
         <TextBox x:Name="textbox"
                  VerticalAlignment="Center"
                  Margin="1,0,0,0"

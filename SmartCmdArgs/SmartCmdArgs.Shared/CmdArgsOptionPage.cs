@@ -18,6 +18,13 @@ namespace SmartCmdArgs
         ProjectDirectory
     }
 
+    public enum InactiveDisableMode
+    {
+        Disabled,
+        InAllProjects,
+        OnlyInStartupProjects,
+    }
+
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
         private bool _dontSave = false;
@@ -39,6 +46,7 @@ namespace SmartCmdArgs
 
         private bool _useMonospaceFont;
         private bool _displayTagForCla;
+        private InactiveDisableMode _disableInactiveItems;
 
         private bool _deleteEmptyFilesAutomatically;
         private bool _deleteUnnecessaryFilesAutomatically;
@@ -77,6 +85,16 @@ namespace SmartCmdArgs
         {
             get => _displayTagForCla;
             set => SetAndNotify(value, ref _displayTagForCla);
+        }
+
+        [Category("Appearance")]
+        [DisplayName("Grey out inactive items")]
+        [Description("If set to 'Disabled' nothing happens. If set to 'InAllProjects' then CLAs and EnvVars that are not applied in the current scenario are greyed out. E.g. arguments that are in a group for a project configuration that is currently not active or environment variables that are overridden somewhere later in the list. The 'OnlyInStartupProjects' option limits this behaviour only to startup projects.")]
+        [DefaultValue(InactiveDisableMode.Disabled)]
+        public InactiveDisableMode DisableInactiveItems
+        {
+            get => _disableInactiveItems;
+            set => SetAndNotify(value, ref _disableInactiveItems);
         }
 
         [Category("Cleanup")]

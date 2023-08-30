@@ -54,6 +54,8 @@ namespace SmartCmdArgs.ViewModel
 
         public virtual bool IsEditable => false;
 
+        public bool IsActive => true;
+
         private string _projectConfig = null;
         public string ProjectConfig { get => _projectConfig; protected set => OnProjectConfigChanged(this._projectConfig, value); }
         public string UsedProjectConfig => _projectConfig ?? Parent?.UsedProjectConfig;
@@ -805,6 +807,9 @@ namespace SmartCmdArgs.ViewModel
             get => base.IsChecked == true;
             set => base.IsChecked = value;
         }
+
+        private bool isActive = true;
+        public new bool IsActive { get => isActive; set => SetAndNotify(value, ref isActive); }
 
         private ArgumentType argumentType;
         public ArgumentType ArgumentType { get => argumentType; set => OnArgumentTypeChanged(argumentType, value); }
