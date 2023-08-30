@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{056D19F3-6C8E-4A7B-906B-2BC348C155B9}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <StartupObject>VB_DotNetFramework.Module1</StartupObject>
+    <StartupObject>VB_DotNetFramework.Program</StartupObject>
     <RootNamespace>VB_DotNetFramework</RootNamespace>
     <AssemblyName>VB_DotNetFramework</AssemblyName>
     <FileAlignment>512</FileAlignment>
@@ -70,7 +70,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Module1.vb" />
+    <Compile Include="Program.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
