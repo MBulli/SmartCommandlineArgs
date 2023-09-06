@@ -182,6 +182,7 @@ namespace SmartCmdArgs
 
             ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
             ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
+            ToolWindowViewModel.TreeViewModel.TreeChangedThrottled += OnTreeChangedThrottled;
 
             ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
             ToolWindowViewModel.DisplayTagForCla = DisplayTagForCla;
@@ -238,6 +239,13 @@ namespace SmartCmdArgs
                     MessageBox.Show(msg);
                 }
             }
+        }
+
+        private void OnTreeChangedThrottled(object sender, TreeViewModel.TreeChangedEventArgs e)
+        {
+            var projectGuid = e.AffectedProject.Id;
+            var project = vsHelper.HierarchyForProjectGuid(projectGuid);
+            UpdateConfigurationForProject(project);
         }
 
         private void OnItemSelectionChanged(object sender, CmdBase cmdBase)

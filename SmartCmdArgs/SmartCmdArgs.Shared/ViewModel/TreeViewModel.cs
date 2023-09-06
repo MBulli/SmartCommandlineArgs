@@ -304,6 +304,8 @@ namespace SmartCmdArgs.ViewModel
         public event EventHandler<CmdBase> ItemSelectionChanged;
         public event EventHandler<TreeChangedEventArgs> TreeContentChanged;
         public event EventHandler<TreeChangedEventArgs> TreeContentChangedThrottled;
+        public event EventHandler<TreeChangedEventArgs> TreeChanged;
+        public event EventHandler<TreeChangedEventArgs> TreeChangedThrottled;
 
         public virtual void OnItemSelectionChanged(CmdBase item)
         {
@@ -311,27 +313,36 @@ namespace SmartCmdArgs.ViewModel
         }
 
         private DebouncerTable<CmdProject> _treeContentChangedDebouncerTable = new DebouncerTable<CmdProject>(TimeSpan.FromMilliseconds(100));
+        private DebouncerTable<CmdProject> _treeChangedDebouncerTable = new DebouncerTable<CmdProject>(TimeSpan.FromMilliseconds(100));
 
         public void OnTreeEvent(TreeEventBase treeEvent)
         {
-            void FireTreeChanged(TreeEventBase e)
+            void FireTreeContentChanged(TreeEventBase e)
             {
                 TreeContentChanged?.Invoke(this, new TreeChangedEventArgs(e.Sender, e.AffectedProject));
                 _treeContentChangedDebouncerTable.Debounce(e.AffectedProject, () => TreeContentChangedThrottled?.Invoke(this, new TreeChangedEventArgs(null, e.AffectedProject)));
+                FireTreeChanged(e);
             }
-            
+
+            void FireTreeChanged(TreeEventBase e)
+            {
+                TreeChanged?.Invoke(this, new TreeChangedEventArgs(e.Sender, e.AffectedProject));
+                _treeChangedDebouncerTable.Debounce(e.AffectedProject, () => TreeChangedThrottled?.Invoke(this, new TreeChangedEventArgs(null, e.AffectedProject)));
+            }
+
             switch (treeEvent)
             {
                 case SelectionChangedEvent e:
                     OnItemSelectionChanged(e.Sender);
                     break;
                 case ParentChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case ValueChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case CheckStateChangedEvent e:
+                    FireTreeChanged(e);
                     break;
                 case ItemEditModeChangedEvent e:
                     currentEditingItem = e.IsInEditMode ? e.Sender : null;
@@ -351,31 +362,31 @@ namespace SmartCmdArgs.ViewModel
                 case ItemsChangedEvent e:
                     // This is called quite frequently, maybe we need
                     // to reduce the number of calls somehow.
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case ProjectConfigChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case LaunchProfileChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case ExclusiveModeChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case DelimiterChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case PrefixChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case PostfixChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case DefaultCheckedChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 case ArgumentTypeChangedEvent e:
-                    FireTreeChanged(e);
+                    FireTreeContentChanged(e);
                     break;
                 default:
                     break;
