@@ -164,6 +164,7 @@ namespace SmartCmdArgs.Helper
             ("GoogleAndroidDebugger", "LaunchFlags", null),
             ("GamingDesktopDebugger", "CommandLineArgs", null),
             ("OasisNXDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment"),
+            ("LinuxDebugger", "RemoteDebuggerCommandArguments", null),
         };
 
         private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars)
