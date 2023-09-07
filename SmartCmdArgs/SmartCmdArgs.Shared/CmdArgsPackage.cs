@@ -380,12 +380,14 @@ namespace SmartCmdArgs
             if (projectCmd == null)
                 return default;
 
-            string projConfig = project.GetProject()?.ConfigurationManager?.ActiveConfiguration?.ConfigurationName;
-            string projPlatform = project.GetProject()?.ConfigurationManager?.ActiveConfiguration?.PlatformName;
+            var projectObj = project.GetProject();
+
+            string projConfig = projectObj?.ConfigurationManager?.ActiveConfiguration?.ConfigurationName;
+            string projPlatform = projectObj?.ConfigurationManager?.ActiveConfiguration?.PlatformName;
 
             string activeLaunchProfile = null;
             if (project.IsCpsProject())
-                activeLaunchProfile = CpsProjectSupport.GetActiveLaunchProfileName(project.GetProject());
+                activeLaunchProfile = CpsProjectSupport.GetActiveLaunchProfileName(projectObj);
 
             TResult JoinContainer(CmdContainer con)
             {
