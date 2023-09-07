@@ -165,6 +165,7 @@ namespace SmartCmdArgs.Helper
             ("GamingDesktopDebugger", "CommandLineArgs", null),
             ("OasisNXDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment"),
             ("LinuxDebugger", "RemoteDebuggerCommandArguments", null),
+            ("AppHostLocalDebugger", "CommandLineArgs", null),
         };
 
         private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars)
@@ -398,7 +399,7 @@ namespace SmartCmdArgs.Helper
         {
             // C#
             {ProjectKinds.CS, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, _) => SetMultiConfigArguments(project, arguments, "StartArguments"),
+                SetConfig = (project, arguments, _) => SetMultiConfigArguments(project, arguments, "StartArguments"),  // UWP uses CommandLineArguments instead of StartArguments
                 GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
             } },
             // VB.NET
