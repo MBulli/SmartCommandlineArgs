@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio;
@@ -66,6 +68,31 @@ namespace SmartCmdArgs.Helper
                                         (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
                                         out Guid guid);
             return guid;
+        }
+
+        static Regex TypeGuidParseRegex = new Regex(@"\<ProjectTypeGuids\>(?<Guids>.*?)<\/ProjectTypeGuids\>", RegexOptions.Singleline | RegexOptions.Compiled);
+
+        public static List<Guid> GetAllTypeGuidsFromFile(this IVsHierarchy hierarchy)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var project = hierarchy.GetProject();
+            var filePath = project.FullName;
+            var fileContent = File.ReadAllText(filePath);
+            var match = TypeGuidParseRegex.Match(fileContent);
+
+            var list = new List<Guid>();
+            if (match.Success)
+            {
+                foreach (var guidStr in match.Groups["Guids"].Value.Split(new[] { ';' }))
+                {
+                    if (Guid.TryParse(guidStr.Trim(), out Guid guid))
+                    {
+                        list.Add(guid);
+                    }
+                }
+            }
+            return list;
         }
         
         public static Guid GetKind(this IVsHierarchy hierarchy)

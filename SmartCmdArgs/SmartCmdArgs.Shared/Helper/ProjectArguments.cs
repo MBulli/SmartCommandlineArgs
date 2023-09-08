@@ -399,9 +399,15 @@ namespace SmartCmdArgs.Helper
         {
             // C#
             {ProjectKinds.CS, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, _) => SetMultiConfigArguments(project, arguments, "StartArguments"),  // UWP uses CommandLineArguments instead of StartArguments
+                SetConfig = (project, arguments, _) => SetMultiConfigArguments(project, arguments, "StartArguments"),
                 GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "StartArguments")
             } },
+            // C# UWP
+            {ProjectKinds.CS_UWP, new ProjectConfigHandlers() {
+                SetConfig = (project, arguments, _) => SetMultiConfigArguments(project, arguments, "UAPDebug.CommandLineArguments"),
+                GetAllArguments = (project, allArgs) => GetMultiConfigAllArguments(project, allArgs, "UAPDebug.CommandLineArguments")
+            } },
+
             // VB.NET
             {ProjectKinds.VB, new ProjectConfigHandlers() {
                 SetConfig = (project, arguments, _) => SetMultiConfigArguments(project, arguments, "StartArguments"),
@@ -451,7 +457,7 @@ namespace SmartCmdArgs.Helper
             } },
         };
 
-        public static bool IsSupportedProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy project)
+        public static bool IsSupportedProject(IVsHierarchy project)
         {
             if (project == null)
                 return false;
@@ -473,6 +479,24 @@ namespace SmartCmdArgs.Helper
             return supportedProjects.ContainsKey(project.GetKind());
         }
 
+        private static bool TryGetProjectConfigHandlers(IVsHierarchy project, out ProjectConfigHandlers handler)
+        {
+            var projectKind = project.GetKind();
+
+            if (projectKind == ProjectKinds.CS)
+            {
+                foreach (var kind in project.GetAllTypeGuidsFromFile())
+                {
+                    if (kind != projectKind && supportedProjects.TryGetValue(kind, out handler))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return supportedProjects.TryGetValue(projectKind, out handler);
+        }
+
         public static void AddAllArguments(IVsHierarchy project, List<CmdArgumentJson> allArgs)
         {
             if (project.IsCpsProject())
@@ -482,8 +506,7 @@ namespace SmartCmdArgs.Helper
             }
             else
             {
-                ProjectConfigHandlers handler;
-                if (supportedProjects.TryGetValue(project.GetKind(), out handler))
+                if (TryGetProjectConfigHandlers(project, out ProjectConfigHandlers handler))
                 {
                     handler.GetAllArguments(project.GetProject(), allArgs);
                 }
@@ -499,8 +522,7 @@ namespace SmartCmdArgs.Helper
             }
             else
             {
-                ProjectConfigHandlers handler;
-                if (supportedProjects.TryGetValue(project.GetKind(), out handler))
+                if (TryGetProjectConfigHandlers(project, out ProjectConfigHandlers handler))
                 {
                     handler.SetConfig(project.GetProject(), arguments, envVars);
                 }
@@ -510,6 +532,7 @@ namespace SmartCmdArgs.Helper
 
     static class ProjectKinds
     {
+        // main kinds
         public static readonly Guid CS = Guid.Parse("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}");
         public static readonly Guid VB = Guid.Parse("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}");
         public static readonly Guid CPP = Guid.Parse("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}");
@@ -517,6 +540,9 @@ namespace SmartCmdArgs.Helper
         public static readonly Guid Node = Guid.Parse("{9092aa53-fb77-4645-b42d-1ccca6bd08bd}");
         public static readonly Guid FS = Guid.Parse("{f2a71f9b-5d33-465a-a702-920d77279786}");
         public static readonly Guid Fortran = Guid.Parse("{7c1dcf51-7319-4793-8f63-17f648d2e313}");
+
+        // sub kinds
+        public static readonly Guid CS_UWP = Guid.Parse("{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A}");
 
         /// <summary>
         /// Lagacy project type GUID for C# .Net core projects.
