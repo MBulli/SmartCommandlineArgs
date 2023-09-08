@@ -12,7 +12,7 @@ using SmartCmdArgs.View;
 
 namespace SmartCmdArgs.ViewModel
 {
-    public class TreeViewModel : PropertyChangedBase
+    public class TreeViewModel : PropertyChangedBase, IDisposable
     {
         public ObservableDictionary<Guid, CmdProject> Projects { get; }
 
@@ -105,6 +105,9 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand<object> SelectItemCommand { get; set; }
 
+        private readonly DebouncerTable<CmdProject> _treeChangedDebouncerTable;
+        private readonly DebouncerTable<CmdProject> _treeContentChangedDebouncerTable;
+
         public TreeViewModel()
         {
             Projects = new ObservableDictionary<Guid, CmdProject>();
@@ -112,6 +115,15 @@ namespace SmartCmdArgs.ViewModel
             treeitems = null;
 
             DragedTreeViewItems = new List<TreeViewItemEx>();
+
+            _treeChangedDebouncerTable = new DebouncerTable<CmdProject>(TimeSpan.FromMilliseconds(100), InvokeTreeChangedThrottledEvent);
+            _treeContentChangedDebouncerTable = new DebouncerTable<CmdProject>(TimeSpan.FromMilliseconds(100), InvokeTreeContentChangedThrottledEvent);
+        }
+
+        public void Dispose()
+        {
+            _treeChangedDebouncerTable.Dispose();
+            _treeContentChangedDebouncerTable.Dispose();
         }
 
         private void OnProjectsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -312,22 +324,29 @@ namespace SmartCmdArgs.ViewModel
             ItemSelectionChanged?.Invoke(this, item);
         }
 
-        private DebouncerTable<CmdProject> _treeContentChangedDebouncerTable = new DebouncerTable<CmdProject>(TimeSpan.FromMilliseconds(100));
-        private DebouncerTable<CmdProject> _treeChangedDebouncerTable = new DebouncerTable<CmdProject>(TimeSpan.FromMilliseconds(100));
+        private void InvokeTreeContentChangedThrottledEvent(CmdProject project)
+        {
+            TreeContentChangedThrottled?.Invoke(this, new TreeChangedEventArgs(null, project));
+        }
+
+        private void InvokeTreeChangedThrottledEvent(CmdProject project)
+        {
+            TreeChangedThrottled?.Invoke(this, new TreeChangedEventArgs(null, project));
+        }
 
         public void OnTreeEvent(TreeEventBase treeEvent)
         {
             void FireTreeContentChanged(TreeEventBase e)
             {
                 TreeContentChanged?.Invoke(this, new TreeChangedEventArgs(e.Sender, e.AffectedProject));
-                _treeContentChangedDebouncerTable.Debounce(e.AffectedProject, () => TreeContentChangedThrottled?.Invoke(this, new TreeChangedEventArgs(null, e.AffectedProject)));
+                _treeContentChangedDebouncerTable.CallActionDebouncedFor(e.AffectedProject);
                 FireTreeChanged(e);
             }
 
             void FireTreeChanged(TreeEventBase e)
             {
                 TreeChanged?.Invoke(this, new TreeChangedEventArgs(e.Sender, e.AffectedProject));
-                _treeChangedDebouncerTable.Debounce(e.AffectedProject, () => TreeChangedThrottled?.Invoke(this, new TreeChangedEventArgs(null, e.AffectedProject)));
+                _treeChangedDebouncerTable.CallActionDebouncedFor(e.AffectedProject);
             }
 
             switch (treeEvent)

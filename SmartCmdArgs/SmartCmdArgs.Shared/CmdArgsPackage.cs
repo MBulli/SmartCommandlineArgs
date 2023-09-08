@@ -134,6 +134,7 @@ namespace SmartCmdArgs
         protected override void Dispose(bool disposing)
         {
             _updateIsActiveDebouncer?.Dispose();
+            ToolWindowViewModel.Dispose();
 
             base.Dispose(disposing);
         }

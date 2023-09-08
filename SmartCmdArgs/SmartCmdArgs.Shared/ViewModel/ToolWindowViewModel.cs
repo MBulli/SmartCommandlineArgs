@@ -17,7 +17,7 @@ using SmartCmdArgs.View;
 
 namespace SmartCmdArgs.ViewModel
 {
-    public class ToolWindowViewModel : PropertyChangedBase
+    public class ToolWindowViewModel : PropertyChangedBase, IDisposable
     {
         private static readonly Regex SplitArgumentRegex = new Regex(@"(?:""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
 
@@ -388,6 +388,10 @@ namespace SmartCmdArgs.ViewModel
             }, _ => HasSelectedItems());
         }
 
+        public void Dispose()
+        {
+            TreeViewModel.Dispose();
+        }
 
         /// <summary>
         /// Resets the whole state of the tool window view model
@@ -675,5 +679,6 @@ namespace SmartCmdArgs.ViewModel
                 yield return result;
             }
         }
+
     }
 }

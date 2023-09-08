@@ -54,22 +54,25 @@ namespace SmartCmdArgs.Helper
         }
     }
 
-    public class DebouncerTable<TKey>
+    public class DebouncerTable<TKey> : IDisposable
         where TKey : class
     {
         private readonly SemaphoreSlim _nullSemaphore =  new SemaphoreSlim(1, 1);
         private readonly ConditionalWeakTable<TKey, SemaphoreSlim> _semaphores = new ConditionalWeakTable<TKey, SemaphoreSlim>();
         private readonly TimeSpan _debounceTime;
+        private readonly Action<TKey> _action;
+        private readonly bool _onUiThread;
+        private bool _disposed = false;
 
-        public DebouncerTable(TimeSpan debounceTime)
+        public DebouncerTable(TimeSpan debounceTime, Action<TKey> action, bool onUiThread = true)
         {
             _debounceTime = debounceTime;
+            _action = action;
+            _onUiThread = onUiThread;
         }
 
-        public void Debounce(TKey key, Action action)
+        public void CallActionDebouncedFor(TKey key)
         {
-            var isOnUiThread = ThreadHelper.CheckAccess();
-
             Task.Run(async () => {
                 var semaphore = key == null
                     ? _nullSemaphore
@@ -81,7 +84,7 @@ namespace SmartCmdArgs.Helper
                     {
                         await Task.Delay(_debounceTime);
 
-                        if (isOnUiThread)
+                        if (_onUiThread)
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     }
                     finally
@@ -92,9 +95,14 @@ namespace SmartCmdArgs.Helper
                     // the action gets called after _semaphore.Release() to make sure that
                     // if the debounce is called while the action is processed
                     // a new call gets enqueued to prevent loss of data
-                    action();
+                    if (!_disposed) _action(key);
                 }
             }).Forget();
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
         }
     }
 }
