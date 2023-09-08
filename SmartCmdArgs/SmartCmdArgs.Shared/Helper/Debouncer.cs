@@ -12,17 +12,19 @@ namespace SmartCmdArgs.Helper
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly TimeSpan _debounceTime;
-        private bool _disposed;
+        private readonly Action _action;
+        private readonly bool _onUiThread;
+        private bool _disposed = false;
 
-        public Debouncer(TimeSpan debounceTime)
+        public Debouncer(TimeSpan debounceTime, Action action, bool onUiThread = true)
         {
             _debounceTime = debounceTime;
+            _action = action;
+            _onUiThread = onUiThread;
         }
 
-        public void Debounce(Action action)
+        public void CallActionDebounced()
         {
-            var isOnUiThread = ThreadHelper.CheckAccess();
-
             Task.Run(async () => {
                 if (await _semaphore.WaitAsync(0))
                 {
@@ -30,7 +32,7 @@ namespace SmartCmdArgs.Helper
                     {
                         await Task.Delay(_debounceTime);
 
-                        if (isOnUiThread)
+                        if (_onUiThread)
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     }
                     finally
@@ -41,7 +43,7 @@ namespace SmartCmdArgs.Helper
                     // the action gets called after _semaphore.Release() to make sure that
                     // if the debounce is called while the action is processed
                     // a new call gets enqueued to prevent loss of data
-                    if (!_disposed) action();
+                    if (!_disposed) _action();
                 }
             }).Forget();
         }

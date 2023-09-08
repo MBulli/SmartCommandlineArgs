@@ -108,6 +108,8 @@ namespace SmartCmdArgs
         private string toolWindowStateFromSolutionJsonStr;
         private SuoDataJson toolWindowStateLoadedFromSolution;
 
+        private readonly Debouncer _updateIsActiveDebouncer;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
         /// </summary>
@@ -125,85 +127,83 @@ namespace SmartCmdArgs
 
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
+
+            _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250), UpdateIsActiveForArguments);
         }
 
         protected override void Dispose(bool disposing)
         {
-            _updateIsActiveDebouncer.Dispose();
+            _updateIsActiveDebouncer?.Dispose();
 
             base.Dispose(disposing);
         }
 
-        private Debouncer _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250));
-
-        private void UpdateIsActiveForArguments()
+        private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
         {
-            _updateIsActiveDebouncer.Debounce(() => {
-                JoinableTaskFactory.RunAsync(async delegate
+            var usedEnvVarNames = new Dictionary<string, CmdArgument>();
+
+            var activeItems = AggregateComamndLineItemsForProject<HashSet<CmdArgument>>(project,
+                (items, joinContainer, parentContainer) =>
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var result = new HashSet<CmdArgument>();
 
-                    foreach (var cmdProject in ToolWindowViewModel.TreeViewModel.AllProjects)
+                    foreach (var item in items)
                     {
-                        if (Options.DisableInactiveItems == InactiveDisableMode.InAllProjects
-                            || (Options.DisableInactiveItems != InactiveDisableMode.Disabled && cmdProject.IsStartupProject))
+                        if (item is CmdContainer con)
+                            result.AddRange(joinContainer(con));
+                        else if (item is CmdArgument arg)
                         {
-                            var project = vsHelper.HierarchyForProjectGuid(cmdProject.Id);
-                            var activeItems = GetAllActiveItemsForProject(project);
-
-                            foreach (var item in cmdProject.AllArguments)
+                            if (arg.ArgumentType == ArgumentType.CmdArg)
+                                result.Add(arg);
+                            else if (arg.ArgumentType == ArgumentType.EnvVar)
                             {
-                                item.IsActive = activeItems.Contains(item);
-                            }
-                        }
-                        else
-                        {
-                            foreach (var item in cmdProject.AllArguments)
-                            {
-                                item.IsActive = true;
-                            }
-                        }
-                    }
-                });
-            });
-            
-            ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
-            {
-                var usedEnvVarNames = new Dictionary<string, CmdArgument>();
+                                var parts = arg.Value.Split(new[] { '=' }, 2);
 
-                var activeItems = AggregateComamndLineItemsForProject<HashSet<CmdArgument>>(project,
-                    (items, joinContainer, parentContainer) =>
-                    {
-                        var result = new HashSet<CmdArgument>();
-
-                        foreach (var item in items)
-                        {
-                            if (item is CmdContainer con)
-                                result.AddRange(joinContainer(con));
-                            else if (item is CmdArgument arg)
-                            {
-                                if (arg.ArgumentType == ArgumentType.CmdArg)
-                                    result.Add(arg);
-                                else if (arg.ArgumentType == ArgumentType.EnvVar)
+                                if (parts.Length == 2)
                                 {
-                                    var parts = arg.Value.Split(new[] { '=' }, 2);
-
-                                    if (parts.Length == 2)
-                                    {
-                                        var envVarName = parts[0];
-                                        usedEnvVarNames[envVarName] = arg;
-                                    }
+                                    var envVarName = parts[0];
+                                    usedEnvVarNames[envVarName] = arg;
                                 }
                             }
                         }
+                    }
 
-                        return result;
-                    });
+                    return result;
+                });
 
-                activeItems.AddRange(usedEnvVarNames.Values);
+            activeItems.AddRange(usedEnvVarNames.Values);
 
-                return activeItems;
+            return activeItems;
+        }
+
+        private void UpdateIsActiveForArguments()
+        {
+            foreach (var cmdProject in ToolWindowViewModel.TreeViewModel.AllProjects)
+            {
+                if (Options.DisableInactiveItems == InactiveDisableMode.InAllProjects
+                    || (Options.DisableInactiveItems != InactiveDisableMode.Disabled && cmdProject.IsStartupProject))
+                {
+                    var project = vsHelper.HierarchyForProjectGuid(cmdProject.Id);
+                    var activeItems = GetAllActiveItemsForProject(project);
+
+                    foreach (var item in cmdProject.AllArguments)
+                    {
+                        item.IsActive = activeItems.Contains(item);
+                    }
+                }
+                else
+                {
+                    foreach (var item in cmdProject.AllArguments)
+                    {
+                        item.IsActive = true;
+                    }
+                }
             }
+        }
+
+        private void UpdateIsActiveForArgumentsDebounced()
+        {
+            _updateIsActiveDebouncer.CallActionDebounced();
         }
 
         #region Package Members
@@ -283,7 +283,7 @@ namespace SmartCmdArgs
                 case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
                 case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
                 case nameof(CmdArgsOptionPage.DisplayTagForCla): DisplayTagForClaChanged(); break;
-                case nameof(CmdArgsOptionPage.DisableInactiveItems): UpdateIsActiveForArguments(); break;
+                case nameof(CmdArgsOptionPage.DisableInactiveItems): UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
@@ -333,7 +333,7 @@ namespace SmartCmdArgs
 
         private void OnTreeChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
-            UpdateIsActiveForArguments();
+            UpdateIsActiveForArgumentsDebounced();
         }
 
         private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
@@ -826,7 +826,7 @@ namespace SmartCmdArgs
                 fileStorage.AddProject(project);
             }
             UpdateCurrentStartupProject();
-            UpdateIsActiveForArguments();
+            UpdateIsActiveForArgumentsDebounced();
         }
 
         #region VS Events
@@ -864,14 +864,14 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Project configuration changed.");
 
-            UpdateIsActiveForArguments();
+            UpdateIsActiveForArgumentsDebounced();
         }
 
         private void VsHelper_LaunchProfileChanged(object sender, IVsHierarchy e)
         {
             Logger.Info("VS-Event: Project launch profile changed.");
 
-            UpdateIsActiveForArguments();
+            UpdateIsActiveForArgumentsDebounced();
         }
 
         private void VsHelper_ProjectWillRun(object sender, EventArgs e)
