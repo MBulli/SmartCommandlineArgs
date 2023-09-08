@@ -8,10 +8,11 @@ using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs.Helper
 {
-    public class Debouncer
+    public class Debouncer : IDisposable
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly TimeSpan _debounceTime;
+        private bool _disposed;
 
         public Debouncer(TimeSpan debounceTime)
         {
@@ -40,9 +41,14 @@ namespace SmartCmdArgs.Helper
                     // the action gets called after _semaphore.Release() to make sure that
                     // if the debounce is called while the action is processed
                     // a new call gets enqueued to prevent loss of data
-                    action();
+                    if (!_disposed) action();
                 }
             }).Forget();
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
         }
     }
 
