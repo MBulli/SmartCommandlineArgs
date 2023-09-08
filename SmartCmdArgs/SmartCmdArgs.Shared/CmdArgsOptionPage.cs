@@ -45,7 +45,6 @@ namespace SmartCmdArgs
 
         private bool _manageCommandLineArgs;
         private bool _manageEnvironmentVars;
-        private bool _saveSettingsToJson;
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
