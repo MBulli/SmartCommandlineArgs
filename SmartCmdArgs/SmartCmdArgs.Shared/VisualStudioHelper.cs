@@ -13,6 +13,8 @@ using EnvDTE;
 using SmartCmdArgs.Helper;
 using System.Runtime.InteropServices;
 using Task = System.Threading.Tasks.Task;
+using Microsoft.VisualStudio.ProjectSystem.Debug;
+using Microsoft.VisualStudio.Threading;
 
 namespace SmartCmdArgs
 {
@@ -45,6 +47,7 @@ namespace SmartCmdArgs
 
         public event EventHandler StartupProjectChanged;
         public event EventHandler StartupProjectConfigurationChanged;
+        public event EventHandler<IVsHierarchy> LaunchProfileChanged;
 
         public event EventHandler SolutionAfterOpen;
         public event EventHandler SolutionBeforeClose;
@@ -75,11 +78,28 @@ namespace SmartCmdArgs
             public string OldProjectDir;
         }
 
-        class ProjectState
+        class ProjectState : IDisposable
         {
             public string ProjectName;
             public string ProjectDir;
             public bool IsLoaded;
+            
+            private IDisposable _launchSettingsChangeListenerDisposable;
+
+            public ProjectState(IVsHierarchy pHierarchy, Action<ILaunchSettings> launchProfileChangeAction)
+            {
+                ProjectDir = pHierarchy.GetProjectDir();
+                ProjectName = pHierarchy.GetName();
+                IsLoaded = pHierarchy.IsLoaded();
+
+                if (pHierarchy.IsCpsProject())
+                    _launchSettingsChangeListenerDisposable = CpsProjectSupport.ListenToLaunchProfileChanges(pHierarchy.GetProject(), launchProfileChangeAction);
+            }
+
+            public void Dispose()
+            {
+                _launchSettingsChangeListenerDisposable?.Dispose();
+            }
         }
 
         private Dictionary<Guid, ProjectState> ProjectStateMap = new Dictionary<Guid, ProjectState>();
@@ -118,11 +138,7 @@ namespace SmartCmdArgs
                 {
                     foreach (var pHierarchy in GetSupportedProjects())
                     {
-                        Guid projectGuid = pHierarchy.GetGuid();
-                        string projectDir = pHierarchy.GetProjectDir();
-                        string projectName = pHierarchy.GetName();
-
-                        ProjectStateMap[projectGuid] = new ProjectState { ProjectDir = projectDir, ProjectName = projectName, IsLoaded = true };
+                        AddProjectState(pHierarchy);
                     }
                 }
 
@@ -150,6 +166,21 @@ namespace SmartCmdArgs
             commandEvents.BeforeExecute -= CommandEventsOnBeforeExecute;
 
             initialized = false;
+        }
+
+        private void AddProjectState(IVsHierarchy pHierarchy)
+        {
+            Guid projectGuid = pHierarchy.GetGuid();
+            ProjectStateMap.GetValueOrDefault(projectGuid)?.Dispose();
+            ProjectStateMap[projectGuid] = new ProjectState(pHierarchy, profile =>
+            {
+                ThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    LaunchProfileChanged?.Invoke(this, HierarchyForProjectGuid(projectGuid));
+                });
+            });
         }
 
         public string GetSolutionFilename()
@@ -500,6 +531,7 @@ namespace SmartCmdArgs
 
         int IVsSolutionEvents.OnAfterCloseSolution(object pUnkReserved)
         {
+            ProjectStateMap.ForEach(x => x.Value.Dispose());
             ProjectStateMap.Clear();
             SolutionAfterClose?.Invoke(this, EventArgs.Empty);
             return S_OK;
@@ -511,12 +543,9 @@ namespace SmartCmdArgs
                 return LogIgnoringUnsupportedProjectType();
 
             Guid projectGuid = pHierarchy.GetGuid();
-            string projectDir = pHierarchy.GetProjectDir();
-            string projectName = pHierarchy.GetName();
-            bool isLoaded = pHierarchy.IsLoaded();
 
             bool isLoadProcess = ProjectStateMap.TryGetValue(projectGuid, out var state) && state.IsLoaded;
-            ProjectStateMap[projectGuid] =  new ProjectState{ ProjectDir = projectDir, ProjectName = projectName, IsLoaded = isLoaded };
+            AddProjectState(pHierarchy);
 
             ProjectAfterOpen?.Invoke(this, new ProjectAfterOpenEventArgs{ Project = pHierarchy, IsLoadProcess = isLoadProcess, IsSolutionOpenProcess = fAdded == 0 });
 
@@ -534,6 +563,7 @@ namespace SmartCmdArgs
 
             if (!isUloadProcess)
             {
+                ProjectStateMap.GetValueOrDefault(projectGuid)?.Dispose();
                 ProjectStateMap.Remove(projectGuid);
             }
             

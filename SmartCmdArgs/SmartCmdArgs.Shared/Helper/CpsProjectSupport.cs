@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace SmartCmdArgs.Helper
 {
@@ -63,6 +64,23 @@ namespace SmartCmdArgs.Helper
                 var launchSettingsProvider = unconfiguredProjectServices.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
                 return launchSettingsProvider?.CurrentSnapshot?.Profiles?.Select(p => p.Name);
             }
+            return null;
+        }
+
+        public static IDisposable ListenToLaunchProfileChanges(EnvDTE.Project project, Action<ILaunchSettings> listener)
+        {
+            if (TryGetProjectServices(project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices))
+            {
+                var launchSettingsProvider = unconfiguredProjectServices.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
+
+                if (launchSettingsProvider == null)
+                    return null;
+
+                return launchSettingsProvider.SourceBlock.LinkTo(
+                    new ActionBlock<ILaunchSettings>(listener),
+                    new DataflowLinkOptions { PropagateCompletion = true });
+            }
+
             return null;
         }
 
