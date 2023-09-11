@@ -134,14 +134,20 @@ namespace SmartCmdArgs.Helper
                 {
                     var profileGrp = new CmdArgumentJson { Command = profile.Name, LaunchProfile = profile.Name, Items = new List<CmdArgumentJson>() };
 
-                    profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = profile.CommandLineArgs, Enabled = true });
+                    if (!string.IsNullOrEmpty(profile.CommandLineArgs))
+                    {
+                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = profile.CommandLineArgs, Enabled = true });
+                    }
 
                     foreach (var envVarPair in profile.EnvironmentVariables)
                     {
                         profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
                     }
 
-                    result.Add(profileGrp);
+                    if (profileGrp.Items.Count > 0)
+                    {
+                        result.Add(profileGrp);
+                    }
                 }
             }
 
