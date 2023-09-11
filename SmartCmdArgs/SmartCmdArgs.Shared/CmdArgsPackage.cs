@@ -664,13 +664,8 @@ namespace SmartCmdArgs
 
             var vm = ToolWindowViewModel.SettingsViewModel;
 
-            // the order here is important
-            vm.MacroEvaluationEnabled = settings.MacroEvaluationEnabled;
-            vm.VcsSupportEnabled = settings.VcsSupportEnabled;
-            vm.UseSolutionDir = settings.UseSolutionDir;                    // has to be done after VcsSupportEnabled because it depends on it
-            vm.UseCustomJsonRoot = settings.UseCustomJsonRoot;
-            vm.JsonRootPath = settings.JsonRootPath;
-            vm.SaveSettingsToJson = areSettingsFromFile;                    // has to be done at the end because all settings should be correctly set before to be saved to a file
+            vm.Assign(settings);
+            vm.SaveSettingsToJson = areSettingsFromFile;
         }
 
         private void UpdateCommandsForProject(IVsHierarchy project)

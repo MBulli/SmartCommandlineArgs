@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Logic;
 using System;
 using System.Collections.Generic;
 using System.IO.Packaging;
@@ -92,11 +93,27 @@ namespace SmartCmdArgs.ViewModel
 
         public void Assign(SettingsViewModel other)
         {
-            typeof(SettingsViewModel)
-                .GetProperties()
-                .Where(p => p.CanRead && p.CanWrite)
-                .Reverse()  // Dependencies are defined from top to bottom, so settings should be applied from bottom to top to avoid unnecessary operations.
-                .ForEach(p => p.SetValue(this, p.GetValue(other)));
+            using (PauseAndStoreNotifications())
+            {
+                typeof(SettingsViewModel)
+                    .GetProperties()
+                    .Where(p => p.CanRead && p.CanWrite)
+                    .ForEach(p => p.SetValue(this, p.GetValue(other)));
+            }
+        }
+
+        public void Assign(SettingsJson other)
+        {
+            using (PauseAndStoreNotifications())
+            {
+                ManageCommandLineArgs = other.ManageCommandLineArgs;
+                ManageEnvironmentVars = other.ManageEnvironmentVars;
+                UseCustomJsonRoot = other.UseCustomJsonRoot;
+                JsonRootPath = other.JsonRootPath;
+                VcsSupportEnabled = other.VcsSupportEnabled;
+                UseSolutionDir = other.UseSolutionDir;
+                MacroEvaluationEnabled = other.MacroEvaluationEnabled;
+            }
         }
     }
 }
