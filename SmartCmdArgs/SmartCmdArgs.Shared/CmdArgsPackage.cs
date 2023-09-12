@@ -139,42 +139,48 @@ namespace SmartCmdArgs
             base.Dispose(disposing);
         }
 
+        private struct EnvVar
+        {
+            public string Name;
+            public string Value;
+        }
+
+        private bool TryParseEnvVar(string str, out EnvVar envVar)
+        {
+            var parts = str.Split(new[] { '=' }, 2);
+
+            if (parts.Length == 2)
+            {
+                envVar = new EnvVar { Name = parts[0], Value = parts[1] };
+                return true;
+            }
+
+            envVar = new EnvVar();
+            return false;
+        }
+
+        #region IsActive Management for Items
         private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
         {
-            var usedEnvVarNames = new Dictionary<string, CmdArgument>();
+            var Args = new HashSet<CmdArgument>();
+            var EnvVars = new Dictionary<string, CmdArgument>();
 
-            var activeItems = AggregateComamndLineItemsForProject<HashSet<CmdArgument>>(project,
-                (items, joinContainer, parentContainer) =>
+            foreach (var item in GetAllComamndLineItemsForProject(project))
+            {
+                if (item.ArgumentType == ArgumentType.CmdArg)
                 {
-                    var result = new HashSet<CmdArgument>();
-
-                    foreach (var item in items)
+                    Args.Add(item);
+                }
+                else if (item.ArgumentType == ArgumentType.EnvVar)
+                {
+                    if (TryParseEnvVar(item.Value, out EnvVar envVar))
                     {
-                        if (item is CmdContainer con)
-                            result.AddRange(joinContainer(con));
-                        else if (item is CmdArgument arg)
-                        {
-                            if (arg.ArgumentType == ArgumentType.CmdArg)
-                                result.Add(arg);
-                            else if (arg.ArgumentType == ArgumentType.EnvVar)
-                            {
-                                var parts = arg.Value.Split(new[] { '=' }, 2);
-
-                                if (parts.Length == 2)
-                                {
-                                    var envVarName = parts[0];
-                                    usedEnvVarNames[envVarName] = arg;
-                                }
-                            }
-                        }
+                        EnvVars[envVar.Name] = item;
                     }
+                }
+            }
 
-                    return result;
-                });
-
-            activeItems.AddRange(usedEnvVarNames.Values);
-
-            return activeItems;
+            return new HashSet<CmdArgument>(Args.Concat(EnvVars.Values));
         }
 
         private void UpdateIsActiveForArguments()
@@ -206,6 +212,7 @@ namespace SmartCmdArgs
         {
             _updateIsActiveDebouncer.CallActionDebounced();
         }
+        #endregion
 
         #region Package Members
         internal Interface GetService<Service, Interface>()
@@ -404,6 +411,7 @@ namespace SmartCmdArgs
             return vsHelper.HierarchyForProjectGuid(projectGuid);
         }
 
+        #region Path Utils
         public string MakePathAbsolute(string path, IVsHierarchy project, string buildConfig = null)
         {
             switch (Options.RelativePathRoot) {
@@ -447,6 +455,7 @@ namespace SmartCmdArgs
 
             return PathHelper.MakePathAbsolute(path, baseDir);
         }
+        #endregion
 
         public string EvaluateMacros(string arg, IVsHierarchy project)
         {
@@ -498,6 +507,27 @@ namespace SmartCmdArgs
             return JoinContainer(projectCmd);
         }
 
+        private IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchy project)
+        {
+            IEnumerable<CmdArgument> joinItems(IEnumerable<CmdBase> items, Func<CmdContainer, IEnumerable<CmdArgument>> joinContainer, CmdContainer parentContainer)
+            {
+                foreach (var item in items)
+                {
+                    if (item is CmdContainer con)
+                    {
+                        foreach (var child in joinContainer(con))
+                            yield return child;
+                    }
+                    else if (item is CmdArgument arg)
+                    {
+                        yield return arg;
+                    }
+                }
+            }
+
+            return AggregateComamndLineItemsForProject<IEnumerable<CmdArgument>>(project, joinItems);
+        }
+
         private string CreateCommandLineArgsForProject(IVsHierarchy project)
         {
             return AggregateComamndLineItemsForProject<string>(project,
@@ -518,33 +548,19 @@ namespace SmartCmdArgs
 
         private IDictionary<string, string> GetEnvVarsForProject(IVsHierarchy project)
         {
-            return AggregateComamndLineItemsForProject<IDictionary<string, string>>(project,
-                (items, joinContainer, parentContainer) =>
+            var result = new Dictionary<string, string>();
+
+            foreach (var item in GetAllComamndLineItemsForProject(project))
+            {
+                if (item.ArgumentType != ArgumentType.EnvVar) continue;
+
+                if (TryParseEnvVar(item.Value, out EnvVar envVar))
                 {
-                    var result = new Dictionary<string, string>();
+                    result[envVar.Name] = envVar.Value;
+                }
+            }
 
-                    items
-                        .Where(x => !(x is CmdArgument arg) || arg.ArgumentType == ArgumentType.EnvVar)
-                        .SelectMany(x =>
-                        {
-                            if (x is CmdContainer c)
-                            {
-                                return joinContainer(c);
-                            }
-                            else
-                            {
-                                var parts = x.Value.Split(new[] { '=' }, 2);
-
-                                if (parts.Length != 2)
-                                    return Enumerable.Empty<KeyValuePair<string, string>>();
-
-                                return new[] { new KeyValuePair<string, string>(parts[0], EvaluateMacros(parts[1], project)) };
-                            }
-                        })
-                        .ForEach(x => result[x.Key] = x.Value);
-
-                    return result;
-                });
+            return result;
         }
 
         public string CreateCommandLineArgsForProject(Guid guid)
