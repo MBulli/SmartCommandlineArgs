@@ -25,7 +25,7 @@ namespace SmartCmdArgs.Helper
 
         public void CallActionDebounced()
         {
-            Task.Run(async () => {
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
                 if (await _semaphore.WaitAsync(0))
                 {
                     try
@@ -45,7 +45,7 @@ namespace SmartCmdArgs.Helper
                     // a new call gets enqueued to prevent loss of data
                     if (!_disposed) _action();
                 }
-            }).Forget();
+            }).Task.Forget();
         }
 
         public void Dispose()
@@ -73,7 +73,7 @@ namespace SmartCmdArgs.Helper
 
         public void CallActionDebouncedFor(TKey key)
         {
-            Task.Run(async () => {
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
                 var semaphore = key == null
                     ? _nullSemaphore
                     : _semaphores.GetValue(key, (_) => new SemaphoreSlim(1, 1));
@@ -97,7 +97,7 @@ namespace SmartCmdArgs.Helper
                     // a new call gets enqueued to prevent loss of data
                     if (!_disposed) _action(key);
                 }
-            }).Forget();
+            }).Task.Forget();
         }
 
         public void Dispose()
