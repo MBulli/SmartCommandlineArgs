@@ -162,16 +162,21 @@ namespace SmartCmdArgs
         #region IsActive Management for Items
         private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
         {
+            if (!ManageCommandLineArgs && !ManageEnvironmentVars)
+            {
+                return new HashSet<CmdArgument>();
+            }
+
             var Args = new HashSet<CmdArgument>();
             var EnvVars = new Dictionary<string, CmdArgument>();
 
             foreach (var item in GetAllComamndLineItemsForProject(project))
             {
-                if (item.ArgumentType == ArgumentType.CmdArg)
+                if (item.ArgumentType == ArgumentType.CmdArg && ManageCommandLineArgs)
                 {
                     Args.Add(item);
                 }
-                else if (item.ArgumentType == ArgumentType.EnvVar)
+                else if (item.ArgumentType == ArgumentType.EnvVar && ManageEnvironmentVars)
                 {
                     if (TryParseEnvVar(item.Value, out EnvVar envVar))
                     {
@@ -292,6 +297,8 @@ namespace SmartCmdArgs
                 case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
                 case nameof(CmdArgsOptionPage.DisplayTagForCla): DisplayTagForClaChanged(); break;
                 case nameof(CmdArgsOptionPage.DisableInactiveItems): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(CmdArgsOptionPage.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(CmdArgsOptionPage.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
@@ -307,6 +314,8 @@ namespace SmartCmdArgs
                 case nameof(SettingsViewModel.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(SettingsViewModel.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(SettingsViewModel.UseSolutionDir): UseSolutionDirChanged(); break;
+                case nameof(SettingsViewModel.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(SettingsViewModel.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
