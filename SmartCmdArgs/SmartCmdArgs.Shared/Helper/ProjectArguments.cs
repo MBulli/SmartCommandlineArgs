@@ -185,6 +185,9 @@ namespace SmartCmdArgs.Helper
             var environmentString = envVars == null ? null : GetEnvVarStringFromDict(envVars);
 
             // apply it first using the old way, in case the new way doesn't work for this type of projects (platforms other than Windows, for example)
+            // TODO: eliminate this way of setting stuff to avoid clutter in the *.user file
+            //       with this approach there are always entries for LocalDebuggerCommandArguments and LocalDebuggerEnvironment
+            //       which is the same as the rule WindowsLocalDebugger
             dynamic vcDbg = vcCfg.DebugSettings;  // is VCDebugSettings
             if (vcDbg != null)
             {
@@ -233,32 +236,61 @@ namespace SmartCmdArgs.Helper
 
                 var items = new List<CmdArgumentJson>();
 
-                if (!string.IsNullOrEmpty(dbg?.CommandArguments))
-                    items.Add(dbg.CommandArguments);
+                var foundActiveFlavour = false;
 
+                string activeDebuggerFlavour = cfg.Rules.Item("DebuggerGeneralProperties")?.GetUnevaluatedPropertyValue("DebuggerFlavor");
                 foreach (var vcPropInfo in VCPropInfo)
                 {
                     dynamic rule = cfg.Rules.Item(vcPropInfo.RuleName); // is IVCRulePropertyStorage
                     if (rule != null)
                     {
+                        var isActiveRule = activeDebuggerFlavour == vcPropInfo.RuleName;
+                        foundActiveFlavour |= isActiveRule;
+
+                        var flavourItems = new List<CmdArgumentJson>();
+
                         var args = rule.GetUnevaluatedPropertyValue(vcPropInfo.ArgsPropName);
                         if (!string.IsNullOrEmpty(args))
-                            items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = args, Enabled = true });
-
-                        var envVars = rule.GetUnevaluatedPropertyValue(vcPropInfo.EnvPropName);
-                        if (!string.IsNullOrEmpty(args))
                         {
-                            foreach (var envVarPair in GetEnvVarDictFromString(envVars))
+                            flavourItems.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = args, Enabled = isActiveRule });
+                        }
+
+                        if (vcPropInfo.EnvPropName != null)
+                        {
+                            var envVars = rule.GetUnevaluatedPropertyValue(vcPropInfo.EnvPropName);
+                            if (!string.IsNullOrEmpty(envVars))
                             {
-                                items.Add(new CmdArgumentJson {
-                                    Type = ViewModel.ArgumentType.EnvVar,
-                                    Command = $"{envVarPair.Key}={envVarPair.Value}",
-                                    Enabled = true
-                                });
+                                foreach (var envVarPair in GetEnvVarDictFromString(envVars))
+                                {
+                                    flavourItems.Add(new CmdArgumentJson
+                                    {
+                                        Type = ViewModel.ArgumentType.EnvVar,
+                                        Command = $"{envVarPair.Key}={envVarPair.Value}",
+                                        Enabled = isActiveRule
+                                    });
+                                }
                             }
+                        }
+
+                        if (flavourItems.Count > 0)
+                        {
+                            items.Add(new CmdArgumentJson { Command = vcPropInfo.RuleName, Items = flavourItems });
                         }
                     }
                     else Logger.Info($"GetVCProjEngineAllArguments: ProjectConfig Rule '{vcPropInfo.RuleName}' returned null");
+                }
+
+                if (!foundActiveFlavour)
+                {
+                    if (!string.IsNullOrEmpty(dbg?.Environment))
+                    {
+                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.ArgumentType.EnvVar, Command = dbg?.Environment, Enabled = true });
+                    }
+
+                    if (!string.IsNullOrEmpty(dbg?.CommandArguments))
+                    {
+                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = dbg?.CommandArguments, Enabled = true });
+                    }
                 }
 
                 if (items.Count > 0)
@@ -266,7 +298,6 @@ namespace SmartCmdArgs.Helper
                     allArgs.Add(new CmdArgumentJson {
                         Command = cfg.ConfigurationName,
                         ProjectConfig = cfg.ConfigurationName,
-                        ProjectPlatform = cfg.PlatformName,
                         Items = items
                     });
                 }
