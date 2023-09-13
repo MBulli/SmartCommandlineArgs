@@ -17,6 +17,7 @@ namespace SmartCmdArgs.Logic
     {
         public bool? ManageCommandLineArgs { get; set; }
         public bool? ManageEnvironmentVars { get; set; }
+        public bool? ManageWorkingDirectories { get; set; }
         public bool UseCustomJsonRoot { get; set; }
         public string JsonRootPath { get; set; }
         public bool? VcsSupportEnabled { get; set; }
@@ -29,6 +30,7 @@ namespace SmartCmdArgs.Logic
         {
             ManageCommandLineArgs = settingsViewModel.ManageCommandLineArgs;
             ManageEnvironmentVars = settingsViewModel.ManageEnvironmentVars;
+            ManageWorkingDirectories = settingsViewModel.ManageWorkingDirectories;
             VcsSupportEnabled = settingsViewModel.VcsSupportEnabled;
             UseSolutionDir = settingsViewModel.UseSolutionDir;
             MacroEvaluationEnabled = settingsViewModel.MacroEvaluationEnabled;

@@ -88,6 +88,7 @@ namespace SmartCmdArgs
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson;
         public bool ManageCommandLineArgs => Settings.ManageCommandLineArgs ?? Options.ManageCommandLineArgs;
         public bool ManageEnvironmentVars => Settings.ManageEnvironmentVars ?? Options.ManageEnvironmentVars;
+        public bool ManageWorkingDirectories => Settings.ManageWorkingDirectories ?? Options.ManageWorkingDirectories;
         public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot;
         public string JsonRootPath => Settings.JsonRootPath;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
@@ -162,13 +163,14 @@ namespace SmartCmdArgs
         #region IsActive Management for Items
         private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
         {
-            if (!ManageCommandLineArgs && !ManageEnvironmentVars)
+            if (!ManageCommandLineArgs && !ManageEnvironmentVars && !ManageWorkingDirectories)
             {
                 return new HashSet<CmdArgument>();
             }
 
             var Args = new HashSet<CmdArgument>();
             var EnvVars = new Dictionary<string, CmdArgument>();
+            CmdArgument workDir = null;
 
             foreach (var item in GetAllComamndLineItemsForProject(project))
             {
@@ -183,9 +185,20 @@ namespace SmartCmdArgs
                         EnvVars[envVar.Name] = item;
                     }
                 }
+                else if (item.ArgumentType == ArgumentType.WorkDir && ManageWorkingDirectories)
+                {
+                    workDir = item;
+                }
             }
 
-            return new HashSet<CmdArgument>(Args.Concat(EnvVars.Values));
+            var result = new HashSet<CmdArgument>(Args.Concat(EnvVars.Values));
+
+            if (workDir != null)
+            {
+                result.Add(workDir);
+            }
+
+            return result;
         }
 
         private void UpdateIsActiveForArguments()
@@ -299,6 +312,7 @@ namespace SmartCmdArgs
                 case nameof(CmdArgsOptionPage.DisableInactiveItems): UpdateIsActiveForArgumentsDebounced(); break;
                 case nameof(CmdArgsOptionPage.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
                 case nameof(CmdArgsOptionPage.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(CmdArgsOptionPage.ManageWorkingDirectories): UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
@@ -316,6 +330,7 @@ namespace SmartCmdArgs
                 case nameof(SettingsViewModel.UseSolutionDir): UseSolutionDirChanged(); break;
                 case nameof(SettingsViewModel.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
                 case nameof(SettingsViewModel.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(SettingsViewModel.ManageWorkingDirectories): UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
@@ -402,11 +417,12 @@ namespace SmartCmdArgs
 
             var commandLineArgs = ManageCommandLineArgs ? CreateCommandLineArgsForProject(project) : null;
             var envVars = ManageEnvironmentVars ? GetEnvVarsForProject(project) : null;
+            var workDir = ManageWorkingDirectories ? GetWorkDirForProject(project) : null;
 
-            if (commandLineArgs is null && envVars is null)
+            if (commandLineArgs is null && envVars is null && workDir is null)
                 return;
 
-            ProjectConfigHelper.SetConfig(project, commandLineArgs, envVars);
+            ProjectConfigHelper.SetConfig(project, commandLineArgs, envVars, workDir);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
@@ -565,8 +581,22 @@ namespace SmartCmdArgs
 
                 if (TryParseEnvVar(item.Value, out EnvVar envVar))
                 {
-                    result[envVar.Name] = envVar.Value;
+                    result[envVar.Name] = EvaluateMacros(envVar.Value, project);
                 }
+            }
+
+            return result;
+        }
+
+        private string GetWorkDirForProject(IVsHierarchy project)
+        {
+            var result = "";
+
+            foreach (var item in GetAllComamndLineItemsForProject(project))
+            {
+                if (item.ArgumentType != ArgumentType.WorkDir) continue;
+
+                result = EvaluateMacros(item.Value, project);
             }
 
             return result;

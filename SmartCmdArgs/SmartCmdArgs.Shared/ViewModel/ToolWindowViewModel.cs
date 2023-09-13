@@ -42,9 +42,7 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _displayTagForCla);
         }
 
-        public RelayCommand AddEntryCommand { get; }
-
-        public RelayCommand AddEnvVarCommand { get; }
+        public RelayCommand<ArgumentType> AddEntryCommand { get; }
 
         public RelayCommand AddGroupCommand { get; }
 
@@ -114,18 +112,10 @@ namespace SmartCmdArgs.ViewModel
 
             ToolWindowHistory.Init(this);
 
-            AddEntryCommand = new RelayCommand(
-                () => {
+            AddEntryCommand = new RelayCommand<ArgumentType>(
+                argType => {
                     ToolWindowHistory.SaveState();
-                    var newArg = new CmdArgument(ArgumentType.CmdArg, arg: "", isChecked: true);
-                    TreeViewModel.AddItemAtFocusedItem(newArg);
-                    TreeViewModel.SelectItemCommand.SafeExecute(newArg);
-                }, canExecute: _ => HasStartupProject());
-
-            AddEnvVarCommand = new RelayCommand(
-                () => {
-                    ToolWindowHistory.SaveState();
-                    var newArg = new CmdArgument(ArgumentType.EnvVar, arg: "", isChecked: true);
+                    var newArg = new CmdArgument(argType, arg: "", isChecked: true);
                     TreeViewModel.AddItemAtFocusedItem(newArg);
                     TreeViewModel.SelectItemCommand.SafeExecute(newArg);
                 }, canExecute: _ => HasStartupProject());
@@ -546,6 +536,10 @@ namespace SmartCmdArgs.ViewModel
                         var envVarParts = argument.Value.Split(new[] { '=' }, 2);
                         if (envVarParts.Length == 2)
                             parts = new[] { CmdArgsPackage.EvaluateMacros(envVarParts[1], project) };
+                        break;
+
+                    case ArgumentType.WorkDir:
+                        parts = new[] { CmdArgsPackage.EvaluateMacros(argument.Value, project) };
                         break;
                 }
 

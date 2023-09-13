@@ -18,6 +18,7 @@ namespace SmartCmdArgs.ViewModel
         private bool _saveSettingsToJson;
         private bool? _manageCommandLineArgs;
         private bool? _manageEnvironmentVars;
+        private bool? _manageWorkingDirectories;
         private bool _useCustomJsonRoot;
         private string _jsonRootPath;
         private bool? _vcsSupportEnabled;
@@ -40,6 +41,12 @@ namespace SmartCmdArgs.ViewModel
         {
             get => _manageEnvironmentVars;
             set => SetAndNotify(value, ref _manageEnvironmentVars);
+        }
+
+        public bool? ManageWorkingDirectories
+        {
+            get => _manageWorkingDirectories;
+            set => SetAndNotify(value, ref _manageWorkingDirectories);
         }
 
         public bool? VcsSupportEnabled
@@ -108,6 +115,7 @@ namespace SmartCmdArgs.ViewModel
             {
                 ManageCommandLineArgs = other.ManageCommandLineArgs;
                 ManageEnvironmentVars = other.ManageEnvironmentVars;
+                ManageWorkingDirectories = other.ManageWorkingDirectories;
                 UseCustomJsonRoot = other.UseCustomJsonRoot;
                 JsonRootPath = other.JsonRootPath;
                 VcsSupportEnabled = other.VcsSupportEnabled;

@@ -84,7 +84,7 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars)
+        public static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -104,6 +104,9 @@ namespace SmartCmdArgs.Helper
                 
                 if (envVars != null)
                     writableLaunchProfile.EnvironmentVariables = envVars.ToImmutableDictionary();
+
+                if (workDir != null)
+                    writableLaunchProfile.WorkingDirectory = workDir;
 
                 // Does not work on VS2015, which should be okay ...
                 // We don't hold references for VS2015, where the interface is called IThreadHandling
@@ -142,6 +145,11 @@ namespace SmartCmdArgs.Helper
                     foreach (var envVarPair in profile.EnvironmentVariables)
                     {
                         profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
+                    }
+
+                    if (!string.IsNullOrEmpty(profile.WorkingDirectory))
+                    {
+                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.WorkDir, Command = profile.WorkingDirectory, Enabled = true });
                     }
 
                     if (profileGrp.Items.Count > 0)

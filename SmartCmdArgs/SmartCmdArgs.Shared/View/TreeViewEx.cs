@@ -206,6 +206,7 @@ namespace SmartCmdArgs.View
         private MenuItem _argumentTypeMenuItem;
         private MenuItem _argumentTypeCmdArgMenuItem;
         private MenuItem _argumentTypeEnvVarMenuItem;
+        private MenuItem _argumentTypeWorkDirMenuItem;
 
         private TreeViewModel ViewModel => DataContext as TreeViewModel;
 
@@ -250,6 +251,12 @@ namespace SmartCmdArgs.View
             {
                 Header = "Environment Variable",
                 CommandParameter = ArgumentType.EnvVar,
+                IsCheckable = true,
+            });
+            _argumentTypeMenuItem.Items.Add(_argumentTypeWorkDirMenuItem = new MenuItem
+            {
+                Header = "Working Directory",
+                CommandParameter = ArgumentType.WorkDir,
                 IsCheckable = true,
             });
 
@@ -462,6 +469,7 @@ namespace SmartCmdArgs.View
 
                 _argumentTypeCmdArgMenuItem.IsChecked = argument.ArgumentType == ArgumentType.CmdArg;
                 _argumentTypeEnvVarMenuItem.IsChecked = argument.ArgumentType == ArgumentType.EnvVar;
+                _argumentTypeWorkDirMenuItem.IsChecked = argument.ArgumentType == ArgumentType.WorkDir;
             }
         }
 
