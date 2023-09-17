@@ -45,7 +45,7 @@ namespace SmartCmdArgs.Logic
     {
         public int FileVersion = 2;
 
-        public bool IsEnabled;
+        public bool? IsEnabled;
         public bool ShowAllProjects;
         public HashSet<Guid> SelectedItems = new HashSet<Guid>();
         public HashSet<Guid> CheckedArguments = new HashSet<Guid>();

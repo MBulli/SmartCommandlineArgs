@@ -79,11 +79,18 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _macroEvaluationEnabled);
         }
 
+        public RelayCommand DisableExtensionCommand { get; }
+
         public CmdArgsPackage Package => _package;
 
         public SettingsViewModel(CmdArgsPackage package)
         {
             _package = package;
+
+            DisableExtensionCommand = new RelayCommand(() =>
+            {
+                Package.IsEnabledSaved = false;
+            });
         }
 
         public SettingsViewModel(SettingsViewModel other) : this(other._package)

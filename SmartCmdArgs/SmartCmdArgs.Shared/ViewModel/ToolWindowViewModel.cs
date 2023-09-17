@@ -395,7 +395,7 @@ namespace SmartCmdArgs.ViewModel
 
             EnableExtensionCommand = new RelayCommand(() =>
             {
-                CmdArgsPackage.IsEnabled = true;
+                CmdArgsPackage.IsEnabledSaved = true;
                 package.SaveSettings();
             });
         }

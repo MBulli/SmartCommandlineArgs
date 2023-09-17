@@ -114,11 +114,14 @@
                     </DockPanel>
                 </StackPanel>
 
-                <Separator Margin="0,10,0,0"/>
-
                 <!-- Enable Macro evaluation -->
                 <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable Macro evaluation" IsChecked="{Binding MacroEvaluationEnabled}" DefaultValue="{Binding Package.Options.MacroEvaluationEnabled, Mode=OneWay}"
                                      Description="If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string."/>
+                
+                <StackPanel Orientation="Vertical" Visibility="{Binding Package.IsEnabled, Converter={c:BoolToVisibilityConverter Inverted=False, HideVisibility=Collapsed}}">
+                    <Separator Margin="0,10,0,0" />
+                    <Button Content="Disable Extension for Solution" HorizontalAlignment="Left"  Command="{Binding DisableExtensionCommand}" Margin="5,10,5,0" Padding="5, 1, 5, 1"/>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">

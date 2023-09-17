@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using System.Text;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
@@ -63,7 +64,7 @@ namespace SmartCmdArgs
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(CmdArgsPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-    public sealed class CmdArgsPackage : AsyncPackage
+    public sealed class CmdArgsPackage : AsyncPackage, INotifyPropertyChanged
     {
         /// <summary>
         /// CmdArgsPackage GUID string.
@@ -81,15 +82,30 @@ namespace SmartCmdArgs
 
         public static CmdArgsPackage Instance { get; private set; }
 
+        // this is needed to keep the saved value in the suo file at null
+        // if the user does not explicitly enable or disable the extension
+        private bool? _isEnabledSaved;
+        public bool? IsEnabledSaved
+        {
+            get => _isEnabledSaved;
+            set {
+                _isEnabledSaved = value;
+                IsEnabled = value ?? Options.EnabledByDefault;
+            }
+        }
+
         /// <summary>
         /// While the extension is disabled we do nothing.
         /// The user is asked to enable the extension.
         /// This solves the issue that the extension accidentilly overrides user changes.
+        /// 
+        /// If this changes the updated value is not written to the suo file.
+        /// For that `IsEnabledSaved` has to be updated.
         /// </summary>
         private bool _isEnabled;
         public bool IsEnabled {
             get => _isEnabled;
-            set {
+            private set {
                 if (_isEnabled != value)
                 {
                     _isEnabled = value;
@@ -130,6 +146,8 @@ namespace SmartCmdArgs
         private SuoDataJson suoDataJson;
 
         private readonly Debouncer _updateIsActiveDebouncer;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
@@ -456,7 +474,7 @@ namespace SmartCmdArgs
         private void UpdateSuoData()
         {
             suoDataJson = SuoDataSerializer.Serialize(ToolWindowViewModel);
-            suoDataJson.IsEnabled = IsEnabled;
+            suoDataJson.IsEnabled = IsEnabledSaved;
 
             suoDataStr = JsonConvert.SerializeObject(suoDataJson);
         }
@@ -939,6 +957,8 @@ namespace SmartCmdArgs
 
         private void IsEnabledChanged()
         {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnabled)));
+
             UpdateDisabledScreen();
 
             if (IsEnabled)
@@ -963,7 +983,7 @@ namespace SmartCmdArgs
             LoadSettings();
             SettingsLoaded = true;
 
-            IsEnabled = suoDataJson.IsEnabled || Options.EnabledByDefault;
+            IsEnabledSaved = suoDataJson.IsEnabled;
         }
 
         private void InitializeDataForSolution()
