@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -31,9 +32,11 @@ using Newtonsoft.Json;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Services;
 using System.Threading;
 
 using Task = System.Threading.Tasks.Task;
+using IServiceProvider = System.IServiceProvider;
 
 namespace SmartCmdArgs
 {
@@ -81,6 +84,8 @@ namespace SmartCmdArgs
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
         public static CmdArgsPackage Instance { get; private set; }
+
+        public IServiceProvider ServiceProvider {  get; private set; }
 
         // this is needed to keep the saved value in the suo file at null
         // if the user does not explicitly enable or disable the extension
@@ -292,6 +297,8 @@ namespace SmartCmdArgs
         {
             await Commands.InitializeAsync(this);
 
+            ServiceProvider = ConfigureServices();
+
             vsHelper = new VisualStudioHelper(this);
             fileStorage = new FileStorage(this, vsHelper);
 
@@ -324,6 +331,15 @@ namespace SmartCmdArgs
             ToolWindowViewModel.DisplayTagForCla = DisplayTagForCla;
 
             await base.InitializeAsync(cancellationToken, progress);
+        }
+
+        private IServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddSingleton<IProjectConfigService, ProjectConfigService>();
+
+            return services.BuildServiceProvider();
         }
 
         private void CmdArgsOptionPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -514,7 +530,7 @@ namespace SmartCmdArgs
             if (commandLineArgs is null && envVars is null && workDir is null)
                 return;
 
-            ProjectConfigHelper.SetConfig(project, commandLineArgs, envVars, workDir);
+            ServiceProvider.GetRequiredService<IProjectConfigService>().SetConfig(project, commandLineArgs, envVars, workDir);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
@@ -1172,7 +1188,7 @@ namespace SmartCmdArgs
         private List<CmdArgumentJson> ReadCommandlineArgumentsFromProject(IVsHierarchy project)
         {
             var prjCmdArgs = new List<CmdArgumentJson>();
-            Helper.ProjectConfigHelper.AddAllArguments(project, prjCmdArgs);
+            ServiceProvider.GetRequiredService<IProjectConfigService>().AddAllArguments(project, prjCmdArgs);
             return prjCmdArgs;
         }
 

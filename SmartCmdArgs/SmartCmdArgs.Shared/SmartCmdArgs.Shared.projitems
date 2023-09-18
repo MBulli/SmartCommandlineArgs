@@ -27,7 +27,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableItemsRangeCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableRangeCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\PathHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helper\ProjectArguments.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\PropertyChangedBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\RelayCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\SymbolicLinkUtils.cs" />
@@ -39,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SettingsSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SolutionDataSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SuoDataSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)services\ProjectConfigService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToolWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdArgItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\DataObjectGenerator.cs" />
@@ -112,5 +112,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Services\" />
   </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Services;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View.Converter
