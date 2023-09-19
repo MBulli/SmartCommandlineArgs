@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Services;
 using SmartCmdArgs.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace SmartCmdArgs.Logic
     class FileStorage
     {
         private readonly CmdArgsPackage cmdPackage;
-        private readonly VisualStudioHelper vsHelper;
+        private readonly IVisualStudioHelperService vsHelper;
 
         private FileSystemWatcher settingsFsWatcher;
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
@@ -25,7 +26,7 @@ namespace SmartCmdArgs.Logic
 
         public event EventHandler<FileStorageChangedEventArgs> FileStorageChanged;
 
-        public FileStorage(CmdArgsPackage cmdPackage, VisualStudioHelper vsHelper)
+        public FileStorage(CmdArgsPackage cmdPackage, IVisualStudioHelperService vsHelper)
         {
             this.cmdPackage = cmdPackage;
             this.vsHelper = vsHelper;

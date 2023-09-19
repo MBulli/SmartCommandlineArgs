@@ -38,7 +38,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SettingsSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SolutionDataSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SuoDataSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\AsyncInitializable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)services\ProjectConfigService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\VisualStudioHelperService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToolWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdArgItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\DataObjectGenerator.cs" />
@@ -85,7 +87,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\UserControls\SettingsCheckBox.xaml.cs">
       <DependentUpon>SettingsCheckBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)VisualStudioHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)View\ArgumentItemView.xaml">
@@ -112,8 +113,5 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Services\" />
   </ItemGroup>
 </Project>

@@ -8,12 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using SmartCmdArgs.Services;
 
 namespace SmartCmdArgs.Logic
 {
     class SuoDataSerializer : DataSerializer
     {
-        public static SuoDataJson Deserialize(Stream stream, VisualStudioHelper vsHelper)
+        public static SuoDataJson Deserialize(Stream stream, IVisualStudioHelperService vsHelper)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
@@ -26,7 +27,7 @@ namespace SmartCmdArgs.Logic
             return Deserialize(jsonStr, vsHelper);
         }
 
-        public static SuoDataJson Deserialize(string jsonStr, VisualStudioHelper vsHelper)
+        public static SuoDataJson Deserialize(string jsonStr, IVisualStudioHelperService vsHelper)
         {
             if (vsHelper == null)
                 throw new ArgumentNullException(nameof(vsHelper));
@@ -67,7 +68,7 @@ namespace SmartCmdArgs.Logic
             }
         }
 
-        private static SuoDataJson ParseOldJsonFormat(JObject obj, VisualStudioHelper vsHelper)
+        private static SuoDataJson ParseOldJsonFormat(JObject obj, IVisualStudioHelperService vsHelper)
         {
             var result = new SuoDataJson();
 

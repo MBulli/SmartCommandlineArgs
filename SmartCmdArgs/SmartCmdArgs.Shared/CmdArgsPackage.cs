@@ -79,7 +79,7 @@ namespace SmartCmdArgs
 
         private readonly Regex msBuildPropertyRegex = new Regex(@"\$\((?<propertyName>(?:(?!\$\()[^)])*?)\)", RegexOptions.Compiled);
 
-        private VisualStudioHelper vsHelper;
+        private IVisualStudioHelperService vsHelper;
         private FileStorage fileStorage;
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
@@ -297,9 +297,9 @@ namespace SmartCmdArgs
         {
             await Commands.InitializeAsync(this);
 
-            ServiceProvider = ConfigureServices();
+            ServiceProvider = await ConfigureServices();
 
-            vsHelper = new VisualStudioHelper(this);
+            vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
             fileStorage = new FileStorage(this, vsHelper);
 
             // we want to know about changes to the solution state even if the extension is disabled
@@ -311,8 +311,6 @@ namespace SmartCmdArgs
             // has to be registered here to listen to settings changes even if the extension is disabled
             // so we can reload them if neccessary to give the user the correct values if he wants to enable the extension
             fileStorage.FileStorageChanged += FileStorage_FileStorageChanged;
-
-            await vsHelper.InitializeAsync();
 
             // Switch to main thread
             await JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -333,13 +331,22 @@ namespace SmartCmdArgs
             await base.InitializeAsync(cancellationToken, progress);
         }
 
-        private IServiceProvider ConfigureServices()
+        private async Task<IServiceProvider> ConfigureServices()
         {
             var services = new ServiceCollection();
 
             services.AddSingleton<IProjectConfigService, ProjectConfigService>();
+            services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
 
-            return services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider();
+
+            var initializableServices = serviceProvider.GetServices<IAsyncInitializable>();
+            foreach (var service in initializableServices)
+            {
+                await service.InitializeAsync();
+            }
+
+            return serviceProvider;
         }
 
         private void CmdArgsOptionPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -1090,7 +1097,7 @@ namespace SmartCmdArgs
             }
         }
 
-        private void VsHelper_ProjectAdded(object sender, VisualStudioHelper.ProjectAfterOpenEventArgs e)
+        private void VsHelper_ProjectAdded(object sender, ProjectAfterOpenEventArgs e)
         {
             Logger.Info($"VS-Event: Project '{e.Project.GetName()}' added. (IsLoadProcess={e.IsLoadProcess}, IsSolutionOpenProcess={e.IsSolutionOpenProcess})");
 
@@ -1103,7 +1110,7 @@ namespace SmartCmdArgs
             fileStorage.AddProject(e.Project);
         }
 
-        private void VsHelper_ProjectRemoved(object sender, VisualStudioHelper.ProjectBeforeCloseEventArgs e)
+        private void VsHelper_ProjectRemoved(object sender, ProjectBeforeCloseEventArgs e)
         {
             Logger.Info($"VS-Event: Project '{e.Project.GetName()}' removed. (IsUnloadProcess={e.IsUnloadProcess}, IsSolutionCloseProcess={e.IsSolutionCloseProcess})");
 
@@ -1117,7 +1124,7 @@ namespace SmartCmdArgs
             fileStorage.RemoveProject(e.Project);
         }
 
-        private void VsHelper_ProjectRenamed(object sender, VisualStudioHelper.ProjectAfterRenameEventArgs e)
+        private void VsHelper_ProjectRenamed(object sender, ProjectAfterRenameEventArgs e)
         {
             Logger.Info($"VS-Event: Project '{e.OldProjectName}' renamed to '{e.Project.GetName()}'.");
 
