@@ -80,7 +80,7 @@ namespace SmartCmdArgs
         private readonly Regex msBuildPropertyRegex = new Regex(@"\$\((?<propertyName>(?:(?!\$\()[^)])*?)\)", RegexOptions.Compiled);
 
         private IVisualStudioHelperService vsHelper;
-        private FileStorage fileStorage;
+        private IFileStorageService fileStorage;
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
         public static CmdArgsPackage Instance { get; private set; }
@@ -300,7 +300,7 @@ namespace SmartCmdArgs
             ServiceProvider = await ConfigureServices();
 
             vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
-            fileStorage = new FileStorage(this, vsHelper);
+            fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
 
             // we want to know about changes to the solution state even if the extension is disabled
             // so we can update our interface
@@ -337,6 +337,7 @@ namespace SmartCmdArgs
 
             services.AddSingleton<IProjectConfigService, ProjectConfigService>();
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
+            services.AddSingleton<IFileStorageService, FileStorageService>();
 
             var serviceProvider = services.BuildServiceProvider();
 

@@ -1,21 +1,63 @@
 ﻿using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.Services;
+using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SmartCmdArgs.Logic
+namespace SmartCmdArgs.Services
 {
-    /// <summary>
-    /// This class handles all the file related functionality
-    /// </summary>
-    class FileStorage
+    internal interface IFileStorageService
+    {
+        event EventHandler<FileStorageChangedEventArgs> FileStorageChanged;
+
+        void AddProject(IVsHierarchy project);
+        void RemoveAllProjects();
+        void RemoveProject(IVsHierarchy project);
+        void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName);
+        void SaveSettings();
+        SettingsJson ReadSettings();
+        ProjectDataJson ReadDataForProject(IVsHierarchy project);
+        void DeleteAllUnusedArgFiles();
+        void SaveProject(IVsHierarchy project);
+        void SaveAllProjects();
+    }
+
+    enum FileStorageChanedType
+    {
+        Project,
+        Solution,
+        Settings,
+    }
+
+    class FileStorageChangedEventArgs : EventArgs
+    {
+        public readonly FileStorageChanedType Type;
+
+        /// <summary>
+        /// The project for that the event was triggered.
+        /// Can be null if solution file triggered the event.
+        /// </summary>
+        public readonly IVsHierarchy Project;
+
+        public bool IsSolutionWide => Type == FileStorageChanedType.Solution;
+
+        public FileStorageChangedEventArgs(IVsHierarchy project)
+        {
+            Project = project;
+            Type = project == null ? FileStorageChanedType.Solution : FileStorageChanedType.Project;
+        }
+
+        public FileStorageChangedEventArgs(FileStorageChanedType type)
+        {
+            Project = null;
+            Type = type;
+        }
+    }
+
+    internal class FileStorageService : IFileStorageService
     {
         private readonly CmdArgsPackage cmdPackage;
         private readonly IVisualStudioHelperService vsHelper;
@@ -26,9 +68,9 @@ namespace SmartCmdArgs.Logic
 
         public event EventHandler<FileStorageChangedEventArgs> FileStorageChanged;
 
-        public FileStorage(CmdArgsPackage cmdPackage, IVisualStudioHelperService vsHelper)
+        public FileStorageService(IVisualStudioHelperService vsHelper)
         {
-            this.cmdPackage = cmdPackage;
+            this.cmdPackage = CmdArgsPackage.Instance;
             this.vsHelper = vsHelper;
         }
 
@@ -374,7 +416,7 @@ namespace SmartCmdArgs.Logic
                 if (!string.IsNullOrWhiteSpace(absoluteCustomJsonPath))
                     jsonFileName = Path.Combine(absoluteCustomJsonPath, Path.GetFileName(jsonFileName));
             }
-            
+
             return jsonFileName;
         }
 
@@ -543,38 +585,6 @@ namespace SmartCmdArgs.Logic
             {
                 Logger.Warn($"Failed to attach FileSystemWatcher to file '{jsonFilename}' for settings with error '{e}'.");
             }
-        }
-    }
-
-    enum FileStorageChanedType
-    {
-        Project,
-        Solution,
-        Settings,
-    }
-
-    class FileStorageChangedEventArgs : EventArgs
-    {
-        public readonly FileStorageChanedType Type;
-
-        /// <summary>
-        /// The project for that the event was triggered.
-        /// Can be null if solution file triggered the event.
-        /// </summary>
-        public readonly IVsHierarchy Project;
-
-        public bool IsSolutionWide => Type == FileStorageChanedType.Solution;
-
-        public FileStorageChangedEventArgs(IVsHierarchy project)
-        {
-            Project = project;
-            Type = project == null ? FileStorageChanedType.Solution : FileStorageChanedType.Project;
-        }
-
-        public FileStorageChangedEventArgs(FileStorageChanedType type)
-        {
-            Project = null;
-            Type = type;
         }
     }
 }
