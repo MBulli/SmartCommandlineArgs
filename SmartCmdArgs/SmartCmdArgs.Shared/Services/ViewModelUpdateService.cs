@@ -8,12 +8,12 @@ using System.Linq;
 
 namespace SmartCmdArgs.Services
 {
-    internal interface IProjectUpdateService
+    internal interface IViewModelUpdateService
     {
         void UpdateCommandsForProject(IVsHierarchy project);
     }
 
-    internal class ProjectUpdateService : IProjectUpdateService
+    internal class ViewModelUpdateService : IViewModelUpdateService
     {
         private readonly CmdArgsPackage cmdArgsPackage;
         private readonly IOptionsSettingsService optionsSettings;
@@ -21,7 +21,7 @@ namespace SmartCmdArgs.Services
         private readonly IProjectConfigService projectConfig;
         private readonly ISuoDataService suoDataService;
 
-        public ProjectUpdateService(IOptionsSettingsService optionsSettings, IFileStorageService fileStorage, IProjectConfigService projectConfig, ISuoDataService suoDataService)
+        public ViewModelUpdateService(IOptionsSettingsService optionsSettings, IFileStorageService fileStorage, IProjectConfigService projectConfig, ISuoDataService suoDataService)
         {
             cmdArgsPackage = CmdArgsPackage.Instance;
             this.optionsSettings = optionsSettings;

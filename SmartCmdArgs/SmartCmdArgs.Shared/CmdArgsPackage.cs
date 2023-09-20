@@ -82,7 +82,7 @@ namespace SmartCmdArgs
         private IVisualStudioHelperService vsHelper;
         private IFileStorageService fileStorage;
         private IOptionsSettingsService optionsSettings;
-        private IProjectUpdateService projectUpdateService;
+        private IViewModelUpdateService projectUpdateService;
         private ISuoDataService suoDataService;
 
         public ToolWindowViewModel ToolWindowViewModel { get; }
@@ -156,7 +156,7 @@ namespace SmartCmdArgs
             vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
             fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
             optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
-            projectUpdateService = ServiceProvider.GetRequiredService<IProjectUpdateService>();
+            projectUpdateService = ServiceProvider.GetRequiredService<IViewModelUpdateService>();
             suoDataService = ServiceProvider.GetRequiredService<ISuoDataService>();
         }
 
@@ -323,7 +323,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
             services.AddSingleton<IFileStorageService, FileStorageService>();
             services.AddSingleton<IOptionsSettingsService, OptionsSettingsService>();
-            services.AddSingleton<IProjectUpdateService, ProjectUpdateService>();
+            services.AddSingleton<IViewModelUpdateService, ViewModelUpdateService>();
             services.AddSingleton<ISuoDataService, SuoDataService>();
 
             var asyncInitializableServices = services
