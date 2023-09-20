@@ -81,6 +81,8 @@ namespace SmartCmdArgs
 
         private IVisualStudioHelperService vsHelper;
         private IFileStorageService fileStorage;
+        private IOptionsSettingsService optionsSettings;
+
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
         public static CmdArgsPackage Instance { get; private set; }
@@ -95,7 +97,7 @@ namespace SmartCmdArgs
             get => _isEnabledSaved;
             set {
                 _isEnabledSaved = value;
-                IsEnabled = value ?? Options.EnabledByDefault;
+                IsEnabled = value ?? optionsSettings.EnabledByDefault;
             }
         }
 
@@ -119,26 +121,7 @@ namespace SmartCmdArgs
             }
         }
 
-        public SettingsViewModel Settings => ToolWindowViewModel.SettingsViewModel;
-        public CmdArgsOptionPage Options => GetDialogPage<CmdArgsOptionPage>();
-
         public bool SettingsLoaded { get; private set; } = false;
-
-        public bool SaveSettingsToJson => Settings.SaveSettingsToJson;
-        public bool ManageCommandLineArgs => Settings.ManageCommandLineArgs ?? Options.ManageCommandLineArgs;
-        public bool ManageEnvironmentVars => Settings.ManageEnvironmentVars ?? Options.ManageEnvironmentVars;
-        public bool ManageWorkingDirectories => Settings.ManageWorkingDirectories ?? Options.ManageWorkingDirectories;
-        public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot;
-        public string JsonRootPath => Settings.JsonRootPath;
-        public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
-        public bool IsMacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
-        public bool IsUseSolutionDirEnabled => vsHelper?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
-
-        public bool IsUseMonospaceFontEnabled => Options.UseMonospaceFont;
-        public bool DisplayTagForCla => Options.DisplayTagForCla;
-
-        public bool DeleteEmptyFilesAutomatically => Options.DeleteEmptyFilesAutomatically;
-        public bool DeleteUnnecessaryFilesAutomatically => Options.DeleteUnnecessaryFilesAutomatically;
 
         public bool IsSolutionOpen => vsHelper.IsSolutionOpen;
 
@@ -206,7 +189,9 @@ namespace SmartCmdArgs
         #region IsActive Management for Items
         private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
         {
-            if (!ManageCommandLineArgs && !ManageEnvironmentVars && !ManageWorkingDirectories)
+            if (!optionsSettings.ManageCommandLineArgs
+                && !optionsSettings.ManageEnvironmentVars
+                && !optionsSettings.ManageWorkingDirectories)
             {
                 return new HashSet<CmdArgument>();
             }
@@ -217,18 +202,18 @@ namespace SmartCmdArgs
 
             foreach (var item in GetAllComamndLineItemsForProject(project))
             {
-                if (item.ArgumentType == ArgumentType.CmdArg && ManageCommandLineArgs)
+                if (item.ArgumentType == ArgumentType.CmdArg && optionsSettings.ManageCommandLineArgs)
                 {
                     Args.Add(item);
                 }
-                else if (item.ArgumentType == ArgumentType.EnvVar && ManageEnvironmentVars)
+                else if (item.ArgumentType == ArgumentType.EnvVar && optionsSettings.ManageEnvironmentVars)
                 {
                     if (TryParseEnvVar(item.Value, out EnvVar envVar))
                     {
                         EnvVars[envVar.Name] = item;
                     }
                 }
-                else if (item.ArgumentType == ArgumentType.WorkDir && ManageWorkingDirectories)
+                else if (item.ArgumentType == ArgumentType.WorkDir && optionsSettings.ManageWorkingDirectories)
                 {
                     workDir = item;
                 }
@@ -248,8 +233,8 @@ namespace SmartCmdArgs
         {
             foreach (var cmdProject in ToolWindowViewModel.TreeViewModel.AllProjects)
             {
-                if (Options.DisableInactiveItems == InactiveDisableMode.InAllProjects
-                    || (Options.DisableInactiveItems != InactiveDisableMode.Disabled && cmdProject.IsStartupProject))
+                if (optionsSettings.DisableInactiveItems == InactiveDisableMode.InAllProjects
+                    || (optionsSettings.DisableInactiveItems != InactiveDisableMode.Disabled && cmdProject.IsStartupProject))
                 {
                     var project = vsHelper.HierarchyForProjectGuid(cmdProject.Id);
                     var activeItems = GetAllActiveItemsForProject(project);
@@ -301,6 +286,7 @@ namespace SmartCmdArgs
 
             vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
             fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
+            optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
 
             // we want to know about changes to the solution state even if the extension is disabled
             // so we can update our interface
@@ -325,8 +311,8 @@ namespace SmartCmdArgs
 
             UpdateDisabledScreen();
 
-            ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
-            ToolWindowViewModel.DisplayTagForCla = DisplayTagForCla;
+            ToolWindowViewModel.UseMonospaceFont = optionsSettings.UseMonospaceFont;
+            ToolWindowViewModel.DisplayTagForCla = optionsSettings.DisplayTagForCla;
 
             await base.InitializeAsync(cancellationToken, progress);
         }
@@ -338,6 +324,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IProjectConfigService, ProjectConfigService>();
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
             services.AddSingleton<IFileStorageService, FileStorageService>();
+            services.AddSingleton<IOptionsSettingsService, OptionsSettingsService>();
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -350,45 +337,30 @@ namespace SmartCmdArgs
             return serviceProvider;
         }
 
-        private void CmdArgsOptionPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OptionsSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (!SettingsLoaded)
                 return;
 
             switch (e.PropertyName)
             {
-                case nameof(CmdArgsOptionPage.VcsSupportEnabled): VcsSupportChanged(); break;
-                case nameof(CmdArgsOptionPage.UseSolutionDir): UseSolutionDirChanged(); break;
-                case nameof(CmdArgsOptionPage.UseMonospaceFont): UseMonospaceFontChanged(); break;
-                case nameof(CmdArgsOptionPage.DisplayTagForCla): DisplayTagForClaChanged(); break;
-                case nameof(CmdArgsOptionPage.DisableInactiveItems): UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(CmdArgsOptionPage.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(CmdArgsOptionPage.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(CmdArgsOptionPage.ManageWorkingDirectories): UpdateIsActiveForArgumentsDebounced(); break;
-            }
-        }
-
-        private void SettingsViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (!SettingsLoaded)
-                return;
-
-            switch (e.PropertyName)
-            {
-                case nameof(SettingsViewModel.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
-                case nameof(SettingsViewModel.UseCustomJsonRoot): UseCustomJsonRootChanged(); break;
-                case nameof(SettingsViewModel.JsonRootPath): JsonRootPathChanged(); break;
-                case nameof(SettingsViewModel.VcsSupportEnabled): VcsSupportChanged(); break;
-                case nameof(SettingsViewModel.UseSolutionDir): UseSolutionDirChanged(); break;
-                case nameof(SettingsViewModel.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(SettingsViewModel.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(SettingsViewModel.ManageWorkingDirectories): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
+                case nameof(IOptionsSettingsService.UseCustomJsonRoot): UseCustomJsonRootChanged(); break;
+                case nameof(IOptionsSettingsService.JsonRootPath): JsonRootPathChanged(); break;
+                case nameof(IOptionsSettingsService.VcsSupportEnabled): VcsSupportChanged(); break;
+                case nameof(IOptionsSettingsService.UseSolutionDir): UseSolutionDirChanged(); break;
+                case nameof(IOptionsSettingsService.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageWorkingDirectories): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.UseMonospaceFont): UseMonospaceFontChanged(); break;
+                case nameof(IOptionsSettingsService.DisplayTagForCla): DisplayTagForClaChanged(); break;
+                case nameof(IOptionsSettingsService.DisableInactiveItems): UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
         private void OnTreeContentChangedThrottled(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
-            if (IsVcsSupportEnabled)
+            if (optionsSettings.VcsSupportEnabled)
             {
                 Logger.Info($"Tree content changed and VCS support is enabled. Saving all project commands to json file for project '{e.AffectedProject.Id}'.");
 
@@ -434,8 +406,7 @@ namespace SmartCmdArgs
             vsHelper.ProjectAfterRename += VsHelper_ProjectRenamed;
             vsHelper.ProjectAfterLoad += VsHelper_ProjectAfterLoad;
 
-            Settings.PropertyChanged += SettingsViewModel_PropertyChanged;
-            Options.PropertyChanged += CmdArgsOptionPage_PropertyChanged;
+            optionsSettings.PropertyChanged += OptionsSettings_PropertyChanged;
 
             ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
             ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
@@ -457,8 +428,7 @@ namespace SmartCmdArgs
             vsHelper.ProjectAfterRename -= VsHelper_ProjectRenamed;
             vsHelper.ProjectAfterLoad -= VsHelper_ProjectAfterLoad;
 
-            Settings.PropertyChanged -= SettingsViewModel_PropertyChanged;
-            Options.PropertyChanged -= CmdArgsOptionPage_PropertyChanged;
+            optionsSettings.PropertyChanged -= OptionsSettings_PropertyChanged;
 
             ToolWindowViewModel.TreeViewModel.ItemSelectionChanged -= OnItemSelectionChanged;
             ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled -= OnTreeContentChangedThrottled;
@@ -531,9 +501,9 @@ namespace SmartCmdArgs
             if (!IsEnabled || project == null)
                 return;
 
-            var commandLineArgs = ManageCommandLineArgs ? CreateCommandLineArgsForProject(project) : null;
-            var envVars = ManageEnvironmentVars ? GetEnvVarsForProject(project) : null;
-            var workDir = ManageWorkingDirectories ? GetWorkDirForProject(project) : null;
+            var commandLineArgs = optionsSettings.ManageCommandLineArgs ? CreateCommandLineArgsForProject(project) : null;
+            var envVars = optionsSettings.ManageEnvironmentVars ? GetEnvVarsForProject(project) : null;
+            var workDir = optionsSettings.ManageWorkingDirectories ? GetWorkDirForProject(project) : null;
 
             if (commandLineArgs is null && envVars is null && workDir is null)
                 return;
@@ -555,7 +525,7 @@ namespace SmartCmdArgs
         #region Path Utils
         public string MakePathAbsolute(string path, IVsHierarchy project, string buildConfig = null)
         {
-            switch (Options.RelativePathRoot) {
+            switch (optionsSettings.RelativePathRoot) {
                 case RelativePathRootOption.BuildTargetDirectory:
                     return MakePathAbsoluteBasedOnTargetDir(path, project, buildConfig);
                 case RelativePathRootOption.ProjectDirectory:
@@ -600,7 +570,7 @@ namespace SmartCmdArgs
 
         public string EvaluateMacros(string arg, IVsHierarchy project)
         {
-            if (!IsMacroEvaluationEnabled)
+            if (!optionsSettings.MacroEvaluationEnabled)
                 return arg;
 
             if (project == null)
@@ -778,7 +748,7 @@ namespace SmartCmdArgs
 
                 if (e.Type == FileStorageChanedType.Settings)
                 {
-                    if (SaveSettingsToJson)
+                    if (optionsSettings.SaveSettingsToJson)
                         LoadSettings();
 
                     return;
@@ -787,10 +757,10 @@ namespace SmartCmdArgs
                 if (!IsEnabled)
                     return;
 
-                if (e.IsSolutionWide != IsUseSolutionDirEnabled)
+                if (e.IsSolutionWide != optionsSettings.UseSolutionDir)
                     return;
 
-                if (!IsVcsSupportEnabled)
+                if (!optionsSettings.VcsSupportEnabled)
                     return;
 
                 ToolWindowHistory.SaveState();
@@ -850,7 +820,7 @@ namespace SmartCmdArgs
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
 
-            Logger.Info($"Update commands for project '{project?.GetName()}'. IsVcsSupportEnabled={IsVcsSupportEnabled}. SolutionData.Count={suoDataJson?.ProjectArguments?.Count}.");
+            Logger.Info($"Update commands for project '{project?.GetName()}'. IsVcsSupportEnabled={optionsSettings.VcsSupportEnabled}. SolutionData.Count={suoDataJson?.ProjectArguments?.Count}.");
 
             var projectGuid = project.GetGuid();
             if (projectGuid == Guid.Empty)
@@ -868,7 +838,7 @@ namespace SmartCmdArgs
 
             // get project json data
             ProjectDataJson projectData = null;
-            if (IsVcsSupportEnabled)
+            if (optionsSettings.VcsSupportEnabled)
             {
                 projectData = fileStorage.ReadDataForProject(project);
             }
@@ -940,7 +910,7 @@ namespace SmartCmdArgs
                 return;
             }
             // if we dont have VCS enabld we try to read the suo file data
-            else if (!IsVcsSupportEnabled && solutionData.ProjectArguments.TryGetValue(projectGuid, out projectData))
+            else if (!optionsSettings.VcsSupportEnabled && solutionData.ProjectArguments.TryGetValue(projectGuid, out projectData))
             {
                 Logger.Info($"Will use commands from suo file for project '{project.GetName()}'.");
                 var argumentDataFromProject = projectData.AllArguments;
@@ -1163,7 +1133,7 @@ namespace SmartCmdArgs
 
         private void VcsSupportChanged()
         {
-            if (!IsVcsSupportEnabled)
+            if (!optionsSettings.VcsSupportEnabled)
                 return;
 
             ToolWindowHistory.SaveState();
@@ -1177,12 +1147,12 @@ namespace SmartCmdArgs
 
         private void UseMonospaceFontChanged()
         {
-            ToolWindowViewModel.UseMonospaceFont = IsUseMonospaceFontEnabled;
+            ToolWindowViewModel.UseMonospaceFont = optionsSettings.UseMonospaceFont;
         }
 
         private void DisplayTagForClaChanged()
         {
-            ToolWindowViewModel.DisplayTagForCla = DisplayTagForCla;
+            ToolWindowViewModel.DisplayTagForCla = optionsSettings.DisplayTagForCla;
         }
 
         private void UseSolutionDirChanged()

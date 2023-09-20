@@ -61,6 +61,7 @@ namespace SmartCmdArgs.Services
     {
         private readonly CmdArgsPackage cmdPackage;
         private readonly IVisualStudioHelperService vsHelper;
+        private readonly IOptionsSettingsService optionsSettings;
 
         private FileSystemWatcher settingsFsWatcher;
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
@@ -68,10 +69,11 @@ namespace SmartCmdArgs.Services
 
         public event EventHandler<FileStorageChangedEventArgs> FileStorageChanged;
 
-        public FileStorageService(IVisualStudioHelperService vsHelper)
+        public FileStorageService(IVisualStudioHelperService vsHelper, IOptionsSettingsService optionsSettings)
         {
             this.cmdPackage = CmdArgsPackage.Instance;
             this.vsHelper = vsHelper;
+            this.optionsSettings = optionsSettings;
         }
 
         public void AddProject(IVsHierarchy project)
@@ -93,7 +95,7 @@ namespace SmartCmdArgs.Services
 
         public void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName)
         {
-            if (cmdPackage.IsUseSolutionDirEnabled)
+            if (optionsSettings.UseSolutionDir)
                 return;
 
             var guid = project.GetGuid();
@@ -149,7 +151,7 @@ namespace SmartCmdArgs.Services
 
             using (settingsFsWatcher?.TemporarilyDisable())
             {
-                if (cmdPackage.SaveSettingsToJson)
+                if (optionsSettings.SaveSettingsToJson)
                 {
                     string jsonStr = SettingsSerializer.Serialize(cmdPackage.ToolWindowViewModel.SettingsViewModel);
 
@@ -185,7 +187,7 @@ namespace SmartCmdArgs.Services
         {
             ProjectDataJson result = null;
 
-            if (!cmdPackage.IsUseSolutionDirEnabled)
+            if (!optionsSettings.UseSolutionDir)
             {
                 string filePath = FullFilenameForProjectJsonFileFromProject(project);
 
@@ -250,11 +252,11 @@ namespace SmartCmdArgs.Services
             if (!cmdPackage.IsEnabled)
                 return;
 
-            if (!cmdPackage.DeleteUnnecessaryFilesAutomatically)
+            if (!optionsSettings.DeleteUnnecessaryFilesAutomatically)
                 return;
 
             IEnumerable<string> fileNames;
-            if (cmdPackage.IsUseSolutionDirEnabled)
+            if (optionsSettings.UseSolutionDir)
                 fileNames = vsHelper.GetSupportedProjects().Select(FullFilenameForProjectJsonFileFromProject);
             else
                 fileNames = new[] { FullFilenameForSolutionJsonFile() };
@@ -274,7 +276,7 @@ namespace SmartCmdArgs.Services
 
         public void SaveProject(IVsHierarchy project)
         {
-            if (cmdPackage.IsUseSolutionDirEnabled)
+            if (optionsSettings.UseSolutionDir)
                 SaveJsonForSolution();
             else
                 SaveJsonForProject(project);
@@ -282,7 +284,7 @@ namespace SmartCmdArgs.Services
 
         public void SaveAllProjects()
         {
-            if (cmdPackage.IsUseSolutionDirEnabled)
+            if (optionsSettings.UseSolutionDir)
                 SaveJsonForSolution();
             else
                 vsHelper.GetSupportedProjects().ForEach(SaveJsonForProject);
@@ -290,7 +292,7 @@ namespace SmartCmdArgs.Services
 
         private void SaveJsonForSolution()
         {
-            if (!cmdPackage.IsEnabled || !cmdPackage.IsVcsSupportEnabled)
+            if (!cmdPackage.IsEnabled || !optionsSettings.VcsSupportEnabled)
                 return;
 
             string jsonFilename = FullFilenameForSolutionJsonFile();
@@ -298,7 +300,7 @@ namespace SmartCmdArgs.Services
             using (solutionFsWatcher?.TemporarilyDisable())
             {
                 var allItemsExceptProjects = cmdPackage.ToolWindowViewModel.TreeViewModel.AllItems.Where(i => !(i is CmdProject));
-                if (allItemsExceptProjects.Any() || !cmdPackage.DeleteEmptyFilesAutomatically)
+                if (allItemsExceptProjects.Any() || !optionsSettings.DeleteEmptyFilesAutomatically)
                 {
                     if (!vsHelper.CanEditFile(jsonFilename))
                     {
@@ -337,7 +339,7 @@ namespace SmartCmdArgs.Services
 
         private void SaveJsonForProject(IVsHierarchy project)
         {
-            if (!cmdPackage.IsEnabled || !cmdPackage.IsVcsSupportEnabled || project == null)
+            if (!cmdPackage.IsEnabled || !optionsSettings.VcsSupportEnabled || project == null)
                 return;
 
             var guid = project.GetGuid();
@@ -345,7 +347,7 @@ namespace SmartCmdArgs.Services
             string filePath = FullFilenameForProjectJsonFileFromProject(project);
             FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(guid);
 
-            if (vm != null && (vm.Items.Any() || !cmdPackage.DeleteEmptyFilesAutomatically))
+            if (vm != null && (vm.Items.Any() || !optionsSettings.DeleteEmptyFilesAutomatically))
             {
                 using (fsWatcher?.TemporarilyDisable())
                 {
@@ -372,7 +374,7 @@ namespace SmartCmdArgs.Services
                     }
                 }
             }
-            else if (File.Exists(filePath) && cmdPackage.DeleteEmptyFilesAutomatically)
+            else if (File.Exists(filePath) && optionsSettings.DeleteEmptyFilesAutomatically)
             {
                 Logger.Info("Deleting json file because command list is empty but json-file exists.");
 
@@ -410,9 +412,9 @@ namespace SmartCmdArgs.Services
             string slnFilename = vsHelper.GetSolutionFilename();
             string jsonFileName = Path.ChangeExtension(slnFilename, "args.json");
 
-            if (cmdPackage.UseCustomJsonRoot)
+            if (optionsSettings.UseCustomJsonRoot)
             {
-                var absoluteCustomJsonPath = cmdPackage.MakePathAbsoluteBasedOnSolutionDir(cmdPackage.JsonRootPath);
+                var absoluteCustomJsonPath = cmdPackage.MakePathAbsoluteBasedOnSolutionDir(optionsSettings.JsonRootPath);
                 if (!string.IsNullOrWhiteSpace(absoluteCustomJsonPath))
                     jsonFileName = Path.Combine(absoluteCustomJsonPath, Path.GetFileName(jsonFileName));
             }
