@@ -1,4 +1,5 @@
 ﻿using SmartCmdArgs.Helper;
+using SmartCmdArgs.View;
 using SmartCmdArgs.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -9,9 +10,10 @@ using System.Threading.Tasks;
 
 namespace SmartCmdArgs.Services
 {
-    internal interface IOptionsSettingsService
+    public interface IOptionsSettingsService
     {
         // Settings (possibly with options default)
+        SettingsViewModel Settings { get; }
         bool SaveSettingsToJson { get; }
         bool ManageCommandLineArgs { get; }
         bool ManageEnvironmentVars { get; }
@@ -23,6 +25,7 @@ namespace SmartCmdArgs.Services
         bool UseSolutionDir { get; }
 
         // Options
+        CmdArgsOptionPage Options { get; }
         bool UseMonospaceFont { get; }
         bool DisplayTagForCla { get; }
         bool DeleteEmptyFilesAutomatically { get; }
@@ -32,24 +35,28 @@ namespace SmartCmdArgs.Services
         RelativePathRootOption RelativePathRoot {  get; }
 
         // Events
+
         event PropertyChangedEventHandler PropertyChanged;
     }
 
     internal class OptionsSettingsService : PropertyChangedBase, IOptionsSettingsService, IAsyncInitializable
     {
-        readonly IVisualStudioHelperService _vsHelperService;
+        private readonly IVisualStudioHelperService _vsHelperService;
+        private readonly SettingsViewModel settingsViewModel;
+        private readonly CmdArgsOptionPage optionsPage;
 
-        public OptionsSettingsService(IVisualStudioHelperService vsHelperService)
+        public OptionsSettingsService(
+            IVisualStudioHelperService vsHelperService,
+            SettingsViewModel settingsViewModel,
+            CmdArgsOptionPage optionsPage)
         {
             _vsHelperService = vsHelperService;
+            this.settingsViewModel = settingsViewModel;
+            this.optionsPage = optionsPage;
         }
 
-        readonly CmdArgsPackage _package = CmdArgsPackage.Instance;
-
-        public SettingsViewModel Settings => _package.ToolWindowViewModel.SettingsViewModel;
-        public CmdArgsOptionPage Options => _package.GetDialogPage<CmdArgsOptionPage>();
-
         // Settings (possibly with options default)
+        public SettingsViewModel Settings => settingsViewModel;
         public bool SaveSettingsToJson => Settings.SaveSettingsToJson;
         public bool ManageCommandLineArgs => Settings.ManageCommandLineArgs ?? Options.ManageCommandLineArgs;
         public bool ManageEnvironmentVars => Settings.ManageEnvironmentVars ?? Options.ManageEnvironmentVars;
@@ -59,8 +66,9 @@ namespace SmartCmdArgs.Services
         public bool VcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
         public bool MacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
         public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
-        
+
         // Options
+        public CmdArgsOptionPage Options => optionsPage;
         public bool UseMonospaceFont => Options.UseMonospaceFont;
         public bool DisplayTagForCla => Options.DisplayTagForCla;
         public bool DeleteEmptyFilesAutomatically => Options.DeleteEmptyFilesAutomatically;

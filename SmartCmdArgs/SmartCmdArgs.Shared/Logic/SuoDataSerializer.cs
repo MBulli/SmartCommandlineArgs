@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using SmartCmdArgs.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SmartCmdArgs.Logic
 {
@@ -89,23 +90,23 @@ namespace SmartCmdArgs.Logic
             return result;
         }
 
-        public static SuoDataJson Serialize(ToolWindowViewModel vm)
+        public static SuoDataJson Serialize(ToolWindowViewModel toolWindowViewModel, SettingsViewModel settingsViewModel)
         {
-            if (vm == null)
-                throw new ArgumentNullException(nameof(vm));
+            if (toolWindowViewModel == null)
+                throw new ArgumentNullException(nameof(toolWindowViewModel));
 
             var data = new SuoDataJson();
 
-            data.Settings = new SettingsJson(vm.SettingsViewModel);
+            data.Settings = new SettingsJson(settingsViewModel);
 
-            data.ShowAllProjects = vm.TreeViewModel.ShowAllProjects;
-            data.CheckedArguments = new HashSet<Guid>(vm.TreeViewModel.AllProjects.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
-            data.ExpandedContainer = new HashSet<Guid>(vm.TreeViewModel.AllItems.OfType<CmdContainer>().Where(con => con.IsExpanded).Select(p => p.Id));
+            data.ShowAllProjects = toolWindowViewModel.TreeViewModel.ShowAllProjects;
+            data.CheckedArguments = new HashSet<Guid>(toolWindowViewModel.TreeViewModel.AllProjects.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
+            data.ExpandedContainer = new HashSet<Guid>(toolWindowViewModel.TreeViewModel.AllItems.OfType<CmdContainer>().Where(con => con.IsExpanded).Select(p => p.Id));
 
-            data.SelectedItems = new HashSet<Guid>(vm.TreeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).Select(item => item.Id)
-                                                   .Concat(vm.TreeViewModel.Projects.Values.Where(p => p.IsSelected).Select(p => p.Id)));
+            data.SelectedItems = new HashSet<Guid>(toolWindowViewModel.TreeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).Select(item => item.Id)
+                                                   .Concat(toolWindowViewModel.TreeViewModel.Projects.Values.Where(p => p.IsSelected).Select(p => p.Id)));
 
-            foreach (var kvPair in vm.TreeViewModel.Projects)
+            foreach (var kvPair in toolWindowViewModel.TreeViewModel.Projects)
             {
                 var list = new ProjectDataJsonVersioned
                 {

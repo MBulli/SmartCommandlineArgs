@@ -8,7 +8,7 @@ using System.Text;
 
 namespace SmartCmdArgs.Services
 {
-    internal interface IItemAggregationService
+    public interface IItemAggregationService
     {
         IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchy project);
         string CreateCommandLineArgsForProject(IVsHierarchy project);

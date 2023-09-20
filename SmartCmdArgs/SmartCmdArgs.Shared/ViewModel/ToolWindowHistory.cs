@@ -148,11 +148,13 @@ namespace SmartCmdArgs.ViewModel
     {
         private static HistoryRingBuffer<SuoDataJson> _buffer;
         private static ToolWindowViewModel _vm;
+        private static SettingsViewModel _settings;
         private static int _pauseCounter = 0;
 
-        public static void Init(ToolWindowViewModel vm, int size = 500)
+        public static void Init(ToolWindowViewModel vm, SettingsViewModel settings, int size = 500)
         {
             _vm = vm;
+            _settings = settings;
             _buffer = new HistoryRingBuffer<SuoDataJson>(size);
         }
 
@@ -176,7 +178,7 @@ namespace SmartCmdArgs.ViewModel
                 return;
 
             if (_pauseCounter == 0)
-                _buffer.Push(SuoDataSerializer.Serialize(_vm));
+                _buffer.Push(SuoDataSerializer.Serialize(_vm, _settings));
         }
 
         public static void SaveStateAndPause()

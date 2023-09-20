@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace SmartCmdArgs.Services
 {
-    internal interface IItemEvaluationService
+    public interface IItemEvaluationService
     {
         bool TryParseEnvVar(string str, out EnvVar envVar);
         string EvaluateMacros(string arg, IVsHierarchy project);
@@ -19,7 +19,7 @@ namespace SmartCmdArgs.Services
         IEnumerable<string> ExtractPathsFromItem(CmdArgument item);
     }
 
-    internal struct EnvVar
+    public struct EnvVar
     {
         public string Name;
         public string Value;

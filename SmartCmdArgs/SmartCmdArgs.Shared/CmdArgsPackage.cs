@@ -143,12 +143,12 @@ namespace SmartCmdArgs
             Debug.Assert(Instance == null, "There can be only be one! (Package)");
             Instance = this;
 
-            ServiceProvider = ConfigureServices();
-
-            ToolWindowViewModel = new ToolWindowViewModel(this);
-
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
+
+            ServiceProvider = ConfigureServices();
+
+            ToolWindowViewModel = ServiceProvider.GetRequiredService<ToolWindowViewModel>();
 
             vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
             fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
@@ -234,6 +234,9 @@ namespace SmartCmdArgs
         {
             var services = new ServiceCollection();
 
+            services.AddSingleton(x => GetDialogPage<CmdArgsOptionPage>());
+            services.AddFactory<SettingsViewModel>();
+            services.AddSingleton<ToolWindowViewModel>();
             services.AddSingleton<IProjectConfigService, ProjectConfigService>();
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
             services.AddSingleton<IFileStorageService, FileStorageService>();
@@ -546,7 +549,7 @@ namespace SmartCmdArgs
             if (settings == null)
                 settings = new SettingsJson();
 
-            var vm = ToolWindowViewModel.SettingsViewModel;
+            var vm = optionsSettings.Settings;
 
             vm.Assign(settings);
             vm.SaveSettingsToJson = areSettingsFromFile;

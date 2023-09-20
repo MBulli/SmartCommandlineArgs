@@ -45,7 +45,7 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Content="Smart Commandline Arguments Settings" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
-        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,5,0">Default values shown in parenthesis and can be configured under <Hyperlink Command="{Binding Package.ToolWindowViewModel.OpenOptionsCommand}">Tools → Options → Smart Commandline Arguments</Hyperlink></TextBlock>
+        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" Margin="5,0,5,0">Default values shown in parenthesis and can be configured under <Hyperlink Command="{Binding OpenOptionsCommand}">Tools → Options → Smart Commandline Arguments</Hyperlink></TextBlock>
         <ScrollViewer Grid.Row="2" Margin="0,10,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
                 <!-- Save Settings to JSON -->
@@ -55,25 +55,25 @@
                 <Separator Margin="0,10,0,0"/>
 
                 <!-- Manage Command Line Arguments -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Command Line Arguments" IsChecked="{Binding ManageCommandLineArgs}" DefaultValue="{Binding Package.Options.ManageCommandLineArgs, Mode=OneWay}" 
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Command Line Arguments" IsChecked="{Binding ManageCommandLineArgs}" DefaultValue="{Binding Options.ManageCommandLineArgs, Mode=OneWay}" 
                                      Description="If enabled the arguments are set automatically when a project is started/debugged."/>
 
                 <!-- Manage Environment Variables -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Environment Variables" IsChecked="{Binding ManageEnvironmentVars}" DefaultValue="{Binding Package.Options.ManageEnvironmentVars, Mode=OneWay}" 
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Environment Variables" IsChecked="{Binding ManageEnvironmentVars}" DefaultValue="{Binding Options.ManageEnvironmentVars, Mode=OneWay}" 
                                      Description="If enabled the environment variables are set automatically when a project is started/debugged."/>
 
                 <!-- Manage Working Directories -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Working Directories" IsChecked="{Binding ManageWorkingDirectories}" DefaultValue="{Binding Package.Options.ManageWorkingDirectories, Mode=OneWay}" 
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Working Directories" IsChecked="{Binding ManageWorkingDirectories}" DefaultValue="{Binding Options.ManageWorkingDirectories, Mode=OneWay}" 
                                      Description="If enabled the working directories are set automatically when a project is started/debugged."/>
 
                 <Separator Margin="0,10,0,0"/>
 
                 <!-- Enable version control support -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable version control support" IsChecked="{Binding VcsSupportEnabled}" DefaultValue="{Binding Package.Options.VcsSupportEnabled, Mode=OneWay}"
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable version control support" IsChecked="{Binding VcsSupportEnabled}" DefaultValue="{Binding Options.VcsSupportEnabled, Mode=OneWay}"
                                      Description="If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control."/>
 
                 <!-- Use Solution Directory -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Use Solution Directory" IsChecked="{Binding UseSolutionDir}" DefaultValue="{Binding Package.Options.UseSolutionDir, Mode=OneWay}" RequiredDisplayName="Version Control Support" RequiredValue="{Binding VcsSupportEnabled}"
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Use Solution Directory" IsChecked="{Binding UseSolutionDir}" DefaultValue="{Binding Options.UseSolutionDir, Mode=OneWay}" RequiredDisplayName="Version Control Support" RequiredValue="{Binding VcsSupportEnabled}"
                                      Description="If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)"/>
 
                 <!-- Use Custom JSON Path -->
@@ -115,7 +115,7 @@
                 </StackPanel>
 
                 <!-- Enable Macro evaluation -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable Macro evaluation" IsChecked="{Binding MacroEvaluationEnabled}" DefaultValue="{Binding Package.Options.MacroEvaluationEnabled, Mode=OneWay}"
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable Macro evaluation" IsChecked="{Binding MacroEvaluationEnabled}" DefaultValue="{Binding Options.MacroEvaluationEnabled, Mode=OneWay}"
                                      Description="If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string."/>
                 
                 <StackPanel Orientation="Vertical" Visibility="{Binding Package.IsEnabled, Converter={c:BoolToVisibilityConverter Inverted=False, HideVisibility=Collapsed}}">

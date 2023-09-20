@@ -40,7 +40,7 @@ namespace SmartCmdArgs
             get { return (CmdArgsPackage)base.Package; }
         }
 
-        public ToolWindow(ViewModel.ToolWindowViewModel viewModel)
+        internal ToolWindow(ViewModel.ToolWindowViewModel viewModel)
             : base(null)
         {
             if (viewModel == null)

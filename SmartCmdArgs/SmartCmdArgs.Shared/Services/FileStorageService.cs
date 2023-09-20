@@ -155,7 +155,7 @@ namespace SmartCmdArgs.Services
             {
                 if (optionsSettings.SaveSettingsToJson)
                 {
-                    string jsonStr = SettingsSerializer.Serialize(cmdPackage.ToolWindowViewModel.SettingsViewModel);
+                    string jsonStr = SettingsSerializer.Serialize(optionsSettings.Settings);
 
                     if (jsonStr == "{}")
                         File.Delete(jsonFilename);

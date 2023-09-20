@@ -22,11 +22,8 @@ namespace SmartCmdArgs.ViewModel
     public class ToolWindowViewModel : PropertyChangedBase, IDisposable
     {
         private readonly IItemEvaluationService itemEvaluation;
-        private readonly IItemAggregationService itemAggregation;
 
         public TreeViewModel TreeViewModel { get; }
-
-        public SettingsViewModel SettingsViewModel { get; }
 
         public CmdArgsPackage CmdArgsPackage { get; }
 
@@ -116,17 +113,19 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand EnableExtensionCommand { get; }
 
-        public ToolWindowViewModel(CmdArgsPackage package)
+        public ToolWindowViewModel(
+            IItemEvaluationService itemEvaluation,
+            IItemAggregationService itemAggregation,
+            IOptionsSettingsService optionsSettings,
+            IFactory<SettingsViewModel> settingsFactory)
         {
-            itemEvaluation = package.ServiceProvider.GetRequiredService<IItemEvaluationService>();
+            this.itemEvaluation = itemEvaluation;
 
-            CmdArgsPackage = package;
+            CmdArgsPackage = CmdArgsPackage.Instance;
 
             TreeViewModel = new TreeViewModel();
 
-            SettingsViewModel = new SettingsViewModel(package);
-
-            ToolWindowHistory.Init(this);
+            ToolWindowHistory.Init(this, optionsSettings.Settings);
 
             AddEntryCommand = new RelayCommand<ArgumentType>(
                 argType => {
@@ -134,7 +133,7 @@ namespace SmartCmdArgs.ViewModel
                     var newArg = new CmdArgument(argType, arg: "", isChecked: true);
                     TreeViewModel.AddItemAtFocusedItem(newArg);
                     TreeViewModel.SelectItemCommand.SafeExecute(newArg);
-                }, canExecute: _ => package.IsEnabled && HasStartupProject());
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProject());
 
             AddGroupCommand = new RelayCommand(
                 () => {
@@ -142,24 +141,24 @@ namespace SmartCmdArgs.ViewModel
                     var newGrp = new CmdGroup(name: "");
                     TreeViewModel.AddItemAtFocusedItem(newGrp);
                     TreeViewModel.SelectItemCommand.SafeExecute(newGrp);
-                }, canExecute: _ => package.IsEnabled && HasStartupProject());
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
                 () => {
                     RemoveSelectedItems();
-                }, canExecute: _ => package.IsEnabled && HasStartupProjectAndSelectedItems() && !HasSingleSelectedItemOfType<CmdProject>());
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProjectAndSelectedItems() && !HasSingleSelectedItemOfType<CmdProject>());
 
             MoveEntriesUpCommand = new RelayCommand(
                 () => {
                     ToolWindowHistory.SaveState();
                     TreeViewModel.MoveSelectedEntries(moveDirection: -1);
-                }, canExecute: _ => package.IsEnabled && HasStartupProjectAndSelectedItems());
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProjectAndSelectedItems());
 
             MoveEntriesDownCommand = new RelayCommand(
                 () => {
                     ToolWindowHistory.SaveState();
                     TreeViewModel.MoveSelectedEntries(moveDirection: 1);
-                }, canExecute: _ => package.IsEnabled && HasStartupProjectAndSelectedItems());
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProjectAndSelectedItems());
 
             CopyCommandlineCommand = new RelayCommand(
                 () => {
@@ -173,7 +172,7 @@ namespace SmartCmdArgs.ViewModel
                     
                     // copy=false see #58
                     Clipboard.SetDataObject(prjCmdArgs, copy: false);                   
-                }, canExecute: _ => package.IsEnabled && HasStartupProject());
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProject());
 
             var cmdEscapeRegex = new Regex("([&|(=<>^])", RegexOptions.Compiled);
             CopyEnvVarsForCommadlineCommand = new RelayCommand<string>(
@@ -204,27 +203,28 @@ namespace SmartCmdArgs.ViewModel
 
                     // copy=false see #58
                     Clipboard.SetDataObject(envVarStr, copy: false);
-                }, canExecute: _ => package.IsEnabled && HasStartupProject());
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProject());
 
             ShowAllProjectsCommand = new RelayCommand(
                 () => {
                     ToolWindowHistory.SaveState();
                     TreeViewModel.ShowAllProjects = !TreeViewModel.ShowAllProjects;
-                }, canExecute: _ => package.IsEnabled && CmdArgsPackage.SettingsLoaded);
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && CmdArgsPackage.SettingsLoaded);
 
             ShowSettingsCommand = new RelayCommand(
                 () => {
-                    var settingsClone = new SettingsViewModel(SettingsViewModel);
+                    var settingsClone = settingsFactory.Create();
+                    settingsClone.Assign(optionsSettings.Settings);
                     if (new SettingsDialog(settingsClone).ShowModal() == true)
                     {
-                        SettingsViewModel.Assign(settingsClone);
-                        package.SaveSettings();
+                        optionsSettings.Settings.Assign(settingsClone);
+                        CmdArgsPackage.SaveSettings();
                     }
                 }, canExecute: _ => CmdArgsPackage.SettingsLoaded);
 
             OpenOptionsCommand = new RelayCommand(
                 () => {
-                    package.ShowOptionPage(typeof(CmdArgsOptionPage));
+                    CmdArgsPackage.ShowOptionPage(typeof(CmdArgsOptionPage));
                 });
 
             ToggleSelectedCommand = new RelayCommand(
@@ -232,17 +232,17 @@ namespace SmartCmdArgs.ViewModel
                     ToolWindowHistory.SaveStateAndPause();
                     TreeViewModel.ToggleSelected();
                     ToolWindowHistory.Resume();
-                }, canExecute: _ => package.IsEnabled && HasStartupProject());
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProject());
 
-            CopySelectedItemsCommand = new RelayCommand(() => CopySelectedItemsToClipboard(includeProjects: true), canExecute: _ => package.IsEnabled && HasSelectedItems());
+            CopySelectedItemsCommand = new RelayCommand(() => CopySelectedItemsToClipboard(includeProjects: true), canExecute: _ => CmdArgsPackage.IsEnabled && HasSelectedItems());
 
-            PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => package.IsEnabled && HasStartupProject());
+            PasteItemsCommand = new RelayCommand(PasteItemsFromClipboard, canExecute: _ => CmdArgsPackage.IsEnabled && HasStartupProject());
 
-            CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => package.IsEnabled && HasSelectedItems() && !HasSingleSelectedItemOfType<CmdProject>());
+            CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => CmdArgsPackage.IsEnabled && HasSelectedItems() && !HasSingleSelectedItemOfType<CmdProject>());
 
-            UndoCommand = new RelayCommand(ToolWindowHistory.RestoreLastState, _ => package.IsEnabled && !TreeViewModel.IsInEditMode);
+            UndoCommand = new RelayCommand(ToolWindowHistory.RestoreLastState, _ => CmdArgsPackage.IsEnabled && !TreeViewModel.IsInEditMode);
 
-            RedoCommand = new RelayCommand(ToolWindowHistory.RestorePrevState, _ => package.IsEnabled && !TreeViewModel.IsInEditMode);
+            RedoCommand = new RelayCommand(ToolWindowHistory.RestorePrevState, _ => CmdArgsPackage.IsEnabled && !TreeViewModel.IsInEditMode);
 
             SplitArgumentCommand = new RelayCommand(() =>
             {
@@ -259,14 +259,14 @@ namespace SmartCmdArgs.ViewModel
                     RemoveItems(new[] { selectedItem });
                     TreeViewModel.SelectItems(newItems);
                 }
-            }, canExecute: _ => package.IsEnabled && HasSingleSelectedArgumentOfType(ArgumentType.CmdArg));
+            }, canExecute: _ => CmdArgsPackage.IsEnabled && HasSingleSelectedArgumentOfType(ArgumentType.CmdArg));
 
             RevealFileInExplorerCommand = new RelayCommand(() =>
             {
                 var fileName = ExtractFileNameFromSelectedArgument();
                 if (fileName != null)
                     System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fileName}\"");
-            }, canExecute: _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
+            }, canExecute: _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
 
             OpenFileCommand = new RelayCommand(() =>
             {
@@ -275,7 +275,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     System.Diagnostics.Process.Start(fileName);
                 }
-            }, canExecute: _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
+            }, canExecute: _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
 
             OpenFileInVSCommand = new RelayCommand(() =>
             {
@@ -284,14 +284,14 @@ namespace SmartCmdArgs.ViewModel
                 {
                     var task = CmdArgsPackage.OpenFileInVisualStudioAsync(fileName);
                 }
-            }, canExecute: _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
+            }, canExecute: _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
 
             OpenDirectoryCommand = new RelayCommand(() =>
             {
                 var directoryName = ExtractDirectoryNameFromSelectedArgument();
                 if (directoryName != null)
                     System.Diagnostics.Process.Start("explorer.exe", $"\"{directoryName}\"");
-            }, canExecute: _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractDirectoryNameFromSelectedArgument() != null);
+            }, canExecute: _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractDirectoryNameFromSelectedArgument() != null);
 
             NewGroupFromArgumentsCommand = new RelayCommand(() =>
             {
@@ -318,7 +318,7 @@ namespace SmartCmdArgs.ViewModel
                 // set selection to new group
                 TreeViewModel.SelectItemCommand.SafeExecute(newGrp);
 
-            }, _ => package.IsEnabled && HasSelectedItems() && HaveSameParent(GetSelectedRootItems(true)));
+            }, _ => CmdArgsPackage.IsEnabled && HasSelectedItems() && HaveSameParent(GetSelectedRootItems(true)));
             
             SetAsStartupProjectCommand = new RelayCommand(() => {
                 var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
@@ -326,7 +326,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     CmdArgsPackage.SetAsStartupProject(proj.Id);
                 }
-            }, _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdProject>());
+            }, _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdProject>());
 
             SetProjectConfigCommand = new RelayCommand<string>(configName =>
             {
@@ -336,7 +336,7 @@ namespace SmartCmdArgs.ViewModel
                     ToolWindowHistory.SaveState();
                     grp.ProjectConfig = configName;
                 }
-            }, _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdGroup>());
+            }, _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdGroup>());
 
             SetProjectPlatformCommand = new RelayCommand<string>(platformName =>
             {
@@ -346,7 +346,7 @@ namespace SmartCmdArgs.ViewModel
                     ToolWindowHistory.SaveState();
                     grp.ProjectPlatform = platformName;
                 }
-            }, _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdGroup>());
+            }, _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdGroup>());
 
             SetLaunchProfileCommand = new RelayCommand<string>(profileName =>
             {
@@ -356,7 +356,7 @@ namespace SmartCmdArgs.ViewModel
                     ToolWindowHistory.SaveState();
                     grp.LaunchProfile = profileName;
                 }
-            }, _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdGroup>());
+            }, _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdGroup>());
 
             ToggleExclusiveModeCommand = new RelayCommand(() =>
             {
@@ -366,7 +366,7 @@ namespace SmartCmdArgs.ViewModel
                     ToolWindowHistory.SaveState();
                     con.ExclusiveMode = !con.ExclusiveMode;
                 }
-            }, _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdContainer>());
+            }, _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdContainer>());
 
             SetDelimiterCommand = new RelayCommand<string>(delimiter =>
             {
@@ -376,32 +376,32 @@ namespace SmartCmdArgs.ViewModel
                     ToolWindowHistory.SaveState();
                     con.Delimiter = delimiter;
                 }
-            }, _ => package.IsEnabled && HasSingleSelectedItemOfType<CmdContainer>());
+            }, _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdContainer>());
 
             SetArgumentTypeCommand = new RelayCommand<ArgumentType>(type =>
             {
                 var items = TreeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
                 items.ForEach(x => x.ArgumentType = type);
-            }, _ => package.IsEnabled && HasSelectedItemOfType<CmdArgument>());
+            }, _ => CmdArgsPackage.IsEnabled && HasSelectedItemOfType<CmdArgument>());
 
             ToggleDefaultCheckedCommand = new RelayCommand(() =>
             {
                 var items = TreeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
                 var hasTrue = items.Any(x => x.DefaultChecked);
                 items.ForEach(x => x.DefaultChecked = !hasTrue);
-            }, _ => package.IsEnabled && HasSelectedItemOfType<CmdArgument>());
+            }, _ => CmdArgsPackage.IsEnabled && HasSelectedItemOfType<CmdArgument>());
 
             ResetToDefaultCheckedCommand = new RelayCommand(() =>
             {
                 ToolWindowHistory.SaveStateAndPause();
                 TreeViewModel.ResetToDefaultChecked();
                 ToolWindowHistory.Resume();
-            }, _ => package.IsEnabled && HasSelectedItems());
+            }, _ => CmdArgsPackage.IsEnabled && HasSelectedItems());
 
             EnableExtensionCommand = new RelayCommand(() =>
             {
                 CmdArgsPackage.IsEnabledSaved = true;
-                package.SaveSettings();
+                CmdArgsPackage.SaveSettings();
             });
         }
 

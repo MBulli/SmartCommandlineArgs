@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
+using SmartCmdArgs.Services;
 using System;
 using System.Collections.Generic;
 using System.IO.Packaging;
@@ -13,8 +14,7 @@ namespace SmartCmdArgs.ViewModel
 {
     public class SettingsViewModel : PropertyChangedBase
     {
-        private CmdArgsPackage _package;
-
+        private readonly CmdArgsOptionPage optionPage;
         private bool _saveSettingsToJson;
         private bool? _manageCommandLineArgs;
         private bool? _manageEnvironmentVars;
@@ -81,21 +81,25 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand DisableExtensionCommand { get; }
 
-        public CmdArgsPackage Package => _package;
+        public CmdArgsPackage Package => CmdArgsPackage.Instance;
 
-        public SettingsViewModel(CmdArgsPackage package)
+        public CmdArgsOptionPage Options => optionPage;
+
+        public RelayCommand OpenOptionsCommand { get; }
+
+        public SettingsViewModel(CmdArgsOptionPage optionPage)
         {
-            _package = package;
+            this.optionPage = optionPage;
 
             DisableExtensionCommand = new RelayCommand(() =>
             {
                 Package.IsEnabledSaved = false;
             });
-        }
 
-        public SettingsViewModel(SettingsViewModel other) : this(other._package)
-        {
-            Assign(other);
+            OpenOptionsCommand = new RelayCommand(() =>
+            {
+                CmdArgsPackage.Instance.ShowOptionPage(typeof(CmdArgsOptionPage));
+            });
         }
 
         public void Assign(SettingsViewModel other)
