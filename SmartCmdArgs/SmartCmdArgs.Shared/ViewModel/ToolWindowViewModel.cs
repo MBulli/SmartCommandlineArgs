@@ -21,7 +21,8 @@ namespace SmartCmdArgs.ViewModel
 {
     public class ToolWindowViewModel : PropertyChangedBase, IDisposable
     {
-        private static readonly Regex SplitArgumentRegex = new Regex(@"(?:""(?:""""|\\""|[^""])*""?|[^\s""]+)+", RegexOptions.Compiled);
+        private readonly IItemEvaluationService itemEvaluation;
+        private readonly IItemAggregationService itemAggregation;
 
         public TreeViewModel TreeViewModel { get; }
 
@@ -117,6 +118,8 @@ namespace SmartCmdArgs.ViewModel
 
         public ToolWindowViewModel(CmdArgsPackage package)
         {
+            itemEvaluation = package.ServiceProvider.GetRequiredService<IItemEvaluationService>();
+
             CmdArgsPackage = package;
 
             TreeViewModel = new TreeViewModel();
@@ -164,7 +167,7 @@ namespace SmartCmdArgs.ViewModel
                     if (focusedProject == null)
                         return;
 
-                    var prjCmdArgs = CmdArgsPackage.CreateCommandLineArgsForProject(focusedProject.Id);
+                    var prjCmdArgs = itemAggregation.CreateCommandLineArgsForProject(focusedProject.Id);
                     if (prjCmdArgs == null)
                         return;
                     
@@ -179,7 +182,7 @@ namespace SmartCmdArgs.ViewModel
                     if (focusedProject == null)
                         return;
 
-                    var prjEnvVars = CmdArgsPackage.GetEnvVarsForProject(focusedProject.Id);
+                    var prjEnvVars = itemAggregation.GetEnvVarsForProject(focusedProject.Id);
                     if (prjEnvVars == null)
                         return;
 
@@ -248,7 +251,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     ToolWindowHistory.SaveState();
 
-                    var newItems = SplitArgument(argument.Value)
+                    var newItems = itemEvaluation.SplitArgument(argument.Value)
                                    .Select((s) => new CmdArgument(argument.ArgumentType, s, argument.IsChecked, argument.DefaultChecked))
                                    .ToList();
 
@@ -533,47 +536,12 @@ namespace SmartCmdArgs.ViewModel
             return HasStartupProject() && HasSelectedItems();
         }
 
-        private IEnumerable<string> SplitArgument(string argument) => SplitArgumentRegex.Matches(argument).Cast<Match>().Select(x => x.Value);
-
         private IEnumerable<string> ExtractPathFromSelectedArgument()
         {
             var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
             if (selectedItem is CmdArgument argument)
             {
-                var projectGuid = argument.ProjectGuid;
-                if (projectGuid == Guid.Empty)
-                    return Enumerable.Empty<string>();
-
-                IVsHierarchy project = CmdArgsPackage.GetProjectForArg(argument);
-
-                var buildConfig = selectedItem.UsedProjectConfig;
-
-                var parts = Enumerable.Empty<string>();
-
-                switch (argument.ArgumentType)
-                {
-                    case ArgumentType.CmdArg:
-                        parts = SplitArgument(CmdArgsPackage.EvaluateMacros(argument.Value, project));
-                        break;
-
-                    case ArgumentType.EnvVar:
-                        var envVarParts = argument.Value.Split(new[] { '=' }, 2);
-                        if (envVarParts.Length == 2)
-                            parts = new[] { CmdArgsPackage.EvaluateMacros(envVarParts[1], project) };
-                        break;
-
-                    case ArgumentType.WorkDir:
-                        parts = new[] { CmdArgsPackage.EvaluateMacros(argument.Value, project) };
-                        break;
-                }
-
-                var itemPathUtil = CmdArgsPackage.ServiceProvider.GetRequiredService<IItemPathService>();
-
-                return parts
-                    .Select(s => s.Trim('"'))
-                    .Where(s => s.IndexOfAny(Path.GetInvalidPathChars()) < 0)
-                    .Select(s => itemPathUtil.MakePathAbsolute(s, project, buildConfig))
-                    .Where(s => !string.IsNullOrEmpty(s));
+                return itemEvaluation.ExtractPathsFromItem(argument);
             }
 
             return Enumerable.Empty<string>();

@@ -11,6 +11,7 @@ namespace SmartCmdArgs.Services
     internal interface IViewModelUpdateService
     {
         void UpdateCommandsForProject(IVsHierarchy project);
+        void UpdateIsActiveForArguments();
     }
 
     internal class ViewModelUpdateService : IViewModelUpdateService
@@ -20,14 +21,27 @@ namespace SmartCmdArgs.Services
         private readonly IFileStorageService fileStorage;
         private readonly IProjectConfigService projectConfig;
         private readonly ISuoDataService suoDataService;
+        private readonly IItemAggregationService itemAggregation;
+        private readonly IItemEvaluationService itemEvaluation;
+        private readonly IVisualStudioHelperService vsHelper;
 
-        public ViewModelUpdateService(IOptionsSettingsService optionsSettings, IFileStorageService fileStorage, IProjectConfigService projectConfig, ISuoDataService suoDataService)
+        public ViewModelUpdateService(
+            IOptionsSettingsService optionsSettings,
+            IFileStorageService fileStorage,
+            IProjectConfigService projectConfig,
+            ISuoDataService suoDataService,
+            IItemAggregationService itemAggregation,
+            IItemEvaluationService itemEvaluation,
+            IVisualStudioHelperService vsHelper)
         {
             cmdArgsPackage = CmdArgsPackage.Instance;
             this.optionsSettings = optionsSettings;
             this.fileStorage = fileStorage;
             this.projectConfig = projectConfig;
             this.suoDataService = suoDataService;
+            this.itemAggregation = itemAggregation;
+            this.itemEvaluation = itemEvaluation;
+            this.vsHelper = vsHelper;
         }
 
         public void UpdateCommandsForProject(IVsHierarchy project)
@@ -172,6 +186,73 @@ namespace SmartCmdArgs.Services
             var prjCmdArgs = new List<CmdArgumentJson>();
             projectConfig.AddAllArguments(project, prjCmdArgs);
             return prjCmdArgs;
+        }
+
+        private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
+        {
+            if (!optionsSettings.ManageCommandLineArgs
+                && !optionsSettings.ManageEnvironmentVars
+                && !optionsSettings.ManageWorkingDirectories)
+            {
+                return new HashSet<CmdArgument>();
+            }
+
+            var Args = new HashSet<CmdArgument>();
+            var EnvVars = new Dictionary<string, CmdArgument>();
+            CmdArgument workDir = null;
+
+            foreach (var item in itemAggregation.GetAllComamndLineItemsForProject(project))
+            {
+                if (item.ArgumentType == ArgumentType.CmdArg && optionsSettings.ManageCommandLineArgs)
+                {
+                    Args.Add(item);
+                }
+                else if (item.ArgumentType == ArgumentType.EnvVar && optionsSettings.ManageEnvironmentVars)
+                {
+                    if (itemEvaluation.TryParseEnvVar(item.Value, out EnvVar envVar))
+                    {
+                        EnvVars[envVar.Name] = item;
+                    }
+                }
+                else if (item.ArgumentType == ArgumentType.WorkDir && optionsSettings.ManageWorkingDirectories)
+                {
+                    workDir = item;
+                }
+            }
+
+            var result = new HashSet<CmdArgument>(Args.Concat(EnvVars.Values));
+
+            if (workDir != null)
+            {
+                result.Add(workDir);
+            }
+
+            return result;
+        }
+
+        public void UpdateIsActiveForArguments()
+        {
+            foreach (var cmdProject in cmdArgsPackage.ToolWindowViewModel.TreeViewModel.AllProjects)
+            {
+                if (optionsSettings.DisableInactiveItems == InactiveDisableMode.InAllProjects
+                    || (optionsSettings.DisableInactiveItems != InactiveDisableMode.Disabled && cmdProject.IsStartupProject))
+                {
+                    var project = vsHelper.HierarchyForProjectGuid(cmdProject.Id);
+                    var activeItems = GetAllActiveItemsForProject(project);
+
+                    foreach (var item in cmdProject.AllArguments)
+                    {
+                        item.IsActive = activeItems.Contains(item);
+                    }
+                }
+                else
+                {
+                    foreach (var item in cmdProject.AllArguments)
+                    {
+                        item.IsActive = true;
+                    }
+                }
+            }
         }
     }
 }

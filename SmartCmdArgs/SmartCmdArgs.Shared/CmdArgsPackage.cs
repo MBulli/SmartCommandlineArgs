@@ -77,13 +77,12 @@ namespace SmartCmdArgs
         public const string DataObjectCmdListFormat = "SmartCommandlineArgs_35AD7E71-E0BC-4440-97D9-2E6DA3085BE4";
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
 
-        private readonly Regex msBuildPropertyRegex = new Regex(@"\$\((?<propertyName>(?:(?!\$\()[^)])*?)\)", RegexOptions.Compiled);
-
         private IVisualStudioHelperService vsHelper;
         private IFileStorageService fileStorage;
         private IOptionsSettingsService optionsSettings;
-        private IViewModelUpdateService projectUpdateService;
+        private IViewModelUpdateService viewModelUpdateService;
         private ISuoDataService suoDataService;
+        private IItemAggregationService itemAggregationService;
 
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
@@ -144,20 +143,21 @@ namespace SmartCmdArgs
             Debug.Assert(Instance == null, "There can be only be one! (Package)");
             Instance = this;
 
+            ServiceProvider = ConfigureServices();
+
             ToolWindowViewModel = new ToolWindowViewModel(this);
 
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
 
-            _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250), UpdateIsActiveForArguments);
-
-            ServiceProvider = ConfigureServices();
-
             vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
             fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
             optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
-            projectUpdateService = ServiceProvider.GetRequiredService<IViewModelUpdateService>();
+            viewModelUpdateService = ServiceProvider.GetRequiredService<IViewModelUpdateService>();
             suoDataService = ServiceProvider.GetRequiredService<ISuoDataService>();
+            itemAggregationService = ServiceProvider.GetRequiredService<IItemAggregationService>();
+
+            _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250), viewModelUpdateService.UpdateIsActiveForArguments);
         }
 
         protected override void Dispose(bool disposing)
@@ -168,93 +168,8 @@ namespace SmartCmdArgs
             base.Dispose(disposing);
         }
 
-        private struct EnvVar
-        {
-            public string Name;
-            public string Value;
-        }
-
-        private bool TryParseEnvVar(string str, out EnvVar envVar)
-        {
-            var parts = str.Split(new[] { '=' }, 2);
-
-            if (parts.Length == 2)
-            {
-                envVar = new EnvVar { Name = parts[0], Value = parts[1] };
-                return true;
-            }
-
-            envVar = new EnvVar();
-            return false;
-        }
-
         #region IsActive Management for Items
-        private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
-        {
-            if (!optionsSettings.ManageCommandLineArgs
-                && !optionsSettings.ManageEnvironmentVars
-                && !optionsSettings.ManageWorkingDirectories)
-            {
-                return new HashSet<CmdArgument>();
-            }
-
-            var Args = new HashSet<CmdArgument>();
-            var EnvVars = new Dictionary<string, CmdArgument>();
-            CmdArgument workDir = null;
-
-            foreach (var item in GetAllComamndLineItemsForProject(project))
-            {
-                if (item.ArgumentType == ArgumentType.CmdArg && optionsSettings.ManageCommandLineArgs)
-                {
-                    Args.Add(item);
-                }
-                else if (item.ArgumentType == ArgumentType.EnvVar && optionsSettings.ManageEnvironmentVars)
-                {
-                    if (TryParseEnvVar(item.Value, out EnvVar envVar))
-                    {
-                        EnvVars[envVar.Name] = item;
-                    }
-                }
-                else if (item.ArgumentType == ArgumentType.WorkDir && optionsSettings.ManageWorkingDirectories)
-                {
-                    workDir = item;
-                }
-            }
-
-            var result = new HashSet<CmdArgument>(Args.Concat(EnvVars.Values));
-
-            if (workDir != null)
-            {
-                result.Add(workDir);
-            }
-
-            return result;
-        }
-
-        private void UpdateIsActiveForArguments()
-        {
-            foreach (var cmdProject in ToolWindowViewModel.TreeViewModel.AllProjects)
-            {
-                if (optionsSettings.DisableInactiveItems == InactiveDisableMode.InAllProjects
-                    || (optionsSettings.DisableInactiveItems != InactiveDisableMode.Disabled && cmdProject.IsStartupProject))
-                {
-                    var project = vsHelper.HierarchyForProjectGuid(cmdProject.Id);
-                    var activeItems = GetAllActiveItemsForProject(project);
-
-                    foreach (var item in cmdProject.AllArguments)
-                    {
-                        item.IsActive = activeItems.Contains(item);
-                    }
-                }
-                else
-                {
-                    foreach (var item in cmdProject.AllArguments)
-                    {
-                        item.IsActive = true;
-                    }
-                }
-            }
-        }
+        
 
         private void UpdateIsActiveForArgumentsDebounced()
         {
@@ -326,6 +241,8 @@ namespace SmartCmdArgs
             services.AddSingleton<IViewModelUpdateService, ViewModelUpdateService>();
             services.AddSingleton<ISuoDataService, SuoDataService>();
             services.AddSingleton<IItemPathService, ItemPathService>();
+            services.AddSingleton<IItemEvaluationService, ItemEvaluationService>();
+            services.AddSingleton<IItemAggregationService, ItemAggregationService>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)
@@ -500,9 +417,9 @@ namespace SmartCmdArgs
             if (!IsEnabled || project == null)
                 return;
 
-            var commandLineArgs = optionsSettings.ManageCommandLineArgs ? CreateCommandLineArgsForProject(project) : null;
-            var envVars = optionsSettings.ManageEnvironmentVars ? GetEnvVarsForProject(project) : null;
-            var workDir = optionsSettings.ManageWorkingDirectories ? GetWorkDirForProject(project) : null;
+            var commandLineArgs = optionsSettings.ManageCommandLineArgs ? itemAggregationService.CreateCommandLineArgsForProject(project) : null;
+            var envVars = optionsSettings.ManageEnvironmentVars ? itemAggregationService.GetEnvVarsForProject(project) : null;
+            var workDir = optionsSettings.ManageWorkingDirectories ? itemAggregationService.GetWorkDirForProject(project) : null;
 
             if (commandLineArgs is null && envVars is null && workDir is null)
                 return;
@@ -519,136 +436,6 @@ namespace SmartCmdArgs
                 return null;
 
             return vsHelper.HierarchyForProjectGuid(projectGuid);
-        }
-
-        public string EvaluateMacros(string arg, IVsHierarchy project)
-        {
-            if (!optionsSettings.MacroEvaluationEnabled)
-                return arg;
-
-            if (project == null)
-                return arg;
-
-            return msBuildPropertyRegex.Replace(arg,
-                match => vsHelper.GetMSBuildPropertyValueForActiveConfig(project, match.Groups["propertyName"].Value) ?? match.Value);
-        }
-
-        private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchy project, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
-        {
-            if (project == null)
-                return default;
-
-            var projectCmd = ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid());
-            if (projectCmd == null)
-                return default;
-
-            var projectObj = project.GetProject();
-
-            string projConfig = projectObj?.ConfigurationManager?.ActiveConfiguration?.ConfigurationName;
-            string projPlatform = projectObj?.ConfigurationManager?.ActiveConfiguration?.PlatformName;
-
-            string activeLaunchProfile = null;
-            if (project.IsCpsProject())
-                activeLaunchProfile = CpsProjectSupport.GetActiveLaunchProfileName(projectObj);
-
-            TResult JoinContainer(CmdContainer con)
-            {
-                IEnumerable<CmdBase> items = con.Items
-                    .Where(x => x.IsChecked != false);
-
-                if (projConfig != null)
-                    items = items.Where(x => { var conf = x.UsedProjectConfig; return conf == null || conf == projConfig; });
-
-                if (projPlatform != null)
-                    items = items.Where(x => { var plat = x.UsedProjectPlatform; return plat == null || plat == projPlatform; });
-
-                if (activeLaunchProfile != null)
-                    items = items.Where(x => { var prof = x.UsedLaunchProfile; return prof == null || prof == activeLaunchProfile; });
-
-                return joinItems(items, JoinContainer, con);
-            }
-
-            return JoinContainer(projectCmd);
-        }
-
-        private IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchy project)
-        {
-            IEnumerable<CmdArgument> joinItems(IEnumerable<CmdBase> items, Func<CmdContainer, IEnumerable<CmdArgument>> joinContainer, CmdContainer parentContainer)
-            {
-                foreach (var item in items)
-                {
-                    if (item is CmdContainer con)
-                    {
-                        foreach (var child in joinContainer(con))
-                            yield return child;
-                    }
-                    else if (item is CmdArgument arg)
-                    {
-                        yield return arg;
-                    }
-                }
-            }
-
-            return AggregateComamndLineItemsForProject<IEnumerable<CmdArgument>>(project, joinItems);
-        }
-
-        private string CreateCommandLineArgsForProject(IVsHierarchy project)
-        {
-            return AggregateComamndLineItemsForProject<string>(project,
-                (items, joinContainer, parentContainer) =>
-                {
-                    var strings = items
-                        .Where(x => !(x is CmdArgument arg) || arg.ArgumentType == ArgumentType.CmdArg)
-                        .Select(x => x is CmdContainer c ? joinContainer(c) : EvaluateMacros(x.Value, project))
-                        .Where(x => !string.IsNullOrEmpty(x));
-
-                    var joinedString = string.Join(parentContainer.Delimiter, strings);
-
-                    return joinedString != string.Empty
-                        ? parentContainer.Prefix + joinedString + parentContainer.Postfix
-                        : string.Empty;
-                });
-        }
-
-        private IDictionary<string, string> GetEnvVarsForProject(IVsHierarchy project)
-        {
-            var result = new Dictionary<string, string>();
-
-            foreach (var item in GetAllComamndLineItemsForProject(project))
-            {
-                if (item.ArgumentType != ArgumentType.EnvVar) continue;
-
-                if (TryParseEnvVar(item.Value, out EnvVar envVar))
-                {
-                    result[envVar.Name] = EvaluateMacros(envVar.Value, project);
-                }
-            }
-
-            return result;
-        }
-
-        private string GetWorkDirForProject(IVsHierarchy project)
-        {
-            var result = "";
-
-            foreach (var item in GetAllComamndLineItemsForProject(project))
-            {
-                if (item.ArgumentType != ArgumentType.WorkDir) continue;
-
-                result = EvaluateMacros(item.Value, project);
-            }
-
-            return result;
-        }
-
-        public string CreateCommandLineArgsForProject(Guid guid)
-        {
-            return CreateCommandLineArgsForProject(vsHelper.HierarchyForProjectGuid(guid));
-        }
-
-        public IDictionary<string, string> GetEnvVarsForProject(Guid guid)
-        {
-            return GetEnvVarsForProject(vsHelper.HierarchyForProjectGuid(guid));
         }
 
         public List<string> GetProjectConfigurations(Guid projGuid)
@@ -737,7 +524,7 @@ namespace SmartCmdArgs
                         Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
                     }
 
-                    projectUpdateService.UpdateCommandsForProject(project);
+                    viewModelUpdateService.UpdateCommandsForProject(project);
                 }
             });
         }
@@ -804,7 +591,7 @@ namespace SmartCmdArgs
 
             foreach (var project in vsHelper.GetSupportedProjects())
             {
-                projectUpdateService.UpdateCommandsForProject(project);
+                viewModelUpdateService.UpdateCommandsForProject(project);
                 fileStorage.AddProject(project);
             }
             UpdateCurrentStartupProject();
@@ -892,7 +679,7 @@ namespace SmartCmdArgs
 
             ToolWindowHistory.SaveState();
 
-            projectUpdateService.UpdateCommandsForProject(e.Project);
+            viewModelUpdateService.UpdateCommandsForProject(e.Project);
             fileStorage.AddProject(e.Project);
         }
 
@@ -955,7 +742,7 @@ namespace SmartCmdArgs
 
             foreach (var project in vsHelper.GetSupportedProjects())
             {
-                projectUpdateService.UpdateCommandsForProject(project);
+                viewModelUpdateService.UpdateCommandsForProject(project);
             }
             fileStorage.SaveAllProjects();
         }

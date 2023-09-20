@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SmartCmdArgs.Services
 {
@@ -34,16 +35,13 @@ namespace SmartCmdArgs.Services
         event PropertyChangedEventHandler PropertyChanged;
     }
 
-    internal class OptionsSettingsService : PropertyChangedBase, IOptionsSettingsService
+    internal class OptionsSettingsService : PropertyChangedBase, IOptionsSettingsService, IAsyncInitializable
     {
         readonly IVisualStudioHelperService _vsHelperService;
 
         public OptionsSettingsService(IVisualStudioHelperService vsHelperService)
         {
             _vsHelperService = vsHelperService;
-
-            Settings.PropertyChanged += Settings_PropertyChanged;
-            Options.PropertyChanged += Options_PropertyChanged;
         }
 
         readonly CmdArgsPackage _package = CmdArgsPackage.Instance;
@@ -81,6 +79,14 @@ namespace SmartCmdArgs.Services
         private void Options_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             OnNotifyPropertyChanged(e.PropertyName);
+        }
+
+        public Task InitializeAsync()
+        {
+            Settings.PropertyChanged += Settings_PropertyChanged;
+            Options.PropertyChanged += Options_PropertyChanged;
+
+            return Task.CompletedTask;
         }
     }
 }
