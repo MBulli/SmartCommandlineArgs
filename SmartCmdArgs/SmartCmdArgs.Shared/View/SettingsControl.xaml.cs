@@ -17,6 +17,8 @@ using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Helper;
 using System.IO;
 using System.Windows.Interop;
+using SmartCmdArgs.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SmartCmdArgs.View
 {
@@ -25,6 +27,8 @@ namespace SmartCmdArgs.View
     /// </summary>
     public partial class SettingsControl : UserControl
     {
+        private readonly IItemPathService itemPathUtil;
+
         private SettingsViewModel ViewModel => DataContext as SettingsViewModel;
 
         public SettingsControl()
@@ -36,6 +40,7 @@ namespace SmartCmdArgs.View
                 Background = Brushes.White;
             }
 
+            itemPathUtil = CmdArgsPackage.Instance.ServiceProvider.GetRequiredService<IItemPathService>();
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
@@ -59,7 +64,7 @@ namespace SmartCmdArgs.View
             if (string.IsNullOrWhiteSpace(curPath))
                 curPath = ".";
 
-            curPath = CmdArgsPackage.Instance.MakePathAbsoluteBasedOnSolutionDir(curPath);
+            curPath = itemPathUtil.MakePathAbsoluteBasedOnSolutionDir(curPath);
 
             var window = TreeHelper.FindAncestorOrSelf<Window>(this);
 
@@ -68,13 +73,13 @@ namespace SmartCmdArgs.View
             if (dialog.Show(new WindowInteropHelper(window).Handle))
             {
                 SettingsViewModel settings = this.DataContext as SettingsViewModel;
-                settings.JsonRootPath = CmdArgsPackage.Instance.MakePathRelativeBasedOnSolutionDir(dialog.FileName);
+                settings.JsonRootPath = itemPathUtil.MakePathRelativeBasedOnSolutionDir(dialog.FileName);
             }
         }
 
         private string GetFullCustomRootPath()
         {
-            return CmdArgsPackage.Instance.MakePathAbsoluteBasedOnSolutionDir(ViewModel?.JsonRootPath);
+            return itemPathUtil.MakePathAbsoluteBasedOnSolutionDir(ViewModel?.JsonRootPath);
         }
 
         private void CustomRootPathChanged(object sender, RoutedEventArgs e)

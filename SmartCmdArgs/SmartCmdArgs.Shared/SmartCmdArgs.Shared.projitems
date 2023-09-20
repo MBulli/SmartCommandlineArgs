@@ -39,6 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SuoDataSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\AsyncInitializable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\FileStorageService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ItemPathService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\OptionsSettingsService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)services\ProjectConfigService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ViewModelUpdateService.cs" />

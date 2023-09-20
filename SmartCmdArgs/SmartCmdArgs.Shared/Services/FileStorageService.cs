@@ -62,6 +62,7 @@ namespace SmartCmdArgs.Services
         private readonly CmdArgsPackage cmdPackage;
         private readonly IVisualStudioHelperService vsHelper;
         private readonly IOptionsSettingsService optionsSettings;
+        private readonly IItemPathService itemPathService;
 
         private FileSystemWatcher settingsFsWatcher;
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
@@ -69,11 +70,12 @@ namespace SmartCmdArgs.Services
 
         public event EventHandler<FileStorageChangedEventArgs> FileStorageChanged;
 
-        public FileStorageService(IVisualStudioHelperService vsHelper, IOptionsSettingsService optionsSettings)
+        public FileStorageService(IVisualStudioHelperService vsHelper, IOptionsSettingsService optionsSettings, IItemPathService itemPathService)
         {
             this.cmdPackage = CmdArgsPackage.Instance;
             this.vsHelper = vsHelper;
             this.optionsSettings = optionsSettings;
+            this.itemPathService = itemPathService;
         }
 
         public void AddProject(IVsHierarchy project)
@@ -414,7 +416,7 @@ namespace SmartCmdArgs.Services
 
             if (optionsSettings.UseCustomJsonRoot)
             {
-                var absoluteCustomJsonPath = cmdPackage.MakePathAbsoluteBasedOnSolutionDir(optionsSettings.JsonRootPath);
+                var absoluteCustomJsonPath = itemPathService.MakePathAbsoluteBasedOnSolutionDir(optionsSettings.JsonRootPath);
                 if (!string.IsNullOrWhiteSpace(absoluteCustomJsonPath))
                     jsonFileName = Path.Combine(absoluteCustomJsonPath, Path.GetFileName(jsonFileName));
             }

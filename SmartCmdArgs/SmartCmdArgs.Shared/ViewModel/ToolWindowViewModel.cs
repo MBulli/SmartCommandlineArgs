@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using EnvDTE;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
+using SmartCmdArgs.Services;
 using SmartCmdArgs.View;
 
 namespace SmartCmdArgs.ViewModel
@@ -565,10 +567,12 @@ namespace SmartCmdArgs.ViewModel
                         break;
                 }
 
+                var itemPathUtil = CmdArgsPackage.ServiceProvider.GetRequiredService<IItemPathService>();
+
                 return parts
                     .Select(s => s.Trim('"'))
                     .Where(s => s.IndexOfAny(Path.GetInvalidPathChars()) < 0)
-                    .Select(s => CmdArgsPackage.MakePathAbsolute(s, project, buildConfig))
+                    .Select(s => itemPathUtil.MakePathAbsolute(s, project, buildConfig))
                     .Where(s => !string.IsNullOrEmpty(s));
             }
 

@@ -12,6 +12,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Task = System.Threading.Tasks.Task;
+
 namespace SmartCmdArgs.Services
 {
     public class ProjectAfterOpenEventArgs
