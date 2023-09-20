@@ -83,6 +83,7 @@ namespace SmartCmdArgs
         private IFileStorageService fileStorage;
         private IOptionsSettingsService optionsSettings;
         private IProjectUpdateService projectUpdateService;
+        private ISuoDataService suoDataService;
 
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
@@ -126,14 +127,6 @@ namespace SmartCmdArgs
 
         public bool IsSolutionOpen => vsHelper.IsSolutionOpen;
 
-        // We store the commandline arguments also in the suo file.
-        // This is handled in the OnLoad/SaveOptions methods.
-        // As the parser needs a initialized instance of vsHelper,
-        // the json string from the suo is saved in this variable and
-        // processed later.
-        private string suoDataStr;
-        private SuoDataJson suoDataJson;
-
         private readonly Debouncer _updateIsActiveDebouncer;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -164,6 +157,7 @@ namespace SmartCmdArgs
             fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
             optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
             projectUpdateService = ServiceProvider.GetRequiredService<IProjectUpdateService>();
+            suoDataService = ServiceProvider.GetRequiredService<ISuoDataService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -330,6 +324,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IFileStorageService, FileStorageService>();
             services.AddSingleton<IOptionsSettingsService, OptionsSettingsService>();
             services.AddSingleton<IProjectUpdateService, ProjectUpdateService>();
+            services.AddSingleton<ISuoDataService, SuoDataService>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)
@@ -476,17 +471,8 @@ namespace SmartCmdArgs
 
             if (key == SolutionOptionKey)
             {
-                StreamReader sr = new StreamReader(stream); // don't free
-                suoDataStr = sr.ReadToEnd();
+                suoDataService.LoadFromStream(stream);
             }
-        }
-
-        private void UpdateSuoData()
-        {
-            suoDataJson = SuoDataSerializer.Serialize(ToolWindowViewModel);
-            suoDataJson.IsEnabled = IsEnabledSaved;
-
-            suoDataStr = JsonConvert.SerializeObject(suoDataJson);
         }
 
         protected override void OnSaveOptions(string key, Stream stream)
@@ -494,14 +480,10 @@ namespace SmartCmdArgs
             base.OnSaveOptions(key, stream);
             if (key == SolutionOptionKey)
             {
-                Logger.Info("Saving commands to suo file.");
                 if (IsEnabled)
-                    UpdateSuoData();
+                    suoDataService.Update();
 
-                StreamWriter sw = new StreamWriter(stream);
-                sw.Write(suoDataStr);
-                sw.Flush();
-                Logger.Info("All Commands saved to suo file.");
+                suoDataService.SaveToStream(stream);
             }
         }
 
@@ -800,7 +782,7 @@ namespace SmartCmdArgs
                         Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
                     }
 
-                    projectUpdateService.UpdateCommandsForProject(project, suoDataJson);
+                    projectUpdateService.UpdateCommandsForProject(project);
                 }
             });
         }
@@ -817,7 +799,7 @@ namespace SmartCmdArgs
             var areSettingsFromFile = settings != null;
 
             if (settings == null)
-                settings = suoDataJson.Settings;
+                settings = suoDataService.SuoDataJson.Settings;
 
             if (settings == null)
                 settings = new SettingsJson();
@@ -843,7 +825,7 @@ namespace SmartCmdArgs
             {
                 // captures the state right after disableing the extension
                 // changes after this point are ignored
-                UpdateSuoData();
+                suoDataService.Update();
                 DetachFromEvents();
                 FinalizeDataForSolution();
             }
@@ -851,23 +833,23 @@ namespace SmartCmdArgs
 
         private void InitializeConfigForSolution()
         {
-            suoDataJson = Logic.SuoDataSerializer.Deserialize(suoDataStr, vsHelper);
+            suoDataService.Deserialize();
 
             LoadSettings();
             SettingsLoaded = true;
 
-            IsEnabledSaved = suoDataJson.IsEnabled;
+            IsEnabledSaved = suoDataService.SuoDataJson.IsEnabled;
         }
 
         private void InitializeDataForSolution()
         {
             Debug.Assert(IsEnabled);
 
-            ToolWindowViewModel.TreeViewModel.ShowAllProjects = suoDataJson.ShowAllProjects;
+            ToolWindowViewModel.TreeViewModel.ShowAllProjects = suoDataService.SuoDataJson.ShowAllProjects;
 
             foreach (var project in vsHelper.GetSupportedProjects())
             {
-                projectUpdateService.UpdateCommandsForProject(project, suoDataJson);
+                projectUpdateService.UpdateCommandsForProject(project);
                 fileStorage.AddProject(project);
             }
             UpdateCurrentStartupProject();
@@ -886,8 +868,7 @@ namespace SmartCmdArgs
         {
             IsEnabled = false;
             UpdateDisabledScreen();
-            suoDataStr = "";
-            suoDataJson = null;
+            suoDataService.Reset();
             SettingsLoaded = false;
         }
 
@@ -956,7 +937,7 @@ namespace SmartCmdArgs
 
             ToolWindowHistory.SaveState();
 
-            projectUpdateService.UpdateCommandsForProject(e.Project, suoDataJson);
+            projectUpdateService.UpdateCommandsForProject(e.Project);
             fileStorage.AddProject(e.Project);
         }
 
@@ -1019,7 +1000,7 @@ namespace SmartCmdArgs
 
             foreach (var project in vsHelper.GetSupportedProjects())
             {
-                projectUpdateService.UpdateCommandsForProject(project, suoDataJson);
+                projectUpdateService.UpdateCommandsForProject(project);
             }
             fileStorage.SaveAllProjects();
         }

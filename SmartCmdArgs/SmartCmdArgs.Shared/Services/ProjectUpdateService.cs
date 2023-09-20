@@ -10,7 +10,7 @@ namespace SmartCmdArgs.Services
 {
     internal interface IProjectUpdateService
     {
-        void UpdateCommandsForProject(IVsHierarchy project, SuoDataJson suoDataJson);
+        void UpdateCommandsForProject(IVsHierarchy project);
     }
 
     internal class ProjectUpdateService : IProjectUpdateService
@@ -19,16 +19,18 @@ namespace SmartCmdArgs.Services
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IFileStorageService fileStorage;
         private readonly IProjectConfigService projectConfig;
+        private readonly ISuoDataService suoDataService;
 
-        public ProjectUpdateService(IOptionsSettingsService optionsSettings, IFileStorageService fileStorage, IProjectConfigService projectConfig)
+        public ProjectUpdateService(IOptionsSettingsService optionsSettings, IFileStorageService fileStorage, IProjectConfigService projectConfig, ISuoDataService suoDataService)
         {
             cmdArgsPackage = CmdArgsPackage.Instance;
             this.optionsSettings = optionsSettings;
             this.fileStorage = fileStorage;
             this.projectConfig = projectConfig;
+            this.suoDataService = suoDataService;
         }
 
-        public void UpdateCommandsForProject(IVsHierarchy project, SuoDataJson suoDataJson)
+        public void UpdateCommandsForProject(IVsHierarchy project)
         {
             if (!cmdArgsPackage.IsEnabled)
                 return;
@@ -36,7 +38,7 @@ namespace SmartCmdArgs.Services
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
 
-            Logger.Info($"Update commands for project '{project?.GetName()}'. IsVcsSupportEnabled={optionsSettings.VcsSupportEnabled}. SolutionData.Count={suoDataJson?.ProjectArguments?.Count}.");
+            Logger.Info($"Update commands for project '{project?.GetName()}'. IsVcsSupportEnabled={optionsSettings.VcsSupportEnabled}. SolutionData.Count={suoDataService.SuoDataJson?.ProjectArguments?.Count}.");
 
             var projectGuid = project.GetGuid();
             if (projectGuid == Guid.Empty)
@@ -45,7 +47,7 @@ namespace SmartCmdArgs.Services
                 return;
             }
 
-            var solutionData = suoDataJson ?? new SuoDataJson();
+            var solutionData = suoDataService.SuoDataJson ?? new SuoDataJson();
 
             // joins data from solution and project
             //  => overrides solution commands for a project if a project json file exists
