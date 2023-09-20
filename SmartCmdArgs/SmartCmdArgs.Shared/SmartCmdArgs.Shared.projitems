@@ -41,6 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\FileStorageService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\OptionsSettingsService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)services\ProjectConfigService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ProjectUpdateService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\VisualStudioHelperService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToolWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdArgItem.cs" />
