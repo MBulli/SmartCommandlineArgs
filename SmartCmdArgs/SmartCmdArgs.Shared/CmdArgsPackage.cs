@@ -157,6 +157,13 @@ namespace SmartCmdArgs
             this.AddOptionKey(SolutionOptionKey);
 
             _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250), UpdateIsActiveForArguments);
+
+            ServiceProvider = ConfigureServices();
+
+            vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
+            fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
+            optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
+            projectUpdateService = ServiceProvider.GetRequiredService<IProjectUpdateService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -283,12 +290,7 @@ namespace SmartCmdArgs
         {
             await Commands.InitializeAsync(this);
 
-            ServiceProvider = await ConfigureServices();
-
-            vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
-            fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
-            optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
-            projectUpdateService = ServiceProvider.GetRequiredService<IProjectUpdateService>();
+            await InitializeAsyncServices();
 
             // we want to know about changes to the solution state even if the extension is disabled
             // so we can update our interface
@@ -319,7 +321,7 @@ namespace SmartCmdArgs
             await base.InitializeAsync(cancellationToken, progress);
         }
 
-        private async Task<IServiceProvider> ConfigureServices()
+        private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
 
@@ -329,15 +331,26 @@ namespace SmartCmdArgs
             services.AddSingleton<IOptionsSettingsService, OptionsSettingsService>();
             services.AddSingleton<IProjectUpdateService, ProjectUpdateService>();
 
-            var serviceProvider = services.BuildServiceProvider();
+            var asyncInitializableServices = services
+                .Where(x => x.Lifetime == ServiceLifetime.Singleton)
+                .Where(x => typeof(IAsyncInitializable).IsAssignableFrom(x.ImplementationType))
+                .ToList();
 
-            var initializableServices = serviceProvider.GetServices<IAsyncInitializable>();
+            foreach (var service in asyncInitializableServices)
+            {
+                services.AddSingleton(x => x.GetRequiredService(service.ServiceType) as IAsyncInitializable);
+            }
+
+            return services.BuildServiceProvider();
+        }
+
+        private async Task InitializeAsyncServices()
+        {
+            var initializableServices = ServiceProvider.GetServices<IAsyncInitializable>();
             foreach (var service in initializableServices)
             {
                 await service.InitializeAsync();
             }
-
-            return serviceProvider;
         }
 
         private void OptionsSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
