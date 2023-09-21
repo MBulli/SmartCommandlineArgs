@@ -364,6 +364,9 @@ namespace SmartCmdArgs.ViewModel
                 case ValueChangedEvent e:
                     FireTreeContentChanged(e);
                     break;
+                case CheckStateWillChangeEvent e:
+                    ToolWindowHistory.SaveState();
+                    break;
                 case CheckStateChangedEvent e:
                     FireTreeChanged(e);
                     break;

@@ -156,4 +156,11 @@ namespace SmartCmdArgs.ViewModel
         {
         }
     }
+
+    public class CheckStateWillChangeEvent : TreeEventBase
+    {
+        public CheckStateWillChangeEvent(CmdBase sender) : base(sender)
+        {
+        }
+    }
 }

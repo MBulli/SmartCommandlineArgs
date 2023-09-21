@@ -38,7 +38,7 @@ namespace SmartCmdArgs.ViewModel
             get => isChecked;
             set
             {
-                CmdArgsPackage.Instance.ServiceProvider.GetService<IToolWindowHistory>()?.SaveState();
+                BubbleEvent(new CheckStateWillChangeEvent(this));
                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || InExclusiveModeContainer)
                     ExclusiveChecked();
                 else
