@@ -37,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SettingsSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SolutionDataSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SuoDataSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\FileStorageEventHandling.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Utils\AbstractFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Utils\AsyncInitializable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\FileStorageService.cs" />

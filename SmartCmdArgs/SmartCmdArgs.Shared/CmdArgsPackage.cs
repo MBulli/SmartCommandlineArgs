@@ -88,6 +88,7 @@ namespace SmartCmdArgs
         private ILifeCycleService lifeCycleService;
         private IProjectConfigService projectConfigService;
         private IVsEventHandlingService vsEventHandling;
+        private IFileStorageEventHandlingService fileStorageEventHandling;
 
         public ToolWindowViewModel ToolWindowViewModel { get; private set; }
 
@@ -130,6 +131,7 @@ namespace SmartCmdArgs
             lifeCycleService = ServiceProvider.GetRequiredService<ILifeCycleService>();
             projectConfigService = ServiceProvider.GetRequiredService<IProjectConfigService>();
             vsEventHandling = ServiceProvider.GetRequiredService<IVsEventHandlingService>();
+            fileStorageEventHandling = ServiceProvider.GetRequiredService<IFileStorageEventHandlingService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -169,7 +171,7 @@ namespace SmartCmdArgs
 
             // has to be registered here to listen to settings changes even if the extension is disabled
             // so we can reload them if neccessary to give the user the correct values if he wants to enable the extension
-            fileStorage.FileStorageChanged += FileStorage_FileStorageChanged;
+            fileStorageEventHandling.AttachToEvents();
 
             // Switch to main thread
             await JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -209,6 +211,7 @@ namespace SmartCmdArgs
             services.AddSingleton<ISettingsService, SettingsService>();
             services.AddLazySingleton<ILifeCycleService, LifeCycleService>();
             services.AddSingleton<IVsEventHandlingService, VsEventHandlingService>();
+            services.AddSingleton<IFileStorageEventHandlingService, FileStorageEventHandlingService>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)
@@ -384,68 +387,6 @@ namespace SmartCmdArgs
             }
 
             return launchProfiles ?? new List<string>();
-        }
-
-        private void FileStorage_FileStorageChanged(object sender, FileStorageChangedEventArgs e)
-        {
-            // This event is triggered on non-main thread!
-
-            Logger.Info($"Dispatching update commands function call");
-
-            JoinableTaskFactory.RunAsync(async delegate
-            {
-                // git branch and merge might lead to a race condition here.
-                // If a branch is checkout where the json file differs, the
-                // filewatcher will trigger an event which is dispatched here.
-                // However, while the function call is queued VS may reopen the
-                // solution due to changes. This will ultimately result in a
-                // null ref exception because the project object is unloaded.
-                // UpdateCommandsForProject() will skip such projects because
-                // their guid is empty.
-
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                if (e.Type == FileStorageChanedType.Settings)
-                {
-                    if (optionsSettings.SaveSettingsToJson)
-                        settingsService.Load();
-
-                    return;
-                }
-
-                if (!lifeCycleService.IsEnabled)
-                    return;
-
-                if (e.IsSolutionWide != optionsSettings.UseSolutionDir)
-                    return;
-
-                if (!optionsSettings.VcsSupportEnabled)
-                    return;
-
-                ToolWindowHistory.SaveState();
-
-                IEnumerable<IVsHierarchy> projects;
-                if (e.IsSolutionWide)
-                {
-                    Logger.Info($"Dispatched update commands function calls for the solution.");
-                    projects = vsHelper.GetSupportedProjects();
-                }
-                else
-                {
-                    Logger.Info($"Dispatched update commands function call for project '{e.Project.GetDisplayName()}'");
-                    projects = new[] { e.Project };
-                }
-
-                foreach (var project in projects)
-                {
-                    if (project.GetGuid() == Guid.Empty)
-                    {
-                        Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
-                    }
-
-                    viewModelUpdateService.UpdateCommandsForProject(project);
-                }
-            });
         }
 
         #region OptionPage Events
