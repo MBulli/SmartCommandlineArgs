@@ -60,6 +60,7 @@ namespace SmartCmdArgs.Services
         string GetSolutionFilename();
         IEnumerable<string> StartupProjectUniqueNames();
         void SetNewStartupProject(string projectName);
+        void SetAsStartupProject(Guid propjectGuid);
         IEnumerable<IVsHierarchy> GetSupportedProjects(bool includeUnloaded = false);
         void UpdateShellCommandUI(bool immediateUpdate = true);
         IVsHierarchy HierarchyForProjectName(string projectName);
@@ -226,6 +227,11 @@ namespace SmartCmdArgs.Services
 
             if (this.appObject?.Solution?.SolutionBuild != null)
                 this.appObject.Solution.SolutionBuild.StartupProjects = ProjectName;
+        }
+
+        public void SetAsStartupProject(Guid guid)
+        {
+            SetNewStartupProject(GetUniqueName(HierarchyForProjectGuid(guid)));
         }
 
         public IEnumerable<IVsHierarchy> GetSupportedProjects(bool includeUnloaded = false)

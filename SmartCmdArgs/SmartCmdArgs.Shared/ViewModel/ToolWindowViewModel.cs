@@ -327,7 +327,7 @@ namespace SmartCmdArgs.ViewModel
                 var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdProject proj)
                 {
-                    CmdArgsPackage.SetAsStartupProject(proj.Id);
+                    vsHelper.SetAsStartupProject(proj.Id);
                 }
             }, _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdProject>());
 

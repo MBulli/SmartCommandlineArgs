@@ -278,11 +278,6 @@ namespace SmartCmdArgs
             }
         }
 
-        public void SetAsStartupProject(Guid guid)
-        {
-            vsHelper.SetNewStartupProject(vsHelper.GetUniqueName(vsHelper.HierarchyForProjectGuid(guid)));
-        }
-
         public List<string> GetProjectConfigurations(Guid projGuid)
         {
             IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
