@@ -69,7 +69,7 @@ namespace SmartCmdArgs
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(CmdArgsPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-    public sealed class CmdArgsPackage : AsyncPackage, INotifyPropertyChanged
+    public sealed class CmdArgsPackage : AsyncPackage
     {
         /// <summary>
         /// CmdArgsPackage GUID string.
@@ -80,13 +80,9 @@ namespace SmartCmdArgs
         public const string SolutionOptionKey = "SmartCommandlineArgsVA"; // Only letters are allowed
 
         private IVisualStudioHelperService vsHelper;
-        private IFileStorageService fileStorage;
         private IOptionsSettingsService optionsSettings;
-        private IViewModelUpdateService viewModelUpdateService;
         private ISuoDataService suoDataService;
-        private ISettingsService settingsService;
         private ILifeCycleService lifeCycleService;
-        private IProjectConfigService projectConfigService;
         private IVsEventHandlingService vsEventHandling;
         private IFileStorageEventHandlingService fileStorageEventHandling;
         private IOptionsSettingsEventHandlingService optionsSettingsEventHandling;
@@ -101,8 +97,6 @@ namespace SmartCmdArgs
 
 
         public bool IsSolutionOpen => vsHelper.IsSolutionOpen;
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
@@ -125,13 +119,9 @@ namespace SmartCmdArgs
             ToolWindowViewModel = ServiceProvider.GetRequiredService<ToolWindowViewModel>();
 
             vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
-            fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
             optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
-            viewModelUpdateService = ServiceProvider.GetRequiredService<IViewModelUpdateService>();
             suoDataService = ServiceProvider.GetRequiredService<ISuoDataService>();
-            settingsService = ServiceProvider.GetRequiredService<ISettingsService>();
             lifeCycleService = ServiceProvider.GetRequiredService<ILifeCycleService>();
-            projectConfigService = ServiceProvider.GetRequiredService<IProjectConfigService>();
             vsEventHandling = ServiceProvider.GetRequiredService<IVsEventHandlingService>();
             fileStorageEventHandling = ServiceProvider.GetRequiredService<IFileStorageEventHandlingService>();
             optionsSettingsEventHandling = ServiceProvider.GetRequiredService<IOptionsSettingsEventHandlingService>();
