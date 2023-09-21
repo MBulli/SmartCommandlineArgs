@@ -75,7 +75,7 @@ namespace SmartCmdArgs.Services
             if (projectGuid == Guid.Empty)
                 return Enumerable.Empty<string>();
 
-            IVsHierarchy project = CmdArgsPackage.Instance.GetProjectForArg(item);
+            IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projectGuid);
 
             var buildConfig = item.UsedProjectConfig;
 

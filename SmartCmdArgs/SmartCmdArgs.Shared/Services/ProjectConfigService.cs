@@ -14,11 +14,25 @@ namespace SmartCmdArgs.Services
 
         void AddAllArguments(IVsHierarchy project, List<CmdArgumentJson> allArgs);
 
-        void SetConfig(IVsHierarchy project, string arguments, IDictionary<string, string> envVars, string workDir);
+        void UpdateConfigurationForProject(IVsHierarchy project);
     }
 
     public class ProjectConfigService : IProjectConfigService
     {
+        private readonly Lazy<ILifeCycleService> lifeCycleService;
+        private readonly IOptionsSettingsService optionsSettings;
+        private readonly IItemAggregationService itemAggregationService;
+
+        public ProjectConfigService(
+            Lazy<ILifeCycleService> lifeCycleService,
+            IOptionsSettingsService optionsSettings,
+            IItemAggregationService itemAggregationService)
+        {
+            this.lifeCycleService = lifeCycleService;
+            this.optionsSettings = optionsSettings;
+            this.itemAggregationService = itemAggregationService;
+        }
+
         private class ProjectConfigHandlers
         {
             public delegate void SetConfigDelegate(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir);
@@ -675,20 +689,32 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        public void SetConfig(IVsHierarchy project, string arguments, IDictionary<string, string> envVars, string workDir)
+        public void UpdateConfigurationForProject(IVsHierarchy project)
         {
+            if (!lifeCycleService.Value.IsEnabled || project == null)
+                return;
+
+            var commandLineArgs = optionsSettings.ManageCommandLineArgs ? itemAggregationService.CreateCommandLineArgsForProject(project) : null;
+            var envVars = optionsSettings.ManageEnvironmentVars ? itemAggregationService.GetEnvVarsForProject(project) : null;
+            var workDir = optionsSettings.ManageWorkingDirectories ? itemAggregationService.GetWorkDirForProject(project) : null;
+
+            if (commandLineArgs is null && envVars is null && workDir is null)
+                return;
+
             if (project.IsCpsProject())
             {
-                Logger.Info($"Setting arguments on CPS project of type '{project.GetKind()}'.");
-                SetCpsProjectConfig(project.GetProject(), arguments, envVars, workDir);
+                Logger.Info($"Updating configuration on CPS project of type '{project.GetKind()}'.");
+                SetCpsProjectConfig(project.GetProject(), commandLineArgs, envVars, workDir);
             }
             else
             {
                 if (TryGetProjectConfigHandlers(project, out ProjectConfigHandlers handler))
                 {
-                    handler.SetConfig(project.GetProject(), arguments, envVars, workDir);
+                    handler.SetConfig(project.GetProject(), commandLineArgs, envVars, workDir);
                 }
             }
+
+            Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
     }
 

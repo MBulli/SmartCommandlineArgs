@@ -84,9 +84,9 @@ namespace SmartCmdArgs
         private IOptionsSettingsService optionsSettings;
         private IViewModelUpdateService viewModelUpdateService;
         private ISuoDataService suoDataService;
-        private IItemAggregationService itemAggregationService;
         private ISettingsService settingsService;
         private ILifeCycleService lifeCycleService;
+        private IProjectConfigService projectConfigService;
 
         public ToolWindowViewModel ToolWindowViewModel { get; private set; }
 
@@ -125,9 +125,9 @@ namespace SmartCmdArgs
             optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
             viewModelUpdateService = ServiceProvider.GetRequiredService<IViewModelUpdateService>();
             suoDataService = ServiceProvider.GetRequiredService<ISuoDataService>();
-            itemAggregationService = ServiceProvider.GetRequiredService<IItemAggregationService>();
             settingsService = ServiceProvider.GetRequiredService<ISettingsService>();
             lifeCycleService = ServiceProvider.GetRequiredService<ILifeCycleService>();
+            projectConfigService = ServiceProvider.GetRequiredService<IProjectConfigService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -197,7 +197,7 @@ namespace SmartCmdArgs
             services.AddLazySingleton(x => GetDialogPage<CmdArgsOptionPage>());
             services.AddLazySingleton<SettingsViewModel>();
             services.AddLazySingleton<ToolWindowViewModel>();
-            services.AddSingleton<IProjectConfigService, ProjectConfigService>();
+            services.AddLazySingleton<IProjectConfigService, ProjectConfigService>();
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
             services.AddSingleton<IFileStorageService, FileStorageService>();
             services.AddSingleton<IOptionsSettingsService, OptionsSettingsService>();
@@ -252,6 +252,11 @@ namespace SmartCmdArgs
             }
         }
 
+        private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
+        {
+            vsHelper.UpdateShellCommandUI(false);
+        }
+
         private void OnTreeContentChangedThrottled(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
             if (optionsSettings.VcsSupportEnabled)
@@ -278,7 +283,7 @@ namespace SmartCmdArgs
         {
             var projectGuid = e.AffectedProject.Id;
             var project = vsHelper.HierarchyForProjectGuid(projectGuid);
-            UpdateConfigurationForProject(project);
+            projectConfigService.UpdateConfigurationForProject(project);
         }
 
         private void OnTreeChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
@@ -330,11 +335,6 @@ namespace SmartCmdArgs
             ToolWindowViewModel.TreeViewModel.TreeChanged -= OnTreeChanged;
         }
 
-        private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
-        {
-            vsHelper.UpdateShellCommandUI(false);
-        }
-
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)
         {
             if (toolWindowType == typeof(ToolWindow))
@@ -371,32 +371,6 @@ namespace SmartCmdArgs
         }
 
         #endregion
-
-        private void UpdateConfigurationForProject(IVsHierarchy project)
-        {
-            if (!lifeCycleService.IsEnabled || project == null)
-                return;
-
-            var commandLineArgs = optionsSettings.ManageCommandLineArgs ? itemAggregationService.CreateCommandLineArgsForProject(project) : null;
-            var envVars = optionsSettings.ManageEnvironmentVars ? itemAggregationService.GetEnvVarsForProject(project) : null;
-            var workDir = optionsSettings.ManageWorkingDirectories ? itemAggregationService.GetWorkDirForProject(project) : null;
-
-            if (commandLineArgs is null && envVars is null && workDir is null)
-                return;
-
-            ServiceProvider.GetRequiredService<IProjectConfigService>().SetConfig(project, commandLineArgs, envVars, workDir);
-            Logger.Info($"Updated Configuration for Project: {project.GetName()}");
-        }
-
-        public IVsHierarchy GetProjectForArg(CmdBase cmdBase)
-        {
-            var projectGuid = cmdBase.ProjectGuid;
-
-            if (projectGuid == Guid.Empty)
-                return null;
-
-            return vsHelper.HierarchyForProjectGuid(projectGuid);
-        }
 
         public List<string> GetProjectConfigurations(Guid projGuid)
         {
@@ -489,10 +463,6 @@ namespace SmartCmdArgs
             });
         }
 
-        
-
-        
-
         #region VS Events
         private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
@@ -544,7 +514,7 @@ namespace SmartCmdArgs
             foreach (var startupProject in ToolWindowViewModel.TreeViewModel.StartupProjects)
             {
                 var project = vsHelper.HierarchyForProjectGuid(startupProject.Id);
-                UpdateConfigurationForProject(project);
+                projectConfigService.UpdateConfigurationForProject(project);
                 fileStorage.SaveProject(project);
             }
         }
