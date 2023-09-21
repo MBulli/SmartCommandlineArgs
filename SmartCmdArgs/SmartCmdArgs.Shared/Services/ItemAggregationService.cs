@@ -20,15 +20,18 @@ namespace SmartCmdArgs.Services
 
     internal class ItemAggregationService : IItemAggregationService
     {
-        private readonly CmdArgsPackage cmdArgsPackage;
         private readonly IItemEvaluationService itemEvaluation;
         private readonly IVisualStudioHelperService vsHelper;
+        private readonly Lazy<ToolWindowViewModel> toolWindowViewModel;
 
-        public ItemAggregationService(IItemEvaluationService itemEvaluation, IVisualStudioHelperService vsHelper)
+        public ItemAggregationService(
+            IItemEvaluationService itemEvaluation,
+            IVisualStudioHelperService vsHelper,
+            Lazy<ToolWindowViewModel> toolWindowViewModel)
         {
-            cmdArgsPackage = CmdArgsPackage.Instance;
             this.itemEvaluation = itemEvaluation;
             this.vsHelper = vsHelper;
+            this.toolWindowViewModel = toolWindowViewModel;
         }
 
         private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchy project, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
@@ -36,7 +39,7 @@ namespace SmartCmdArgs.Services
             if (project == null)
                 return default;
 
-            var projectCmd = cmdArgsPackage.ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid());
+            var projectCmd = toolWindowViewModel.Value.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid());
             if (projectCmd == null)
                 return default;
 

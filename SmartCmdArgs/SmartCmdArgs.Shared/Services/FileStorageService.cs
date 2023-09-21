@@ -59,11 +59,11 @@ namespace SmartCmdArgs.Services
 
     internal class FileStorageService : IFileStorageService
     {
-        private readonly CmdArgsPackage cmdPackage;
         private readonly IVisualStudioHelperService vsHelper;
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IItemPathService itemPathService;
         private readonly SettingsViewModel settingsViewModel;
+        private readonly Lazy<ToolWindowViewModel> toolWindowViewModel;
         private readonly Lazy<ILifeCycleService> lifeCycleService;
 
         private FileSystemWatcher settingsFsWatcher;
@@ -77,13 +77,14 @@ namespace SmartCmdArgs.Services
             IOptionsSettingsService optionsSettings,
             IItemPathService itemPathService,
             SettingsViewModel settingsViewModel,
+            Lazy<ToolWindowViewModel> toolWindowViewModel,
             Lazy<ILifeCycleService> lifeCycleService)
         {
-            this.cmdPackage = CmdArgsPackage.Instance;
             this.vsHelper = vsHelper;
             this.optionsSettings = optionsSettings;
             this.itemPathService = itemPathService;
             this.settingsViewModel = settingsViewModel;
+            this.toolWindowViewModel = toolWindowViewModel;
             this.lifeCycleService = lifeCycleService;
         }
 
@@ -310,7 +311,7 @@ namespace SmartCmdArgs.Services
 
             using (solutionFsWatcher?.TemporarilyDisable())
             {
-                var allItemsExceptProjects = cmdPackage.ToolWindowViewModel.TreeViewModel.AllItems.Where(i => !(i is CmdProject));
+                var allItemsExceptProjects = toolWindowViewModel.Value.TreeViewModel.AllItems.Where(i => !(i is CmdProject));
                 if (allItemsExceptProjects.Any() || !optionsSettings.DeleteEmptyFilesAutomatically)
                 {
                     if (!vsHelper.CanEditFile(jsonFilename))
@@ -323,7 +324,7 @@ namespace SmartCmdArgs.Services
                         {
                             using (Stream fileStream = File.Open(jsonFilename, FileMode.Create, FileAccess.Write))
                             {
-                                SolutionDataSerializer.Serialize(cmdPackage.ToolWindowViewModel, fileStream);
+                                SolutionDataSerializer.Serialize(toolWindowViewModel.Value, fileStream);
                             }
                         }
                         catch (Exception e)
@@ -354,7 +355,7 @@ namespace SmartCmdArgs.Services
                 return;
 
             var guid = project.GetGuid();
-            var vm = cmdPackage.ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(guid);
+            var vm = toolWindowViewModel.Value.TreeViewModel.Projects.GetValueOrDefault(guid);
             string filePath = FullFilenameForProjectJsonFileFromProject(project);
             FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(guid);
 

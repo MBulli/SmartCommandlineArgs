@@ -18,7 +18,7 @@ namespace SmartCmdArgs.Services
     internal class VsEventHandlingService : IDisposable, IVsEventHandlingService
     {
         private readonly IVisualStudioHelperService vsHelper;
-        private readonly ILifeCycleService lifeCycleService;
+        private readonly Lazy<ILifeCycleService> lifeCycleService;
         private readonly IFileStorageService fileStorage;
         private readonly IViewModelUpdateService viewModelUpdateService;
         private readonly ToolWindowViewModel toolWindowViewModel;
@@ -27,7 +27,7 @@ namespace SmartCmdArgs.Services
 
         public VsEventHandlingService(
             IVisualStudioHelperService vsHelper,
-            ILifeCycleService lifeCycleService,
+            Lazy<ILifeCycleService> lifeCycleService,
             IFileStorageService fileStorage,
             IViewModelUpdateService viewModelUpdateService,
             ToolWindowViewModel toolWindowViewModel,
@@ -93,8 +93,8 @@ namespace SmartCmdArgs.Services
         {
             Logger.Info("VS-Event: Solution opened.");
 
-            lifeCycleService.UpdateDisabledScreen();
-            lifeCycleService.InitializeConfigForSolution();
+            lifeCycleService.Value.UpdateDisabledScreen();
+            lifeCycleService.Value.InitializeConfigForSolution();
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
@@ -108,7 +108,7 @@ namespace SmartCmdArgs.Services
         {
             Logger.Info("VS-Event: Solution closed.");
 
-            lifeCycleService.FinalizeConfigForSolution();
+            lifeCycleService.Value.FinalizeConfigForSolution();
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)

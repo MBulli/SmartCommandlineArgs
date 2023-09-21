@@ -85,8 +85,6 @@ namespace SmartCmdArgs
         private ILifeCycleService lifeCycleService;
         private IVsEventHandlingService vsEventHandling;
         private IFileStorageEventHandlingService fileStorageEventHandling;
-        private IOptionsSettingsEventHandlingService optionsSettingsEventHandling;
-        private ITreeViewEventHandlingService treeViewEventHandling;
 
         public ToolWindowViewModel ToolWindowViewModel { get; private set; }
 
@@ -124,8 +122,6 @@ namespace SmartCmdArgs
             lifeCycleService = ServiceProvider.GetRequiredService<ILifeCycleService>();
             vsEventHandling = ServiceProvider.GetRequiredService<IVsEventHandlingService>();
             fileStorageEventHandling = ServiceProvider.GetRequiredService<IFileStorageEventHandlingService>();
-            optionsSettingsEventHandling = ServiceProvider.GetRequiredService<IOptionsSettingsEventHandlingService>();
-            treeViewEventHandling = ServiceProvider.GetRequiredService<ITreeViewEventHandlingService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -229,24 +225,6 @@ namespace SmartCmdArgs
             {
                 await service.InitializeAsync();
             }
-        }
-
-        internal void AttachToEvents()
-        {
-            // events registered here are only called while the extension is enabled
-
-            vsEventHandling.AttachToProjectEvents();
-            optionsSettingsEventHandling.AttachToEvents();
-            treeViewEventHandling.AttachToEvents();
-        }
-
-        internal void DetachFromEvents()
-        {
-            // all events regitered in AttachToEvents should be unregisterd here
-
-            vsEventHandling.DetachFromProjectEvents();
-            optionsSettingsEventHandling.DetachFromEvents();
-            treeViewEventHandling.DetachFromEvents();
         }
 
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)

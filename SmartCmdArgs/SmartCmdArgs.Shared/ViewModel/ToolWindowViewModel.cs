@@ -27,9 +27,6 @@ namespace SmartCmdArgs.ViewModel
 
         public TreeViewModel TreeViewModel { get; }
 
-        public CmdArgsPackage CmdArgsPackage { get; }
-
-
         private bool useMonospaceFont;
         public bool UseMonospaceFont
         {
@@ -127,8 +124,6 @@ namespace SmartCmdArgs.ViewModel
             this.itemEvaluation = itemEvaluation;
             this.lifeCycleService = lifeCycleService;
             this.toolWindowHistory = toolWindowHistory;
-
-            CmdArgsPackage = CmdArgsPackage.Instance;
 
             TreeViewModel = new TreeViewModel();
 
@@ -228,7 +223,7 @@ namespace SmartCmdArgs.ViewModel
 
             OpenOptionsCommand = new RelayCommand(
                 () => {
-                    CmdArgsPackage.ShowOptionPage(typeof(CmdArgsOptionPage));
+                    CmdArgsPackage.Instance.ShowOptionPage(typeof(CmdArgsOptionPage));
                 });
 
             ToggleSelectedCommand = new RelayCommand(

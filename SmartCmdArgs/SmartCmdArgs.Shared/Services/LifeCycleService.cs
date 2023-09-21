@@ -26,6 +26,9 @@ namespace SmartCmdArgs.Services
         private readonly IViewModelUpdateService viewModelUpdateService;
         private readonly IFileStorageService fileStorage;
         private readonly IOptionsSettingsService optionsSettings;
+        private readonly IVsEventHandlingService vsEventHandling;
+        private readonly IOptionsSettingsEventHandlingService optionsSettingsEventHandling;
+        private readonly ITreeViewEventHandlingService treeViewEventHandling;
 
 
         // this is needed to keep the saved value in the suo file at null
@@ -72,7 +75,10 @@ namespace SmartCmdArgs.Services
             IVisualStudioHelperService vsHelper,
             IViewModelUpdateService viewModelUpdateService,
             IFileStorageService fileStorage,
-            IOptionsSettingsService optionsSettings)
+            IOptionsSettingsService optionsSettings,
+            IVsEventHandlingService vsEventHandling,
+            IOptionsSettingsEventHandlingService optionsSettingsEventHandling,
+            ITreeViewEventHandlingService treeViewEventHandling)
         {
             this.suoDataService = suoDataService;
             this.settingsService = settingsService;
@@ -81,11 +87,32 @@ namespace SmartCmdArgs.Services
             this.viewModelUpdateService = viewModelUpdateService;
             this.fileStorage = fileStorage;
             this.optionsSettings = optionsSettings;
+            this.vsEventHandling = vsEventHandling;
+            this.optionsSettingsEventHandling = optionsSettingsEventHandling;
+            this.treeViewEventHandling = treeViewEventHandling;
         }
 
         public void UpdateDisabledScreen()
         {
             toolWindowViewModel.ShowDisabledScreen = !IsEnabled && vsHelper.IsSolutionOpen;
+        }
+
+        internal void AttachToEvents()
+        {
+            // events registered here are only called while the extension is enabled
+
+            vsEventHandling.AttachToProjectEvents();
+            optionsSettingsEventHandling.AttachToEvents();
+            treeViewEventHandling.AttachToEvents();
+        }
+
+        internal void DetachFromEvents()
+        {
+            // all events regitered in AttachToEvents should be unregisterd here
+
+            vsEventHandling.DetachFromProjectEvents();
+            optionsSettingsEventHandling.DetachFromEvents();
+            treeViewEventHandling.DetachFromEvents();
         }
 
         private void IsEnabledChanged()
@@ -96,7 +123,7 @@ namespace SmartCmdArgs.Services
 
             if (IsEnabled)
             {
-                CmdArgsPackage.Instance.AttachToEvents();
+                AttachToEvents();
                 InitializeDataForSolution();
             }
             else
@@ -104,7 +131,7 @@ namespace SmartCmdArgs.Services
                 // captures the state right after disableing the extension
                 // changes after this point are ignored
                 suoDataService.Update();
-                CmdArgsPackage.Instance.DetachFromEvents();
+                DetachFromEvents();
                 FinalizeDataForSolution();
             }
         }

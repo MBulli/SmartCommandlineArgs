@@ -17,7 +17,6 @@ namespace SmartCmdArgs.Services
 
     internal class ViewModelUpdateService : IViewModelUpdateService, IDisposable
     {
-        private readonly CmdArgsPackage cmdArgsPackage;
         private readonly ToolWindowViewModel toolWindowViewModel;
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IFileStorageService fileStorage;
@@ -41,7 +40,6 @@ namespace SmartCmdArgs.Services
             IVisualStudioHelperService vsHelper,
             Lazy<ILifeCycleService> lifeCycleService)
         {
-            cmdArgsPackage = CmdArgsPackage.Instance;
             this.toolWindowViewModel = toolWindowViewModel;
             this.optionsSettings = optionsSettings;
             this.fileStorage = fileStorage;
