@@ -127,8 +127,6 @@ namespace SmartCmdArgs
 
         public bool IsSolutionOpen => vsHelper.IsSolutionOpen;
 
-        private readonly Debouncer _updateIsActiveDebouncer;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -158,22 +156,13 @@ namespace SmartCmdArgs
             suoDataService = ServiceProvider.GetRequiredService<ISuoDataService>();
             itemAggregationService = ServiceProvider.GetRequiredService<IItemAggregationService>();
             settingsService = ServiceProvider.GetRequiredService<ISettingsService>();
-
-            _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250), viewModelUpdateService.UpdateIsActiveForArguments);
         }
 
         protected override void Dispose(bool disposing)
         {
-            _updateIsActiveDebouncer?.Dispose();
-
             serviceProvider.Dispose();
 
             base.Dispose(disposing);
-        }
-
-        private void UpdateIsActiveForArgumentsDebounced()
-        {
-            _updateIsActiveDebouncer.CallActionDebounced();
         }
 
         #region Package Members
@@ -281,12 +270,12 @@ namespace SmartCmdArgs
                 case nameof(IOptionsSettingsService.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(IOptionsSettingsService.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(IOptionsSettingsService.UseSolutionDir): UseSolutionDirChanged(); break;
-                case nameof(IOptionsSettingsService.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(IOptionsSettingsService.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(IOptionsSettingsService.ManageWorkingDirectories): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageCommandLineArgs): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageEnvironmentVars): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageWorkingDirectories): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
                 case nameof(IOptionsSettingsService.UseMonospaceFont): UseMonospaceFontChanged(); break;
                 case nameof(IOptionsSettingsService.DisplayTagForCla): DisplayTagForClaChanged(); break;
-                case nameof(IOptionsSettingsService.DisableInactiveItems): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.DisableInactiveItems): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
@@ -321,7 +310,7 @@ namespace SmartCmdArgs
 
         private void OnTreeChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
-            UpdateIsActiveForArgumentsDebounced();
+            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
         }
 
         private void AttachToEvents()
@@ -574,7 +563,7 @@ namespace SmartCmdArgs
                 fileStorage.AddProject(project);
             }
             viewModelUpdateService.UpdateCurrentStartupProject();
-            UpdateIsActiveForArgumentsDebounced();
+            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
         }
 
         private void FinalizeDataForSolution()
@@ -627,14 +616,14 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Project configuration changed.");
 
-            UpdateIsActiveForArgumentsDebounced();
+            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
         }
 
         private void VsHelper_LaunchProfileChanged(object sender, IVsHierarchy e)
         {
             Logger.Info("VS-Event: Project launch profile changed.");
 
-            UpdateIsActiveForArgumentsDebounced();
+            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
         }
 
         private void VsHelper_ProjectWillRun(object sender, EventArgs e)

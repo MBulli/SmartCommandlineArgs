@@ -11,11 +11,11 @@ namespace SmartCmdArgs.Services
     internal interface IViewModelUpdateService
     {
         void UpdateCommandsForProject(IVsHierarchy project);
-        void UpdateIsActiveForArguments();
+        void UpdateIsActiveForArgumentsDebounced();
         void UpdateCurrentStartupProject();
     }
 
-    internal class ViewModelUpdateService : IViewModelUpdateService
+    internal class ViewModelUpdateService : IViewModelUpdateService, IDisposable
     {
         private readonly CmdArgsPackage cmdArgsPackage;
         private readonly ToolWindowViewModel toolWindowViewModel;
@@ -26,6 +26,8 @@ namespace SmartCmdArgs.Services
         private readonly IItemAggregationService itemAggregation;
         private readonly IItemEvaluationService itemEvaluation;
         private readonly IVisualStudioHelperService vsHelper;
+
+        private readonly Debouncer _updateIsActiveDebouncer;
 
         public ViewModelUpdateService(
             ToolWindowViewModel toolWindowViewModel,
@@ -46,6 +48,13 @@ namespace SmartCmdArgs.Services
             this.itemAggregation = itemAggregation;
             this.itemEvaluation = itemEvaluation;
             this.vsHelper = vsHelper;
+
+            _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250), UpdateIsActiveForArguments);
+        }
+
+        public void Dispose()
+        {
+            _updateIsActiveDebouncer.Dispose();
         }
 
         public void UpdateCommandsForProject(IVsHierarchy project)
@@ -234,7 +243,7 @@ namespace SmartCmdArgs.Services
             return result;
         }
 
-        public void UpdateIsActiveForArguments()
+        private void UpdateIsActiveForArguments()
         {
             foreach (var cmdProject in toolWindowViewModel.TreeViewModel.AllProjects)
             {
@@ -257,6 +266,11 @@ namespace SmartCmdArgs.Services
                     }
                 }
             }
+        }
+
+        public void UpdateIsActiveForArgumentsDebounced()
+        {
+            _updateIsActiveDebouncer.CallActionDebounced();
         }
 
         public void UpdateCurrentStartupProject()
