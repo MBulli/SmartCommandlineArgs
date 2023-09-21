@@ -90,6 +90,7 @@ namespace SmartCmdArgs
         private IVsEventHandlingService vsEventHandling;
         private IFileStorageEventHandlingService fileStorageEventHandling;
         private IOptionsSettingsEventHandlingService optionsSettingsEventHandling;
+        private ITreeViewEventHandlingService treeViewEventHandling;
 
         public ToolWindowViewModel ToolWindowViewModel { get; private set; }
 
@@ -134,6 +135,7 @@ namespace SmartCmdArgs
             vsEventHandling = ServiceProvider.GetRequiredService<IVsEventHandlingService>();
             fileStorageEventHandling = ServiceProvider.GetRequiredService<IFileStorageEventHandlingService>();
             optionsSettingsEventHandling = ServiceProvider.GetRequiredService<IOptionsSettingsEventHandlingService>();
+            treeViewEventHandling = ServiceProvider.GetRequiredService<ITreeViewEventHandlingService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -143,7 +145,6 @@ namespace SmartCmdArgs
             base.Dispose(disposing);
         }
 
-        #region Package Members
         internal Interface GetService<Service, Interface>()
         {
             return (Interface)base.GetService(typeof(Service));
@@ -215,6 +216,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IVsEventHandlingService, VsEventHandlingService>();
             services.AddSingleton<IFileStorageEventHandlingService, FileStorageEventHandlingService>();
             services.AddSingleton<IOptionsSettingsEventHandlingService, OptionsSettingsEventHandlingService>();
+            services.AddSingleton<ITreeViewEventHandlingService, TreeViewEventHandlingService>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)
@@ -238,58 +240,13 @@ namespace SmartCmdArgs
             }
         }
 
-        
-
-        private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
-        {
-            vsHelper.UpdateShellCommandUI(false);
-        }
-
-        private void OnTreeContentChangedThrottled(object sender, TreeViewModel.TreeChangedEventArgs e)
-        {
-            if (optionsSettings.VcsSupportEnabled)
-            {
-                Logger.Info($"Tree content changed and VCS support is enabled. Saving all project commands to json file for project '{e.AffectedProject.Id}'.");
-
-                var projectGuid = e.AffectedProject.Id;
-
-                try
-                {
-                    var project = vsHelper.HierarchyForProjectGuid(projectGuid);
-                    fileStorage.SaveProject(project);
-                }
-                catch (Exception ex)
-                {
-                    string msg = $"Failed to save json for project '{projectGuid}' with error: {ex}";
-                    Logger.Error(msg);
-                    MessageBox.Show(msg);
-                }
-            }
-        }
-
-        private void OnTreeChangedThrottled(object sender, TreeViewModel.TreeChangedEventArgs e)
-        {
-            var projectGuid = e.AffectedProject.Id;
-            var project = vsHelper.HierarchyForProjectGuid(projectGuid);
-            projectConfigService.UpdateConfigurationForProject(project);
-        }
-
-        private void OnTreeChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
-        {
-            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
-        }
-
         internal void AttachToEvents()
         {
             // events registered here are only called while the extension is enabled
 
             vsEventHandling.AttachToProjectEvents();
             optionsSettingsEventHandling.AttachToEvents();
-
-            ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
-            ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
-            ToolWindowViewModel.TreeViewModel.TreeChangedThrottled += OnTreeChangedThrottled;
-            ToolWindowViewModel.TreeViewModel.TreeChanged += OnTreeChanged;
+            treeViewEventHandling.AttachToEvents();
         }
 
         internal void DetachFromEvents()
@@ -298,11 +255,7 @@ namespace SmartCmdArgs
 
             vsEventHandling.DetachFromProjectEvents();
             optionsSettingsEventHandling.DetachFromEvents();
-
-            ToolWindowViewModel.TreeViewModel.ItemSelectionChanged -= OnItemSelectionChanged;
-            ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled -= OnTreeContentChangedThrottled;
-            ToolWindowViewModel.TreeViewModel.TreeChangedThrottled -= OnTreeChangedThrottled;
-            ToolWindowViewModel.TreeViewModel.TreeChanged -= OnTreeChanged;
+            treeViewEventHandling.DetachFromEvents();
         }
 
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)
@@ -339,8 +292,6 @@ namespace SmartCmdArgs
         {
             vsHelper.SetNewStartupProject(vsHelper.GetUniqueName(vsHelper.HierarchyForProjectGuid(guid)));
         }
-
-        #endregion
 
         public List<string> GetProjectConfigurations(Guid projGuid)
         {
