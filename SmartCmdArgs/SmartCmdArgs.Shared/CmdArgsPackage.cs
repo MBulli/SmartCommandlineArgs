@@ -37,6 +37,7 @@ using System.Threading;
 
 using Task = System.Threading.Tasks.Task;
 using IServiceProvider = System.IServiceProvider;
+using ServiceProvider = Microsoft.Extensions.DependencyInjection.ServiceProvider;
 
 namespace SmartCmdArgs
 {
@@ -89,7 +90,8 @@ namespace SmartCmdArgs
 
         public static CmdArgsPackage Instance { get; private set; }
 
-        public IServiceProvider ServiceProvider {  get; private set; }
+        private ServiceProvider serviceProvider;
+        public IServiceProvider ServiceProvider => serviceProvider;
 
         // this is needed to keep the saved value in the suo file at null
         // if the user does not explicitly enable or disable the extension
@@ -147,7 +149,7 @@ namespace SmartCmdArgs
             // add option keys to store custom data in suo file
             this.AddOptionKey(SolutionOptionKey);
 
-            ServiceProvider = ConfigureServices();
+            serviceProvider = ConfigureServices();
 
             ToolWindowViewModel = ServiceProvider.GetRequiredService<ToolWindowViewModel>();
 
@@ -165,19 +167,16 @@ namespace SmartCmdArgs
         protected override void Dispose(bool disposing)
         {
             _updateIsActiveDebouncer?.Dispose();
-            ToolWindowViewModel.Dispose();
+
+            serviceProvider.Dispose();
 
             base.Dispose(disposing);
         }
-
-        #region IsActive Management for Items
-        
 
         private void UpdateIsActiveForArgumentsDebounced()
         {
             _updateIsActiveDebouncer.CallActionDebounced();
         }
-        #endregion
 
         #region Package Members
         internal Interface GetService<Service, Interface>()
@@ -232,7 +231,7 @@ namespace SmartCmdArgs
             await base.InitializeAsync(cancellationToken, progress);
         }
 
-        private IServiceProvider ConfigureServices()
+        private ServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
 
