@@ -59,7 +59,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdArgItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\DataObjectGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\SettingsViewModel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ToolWindowHistory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ToolWindowHistory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ToolWindowViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\TreeEvents.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\TreeViewModel.cs" />

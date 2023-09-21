@@ -207,6 +207,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IFileStorageEventHandlingService, FileStorageEventHandlingService>();
             services.AddSingleton<IOptionsSettingsEventHandlingService, OptionsSettingsEventHandlingService>();
             services.AddSingleton<ITreeViewEventHandlingService, TreeViewEventHandlingService>();
+            services.AddSingleton<IToolWindowHistory, ToolWindowHistory>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)

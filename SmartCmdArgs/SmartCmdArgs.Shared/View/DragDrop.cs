@@ -5,13 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Services;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.View
 {
     public static class DragDrop
     {
+        private static IToolWindowHistory ToolWindowHistory => CmdArgsPackage.Instance.ServiceProvider.GetRequiredService<IToolWindowHistory>();
+
         private static DragInfo dragInfo;
         private static DropInfo dropInfo;
 

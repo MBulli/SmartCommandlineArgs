@@ -21,6 +21,7 @@ namespace SmartCmdArgs.Services
         private readonly ILifeCycleService lifeCycleService;
         private readonly IVisualStudioHelperService vsHelper;
         private readonly IViewModelUpdateService viewModelUpdateService;
+        private readonly IToolWindowHistory toolWindowHistory;
 
         public FileStorageEventHandlingService(
             IFileStorageService fileStorage,
@@ -28,7 +29,8 @@ namespace SmartCmdArgs.Services
             ISettingsService settingsService,
             ILifeCycleService lifeCycleService,
             IVisualStudioHelperService vsHelper,
-            IViewModelUpdateService viewModelUpdateService)
+            IViewModelUpdateService viewModelUpdateService,
+            IToolWindowHistory toolWindowHistory)
         {
             this.fileStorage = fileStorage;
             this.optionsSettings = optionsSettings;
@@ -36,6 +38,7 @@ namespace SmartCmdArgs.Services
             this.lifeCycleService = lifeCycleService;
             this.vsHelper = vsHelper;
             this.viewModelUpdateService = viewModelUpdateService;
+            this.toolWindowHistory = toolWindowHistory;
         }
 
         public void Dispose()
@@ -89,7 +92,7 @@ namespace SmartCmdArgs.Services
                 if (!optionsSettings.VcsSupportEnabled)
                     return;
 
-                ToolWindowHistory.SaveState();
+                toolWindowHistory.SaveState();
 
                 IEnumerable<IVsHierarchy> projects;
                 if (e.IsSolutionWide)

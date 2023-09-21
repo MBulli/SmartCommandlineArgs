@@ -23,6 +23,7 @@ namespace SmartCmdArgs.Services
         private readonly IViewModelUpdateService viewModelUpdateService;
         private readonly ToolWindowViewModel toolWindowViewModel;
         private readonly IProjectConfigService projectConfigService;
+        private readonly IToolWindowHistory toolWindowHistory;
 
         public VsEventHandlingService(
             IVisualStudioHelperService vsHelper,
@@ -30,7 +31,8 @@ namespace SmartCmdArgs.Services
             IFileStorageService fileStorage,
             IViewModelUpdateService viewModelUpdateService,
             ToolWindowViewModel toolWindowViewModel,
-            IProjectConfigService projectConfigService)
+            IProjectConfigService projectConfigService,
+            IToolWindowHistory toolWindowHistory)
         {
             this.vsHelper = vsHelper;
             this.lifeCycleService = lifeCycleService;
@@ -38,6 +40,7 @@ namespace SmartCmdArgs.Services
             this.viewModelUpdateService = viewModelUpdateService;
             this.toolWindowViewModel = toolWindowViewModel;
             this.projectConfigService = projectConfigService;
+            this.toolWindowHistory = toolWindowHistory;
         }
 
         public void Dispose()
@@ -148,7 +151,7 @@ namespace SmartCmdArgs.Services
             if (e.IsSolutionOpenProcess)
                 return;
 
-            ToolWindowHistory.SaveState();
+            toolWindowHistory.SaveState();
 
             viewModelUpdateService.UpdateCommandsForProject(e.Project);
             fileStorage.AddProject(e.Project);

@@ -7,13 +7,17 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
+using Microsoft.Extensions.DependencyInjection;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Services;
 using SmartCmdArgs.View;
 
 namespace SmartCmdArgs.ViewModel
 {
     public class TreeViewModel : PropertyChangedBase, IDisposable
     {
+        private IToolWindowHistory ToolWindowHistory = CmdArgsPackage.Instance.ServiceProvider.GetRequiredService<IToolWindowHistory>();
+
         public ObservableDictionary<Guid, CmdProject> Projects { get; }
 
         private IEnumerable<CmdBase> treeitems;

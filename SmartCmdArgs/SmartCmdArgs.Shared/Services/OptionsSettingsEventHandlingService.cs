@@ -20,6 +20,7 @@ namespace SmartCmdArgs.Services
         private readonly IVisualStudioHelperService vsHelper;
         private readonly IViewModelUpdateService viewModelUpdateService;
         private readonly ToolWindowViewModel toolWindowViewModel;
+        private readonly IToolWindowHistory toolWindowHistory;
 
         public OptionsSettingsEventHandlingService(
             IOptionsSettingsService optionsSettings,
@@ -27,7 +28,8 @@ namespace SmartCmdArgs.Services
             IFileStorageService fileStorage,
             IVisualStudioHelperService vsHelper,
             IViewModelUpdateService viewModelUpdateService,
-            ToolWindowViewModel toolWindowViewModel)
+            ToolWindowViewModel toolWindowViewModel,
+            IToolWindowHistory toolWindowHistory)
         {
             this.optionsSettings = optionsSettings;
             this.settingsService = settingsService;
@@ -35,6 +37,7 @@ namespace SmartCmdArgs.Services
             this.vsHelper = vsHelper;
             this.viewModelUpdateService = viewModelUpdateService;
             this.toolWindowViewModel = toolWindowViewModel;
+            this.toolWindowHistory = toolWindowHistory;
         }
 
         public void Dispose()
@@ -93,7 +96,7 @@ namespace SmartCmdArgs.Services
             if (!optionsSettings.VcsSupportEnabled)
                 return;
 
-            ToolWindowHistory.SaveState();
+            toolWindowHistory.SaveState();
 
             foreach (var project in vsHelper.GetSupportedProjects())
             {

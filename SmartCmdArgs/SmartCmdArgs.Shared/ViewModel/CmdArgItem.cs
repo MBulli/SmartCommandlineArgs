@@ -9,7 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Services;
 
 namespace SmartCmdArgs.ViewModel
 {
@@ -36,7 +38,7 @@ namespace SmartCmdArgs.ViewModel
             get => isChecked;
             set
             {
-                ToolWindowHistory.SaveState();
+                CmdArgsPackage.Instance.ServiceProvider.GetService<IToolWindowHistory>()?.SaveState();
                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) || InExclusiveModeContainer)
                     ExclusiveChecked();
                 else
