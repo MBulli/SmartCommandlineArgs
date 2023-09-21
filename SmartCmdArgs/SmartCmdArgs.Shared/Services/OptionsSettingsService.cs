@@ -13,7 +13,6 @@ namespace SmartCmdArgs.Services
     public interface IOptionsSettingsService
     {
         // Settings (possibly with options default)
-        SettingsViewModel Settings { get; }
         bool SaveSettingsToJson { get; }
         bool ManageCommandLineArgs { get; }
         bool ManageEnvironmentVars { get; }
@@ -25,7 +24,6 @@ namespace SmartCmdArgs.Services
         bool UseSolutionDir { get; }
 
         // Options
-        CmdArgsOptionPage Options { get; }
         bool UseMonospaceFont { get; }
         bool DisplayTagForCla { get; }
         bool DeleteEmptyFilesAutomatically { get; }
@@ -42,40 +40,38 @@ namespace SmartCmdArgs.Services
     internal class OptionsSettingsService : PropertyChangedBase, IOptionsSettingsService, IAsyncInitializable
     {
         private readonly IVisualStudioHelperService _vsHelperService;
-        private readonly SettingsViewModel settingsViewModel;
+        private readonly ISettingsService settings;
         private readonly CmdArgsOptionPage optionsPage;
 
         public OptionsSettingsService(
             IVisualStudioHelperService vsHelperService,
-            SettingsViewModel settingsViewModel,
+            ISettingsService settings,
             CmdArgsOptionPage optionsPage)
         {
             _vsHelperService = vsHelperService;
-            this.settingsViewModel = settingsViewModel;
+            this.settings = settings;
             this.optionsPage = optionsPage;
         }
 
         // Settings (possibly with options default)
-        public SettingsViewModel Settings => settingsViewModel;
-        public bool SaveSettingsToJson => Settings.SaveSettingsToJson;
-        public bool ManageCommandLineArgs => Settings.ManageCommandLineArgs ?? Options.ManageCommandLineArgs;
-        public bool ManageEnvironmentVars => Settings.ManageEnvironmentVars ?? Options.ManageEnvironmentVars;
-        public bool ManageWorkingDirectories => Settings.ManageWorkingDirectories ?? Options.ManageWorkingDirectories;
-        public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot;
-        public string JsonRootPath => Settings.JsonRootPath;
-        public bool VcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
-        public bool MacroEvaluationEnabled => Settings.MacroEvaluationEnabled ?? Options.MacroEvaluationEnabled;
-        public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (Settings.UseSolutionDir ?? Options.UseSolutionDir);
+        public bool SaveSettingsToJson => settings.ViewModel.SaveSettingsToJson;
+        public bool ManageCommandLineArgs => settings.ViewModel.ManageCommandLineArgs ?? optionsPage.ManageCommandLineArgs;
+        public bool ManageEnvironmentVars => settings.ViewModel.ManageEnvironmentVars ?? optionsPage.ManageEnvironmentVars;
+        public bool ManageWorkingDirectories => settings.ViewModel.ManageWorkingDirectories ?? optionsPage.ManageWorkingDirectories;
+        public bool UseCustomJsonRoot => settings.ViewModel.UseCustomJsonRoot;
+        public string JsonRootPath => settings.ViewModel.JsonRootPath;
+        public bool VcsSupportEnabled => settings.ViewModel.VcsSupportEnabled ?? optionsPage.VcsSupportEnabled;
+        public bool MacroEvaluationEnabled => settings.ViewModel.MacroEvaluationEnabled ?? optionsPage.MacroEvaluationEnabled;
+        public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settings.ViewModel.UseSolutionDir ?? optionsPage.UseSolutionDir);
 
         // Options
-        public CmdArgsOptionPage Options => optionsPage;
-        public bool UseMonospaceFont => Options.UseMonospaceFont;
-        public bool DisplayTagForCla => Options.DisplayTagForCla;
-        public bool DeleteEmptyFilesAutomatically => Options.DeleteEmptyFilesAutomatically;
-        public bool DeleteUnnecessaryFilesAutomatically => Options.DeleteUnnecessaryFilesAutomatically;
-        public bool EnabledByDefault => Options.EnabledByDefault;
-        public InactiveDisableMode DisableInactiveItems => Options.DisableInactiveItems;
-        public RelativePathRootOption RelativePathRoot => Options.RelativePathRoot;
+        public bool UseMonospaceFont => optionsPage.UseMonospaceFont;
+        public bool DisplayTagForCla => optionsPage.DisplayTagForCla;
+        public bool DeleteEmptyFilesAutomatically => optionsPage.DeleteEmptyFilesAutomatically;
+        public bool DeleteUnnecessaryFilesAutomatically => optionsPage.DeleteUnnecessaryFilesAutomatically;
+        public bool EnabledByDefault => optionsPage.EnabledByDefault;
+        public InactiveDisableMode DisableInactiveItems => optionsPage.DisableInactiveItems;
+        public RelativePathRootOption RelativePathRoot => optionsPage.RelativePathRoot;
 
 
         // Event Handlers
@@ -91,8 +87,8 @@ namespace SmartCmdArgs.Services
 
         public Task InitializeAsync()
         {
-            Settings.PropertyChanged += Settings_PropertyChanged;
-            Options.PropertyChanged += Options_PropertyChanged;
+            settings.ViewModel.PropertyChanged += Settings_PropertyChanged;
+            optionsPage.PropertyChanged += Options_PropertyChanged;
 
             return Task.CompletedTask;
         }

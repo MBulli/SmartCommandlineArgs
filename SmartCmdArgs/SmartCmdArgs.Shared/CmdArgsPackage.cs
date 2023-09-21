@@ -83,6 +83,7 @@ namespace SmartCmdArgs
         private IViewModelUpdateService viewModelUpdateService;
         private ISuoDataService suoDataService;
         private IItemAggregationService itemAggregationService;
+        private ISettingsService settingsService;
 
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
@@ -156,6 +157,7 @@ namespace SmartCmdArgs
             viewModelUpdateService = ServiceProvider.GetRequiredService<IViewModelUpdateService>();
             suoDataService = ServiceProvider.GetRequiredService<ISuoDataService>();
             itemAggregationService = ServiceProvider.GetRequiredService<IItemAggregationService>();
+            settingsService = ServiceProvider.GetRequiredService<ISettingsService>();
 
             _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250), viewModelUpdateService.UpdateIsActiveForArguments);
         }
@@ -246,6 +248,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IItemPathService, ItemPathService>();
             services.AddSingleton<IItemEvaluationService, ItemEvaluationService>();
             services.AddSingleton<IItemAggregationService, ItemAggregationService>();
+            services.AddSingleton<ISettingsService, SettingsService>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)
@@ -492,7 +495,7 @@ namespace SmartCmdArgs
                 if (e.Type == FileStorageChanedType.Settings)
                 {
                     if (optionsSettings.SaveSettingsToJson)
-                        LoadSettings();
+                        settingsService.Load();
 
                     return;
                 }
@@ -532,29 +535,6 @@ namespace SmartCmdArgs
             });
         }
 
-        public void SaveSettings()
-        {
-            fileStorage.SaveSettings();
-        }
-
-        public void LoadSettings()
-        {
-            var settings = fileStorage.ReadSettings();
-
-            var areSettingsFromFile = settings != null;
-
-            if (settings == null)
-                settings = suoDataService.SuoDataJson.Settings;
-
-            if (settings == null)
-                settings = new SettingsJson();
-
-            var vm = optionsSettings.Settings;
-
-            vm.Assign(settings);
-            vm.SaveSettingsToJson = areSettingsFromFile;
-        }
-
         private void IsEnabledChanged()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnabled)));
@@ -580,7 +560,7 @@ namespace SmartCmdArgs
         {
             suoDataService.Deserialize();
 
-            LoadSettings();
+            settingsService.Load();
             SettingsLoaded = true;
 
             IsEnabledSaved = suoDataService.SuoDataJson.IsEnabled;
@@ -723,7 +703,7 @@ namespace SmartCmdArgs
         #region OptionPage Events
         private void SaveSettingsToJsonChanged()
         {
-            SaveSettings();
+            settingsService.Save();
         }
 
         private void UseCustomJsonRootChanged()

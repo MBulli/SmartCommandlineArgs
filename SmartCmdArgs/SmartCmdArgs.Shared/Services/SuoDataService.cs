@@ -22,8 +22,8 @@ namespace SmartCmdArgs.Services
     {
         private readonly CmdArgsPackage cmdArgsPackage;
         private readonly IVisualStudioHelperService visualStudioHelper;
-        private readonly IOptionsSettingsService optionsSettings;
         private readonly ToolWindowViewModel toolWindowViewModel;
+        private readonly ISettingsService settings;
 
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.
@@ -35,12 +35,15 @@ namespace SmartCmdArgs.Services
 
         public SuoDataJson SuoDataJson => suoDataJson;
 
-        public SuoDataService(IVisualStudioHelperService visualStudioHelper, IOptionsSettingsService optionsSettings, ToolWindowViewModel toolWindowViewModel)
+        public SuoDataService(
+            IVisualStudioHelperService visualStudioHelper,
+            ToolWindowViewModel toolWindowViewModel,
+            ISettingsService settings)
         {
             cmdArgsPackage = CmdArgsPackage.Instance;
             this.visualStudioHelper = visualStudioHelper;
-            this.optionsSettings = optionsSettings;
             this.toolWindowViewModel = toolWindowViewModel;
+            this.settings = settings;
         }
 
         public void LoadFromStream(Stream stream)
@@ -65,7 +68,7 @@ namespace SmartCmdArgs.Services
 
         public void Update()
         {
-            suoDataJson = SuoDataSerializer.Serialize(toolWindowViewModel, optionsSettings.Settings);
+            suoDataJson = SuoDataSerializer.Serialize(toolWindowViewModel, settings.ViewModel);
             suoDataJson.IsEnabled = cmdArgsPackage.IsEnabledSaved;
 
             suoDataStr = JsonConvert.SerializeObject(suoDataJson);

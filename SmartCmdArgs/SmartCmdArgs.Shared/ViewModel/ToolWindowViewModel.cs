@@ -116,7 +116,7 @@ namespace SmartCmdArgs.ViewModel
         public ToolWindowViewModel(
             IItemEvaluationService itemEvaluation,
             IItemAggregationService itemAggregation,
-            IOptionsSettingsService optionsSettings,
+            ISettingsService settings,
             IFactory<SettingsViewModel> settingsFactory)
         {
             this.itemEvaluation = itemEvaluation;
@@ -125,7 +125,7 @@ namespace SmartCmdArgs.ViewModel
 
             TreeViewModel = new TreeViewModel();
 
-            ToolWindowHistory.Init(this, optionsSettings.Settings);
+            ToolWindowHistory.Init(this, settings.ViewModel);
 
             AddEntryCommand = new RelayCommand<ArgumentType>(
                 argType => {
@@ -214,11 +214,11 @@ namespace SmartCmdArgs.ViewModel
             ShowSettingsCommand = new RelayCommand(
                 () => {
                     var settingsClone = settingsFactory.Create();
-                    settingsClone.Assign(optionsSettings.Settings);
+                    settingsClone.Assign(settings.ViewModel);
                     if (new SettingsDialog(settingsClone).ShowModal() == true)
                     {
-                        optionsSettings.Settings.Assign(settingsClone);
-                        CmdArgsPackage.SaveSettings();
+                        settings.ViewModel.Assign(settingsClone);
+                        settings.Save();
                     }
                 }, canExecute: _ => CmdArgsPackage.SettingsLoaded);
 
@@ -401,7 +401,7 @@ namespace SmartCmdArgs.ViewModel
             EnableExtensionCommand = new RelayCommand(() =>
             {
                 CmdArgsPackage.IsEnabledSaved = true;
-                CmdArgsPackage.SaveSettings();
+                settings.Save();
             });
         }
 
