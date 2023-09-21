@@ -37,7 +37,7 @@ namespace SmartCmdArgs.Services
         public string OldProjectDir;
     }
 
-    interface IVisualStudioHelperService
+    public interface IVisualStudioHelperService
     {
         bool IsSolutionOpen { get; }
 

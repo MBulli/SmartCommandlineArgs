@@ -117,10 +117,10 @@ namespace SmartCmdArgs.ViewModel
             IItemEvaluationService itemEvaluation,
             IItemAggregationService itemAggregation,
             ISettingsService settings,
-            IFactory<SettingsViewModel> settingsFactory)
+            IFactory<SettingsViewModel> settingsFactory,
+            IVisualStudioHelperService vsHelper)
         {
             this.itemEvaluation = itemEvaluation;
-
             CmdArgsPackage = CmdArgsPackage.Instance;
 
             TreeViewModel = new TreeViewModel();
@@ -282,7 +282,7 @@ namespace SmartCmdArgs.ViewModel
                 var fileName = ExtractFileNameFromSelectedArgument();
                 if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
                 {
-                    var task = CmdArgsPackage.OpenFileInVisualStudioAsync(fileName);
+                    var task = vsHelper.OpenFileInVisualStudioAsync(fileName);
                 }
             }, canExecute: _ => CmdArgsPackage.IsEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
 

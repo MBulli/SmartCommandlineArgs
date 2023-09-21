@@ -577,7 +577,7 @@ namespace SmartCmdArgs
                 viewModelUpdateService.UpdateCommandsForProject(project);
                 fileStorage.AddProject(project);
             }
-            UpdateCurrentStartupProject();
+            viewModelUpdateService.UpdateCurrentStartupProject();
             UpdateIsActiveForArgumentsDebounced();
         }
 
@@ -624,7 +624,7 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: startup project changed.");
 
-            UpdateCurrentStartupProject();
+            viewModelUpdateService.UpdateCurrentStartupProject();
         }
 
         private void VsHelper_ProjectConfigurationChanged(object sender, IVsHierarchy vsHierarchy)
@@ -696,7 +696,7 @@ namespace SmartCmdArgs
             // Startup project must be set here beacuase in the event of a project
             // reload the StartupProjectChanged event is fired before the project
             // is added so we don't know it and can't set it as startup project
-            UpdateCurrentStartupProject();
+            viewModelUpdateService.UpdateCurrentStartupProject();
         }
         #endregion
 
@@ -747,16 +747,5 @@ namespace SmartCmdArgs
         }
 
         #endregion
-
-        private void UpdateCurrentStartupProject()
-        {
-            var startupProjectGuids = new HashSet<Guid>(vsHelper.StartupProjectUniqueNames()
-                .Select(vsHelper.HierarchyForProjectName).Select(hierarchy => hierarchy.GetGuid()));
-
-            ToolWindowViewModel.TreeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
-            ToolWindowViewModel.TreeViewModel.UpdateTree();
-        }
-
-        public Task OpenFileInVisualStudioAsync(string path) => vsHelper.OpenFileInVisualStudioAsync(path);
     }
 }

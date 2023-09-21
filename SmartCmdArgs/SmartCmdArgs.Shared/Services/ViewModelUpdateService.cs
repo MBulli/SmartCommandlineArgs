@@ -12,11 +12,13 @@ namespace SmartCmdArgs.Services
     {
         void UpdateCommandsForProject(IVsHierarchy project);
         void UpdateIsActiveForArguments();
+        void UpdateCurrentStartupProject();
     }
 
     internal class ViewModelUpdateService : IViewModelUpdateService
     {
         private readonly CmdArgsPackage cmdArgsPackage;
+        private readonly ToolWindowViewModel toolWindowViewModel;
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IFileStorageService fileStorage;
         private readonly IProjectConfigService projectConfig;
@@ -26,6 +28,7 @@ namespace SmartCmdArgs.Services
         private readonly IVisualStudioHelperService vsHelper;
 
         public ViewModelUpdateService(
+            ToolWindowViewModel toolWindowViewModel,
             IOptionsSettingsService optionsSettings,
             IFileStorageService fileStorage,
             IProjectConfigService projectConfig,
@@ -35,6 +38,7 @@ namespace SmartCmdArgs.Services
             IVisualStudioHelperService vsHelper)
         {
             cmdArgsPackage = CmdArgsPackage.Instance;
+            this.toolWindowViewModel = toolWindowViewModel;
             this.optionsSettings = optionsSettings;
             this.fileStorage = fileStorage;
             this.projectConfig = projectConfig;
@@ -80,7 +84,7 @@ namespace SmartCmdArgs.Services
             {
                 Logger.Info($"Setting {projectData?.Items?.Count} commands for project '{project.GetName()}' from json-file.");
 
-                var projectListViewModel = cmdArgsPackage.ToolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(projectGuid);
+                var projectListViewModel = toolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(projectGuid);
 
                 var projHasSuoData = solutionData.ProjectArguments.ContainsKey(projectGuid);
 
@@ -137,7 +141,7 @@ namespace SmartCmdArgs.Services
                 }
             }
             // if we have data in the ViewModel we keep it
-            else if (cmdArgsPackage.ToolWindowViewModel.TreeViewModel.Projects.ContainsKey(projectGuid))
+            else if (toolWindowViewModel.TreeViewModel.Projects.ContainsKey(projectGuid))
             {
                 return;
             }
@@ -176,7 +180,7 @@ namespace SmartCmdArgs.Services
             }
 
             // push projectData to the ViewModel
-            cmdArgsPackage.ToolWindowViewModel.PopulateFromProjectData(project, projectData);
+            toolWindowViewModel.PopulateFromProjectData(project, projectData);
 
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
         }
@@ -232,7 +236,7 @@ namespace SmartCmdArgs.Services
 
         public void UpdateIsActiveForArguments()
         {
-            foreach (var cmdProject in cmdArgsPackage.ToolWindowViewModel.TreeViewModel.AllProjects)
+            foreach (var cmdProject in toolWindowViewModel.TreeViewModel.AllProjects)
             {
                 if (optionsSettings.DisableInactiveItems == InactiveDisableMode.InAllProjects
                     || (optionsSettings.DisableInactiveItems != InactiveDisableMode.Disabled && cmdProject.IsStartupProject))
@@ -253,6 +257,15 @@ namespace SmartCmdArgs.Services
                     }
                 }
             }
+        }
+
+        public void UpdateCurrentStartupProject()
+        {
+            var startupProjectGuids = new HashSet<Guid>(vsHelper.StartupProjectUniqueNames()
+                .Select(vsHelper.HierarchyForProjectName).Select(hierarchy => hierarchy.GetGuid()));
+
+            toolWindowViewModel.TreeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
+            toolWindowViewModel.TreeViewModel.UpdateTree();
         }
     }
 }
