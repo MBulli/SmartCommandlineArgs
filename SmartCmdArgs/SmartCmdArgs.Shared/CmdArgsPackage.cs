@@ -89,6 +89,7 @@ namespace SmartCmdArgs
         private IProjectConfigService projectConfigService;
         private IVsEventHandlingService vsEventHandling;
         private IFileStorageEventHandlingService fileStorageEventHandling;
+        private IOptionsSettingsEventHandlingService optionsSettingsEventHandling;
 
         public ToolWindowViewModel ToolWindowViewModel { get; private set; }
 
@@ -132,6 +133,7 @@ namespace SmartCmdArgs
             projectConfigService = ServiceProvider.GetRequiredService<IProjectConfigService>();
             vsEventHandling = ServiceProvider.GetRequiredService<IVsEventHandlingService>();
             fileStorageEventHandling = ServiceProvider.GetRequiredService<IFileStorageEventHandlingService>();
+            optionsSettingsEventHandling = ServiceProvider.GetRequiredService<IOptionsSettingsEventHandlingService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -212,6 +214,7 @@ namespace SmartCmdArgs
             services.AddLazySingleton<ILifeCycleService, LifeCycleService>();
             services.AddSingleton<IVsEventHandlingService, VsEventHandlingService>();
             services.AddSingleton<IFileStorageEventHandlingService, FileStorageEventHandlingService>();
+            services.AddSingleton<IOptionsSettingsEventHandlingService, OptionsSettingsEventHandlingService>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)
@@ -235,26 +238,7 @@ namespace SmartCmdArgs
             }
         }
 
-        private void OptionsSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (!settingsService.Loaded)
-                return;
-
-            switch (e.PropertyName)
-            {
-                case nameof(IOptionsSettingsService.SaveSettingsToJson): SaveSettingsToJsonChanged(); break;
-                case nameof(IOptionsSettingsService.UseCustomJsonRoot): UseCustomJsonRootChanged(); break;
-                case nameof(IOptionsSettingsService.JsonRootPath): JsonRootPathChanged(); break;
-                case nameof(IOptionsSettingsService.VcsSupportEnabled): VcsSupportChanged(); break;
-                case nameof(IOptionsSettingsService.UseSolutionDir): UseSolutionDirChanged(); break;
-                case nameof(IOptionsSettingsService.ManageCommandLineArgs): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(IOptionsSettingsService.ManageEnvironmentVars): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(IOptionsSettingsService.ManageWorkingDirectories): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(IOptionsSettingsService.UseMonospaceFont): UseMonospaceFontChanged(); break;
-                case nameof(IOptionsSettingsService.DisplayTagForCla): DisplayTagForClaChanged(); break;
-                case nameof(IOptionsSettingsService.DisableInactiveItems): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
-            }
-        }
+        
 
         private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
         {
@@ -300,8 +284,7 @@ namespace SmartCmdArgs
             // events registered here are only called while the extension is enabled
 
             vsEventHandling.AttachToProjectEvents();
-
-            optionsSettings.PropertyChanged += OptionsSettings_PropertyChanged;
+            optionsSettingsEventHandling.AttachToEvents();
 
             ToolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
             ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
@@ -314,8 +297,7 @@ namespace SmartCmdArgs
             // all events regitered in AttachToEvents should be unregisterd here
 
             vsEventHandling.DetachFromProjectEvents();
-
-            optionsSettings.PropertyChanged -= OptionsSettings_PropertyChanged;
+            optionsSettingsEventHandling.DetachFromEvents();
 
             ToolWindowViewModel.TreeViewModel.ItemSelectionChanged -= OnItemSelectionChanged;
             ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled -= OnTreeContentChangedThrottled;
@@ -388,53 +370,5 @@ namespace SmartCmdArgs
 
             return launchProfiles ?? new List<string>();
         }
-
-        #region OptionPage Events
-        private void SaveSettingsToJsonChanged()
-        {
-            settingsService.Save();
-        }
-
-        private void UseCustomJsonRootChanged()
-        {
-            fileStorage.SaveAllProjects();
-        }
-
-        private void JsonRootPathChanged()
-        {
-            fileStorage.SaveAllProjects();
-        }
-
-        private void VcsSupportChanged()
-        {
-            if (!optionsSettings.VcsSupportEnabled)
-                return;
-
-            ToolWindowHistory.SaveState();
-
-            foreach (var project in vsHelper.GetSupportedProjects())
-            {
-                viewModelUpdateService.UpdateCommandsForProject(project);
-            }
-            fileStorage.SaveAllProjects();
-        }
-
-        private void UseMonospaceFontChanged()
-        {
-            ToolWindowViewModel.UseMonospaceFont = optionsSettings.UseMonospaceFont;
-        }
-
-        private void DisplayTagForClaChanged()
-        {
-            ToolWindowViewModel.DisplayTagForCla = optionsSettings.DisplayTagForCla;
-        }
-
-        private void UseSolutionDirChanged()
-        {
-            fileStorage.DeleteAllUnusedArgFiles();
-            fileStorage.SaveAllProjects();
-        }
-
-        #endregion
     }
 }
