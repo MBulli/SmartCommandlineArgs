@@ -51,6 +51,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\ViewModelUpdateService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SuoDataService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\VisualStudioHelperService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\VsEventHandlingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToolWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdArgItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\DataObjectGenerator.cs" />
