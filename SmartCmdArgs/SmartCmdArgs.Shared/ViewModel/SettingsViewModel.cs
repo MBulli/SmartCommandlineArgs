@@ -15,6 +15,7 @@ namespace SmartCmdArgs.ViewModel
     public class SettingsViewModel : PropertyChangedBase
     {
         private readonly CmdArgsOptionPage optionPage;
+        private readonly ILifeCycleService lifeCycleService;
         private bool _saveSettingsToJson;
         private bool? _manageCommandLineArgs;
         private bool? _manageEnvironmentVars;
@@ -81,19 +82,21 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand DisableExtensionCommand { get; }
 
-        public CmdArgsPackage Package => CmdArgsPackage.Instance;
-
         public CmdArgsOptionPage Options => optionPage;
+        public ILifeCycleService LifeCycle => lifeCycleService;
 
         public RelayCommand OpenOptionsCommand { get; }
 
-        public SettingsViewModel(CmdArgsOptionPage optionPage)
+        public SettingsViewModel(
+            CmdArgsOptionPage optionPage,
+            ILifeCycleService lifeCycleService)
         {
             this.optionPage = optionPage;
+            this.lifeCycleService = lifeCycleService;
 
             DisableExtensionCommand = new RelayCommand(() =>
             {
-                Package.IsEnabledSaved = false;
+                lifeCycleService.IsEnabledSaved = false;
             });
 
             OpenOptionsCommand = new RelayCommand(() =>
@@ -104,7 +107,7 @@ namespace SmartCmdArgs.ViewModel
 
         public SettingsViewModel Clone()
         {
-            var clone = new SettingsViewModel(this.optionPage);
+            var clone = new SettingsViewModel(optionPage, lifeCycleService);
             clone.Assign(this);
             return clone;
         }

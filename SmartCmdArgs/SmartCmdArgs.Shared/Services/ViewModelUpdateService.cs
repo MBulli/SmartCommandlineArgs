@@ -26,6 +26,7 @@ namespace SmartCmdArgs.Services
         private readonly IItemAggregationService itemAggregation;
         private readonly IItemEvaluationService itemEvaluation;
         private readonly IVisualStudioHelperService vsHelper;
+        private readonly ILifeCycleService lifeCycleService;
 
         private readonly Debouncer _updateIsActiveDebouncer;
 
@@ -37,7 +38,8 @@ namespace SmartCmdArgs.Services
             ISuoDataService suoDataService,
             IItemAggregationService itemAggregation,
             IItemEvaluationService itemEvaluation,
-            IVisualStudioHelperService vsHelper)
+            IVisualStudioHelperService vsHelper,
+            ILifeCycleService lifeCycleService)
         {
             cmdArgsPackage = CmdArgsPackage.Instance;
             this.toolWindowViewModel = toolWindowViewModel;
@@ -48,7 +50,7 @@ namespace SmartCmdArgs.Services
             this.itemAggregation = itemAggregation;
             this.itemEvaluation = itemEvaluation;
             this.vsHelper = vsHelper;
-
+            this.lifeCycleService = lifeCycleService;
             _updateIsActiveDebouncer = new Debouncer(TimeSpan.FromMilliseconds(250), UpdateIsActiveForArguments);
         }
 
@@ -59,7 +61,7 @@ namespace SmartCmdArgs.Services
 
         public void UpdateCommandsForProject(IVsHierarchy project)
         {
-            if (!cmdArgsPackage.IsEnabled)
+            if (!lifeCycleService.IsEnabled)
                 return;
 
             if (project == null)

@@ -85,6 +85,7 @@ namespace SmartCmdArgs
         private ISuoDataService suoDataService;
         private IItemAggregationService itemAggregationService;
         private ISettingsService settingsService;
+        private ILifeCycleService lifeCycleService;
 
         public ToolWindowViewModel ToolWindowViewModel { get; }
 
@@ -93,37 +94,6 @@ namespace SmartCmdArgs
         private ServiceProvider serviceProvider;
         public IServiceProvider ServiceProvider => serviceProvider;
 
-        // this is needed to keep the saved value in the suo file at null
-        // if the user does not explicitly enable or disable the extension
-        private bool? _isEnabledSaved;
-        public bool? IsEnabledSaved
-        {
-            get => _isEnabledSaved;
-            set {
-                _isEnabledSaved = value;
-                IsEnabled = value ?? optionsSettings.EnabledByDefault;
-            }
-        }
-
-        /// <summary>
-        /// While the extension is disabled we do nothing.
-        /// The user is asked to enable the extension.
-        /// This solves the issue that the extension accidentilly overrides user changes.
-        /// 
-        /// If this changes the updated value is not written to the suo file.
-        /// For that `IsEnabledSaved` has to be updated.
-        /// </summary>
-        private bool _isEnabled;
-        public bool IsEnabled {
-            get => _isEnabled;
-            private set {
-                if (_isEnabled != value)
-                {
-                    _isEnabled = value;
-                    IsEnabledChanged();
-                }
-            }
-        }
 
         public bool IsSolutionOpen => vsHelper.IsSolutionOpen;
 
@@ -156,6 +126,7 @@ namespace SmartCmdArgs
             suoDataService = ServiceProvider.GetRequiredService<ISuoDataService>();
             itemAggregationService = ServiceProvider.GetRequiredService<IItemAggregationService>();
             settingsService = ServiceProvider.GetRequiredService<ISettingsService>();
+            lifeCycleService = ServiceProvider.GetRequiredService<ILifeCycleService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -207,10 +178,10 @@ namespace SmartCmdArgs
             {
                 Logger.Info("Package.Initialize called while solution was already open.");
 
-                InitializeConfigForSolution();
+                lifeCycleService.InitializeConfigForSolution();
             }
 
-            UpdateDisabledScreen();
+            lifeCycleService.UpdateDisabledScreen();
 
             ToolWindowViewModel.UseMonospaceFont = optionsSettings.UseMonospaceFont;
             ToolWindowViewModel.DisplayTagForCla = optionsSettings.DisplayTagForCla;
@@ -235,6 +206,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IItemEvaluationService, ItemEvaluationService>();
             services.AddSingleton<IItemAggregationService, ItemAggregationService>();
             services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddSingleton<ILifeCycleService, LifeCycleService>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)
@@ -313,7 +285,7 @@ namespace SmartCmdArgs
             viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
         }
 
-        private void AttachToEvents()
+        internal void AttachToEvents()
         {
             // events registered here are only called while the extension is enabled
 
@@ -335,7 +307,7 @@ namespace SmartCmdArgs
             ToolWindowViewModel.TreeViewModel.TreeChanged += OnTreeChanged;
         }
 
-        private void DetachFromEvents()
+        internal void DetachFromEvents()
         {
             // all events regitered in AttachToEvents should be unregisterd here
 
@@ -355,11 +327,6 @@ namespace SmartCmdArgs
             ToolWindowViewModel.TreeViewModel.TreeContentChangedThrottled -= OnTreeContentChangedThrottled;
             ToolWindowViewModel.TreeViewModel.TreeChangedThrottled -= OnTreeChangedThrottled;
             ToolWindowViewModel.TreeViewModel.TreeChanged -= OnTreeChanged;
-        }
-
-        private void UpdateDisabledScreen()
-        {
-            ToolWindowViewModel.ShowDisabledScreen = !IsEnabled && IsSolutionOpen;
         }
 
         private void OnItemSelectionChanged(object sender, CmdBase cmdBase)
@@ -390,7 +357,7 @@ namespace SmartCmdArgs
             base.OnSaveOptions(key, stream);
             if (key == SolutionOptionKey)
             {
-                if (IsEnabled)
+                if (lifeCycleService.IsEnabled)
                     suoDataService.Update();
 
                 suoDataService.SaveToStream(stream);
@@ -406,7 +373,7 @@ namespace SmartCmdArgs
 
         private void UpdateConfigurationForProject(IVsHierarchy project)
         {
-            if (!IsEnabled || project == null)
+            if (!lifeCycleService.IsEnabled || project == null)
                 return;
 
             var commandLineArgs = optionsSettings.ManageCommandLineArgs ? itemAggregationService.CreateCommandLineArgsForProject(project) : null;
@@ -486,7 +453,7 @@ namespace SmartCmdArgs
                     return;
                 }
 
-                if (!IsEnabled)
+                if (!lifeCycleService.IsEnabled)
                     return;
 
                 if (e.IsSolutionWide != optionsSettings.UseSolutionDir)
@@ -521,74 +488,17 @@ namespace SmartCmdArgs
             });
         }
 
-        private void IsEnabledChanged()
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnabled)));
+        
 
-            UpdateDisabledScreen();
-
-            if (IsEnabled)
-            {
-                AttachToEvents();
-                InitializeDataForSolution();
-            }
-            else
-            {
-                // captures the state right after disableing the extension
-                // changes after this point are ignored
-                suoDataService.Update();
-                DetachFromEvents();
-                FinalizeDataForSolution();
-            }
-        }
-
-        private void InitializeConfigForSolution()
-        {
-            suoDataService.Deserialize();
-
-            settingsService.Load();
-
-            IsEnabledSaved = suoDataService.SuoDataJson.IsEnabled;
-        }
-
-        private void InitializeDataForSolution()
-        {
-            Debug.Assert(IsEnabled);
-
-            ToolWindowViewModel.TreeViewModel.ShowAllProjects = suoDataService.SuoDataJson.ShowAllProjects;
-
-            foreach (var project in vsHelper.GetSupportedProjects())
-            {
-                viewModelUpdateService.UpdateCommandsForProject(project);
-                fileStorage.AddProject(project);
-            }
-            viewModelUpdateService.UpdateCurrentStartupProject();
-            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
-        }
-
-        private void FinalizeDataForSolution()
-        {
-            Debug.Assert(!IsEnabled);
-
-            fileStorage.RemoveAllProjects();
-            ToolWindowViewModel.Reset();
-        }
-
-        private void FinalizeConfigForSolution()
-        {
-            IsEnabled = false;
-            UpdateDisabledScreen();
-            suoDataService.Reset();
-            settingsService.Reset();
-        }
+        
 
         #region VS Events
         private void VsHelper_SolutionOpend(object sender, EventArgs e)
         {
             Logger.Info("VS-Event: Solution opened.");
 
-            UpdateDisabledScreen();
-            InitializeConfigForSolution();
+            lifeCycleService.UpdateDisabledScreen();
+            lifeCycleService.InitializeConfigForSolution();
         }
 
         private void VsHelper_SolutionWillClose(object sender, EventArgs e)
@@ -602,7 +512,7 @@ namespace SmartCmdArgs
         {
             Logger.Info("VS-Event: Solution closed.");
 
-            FinalizeConfigForSolution();
+            lifeCycleService.FinalizeConfigForSolution();
         }
 
         private void VsHelper_StartupProjectChanged(object sender, EventArgs e)

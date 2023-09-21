@@ -1,4 +1,6 @@
-﻿using SmartCmdArgs.Logic;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SmartCmdArgs.Logic;
+using SmartCmdArgs.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -146,6 +148,8 @@ namespace SmartCmdArgs.ViewModel
 
     internal static class ToolWindowHistory
     {
+        private static ILifeCycleService lifeCycleService;
+
         private static HistoryRingBuffer<SuoDataJson> _buffer;
         private static ToolWindowViewModel _vm;
         private static SettingsViewModel _settings;
@@ -153,6 +157,8 @@ namespace SmartCmdArgs.ViewModel
 
         public static void Init(ToolWindowViewModel vm, SettingsViewModel settings, int size = 500)
         {
+            lifeCycleService = CmdArgsPackage.Instance.ServiceProvider.GetRequiredService<ILifeCycleService>();
+
             _vm = vm;
             _settings = settings;
             _buffer = new HistoryRingBuffer<SuoDataJson>(size);
@@ -165,7 +171,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void DeleteNewest()
         {
-            if (!_vm.CmdArgsPackage.IsEnabled)
+            if (!lifeCycleService.IsEnabled)
                 return;
 
             if (_pauseCounter == 0)
@@ -174,7 +180,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void SaveState()
         {
-            if (!_vm.CmdArgsPackage.IsEnabled)
+            if (!lifeCycleService.IsEnabled)
                 return;
 
             if (_pauseCounter == 0)
@@ -200,7 +206,7 @@ namespace SmartCmdArgs.ViewModel
 
         private static void RestoreCurrentState()
         {
-            if (!_vm.CmdArgsPackage.IsEnabled)
+            if (!lifeCycleService.IsEnabled)
                 return;
 
             if (_buffer.TryGetCurrent(out SuoDataJson data))
@@ -216,7 +222,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void RestoreLastState()
         {
-            if (!_vm.CmdArgsPackage.IsEnabled)
+            if (!lifeCycleService.IsEnabled)
                 return;
 
             if (_buffer.IsCurrentFront)
@@ -230,7 +236,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void RestorePrevState()
         {
-            if (!_vm.CmdArgsPackage.IsEnabled)
+            if (!lifeCycleService.IsEnabled)
                 return;
 
             if (_buffer.MoveForward())

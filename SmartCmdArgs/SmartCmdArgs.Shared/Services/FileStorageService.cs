@@ -64,6 +64,8 @@ namespace SmartCmdArgs.Services
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IItemPathService itemPathService;
         private readonly SettingsViewModel settingsViewModel;
+        private readonly ILifeCycleService lifeCycleService;
+
         private FileSystemWatcher settingsFsWatcher;
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
         private FileSystemWatcher solutionFsWatcher;
@@ -74,13 +76,15 @@ namespace SmartCmdArgs.Services
             IVisualStudioHelperService vsHelper,
             IOptionsSettingsService optionsSettings,
             IItemPathService itemPathService,
-            SettingsViewModel settingsViewModel)
+            SettingsViewModel settingsViewModel,
+            ILifeCycleService lifeCycleService)
         {
             this.cmdPackage = CmdArgsPackage.Instance;
             this.vsHelper = vsHelper;
             this.optionsSettings = optionsSettings;
             this.itemPathService = itemPathService;
             this.settingsViewModel = settingsViewModel;
+            this.lifeCycleService = lifeCycleService;
         }
 
         public void AddProject(IVsHierarchy project)
@@ -149,7 +153,7 @@ namespace SmartCmdArgs.Services
 
         public void SaveSettings()
         {
-            if (!cmdPackage.IsEnabled)
+            if (!lifeCycleService.IsEnabled)
                 return;
 
             string jsonFilename = GetSettingsPath();
@@ -256,7 +260,7 @@ namespace SmartCmdArgs.Services
 
         public void DeleteAllUnusedArgFiles()
         {
-            if (!cmdPackage.IsEnabled)
+            if (!lifeCycleService.IsEnabled)
                 return;
 
             if (!optionsSettings.DeleteUnnecessaryFilesAutomatically)
@@ -299,7 +303,7 @@ namespace SmartCmdArgs.Services
 
         private void SaveJsonForSolution()
         {
-            if (!cmdPackage.IsEnabled || !optionsSettings.VcsSupportEnabled)
+            if (!lifeCycleService.IsEnabled || !optionsSettings.VcsSupportEnabled)
                 return;
 
             string jsonFilename = FullFilenameForSolutionJsonFile();
@@ -346,7 +350,7 @@ namespace SmartCmdArgs.Services
 
         private void SaveJsonForProject(IVsHierarchy project)
         {
-            if (!cmdPackage.IsEnabled || !optionsSettings.VcsSupportEnabled || project == null)
+            if (!lifeCycleService.IsEnabled || !optionsSettings.VcsSupportEnabled || project == null)
                 return;
 
             var guid = project.GetGuid();
