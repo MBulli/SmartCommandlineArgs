@@ -40,29 +40,29 @@ namespace SmartCmdArgs.Services
     internal class OptionsSettingsService : PropertyChangedBase, IOptionsSettingsService, IAsyncInitializable
     {
         private readonly IVisualStudioHelperService _vsHelperService;
-        private readonly ISettingsService settings;
+        private readonly SettingsViewModel settingsViewModel;
         private readonly CmdArgsOptionPage optionsPage;
 
         public OptionsSettingsService(
             IVisualStudioHelperService vsHelperService,
-            ISettingsService settings,
+            SettingsViewModel settingsViewModel,
             CmdArgsOptionPage optionsPage)
         {
             _vsHelperService = vsHelperService;
-            this.settings = settings;
+            this.settingsViewModel = settingsViewModel;
             this.optionsPage = optionsPage;
         }
 
         // Settings (possibly with options default)
-        public bool SaveSettingsToJson => settings.ViewModel.SaveSettingsToJson;
-        public bool ManageCommandLineArgs => settings.ViewModel.ManageCommandLineArgs ?? optionsPage.ManageCommandLineArgs;
-        public bool ManageEnvironmentVars => settings.ViewModel.ManageEnvironmentVars ?? optionsPage.ManageEnvironmentVars;
-        public bool ManageWorkingDirectories => settings.ViewModel.ManageWorkingDirectories ?? optionsPage.ManageWorkingDirectories;
-        public bool UseCustomJsonRoot => settings.ViewModel.UseCustomJsonRoot;
-        public string JsonRootPath => settings.ViewModel.JsonRootPath;
-        public bool VcsSupportEnabled => settings.ViewModel.VcsSupportEnabled ?? optionsPage.VcsSupportEnabled;
-        public bool MacroEvaluationEnabled => settings.ViewModel.MacroEvaluationEnabled ?? optionsPage.MacroEvaluationEnabled;
-        public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settings.ViewModel.UseSolutionDir ?? optionsPage.UseSolutionDir);
+        public bool SaveSettingsToJson => settingsViewModel.SaveSettingsToJson;
+        public bool ManageCommandLineArgs => settingsViewModel.ManageCommandLineArgs ?? optionsPage.ManageCommandLineArgs;
+        public bool ManageEnvironmentVars => settingsViewModel.ManageEnvironmentVars ?? optionsPage.ManageEnvironmentVars;
+        public bool ManageWorkingDirectories => settingsViewModel.ManageWorkingDirectories ?? optionsPage.ManageWorkingDirectories;
+        public bool UseCustomJsonRoot => settingsViewModel.UseCustomJsonRoot;
+        public string JsonRootPath => settingsViewModel.JsonRootPath;
+        public bool VcsSupportEnabled => settingsViewModel.VcsSupportEnabled ?? optionsPage.VcsSupportEnabled;
+        public bool MacroEvaluationEnabled => settingsViewModel.MacroEvaluationEnabled ?? optionsPage.MacroEvaluationEnabled;
+        public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settingsViewModel.UseSolutionDir ?? optionsPage.UseSolutionDir);
 
         // Options
         public bool UseMonospaceFont => optionsPage.UseMonospaceFont;
@@ -87,7 +87,7 @@ namespace SmartCmdArgs.Services
 
         public Task InitializeAsync()
         {
-            settings.ViewModel.PropertyChanged += Settings_PropertyChanged;
+            settingsViewModel.PropertyChanged += Settings_PropertyChanged;
             optionsPage.PropertyChanged += Options_PropertyChanged;
 
             return Task.CompletedTask;

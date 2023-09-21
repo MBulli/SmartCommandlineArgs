@@ -102,6 +102,13 @@ namespace SmartCmdArgs.ViewModel
             });
         }
 
+        public SettingsViewModel Clone()
+        {
+            var clone = new SettingsViewModel(this.optionPage);
+            clone.Assign(this);
+            return clone;
+        }
+
         public void Assign(SettingsViewModel other)
         {
             using (PauseAndStoreNotifications())

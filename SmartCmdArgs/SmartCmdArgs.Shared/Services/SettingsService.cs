@@ -5,7 +5,6 @@ namespace SmartCmdArgs.Services
 {
     public interface ISettingsService
     {
-        SettingsViewModel ViewModel { get; }
         bool Loaded { get; }
 
         void Load();
@@ -19,7 +18,6 @@ namespace SmartCmdArgs.Services
         private readonly IFileStorageService fileStorage;
         private readonly ISuoDataService suoData;
 
-        public SettingsViewModel ViewModel => settingsViewModel;
         public bool Loaded { get; set; }
 
         public SettingsService(SettingsViewModel settingsViewModel, IFileStorageService fileStorage, ISuoDataService suoData)

@@ -223,7 +223,7 @@ namespace SmartCmdArgs
             var services = new ServiceCollection();
 
             services.AddSingleton(x => GetDialogPage<CmdArgsOptionPage>());
-            services.AddFactory<SettingsViewModel>();
+            services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<ToolWindowViewModel>();
             services.AddSingleton<IProjectConfigService, ProjectConfigService>();
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();

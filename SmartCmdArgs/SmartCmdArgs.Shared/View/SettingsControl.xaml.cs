@@ -72,8 +72,7 @@ namespace SmartCmdArgs.View
             dialog.InitialDirectory = curPath;
             if (dialog.Show(new WindowInteropHelper(window).Handle))
             {
-                SettingsViewModel settings = this.DataContext as SettingsViewModel;
-                settings.JsonRootPath = itemPathUtil.MakePathRelativeBasedOnSolutionDir(dialog.FileName);
+                ViewModel.JsonRootPath = itemPathUtil.MakePathRelativeBasedOnSolutionDir(dialog.FileName);
             }
         }
 

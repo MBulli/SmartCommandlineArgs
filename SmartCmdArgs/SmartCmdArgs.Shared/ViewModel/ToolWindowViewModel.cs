@@ -116,8 +116,8 @@ namespace SmartCmdArgs.ViewModel
         public ToolWindowViewModel(
             IItemEvaluationService itemEvaluation,
             IItemAggregationService itemAggregation,
-            ISettingsService settings,
-            IFactory<SettingsViewModel> settingsFactory,
+            SettingsViewModel settingsViewModel,
+            ISettingsService settingsService,
             IVisualStudioHelperService vsHelper)
         {
             this.itemEvaluation = itemEvaluation;
@@ -125,7 +125,7 @@ namespace SmartCmdArgs.ViewModel
 
             TreeViewModel = new TreeViewModel();
 
-            ToolWindowHistory.Init(this, settings.ViewModel);
+            ToolWindowHistory.Init(this, settingsViewModel);
 
             AddEntryCommand = new RelayCommand<ArgumentType>(
                 argType => {
@@ -209,18 +209,17 @@ namespace SmartCmdArgs.ViewModel
                 () => {
                     ToolWindowHistory.SaveState();
                     TreeViewModel.ShowAllProjects = !TreeViewModel.ShowAllProjects;
-                }, canExecute: _ => CmdArgsPackage.IsEnabled && settings.Loaded);
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && settingsService.Loaded);
 
             ShowSettingsCommand = new RelayCommand(
                 () => {
-                    var settingsClone = settingsFactory.Create();
-                    settingsClone.Assign(settings.ViewModel);
+                    var settingsClone = settingsViewModel.Clone();
                     if (new SettingsDialog(settingsClone).ShowModal() == true)
                     {
-                        settings.ViewModel.Assign(settingsClone);
-                        settings.Save();
+                        settingsViewModel.Assign(settingsClone);
+                        settingsService.Save();
                     }
-                }, canExecute: _ => settings.Loaded);
+                }, canExecute: _ => settingsService.Loaded);
 
             OpenOptionsCommand = new RelayCommand(
                 () => {
@@ -401,7 +400,7 @@ namespace SmartCmdArgs.ViewModel
             EnableExtensionCommand = new RelayCommand(() =>
             {
                 CmdArgsPackage.IsEnabledSaved = true;
-                settings.Save();
+                settingsService.Save();
             });
         }
 

@@ -63,7 +63,7 @@ namespace SmartCmdArgs.Services
         private readonly IVisualStudioHelperService vsHelper;
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IItemPathService itemPathService;
-        private readonly ISettingsService settings;
+        private readonly SettingsViewModel settingsViewModel;
         private FileSystemWatcher settingsFsWatcher;
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
         private FileSystemWatcher solutionFsWatcher;
@@ -74,13 +74,13 @@ namespace SmartCmdArgs.Services
             IVisualStudioHelperService vsHelper,
             IOptionsSettingsService optionsSettings,
             IItemPathService itemPathService,
-            ISettingsService settings)
+            SettingsViewModel settingsViewModel)
         {
             this.cmdPackage = CmdArgsPackage.Instance;
             this.vsHelper = vsHelper;
             this.optionsSettings = optionsSettings;
             this.itemPathService = itemPathService;
-            this.settings = settings;
+            this.settingsViewModel = settingsViewModel;
         }
 
         public void AddProject(IVsHierarchy project)
@@ -160,7 +160,7 @@ namespace SmartCmdArgs.Services
             {
                 if (optionsSettings.SaveSettingsToJson)
                 {
-                    string jsonStr = SettingsSerializer.Serialize(settings.ViewModel);
+                    string jsonStr = SettingsSerializer.Serialize(settingsViewModel);
 
                     if (jsonStr == "{}")
                         File.Delete(jsonFilename);
