@@ -6,9 +6,11 @@ namespace SmartCmdArgs.Services
     public interface ISettingsService
     {
         SettingsViewModel ViewModel { get; }
+        bool Loaded { get; }
 
         void Load();
         void Save();
+        void Reset();
     }
 
     internal class SettingsService : ISettingsService
@@ -18,6 +20,7 @@ namespace SmartCmdArgs.Services
         private readonly ISuoDataService suoData;
 
         public SettingsViewModel ViewModel => settingsViewModel;
+        public bool Loaded { get; set; }
 
         public SettingsService(SettingsViewModel settingsViewModel, IFileStorageService fileStorage, ISuoDataService suoData)
         {
@@ -45,6 +48,13 @@ namespace SmartCmdArgs.Services
 
             settingsViewModel.Assign(settings);
             settingsViewModel.SaveSettingsToJson = areSettingsFromFile;
+
+            Loaded = true;
+        }
+
+        public void Reset()
+        {
+            Loaded = false;
         }
     }
 }

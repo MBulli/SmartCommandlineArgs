@@ -209,7 +209,7 @@ namespace SmartCmdArgs.ViewModel
                 () => {
                     ToolWindowHistory.SaveState();
                     TreeViewModel.ShowAllProjects = !TreeViewModel.ShowAllProjects;
-                }, canExecute: _ => CmdArgsPackage.IsEnabled && CmdArgsPackage.SettingsLoaded);
+                }, canExecute: _ => CmdArgsPackage.IsEnabled && settings.Loaded);
 
             ShowSettingsCommand = new RelayCommand(
                 () => {
@@ -220,7 +220,7 @@ namespace SmartCmdArgs.ViewModel
                         settings.ViewModel.Assign(settingsClone);
                         settings.Save();
                     }
-                }, canExecute: _ => CmdArgsPackage.SettingsLoaded);
+                }, canExecute: _ => settings.Loaded);
 
             OpenOptionsCommand = new RelayCommand(
                 () => {

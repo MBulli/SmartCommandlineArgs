@@ -125,8 +125,6 @@ namespace SmartCmdArgs
             }
         }
 
-        public bool SettingsLoaded { get; private set; } = false;
-
         public bool IsSolutionOpen => vsHelper.IsSolutionOpen;
 
         private readonly Debouncer _updateIsActiveDebouncer;
@@ -273,7 +271,7 @@ namespace SmartCmdArgs
 
         private void OptionsSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (!SettingsLoaded)
+            if (!settingsService.Loaded)
                 return;
 
             switch (e.PropertyName)
@@ -560,7 +558,6 @@ namespace SmartCmdArgs
             suoDataService.Deserialize();
 
             settingsService.Load();
-            SettingsLoaded = true;
 
             IsEnabledSaved = suoDataService.SuoDataJson.IsEnabled;
         }
@@ -593,7 +590,7 @@ namespace SmartCmdArgs
             IsEnabled = false;
             UpdateDisabledScreen();
             suoDataService.Reset();
-            SettingsLoaded = false;
+            settingsService.Reset();
         }
 
         #region VS Events
