@@ -25,7 +25,7 @@ namespace SmartCmdArgs.Services
         private readonly IVisualStudioHelperService visualStudioHelper;
         private readonly Lazy<ToolWindowViewModel> toolWindowViewModel;
         private readonly Lazy<SettingsViewModel> settingsViewModel;
-        private readonly ILifeCycleService lifeCycleService;
+        private readonly Lazy<ILifeCycleService> lifeCycleService;
 
         // We store the commandline arguments also in the suo file.
         // This is handled in the OnLoad/SaveOptions methods.
@@ -41,7 +41,7 @@ namespace SmartCmdArgs.Services
             IVisualStudioHelperService visualStudioHelper,
             Lazy<ToolWindowViewModel> toolWindowViewModel,
             Lazy<SettingsViewModel> settingsViewModel,
-            ILifeCycleService lifeCycleService)
+            Lazy<ILifeCycleService> lifeCycleService)
         {
             this.visualStudioHelper = visualStudioHelper;
             this.toolWindowViewModel = toolWindowViewModel;
@@ -72,7 +72,7 @@ namespace SmartCmdArgs.Services
         public void Update()
         {
             suoDataJson = SuoDataSerializer.Serialize(toolWindowViewModel.Value, settingsViewModel.Value);
-            suoDataJson.IsEnabled = lifeCycleService.IsEnabledSaved;
+            suoDataJson.IsEnabled = lifeCycleService.Value.IsEnabledSaved;
 
             suoDataStr = JsonConvert.SerializeObject(suoDataJson);
         }

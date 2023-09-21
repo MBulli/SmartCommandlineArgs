@@ -37,8 +37,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SettingsSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SolutionDataSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\SuoDataSerializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\AbstractFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\AsyncInitializable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Utils\AbstractFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Utils\AsyncInitializable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\FileStorageService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ItemAggregationService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ItemEvaluationService.cs" />
@@ -47,6 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\OptionsSettingsService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)services\ProjectConfigService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SettingsService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Utils\LazyServiceExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ViewModelUpdateService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SuoDataService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\VisualStudioHelperService.cs" />

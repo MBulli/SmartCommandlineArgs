@@ -64,7 +64,7 @@ namespace SmartCmdArgs.Services
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IItemPathService itemPathService;
         private readonly SettingsViewModel settingsViewModel;
-        private readonly ILifeCycleService lifeCycleService;
+        private readonly Lazy<ILifeCycleService> lifeCycleService;
 
         private FileSystemWatcher settingsFsWatcher;
         private Dictionary<Guid, FileSystemWatcher> projectFsWatchers = new Dictionary<Guid, FileSystemWatcher>();
@@ -77,7 +77,7 @@ namespace SmartCmdArgs.Services
             IOptionsSettingsService optionsSettings,
             IItemPathService itemPathService,
             SettingsViewModel settingsViewModel,
-            ILifeCycleService lifeCycleService)
+            Lazy<ILifeCycleService> lifeCycleService)
         {
             this.cmdPackage = CmdArgsPackage.Instance;
             this.vsHelper = vsHelper;
@@ -153,7 +153,7 @@ namespace SmartCmdArgs.Services
 
         public void SaveSettings()
         {
-            if (!lifeCycleService.IsEnabled)
+            if (!lifeCycleService.Value.IsEnabled)
                 return;
 
             string jsonFilename = GetSettingsPath();
@@ -260,7 +260,7 @@ namespace SmartCmdArgs.Services
 
         public void DeleteAllUnusedArgFiles()
         {
-            if (!lifeCycleService.IsEnabled)
+            if (!lifeCycleService.Value.IsEnabled)
                 return;
 
             if (!optionsSettings.DeleteUnnecessaryFilesAutomatically)
@@ -303,7 +303,7 @@ namespace SmartCmdArgs.Services
 
         private void SaveJsonForSolution()
         {
-            if (!lifeCycleService.IsEnabled || !optionsSettings.VcsSupportEnabled)
+            if (!lifeCycleService.Value.IsEnabled || !optionsSettings.VcsSupportEnabled)
                 return;
 
             string jsonFilename = FullFilenameForSolutionJsonFile();
@@ -350,7 +350,7 @@ namespace SmartCmdArgs.Services
 
         private void SaveJsonForProject(IVsHierarchy project)
         {
-            if (!lifeCycleService.IsEnabled || !optionsSettings.VcsSupportEnabled || project == null)
+            if (!lifeCycleService.Value.IsEnabled || !optionsSettings.VcsSupportEnabled || project == null)
                 return;
 
             var guid = project.GetGuid();

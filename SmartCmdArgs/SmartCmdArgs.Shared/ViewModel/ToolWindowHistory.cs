@@ -148,7 +148,7 @@ namespace SmartCmdArgs.ViewModel
 
     internal static class ToolWindowHistory
     {
-        private static ILifeCycleService lifeCycleService;
+        private static Lazy<ILifeCycleService> lifeCycleService;
 
         private static HistoryRingBuffer<SuoDataJson> _buffer;
         private static ToolWindowViewModel _vm;
@@ -157,7 +157,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void Init(ToolWindowViewModel vm, SettingsViewModel settings, int size = 500)
         {
-            lifeCycleService = CmdArgsPackage.Instance.ServiceProvider.GetRequiredService<ILifeCycleService>();
+            lifeCycleService = CmdArgsPackage.Instance.ServiceProvider.GetRequiredService<Lazy<ILifeCycleService>>();
 
             _vm = vm;
             _settings = settings;
@@ -171,7 +171,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void DeleteNewest()
         {
-            if (!lifeCycleService.IsEnabled)
+            if (!lifeCycleService.Value.IsEnabled)
                 return;
 
             if (_pauseCounter == 0)
@@ -180,7 +180,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void SaveState()
         {
-            if (!lifeCycleService.IsEnabled)
+            if (!lifeCycleService.Value.IsEnabled)
                 return;
 
             if (_pauseCounter == 0)
@@ -206,7 +206,7 @@ namespace SmartCmdArgs.ViewModel
 
         private static void RestoreCurrentState()
         {
-            if (!lifeCycleService.IsEnabled)
+            if (!lifeCycleService.Value.IsEnabled)
                 return;
 
             if (_buffer.TryGetCurrent(out SuoDataJson data))
@@ -222,7 +222,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void RestoreLastState()
         {
-            if (!lifeCycleService.IsEnabled)
+            if (!lifeCycleService.Value.IsEnabled)
                 return;
 
             if (_buffer.IsCurrentFront)
@@ -236,7 +236,7 @@ namespace SmartCmdArgs.ViewModel
 
         public static void RestorePrevState()
         {
-            if (!lifeCycleService.IsEnabled)
+            if (!lifeCycleService.Value.IsEnabled)
                 return;
 
             if (_buffer.MoveForward())

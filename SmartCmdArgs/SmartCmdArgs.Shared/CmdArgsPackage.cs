@@ -33,6 +33,7 @@ using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Services;
+using SmartCmdArgs.Services.Utils;
 using System.Threading;
 
 using Task = System.Threading.Tasks.Task;
@@ -87,7 +88,7 @@ namespace SmartCmdArgs
         private ISettingsService settingsService;
         private ILifeCycleService lifeCycleService;
 
-        public ToolWindowViewModel ToolWindowViewModel { get; }
+        public ToolWindowViewModel ToolWindowViewModel { get; private set; }
 
         public static CmdArgsPackage Instance { get; private set; }
 
@@ -193,9 +194,9 @@ namespace SmartCmdArgs
         {
             var services = new ServiceCollection();
 
-            services.AddSingleton(x => GetDialogPage<CmdArgsOptionPage>());
-            services.AddSingleton<SettingsViewModel>();
-            services.AddSingleton<ToolWindowViewModel>();
+            services.AddLazySingleton(x => GetDialogPage<CmdArgsOptionPage>());
+            services.AddLazySingleton<SettingsViewModel>();
+            services.AddLazySingleton<ToolWindowViewModel>();
             services.AddSingleton<IProjectConfigService, ProjectConfigService>();
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
             services.AddSingleton<IFileStorageService, FileStorageService>();
@@ -206,7 +207,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IItemEvaluationService, ItemEvaluationService>();
             services.AddSingleton<IItemAggregationService, ItemAggregationService>();
             services.AddSingleton<ISettingsService, SettingsService>();
-            services.AddSingleton<ILifeCycleService, LifeCycleService>();
+            services.AddLazySingleton<ILifeCycleService, LifeCycleService>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)

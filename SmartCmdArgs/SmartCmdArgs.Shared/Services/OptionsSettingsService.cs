@@ -41,37 +41,39 @@ namespace SmartCmdArgs.Services
     {
         private readonly IVisualStudioHelperService _vsHelperService;
         private readonly SettingsViewModel settingsViewModel;
-        private readonly CmdArgsOptionPage optionsPage;
+        private readonly Lazy<CmdArgsOptionPage> lazyOptionsPage;
 
         public OptionsSettingsService(
             IVisualStudioHelperService vsHelperService,
             SettingsViewModel settingsViewModel,
-            CmdArgsOptionPage optionsPage)
+            Lazy<CmdArgsOptionPage> lazyOptionsPage)
         {
             _vsHelperService = vsHelperService;
             this.settingsViewModel = settingsViewModel;
-            this.optionsPage = optionsPage;
+            this.lazyOptionsPage = lazyOptionsPage;
         }
+
+        private CmdArgsOptionPage OptionsPage => lazyOptionsPage.Value;
 
         // Settings (possibly with options default)
         public bool SaveSettingsToJson => settingsViewModel.SaveSettingsToJson;
-        public bool ManageCommandLineArgs => settingsViewModel.ManageCommandLineArgs ?? optionsPage.ManageCommandLineArgs;
-        public bool ManageEnvironmentVars => settingsViewModel.ManageEnvironmentVars ?? optionsPage.ManageEnvironmentVars;
-        public bool ManageWorkingDirectories => settingsViewModel.ManageWorkingDirectories ?? optionsPage.ManageWorkingDirectories;
+        public bool ManageCommandLineArgs => settingsViewModel.ManageCommandLineArgs ?? OptionsPage.ManageCommandLineArgs;
+        public bool ManageEnvironmentVars => settingsViewModel.ManageEnvironmentVars ?? OptionsPage.ManageEnvironmentVars;
+        public bool ManageWorkingDirectories => settingsViewModel.ManageWorkingDirectories ?? OptionsPage.ManageWorkingDirectories;
         public bool UseCustomJsonRoot => settingsViewModel.UseCustomJsonRoot;
         public string JsonRootPath => settingsViewModel.JsonRootPath;
-        public bool VcsSupportEnabled => settingsViewModel.VcsSupportEnabled ?? optionsPage.VcsSupportEnabled;
-        public bool MacroEvaluationEnabled => settingsViewModel.MacroEvaluationEnabled ?? optionsPage.MacroEvaluationEnabled;
-        public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settingsViewModel.UseSolutionDir ?? optionsPage.UseSolutionDir);
+        public bool VcsSupportEnabled => settingsViewModel.VcsSupportEnabled ?? OptionsPage.VcsSupportEnabled;
+        public bool MacroEvaluationEnabled => settingsViewModel.MacroEvaluationEnabled ?? OptionsPage.MacroEvaluationEnabled;
+        public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settingsViewModel.UseSolutionDir ?? OptionsPage.UseSolutionDir);
 
         // Options
-        public bool UseMonospaceFont => optionsPage.UseMonospaceFont;
-        public bool DisplayTagForCla => optionsPage.DisplayTagForCla;
-        public bool DeleteEmptyFilesAutomatically => optionsPage.DeleteEmptyFilesAutomatically;
-        public bool DeleteUnnecessaryFilesAutomatically => optionsPage.DeleteUnnecessaryFilesAutomatically;
-        public bool EnabledByDefault => optionsPage.EnabledByDefault;
-        public InactiveDisableMode DisableInactiveItems => optionsPage.DisableInactiveItems;
-        public RelativePathRootOption RelativePathRoot => optionsPage.RelativePathRoot;
+        public bool UseMonospaceFont => OptionsPage.UseMonospaceFont;
+        public bool DisplayTagForCla => OptionsPage.DisplayTagForCla;
+        public bool DeleteEmptyFilesAutomatically => OptionsPage.DeleteEmptyFilesAutomatically;
+        public bool DeleteUnnecessaryFilesAutomatically => OptionsPage.DeleteUnnecessaryFilesAutomatically;
+        public bool EnabledByDefault => OptionsPage.EnabledByDefault;
+        public InactiveDisableMode DisableInactiveItems => OptionsPage.DisableInactiveItems;
+        public RelativePathRootOption RelativePathRoot => OptionsPage.RelativePathRoot;
 
 
         // Event Handlers
@@ -88,7 +90,7 @@ namespace SmartCmdArgs.Services
         public Task InitializeAsync()
         {
             settingsViewModel.PropertyChanged += Settings_PropertyChanged;
-            optionsPage.PropertyChanged += Options_PropertyChanged;
+            OptionsPage.PropertyChanged += Options_PropertyChanged;
 
             return Task.CompletedTask;
         }

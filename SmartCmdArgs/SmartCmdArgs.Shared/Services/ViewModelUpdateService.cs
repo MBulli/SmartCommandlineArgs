@@ -26,7 +26,7 @@ namespace SmartCmdArgs.Services
         private readonly IItemAggregationService itemAggregation;
         private readonly IItemEvaluationService itemEvaluation;
         private readonly IVisualStudioHelperService vsHelper;
-        private readonly ILifeCycleService lifeCycleService;
+        private readonly Lazy<ILifeCycleService> lifeCycleService;
 
         private readonly Debouncer _updateIsActiveDebouncer;
 
@@ -39,7 +39,7 @@ namespace SmartCmdArgs.Services
             IItemAggregationService itemAggregation,
             IItemEvaluationService itemEvaluation,
             IVisualStudioHelperService vsHelper,
-            ILifeCycleService lifeCycleService)
+            Lazy<ILifeCycleService> lifeCycleService)
         {
             cmdArgsPackage = CmdArgsPackage.Instance;
             this.toolWindowViewModel = toolWindowViewModel;
@@ -61,7 +61,7 @@ namespace SmartCmdArgs.Services
 
         public void UpdateCommandsForProject(IVsHierarchy project)
         {
-            if (!lifeCycleService.IsEnabled)
+            if (!lifeCycleService.Value.IsEnabled)
                 return;
 
             if (project == null)
