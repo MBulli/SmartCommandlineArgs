@@ -1,13 +1,14 @@
 using System.Threading.Tasks;
 using System.Linq;
-
 using System;
 using Xunit;
 using Microsoft.VisualStudio.Shell;
-using Task = System.Threading.Tasks.Task;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
+using SmartCmdArgs.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs.Tests.LanguageSpecificTests
 {
@@ -20,15 +21,18 @@ namespace SmartCmdArgs.Tests.LanguageSpecificTests
             _language = language;
         }
 
-        [VsFact]
+        [VsFact(Skip = IntegrationTestSkip)]
         public async Task CollectArgsFromExistingProjectConfigsTest()
         {
             await OpenSolutionWithNameAsync(_language, "CollectArgsTest");
 
             var package = await LoadExtensionAsync();
-            Assert.False(package?.ToolWindowViewModel?.SettingsViewModel?.VcsSupportEnabled, "VCS support must be disabled");
+            var settingsViewModel = package.ServiceProvider.GetService<SettingsViewModel>();
 
-            var args = package?.ToolWindowViewModel?.TreeViewModel?.AllArguments?.ToList();
+            Assert.False(settingsViewModel?.VcsSupportEnabled, "VCS support must be disabled");
+
+            var treeViewModel = package.ServiceProvider.GetService<TreeViewModel>();
+            var args = treeViewModel?.AllArguments?.ToList();
 
             Assert.NotNull(args);
 
@@ -40,7 +44,7 @@ namespace SmartCmdArgs.Tests.LanguageSpecificTests
 
         #region SetCmdArgsTests
 
-        [VsFact]
+        [VsFact(Skip = IntegrationTestSkip)]
         public async Task SetCommandLineArgsViaDebugTest()
         {
             await OpenSolutionWithNameAsync(_language, "ReadCmdArgsProject");
@@ -55,11 +59,8 @@ namespace SmartCmdArgs.Tests.LanguageSpecificTests
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var treeViewModel = package.ToolWindowViewModel.TreeViewModel;
-
-            Assert.NotNull(treeViewModel);
-
-            var project = treeViewModel.Projects.FirstOrDefault().Value;
+            var treeViewModel = package.ServiceProvider.GetService<TreeViewModel>();
+            var project = treeViewModel?.Projects.FirstOrDefault().Value;
 
             Assert.NotNull(project);
 

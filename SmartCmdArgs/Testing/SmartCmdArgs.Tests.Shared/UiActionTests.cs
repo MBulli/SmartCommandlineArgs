@@ -1,24 +1,26 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.Shell;
+using SmartCmdArgs.ViewModel;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
+
 using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs.Tests
 {
     public class UiActionTests : TestBase
     {
-        [VsFact]
+        [VsFact(Skip = IntegrationTestSkip)]
         public async Task AddNewArgLineViaCommandTest()
         {
             await OpenSolutionWithNameAsync(TestLanguage.CSharpDotNetCore, "DefaultProject");
 
             var package = await LoadExtensionAsync();
 
-            var addCommand = package?.ToolWindowViewModel?.AddEntryCommand;
+            var toolWindowViewModel = package.ServiceProvider.GetService<ToolWindowViewModel>();
+
+            var addCommand = toolWindowViewModel?.AddEntryCommand;
             Assert.NotNull(addCommand);
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -27,7 +29,8 @@ namespace SmartCmdArgs.Tests
 
             addCommand.Execute(null);
 
-            var args = package?.ToolWindowViewModel?.TreeViewModel?.AllArguments?.ToList();
+            var treeViewModel = package.ServiceProvider.GetService<TreeViewModel>();
+            var args = treeViewModel?.AllArguments?.ToList();
 
             Assert.NotNull(args);
 

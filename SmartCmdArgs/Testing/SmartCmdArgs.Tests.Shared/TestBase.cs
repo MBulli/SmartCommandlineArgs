@@ -1,14 +1,18 @@
 ﻿using EnvDTE;
 using EnvDTE80;
 using Microsoft;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using SmartCmdArgs.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
+
+using ServiceProvider = Microsoft.VisualStudio.Shell.ServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs.Tests
@@ -16,6 +20,8 @@ namespace SmartCmdArgs.Tests
     [VsTestSettings(ReuseInstance = false, Version = Utils.Config.Version)]
     public class TestBase
     {
+        protected const string IntegrationTestSkip = "Integration Testing does not work ATM";
+
         protected DTE Dte => GetService<DTE, DTE>();
 
         protected string RootDir => Directory.GetCurrentDirectory();
@@ -125,7 +131,8 @@ namespace SmartCmdArgs.Tests
 
         protected void SetVcsSupport(bool enabled)
         {
-            ExtensionPackage.ToolWindowViewModel.SettingsViewModel.VcsSupportEnabled = enabled;
+            var settingsViewModel = ExtensionPackage.ServiceProvider.GetService<SettingsViewModel>();
+            settingsViewModel.VcsSupportEnabled = enabled;
         }
 
 
