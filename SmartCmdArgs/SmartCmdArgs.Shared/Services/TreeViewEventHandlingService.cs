@@ -14,7 +14,7 @@ namespace SmartCmdArgs.Services
 
     internal class TreeViewEventHandlingService : ITreeViewEventHandlingService
     {
-        private readonly ToolWindowViewModel toolWindowViewModel;
+        private readonly TreeViewModel treeViewModel;
         private readonly IVisualStudioHelperService vsHelper;
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IFileStorageService fileStorage;
@@ -22,14 +22,14 @@ namespace SmartCmdArgs.Services
         private readonly IViewModelUpdateService viewModelUpdateService;
 
         public TreeViewEventHandlingService(
-            ToolWindowViewModel toolWindowViewModel,
+            TreeViewModel treeViewModel,
             IVisualStudioHelperService vsHelper,
             IOptionsSettingsService optionsSettings,
             IFileStorageService fileStorage,
             IProjectConfigService projectConfigService,
             IViewModelUpdateService viewModelUpdateService)
         {
-            this.toolWindowViewModel = toolWindowViewModel;
+            this.treeViewModel = treeViewModel;
             this.vsHelper = vsHelper;
             this.optionsSettings = optionsSettings;
             this.fileStorage = fileStorage;
@@ -44,18 +44,18 @@ namespace SmartCmdArgs.Services
 
         public void AttachToEvents()
         {
-            toolWindowViewModel.TreeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
-            toolWindowViewModel.TreeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
-            toolWindowViewModel.TreeViewModel.TreeChangedThrottled += OnTreeChangedThrottled;
-            toolWindowViewModel.TreeViewModel.TreeChanged += OnTreeChanged;
+            treeViewModel.ItemSelectionChanged += OnItemSelectionChanged;
+            treeViewModel.TreeContentChangedThrottled += OnTreeContentChangedThrottled;
+            treeViewModel.TreeChangedThrottled += OnTreeChangedThrottled;
+            treeViewModel.TreeChanged += OnTreeChanged;
         }
 
         public void DetachFromEvents()
         {
-            toolWindowViewModel.TreeViewModel.ItemSelectionChanged -= OnItemSelectionChanged;
-            toolWindowViewModel.TreeViewModel.TreeContentChangedThrottled -= OnTreeContentChangedThrottled;
-            toolWindowViewModel.TreeViewModel.TreeChangedThrottled -= OnTreeChangedThrottled;
-            toolWindowViewModel.TreeViewModel.TreeChanged -= OnTreeChanged;
+            treeViewModel.ItemSelectionChanged -= OnItemSelectionChanged;
+            treeViewModel.TreeContentChangedThrottled -= OnTreeContentChangedThrottled;
+            treeViewModel.TreeChangedThrottled -= OnTreeChangedThrottled;
+            treeViewModel.TreeChanged -= OnTreeChanged;
         }
 
         private void OnItemSelectionChanged(object sender, CmdBase cmdBase)

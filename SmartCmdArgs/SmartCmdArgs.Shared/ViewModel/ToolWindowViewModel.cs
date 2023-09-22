@@ -24,8 +24,10 @@ namespace SmartCmdArgs.ViewModel
         private readonly IItemEvaluationService itemEvaluation;
         private readonly Lazy<ILifeCycleService> lifeCycleService;
         private readonly IToolWindowHistory toolWindowHistory;
+        private readonly TreeViewModel treeViewModel;
 
-        public TreeViewModel TreeViewModel { get; }
+        // For xaml binding
+        public TreeViewModel TreeViewModel => treeViewModel;
 
         private bool useMonospaceFont;
         public bool UseMonospaceFont
@@ -119,28 +121,28 @@ namespace SmartCmdArgs.ViewModel
             ISettingsService settingsService,
             IVisualStudioHelperService vsHelper,
             Lazy<ILifeCycleService> lifeCycleService,
-            IToolWindowHistory toolWindowHistory)
+            IToolWindowHistory toolWindowHistory,
+            TreeViewModel treeViewModel)
         {
             this.itemEvaluation = itemEvaluation;
             this.lifeCycleService = lifeCycleService;
             this.toolWindowHistory = toolWindowHistory;
-
-            TreeViewModel = new TreeViewModel();
+            this.treeViewModel = treeViewModel;
 
             AddEntryCommand = new RelayCommand<ArgumentType>(
                 argType => {
                     toolWindowHistory.SaveState();
                     var newArg = new CmdArgument(argType, arg: "", isChecked: true);
-                    TreeViewModel.AddItemAtFocusedItem(newArg);
-                    TreeViewModel.SelectItemCommand.SafeExecute(newArg);
+                    treeViewModel.AddItemAtFocusedItem(newArg);
+                    treeViewModel.SelectItemCommand.SafeExecute(newArg);
                 }, canExecute: _ => ExtensionEnabled && HasStartupProject());
 
             AddGroupCommand = new RelayCommand(
                 () => {
                     toolWindowHistory.SaveState();
                     var newGrp = new CmdGroup(name: "");
-                    TreeViewModel.AddItemAtFocusedItem(newGrp);
-                    TreeViewModel.SelectItemCommand.SafeExecute(newGrp);
+                    treeViewModel.AddItemAtFocusedItem(newGrp);
+                    treeViewModel.SelectItemCommand.SafeExecute(newGrp);
                 }, canExecute: _ => ExtensionEnabled && HasStartupProject());
 
             RemoveEntriesCommand = new RelayCommand(
@@ -151,18 +153,18 @@ namespace SmartCmdArgs.ViewModel
             MoveEntriesUpCommand = new RelayCommand(
                 () => {
                     toolWindowHistory.SaveState();
-                    TreeViewModel.MoveSelectedEntries(moveDirection: -1);
+                    treeViewModel.MoveSelectedEntries(moveDirection: -1);
                 }, canExecute: _ => ExtensionEnabled && HasStartupProjectAndSelectedItems());
 
             MoveEntriesDownCommand = new RelayCommand(
                 () => {
                     toolWindowHistory.SaveState();
-                    TreeViewModel.MoveSelectedEntries(moveDirection: 1);
+                    treeViewModel.MoveSelectedEntries(moveDirection: 1);
                 }, canExecute: _ => ExtensionEnabled && HasStartupProjectAndSelectedItems());
 
             CopyCommandlineCommand = new RelayCommand(
                 () => {
-                    var focusedProject = TreeViewModel.FocusedProject;
+                    var focusedProject = treeViewModel.FocusedProject;
                     if (focusedProject == null)
                         return;
 
@@ -177,7 +179,7 @@ namespace SmartCmdArgs.ViewModel
             var cmdEscapeRegex = new Regex("([&|(=<>^])", RegexOptions.Compiled);
             CopyEnvVarsForCommadlineCommand = new RelayCommand<string>(
                 commandLineType => {
-                    var focusedProject = TreeViewModel.FocusedProject;
+                    var focusedProject = treeViewModel.FocusedProject;
                     if (focusedProject == null)
                         return;
 
@@ -208,7 +210,7 @@ namespace SmartCmdArgs.ViewModel
             ShowAllProjectsCommand = new RelayCommand(
                 () => {
                     toolWindowHistory.SaveState();
-                    TreeViewModel.ShowAllProjects = !TreeViewModel.ShowAllProjects;
+                    treeViewModel.ShowAllProjects = !treeViewModel.ShowAllProjects;
                 }, canExecute: _ => ExtensionEnabled && settingsService.Loaded);
 
             ShowSettingsCommand = new RelayCommand(
@@ -229,7 +231,7 @@ namespace SmartCmdArgs.ViewModel
             ToggleSelectedCommand = new RelayCommand(
                 () => {
                     toolWindowHistory.SaveStateAndPause();
-                    TreeViewModel.ToggleSelected();
+                    treeViewModel.ToggleSelected();
                     toolWindowHistory.Resume();
                 }, canExecute: _ => ExtensionEnabled && HasStartupProject());
 
@@ -239,13 +241,13 @@ namespace SmartCmdArgs.ViewModel
 
             CutItemsCommand = new RelayCommand(CutItemsToClipboard, canExecute: _ => ExtensionEnabled && HasSelectedItems() && !HasSingleSelectedItemOfType<CmdProject>());
 
-            UndoCommand = new RelayCommand(toolWindowHistory.RestoreLastState, _ => ExtensionEnabled && !TreeViewModel.IsInEditMode);
+            UndoCommand = new RelayCommand(toolWindowHistory.RestoreLastState, _ => ExtensionEnabled && !treeViewModel.IsInEditMode);
 
-            RedoCommand = new RelayCommand(toolWindowHistory.RestorePrevState, _ => ExtensionEnabled && !TreeViewModel.IsInEditMode);
+            RedoCommand = new RelayCommand(toolWindowHistory.RestorePrevState, _ => ExtensionEnabled && !treeViewModel.IsInEditMode);
 
             SplitArgumentCommand = new RelayCommand(() =>
             {
-                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdArgument argument)
                 {
                     toolWindowHistory.SaveState();
@@ -254,9 +256,9 @@ namespace SmartCmdArgs.ViewModel
                                    .Select((s) => new CmdArgument(argument.ArgumentType, s, argument.IsChecked, argument.DefaultChecked))
                                    .ToList();
 
-                    TreeViewModel.AddItemsAt(selectedItem, newItems);
+                    treeViewModel.AddItemsAt(selectedItem, newItems);
                     RemoveItems(new[] { selectedItem });
-                    TreeViewModel.SelectItems(newItems);
+                    treeViewModel.SelectItems(newItems);
                 }
             }, canExecute: _ => ExtensionEnabled && HasSingleSelectedArgumentOfType(ArgumentType.CmdArg));
 
@@ -315,12 +317,12 @@ namespace SmartCmdArgs.ViewModel
                 newGrp.AddRange(itemsToGroup);
                 
                 // set selection to new group
-                TreeViewModel.SelectItemCommand.SafeExecute(newGrp);
+                treeViewModel.SelectItemCommand.SafeExecute(newGrp);
 
             }, _ => ExtensionEnabled && HasSelectedItems() && HaveSameParent(GetSelectedRootItems(true)));
             
             SetAsStartupProjectCommand = new RelayCommand(() => {
-                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdProject proj)
                 {
                     vsHelper.SetAsStartupProject(proj.Id);
@@ -329,7 +331,7 @@ namespace SmartCmdArgs.ViewModel
 
             SetProjectConfigCommand = new RelayCommand<string>(configName =>
             {
-                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdGroup grp)
                 {
                     toolWindowHistory.SaveState();
@@ -339,7 +341,7 @@ namespace SmartCmdArgs.ViewModel
 
             SetProjectPlatformCommand = new RelayCommand<string>(platformName =>
             {
-                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdGroup grp)
                 {
                     toolWindowHistory.SaveState();
@@ -349,7 +351,7 @@ namespace SmartCmdArgs.ViewModel
 
             SetLaunchProfileCommand = new RelayCommand<string>(profileName =>
             {
-                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdGroup grp)
                 {
                     toolWindowHistory.SaveState();
@@ -359,7 +361,7 @@ namespace SmartCmdArgs.ViewModel
 
             ToggleExclusiveModeCommand = new RelayCommand(() =>
             {
-                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdContainer con)
                 {
                     toolWindowHistory.SaveState();
@@ -369,7 +371,7 @@ namespace SmartCmdArgs.ViewModel
 
             SetDelimiterCommand = new RelayCommand<string>(delimiter =>
             {
-                var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+                var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
                 if (selectedItem is CmdContainer con && con.Delimiter != delimiter)
                 {
                     toolWindowHistory.SaveState();
@@ -379,13 +381,13 @@ namespace SmartCmdArgs.ViewModel
 
             SetArgumentTypeCommand = new RelayCommand<ArgumentType>(type =>
             {
-                var items = TreeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
+                var items = treeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
                 items.ForEach(x => x.ArgumentType = type);
             }, _ => ExtensionEnabled && HasSelectedItemOfType<CmdArgument>());
 
             ToggleDefaultCheckedCommand = new RelayCommand(() =>
             {
-                var items = TreeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
+                var items = treeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
                 var hasTrue = items.Any(x => x.DefaultChecked);
                 items.ForEach(x => x.DefaultChecked = !hasTrue);
             }, _ => ExtensionEnabled && HasSelectedItemOfType<CmdArgument>());
@@ -393,7 +395,7 @@ namespace SmartCmdArgs.ViewModel
             ResetToDefaultCheckedCommand = new RelayCommand(() =>
             {
                 toolWindowHistory.SaveStateAndPause();
-                TreeViewModel.ResetToDefaultChecked();
+                treeViewModel.ResetToDefaultChecked();
                 toolWindowHistory.Resume();
             }, _ => ExtensionEnabled && HasSelectedItems());
 
@@ -406,7 +408,7 @@ namespace SmartCmdArgs.ViewModel
 
         public void Dispose()
         {
-            TreeViewModel.Dispose();
+            treeViewModel.Dispose();
         }
 
         private bool ExtensionEnabled => lifeCycleService.Value.IsEnabled;
@@ -416,8 +418,8 @@ namespace SmartCmdArgs.ViewModel
         /// </summary>
         public void Reset()
         {
-            TreeViewModel.ShowAllProjects = false;
-            TreeViewModel.Projects.Clear();
+            treeViewModel.ShowAllProjects = false;
+            treeViewModel.Projects.Clear();
             toolWindowHistory.Clear();
         }
 
@@ -436,7 +438,7 @@ namespace SmartCmdArgs.ViewModel
 
         private IEnumerable<CmdBase> GetSelectedRootItems(bool includeProjects)
         {
-            var selectedItems = TreeViewModel.AllProjects.SelectMany(prj => prj.GetEnumerable(includeSelf: includeProjects)).Where(item => item.IsSelected).ToList();
+            var selectedItems = treeViewModel.AllProjects.SelectMany(prj => prj.GetEnumerable(includeSelf: includeProjects)).Where(item => item.IsSelected).ToList();
             var set = new HashSet<CmdContainer>(selectedItems.OfType<CmdContainer>());
             var result = selectedItems.Where(x => !set.Contains(x.Parent));
 
@@ -460,8 +462,8 @@ namespace SmartCmdArgs.ViewModel
             {
                 toolWindowHistory.SaveState();
 
-                TreeViewModel.AddItemsAtFocusedItem(pastedItems);
-                TreeViewModel.SelectItems(pastedItems);
+                treeViewModel.AddItemsAtFocusedItem(pastedItems);
+                treeViewModel.SelectItems(pastedItems);
             }
         }
 
@@ -478,7 +480,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if a valid startup project is set</returns>
         private bool HasStartupProject()
         {
-            return TreeViewModel.StartupProjects.Any();
+            return treeViewModel.StartupProjects.Any();
         }
 
         /// <summary>
@@ -487,7 +489,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if any line is selected</returns>
         private bool HasSelectedItems()
         {
-            return TreeViewModel.SelectedItems.Any();
+            return treeViewModel.SelectedItems.Any();
         }
 
         /// <summary>
@@ -496,7 +498,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if axactly one line is selected</returns>
         private bool HasSingleSelectedItem()
         {
-            return TreeViewModel.SelectedItems.Take(2).Count() == 1;
+            return treeViewModel.SelectedItems.Take(2).Count() == 1;
         }
 
         /// <summary>
@@ -505,7 +507,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if an line of the given type is selected</returns>
         private bool HasSelectedItemOfType<T>()
         {
-            return TreeViewModel.SelectedItems.OfType<T>().Any();
+            return treeViewModel.SelectedItems.OfType<T>().Any();
         }
         
         /// <summary>
@@ -514,7 +516,7 @@ namespace SmartCmdArgs.ViewModel
         /// <returns>True if axactly one line is selected and it is of the given type.</returns>
         private bool HasSingleSelectedItemOfType<T>()
         {
-            return HasSingleSelectedItem() && (TreeViewModel.SelectedItems.FirstOrDefault() is T);
+            return HasSingleSelectedItem() && (treeViewModel.SelectedItems.FirstOrDefault() is T);
         }
 
         /// <summary>
@@ -524,7 +526,7 @@ namespace SmartCmdArgs.ViewModel
         private bool HasSingleSelectedArgumentOfType(ArgumentType argumentType)
         {
             return HasSingleSelectedItem() 
-                && TreeViewModel.SelectedItems.FirstOrDefault() is CmdArgument arg 
+                && treeViewModel.SelectedItems.FirstOrDefault() is CmdArgument arg 
                 && arg.ArgumentType == argumentType;
         }
 
@@ -539,7 +541,7 @@ namespace SmartCmdArgs.ViewModel
 
         private IEnumerable<string> ExtractPathFromSelectedArgument()
         {
-            var selectedItem = TreeViewModel.SelectedItems.FirstOrDefault();
+            var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
             if (selectedItem is CmdArgument argument)
             {
                 return itemEvaluation.ExtractPathsFromItem(argument);
@@ -561,7 +563,7 @@ namespace SmartCmdArgs.ViewModel
         private void RemoveSelectedItems()
         {
             toolWindowHistory.SaveState();
-            RemoveItems(TreeViewModel.SelectedItems, true);
+            RemoveItems(treeViewModel.SelectedItems, true);
         }
 
         private void RemoveItems(IEnumerable<CmdBase> items, bool doSelection = false)
@@ -571,7 +573,7 @@ namespace SmartCmdArgs.ViewModel
             int indexToSelect = 0;
             if (doSelection)
             {
-                indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
+                indexToSelect = treeViewModel.TreeItemsView.OfType<CmdBase>()
                     .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
                     .TakeWhile(item => !itemsSet.Contains(item)).Count();
             }
@@ -590,16 +592,16 @@ namespace SmartCmdArgs.ViewModel
 
             if (doSelection)
             {
-                indexToSelect = TreeViewModel.TreeItemsView.OfType<CmdBase>()
+                indexToSelect = treeViewModel.TreeItemsView.OfType<CmdBase>()
                     .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
                     .Take(indexToSelect + 1).Count() - 1;
-                TreeViewModel.SelectIndexCommand.SafeExecute(indexToSelect);
+                treeViewModel.SelectIndexCommand.SafeExecute(indexToSelect);
             }
         }
 
         public void RenameProject(IVsHierarchy project)
         {
-            if (TreeViewModel.Projects.TryGetValue(project.GetGuid(), out CmdProject cmdProject))
+            if (treeViewModel.Projects.TryGetValue(project.GetGuid(), out CmdProject cmdProject))
             {
                 cmdProject.Value = project.GetDisplayName();
             }
@@ -620,17 +622,17 @@ namespace SmartCmdArgs.ViewModel
                 data.Prefix,
                 data.Postfix);
 
-            // Assign TreeViewModel after AddRange to not get a lot of ParentChanged events
-            cmdPrj.ParentTreeViewModel = TreeViewModel; 
+            // Assign treeViewModel after AddRange to not get a lot of ParentChanged events
+            cmdPrj.ParentTreeViewModel = treeViewModel; 
 
-            TreeViewModel.Projects[guid] = cmdPrj;
+            treeViewModel.Projects[guid] = cmdPrj;
 
             cmdPrj.IsSelected = data.Selected;
         }
 
         public void PopulateFromProjectData(Guid projectId, ProjectDataJson data)
         {
-            if (TreeViewModel.Projects.TryGetValue(projectId, out CmdProject cmdPrj))
+            if (treeViewModel.Projects.TryGetValue(projectId, out CmdProject cmdPrj))
             {
                 cmdPrj.ExclusiveMode = data.ExclusiveMode;
                 cmdPrj.IsExpanded = data.Expanded;

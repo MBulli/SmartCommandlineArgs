@@ -22,6 +22,7 @@ namespace SmartCmdArgs.Services
         private readonly ISuoDataService suoDataService;
         private readonly ISettingsService settingsService;
         private readonly ToolWindowViewModel toolWindowViewModel;
+        private readonly TreeViewModel treeViewModel;
         private readonly IVisualStudioHelperService vsHelper;
         private readonly IViewModelUpdateService viewModelUpdateService;
         private readonly IFileStorageService fileStorage;
@@ -72,6 +73,7 @@ namespace SmartCmdArgs.Services
             ISuoDataService suoDataService,
             ISettingsService settingsService,
             ToolWindowViewModel toolWindowViewModel,
+            TreeViewModel treeViewModel,
             IVisualStudioHelperService vsHelper,
             IViewModelUpdateService viewModelUpdateService,
             IFileStorageService fileStorage,
@@ -83,6 +85,7 @@ namespace SmartCmdArgs.Services
             this.suoDataService = suoDataService;
             this.settingsService = settingsService;
             this.toolWindowViewModel = toolWindowViewModel;
+            this.treeViewModel = treeViewModel;
             this.vsHelper = vsHelper;
             this.viewModelUpdateService = viewModelUpdateService;
             this.fileStorage = fileStorage;
@@ -149,7 +152,7 @@ namespace SmartCmdArgs.Services
         {
             Debug.Assert(IsEnabled);
 
-            toolWindowViewModel.TreeViewModel.ShowAllProjects = suoDataService.SuoDataJson.ShowAllProjects;
+            treeViewModel.ShowAllProjects = suoDataService.SuoDataJson.ShowAllProjects;
 
             foreach (var project in vsHelper.GetSupportedProjects())
             {

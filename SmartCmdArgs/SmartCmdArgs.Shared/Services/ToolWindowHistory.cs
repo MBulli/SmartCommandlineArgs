@@ -27,6 +27,7 @@ namespace SmartCmdArgs.Services
     {
         private readonly Lazy<ILifeCycleService> lifeCycleService;
         private readonly Lazy<ToolWindowViewModel> toolWindowViewModel;
+        private readonly TreeViewModel treeViewModel;
         private readonly Lazy<SettingsViewModel> settingsViewModel;
 
         private HistoryRingBuffer<SuoDataJson> _buffer;
@@ -35,10 +36,12 @@ namespace SmartCmdArgs.Services
         public ToolWindowHistory(
             Lazy<ILifeCycleService> lifeCycleService,
             Lazy<ToolWindowViewModel> toolWindowViewModel,
+            TreeViewModel treeViewModel,
             Lazy<SettingsViewModel> settingsViewModel)
         {
             this.lifeCycleService = lifeCycleService;
             this.toolWindowViewModel = toolWindowViewModel;
+            this.treeViewModel = treeViewModel;
             this.settingsViewModel = settingsViewModel;
 
             _buffer = new HistoryRingBuffer<SuoDataJson>(500);
@@ -64,7 +67,7 @@ namespace SmartCmdArgs.Services
                 return;
 
             if (_pauseCounter == 0)
-                _buffer.Push(SuoDataSerializer.Serialize(toolWindowViewModel.Value, settingsViewModel.Value));
+                _buffer.Push(SuoDataSerializer.Serialize(treeViewModel, settingsViewModel.Value));
         }
 
         public void SaveStateAndPause()
@@ -91,7 +94,7 @@ namespace SmartCmdArgs.Services
 
             if (_buffer.TryGetCurrent(out SuoDataJson data))
             {
-                toolWindowViewModel.Value.TreeViewModel.ShowAllProjects = data.ShowAllProjects;
+                treeViewModel.ShowAllProjects = data.ShowAllProjects;
 
                 foreach (var pair in data.ProjectArguments)
                 {

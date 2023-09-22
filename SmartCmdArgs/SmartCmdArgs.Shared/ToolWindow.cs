@@ -13,6 +13,7 @@ namespace SmartCmdArgs
     using Microsoft.VisualStudio.Shell.Interop;
     using System.Collections.Generic;
     using Microsoft.VisualStudio.PlatformUI;
+    using SmartCmdArgs.ViewModel;
 
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.
@@ -30,7 +31,8 @@ namespace SmartCmdArgs
     {
         public const string ToolWindowGuidString = "a21b35ed-5c13-4d55-a3d2-71054c4e9540";
 
-        private View.ToolWindowControl view;
+        private readonly ToolWindowViewModel viewModel;
+        private readonly TreeViewModel treeViewModel;
 
         private List<IVsWindowSearchOption> searchOptions;
         private WindowSearchBooleanOption matchCaseSearchOption;
@@ -40,19 +42,18 @@ namespace SmartCmdArgs
             get { return (CmdArgsPackage)base.Package; }
         }
 
-        internal ToolWindow(ViewModel.ToolWindowViewModel viewModel)
+        internal ToolWindow(ToolWindowViewModel viewModel, TreeViewModel treeViewModel)
             : base(null)
         {
-            if (viewModel == null)
-                throw new ArgumentNullException(nameof(viewModel));
+            this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            this.treeViewModel = treeViewModel;
 
             this.Caption = "Command Line Arguments";
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on
             // the object returned by the Content property.
-            this.view = new View.ToolWindowControl(viewModel);
-            this.Content = view;
+            this.Content = new View.ToolWindowControl(viewModel);
 
             // Id from VSPackage.resx.
             BitmapResourceID = 300;
@@ -98,10 +99,10 @@ namespace SmartCmdArgs
             // The tool window keeps the focus if pfCommitFailed==1
 
             bool escapeDown = System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Escape);
-            if (escapeDown && view.ViewModel.TreeViewModel.IsInEditMode)
+            if (escapeDown && treeViewModel.IsInEditMode)
             {
                 pfCommitFailed = 1;
-                view.ViewModel.TreeViewModel.CancelEditMode();
+                treeViewModel.CancelEditMode();
             }
             else
             {
@@ -126,27 +127,34 @@ namespace SmartCmdArgs
         {
             if (pSearchQuery == null || pSearchCallback == null)
                 return null;
-            return new SearchTask(dwCookie, pSearchQuery, pSearchCallback, this);
+            return new SearchTask(dwCookie, pSearchQuery, pSearchCallback, this, treeViewModel);
         }
 
         public override void ClearSearch()
         {
-            Package.ToolWindowViewModel.TreeViewModel.SetStringFilter(null);
+            treeViewModel.SetStringFilter(null);
         }
 
         internal class SearchTask : VsSearchTask
         {
-            private ToolWindow _toolWindow;
+            private readonly ToolWindow toolWindow;
+            private readonly TreeViewModel treeViewModel;
 
-            public SearchTask(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback, ToolWindow toolwindow)
+            public SearchTask(
+                uint dwCookie,
+                IVsSearchQuery pSearchQuery,
+                IVsSearchCallback pSearchCallback,
+                ToolWindow toolwindow,
+                TreeViewModel treeViewModel)
                 : base(dwCookie, pSearchQuery, pSearchCallback)
             {
-                _toolWindow = toolwindow;
+                toolWindow = toolwindow;
+                this.treeViewModel = treeViewModel;
             }
 
             protected override void OnStartSearch()
             {
-                _toolWindow.Package.ToolWindowViewModel.TreeViewModel.SetStringFilter(SearchQuery.SearchString, _toolWindow.matchCaseSearchOption.Value);
+                treeViewModel.SetStringFilter(SearchQuery.SearchString, toolWindow.matchCaseSearchOption.Value);
 
                 // Call the implementation of this method in the base class.   
                 // This sets the task status to complete and reports task completion.   

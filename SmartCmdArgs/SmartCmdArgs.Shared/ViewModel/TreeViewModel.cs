@@ -16,7 +16,7 @@ namespace SmartCmdArgs.ViewModel
 {
     public class TreeViewModel : PropertyChangedBase, IDisposable
     {
-        private IToolWindowHistory ToolWindowHistory = CmdArgsPackage.Instance.ServiceProvider.GetRequiredService<IToolWindowHistory>();
+        private readonly Lazy<IToolWindowHistory> toolWindowHistory;
 
         public ObservableDictionary<Guid, CmdProject> Projects { get; }
 
@@ -112,8 +112,11 @@ namespace SmartCmdArgs.ViewModel
         private readonly DebouncerTable<CmdProject> _treeChangedDebouncerTable;
         private readonly DebouncerTable<CmdProject> _treeContentChangedDebouncerTable;
 
-        public TreeViewModel()
+        public TreeViewModel(
+            Lazy<IToolWindowHistory> toolWindowHistory)
         {
+            this.toolWindowHistory = toolWindowHistory;
+
             Projects = new ObservableDictionary<Guid, CmdProject>();
             Projects.CollectionChanged += OnProjectsChanged;
             treeitems = null;
@@ -365,7 +368,7 @@ namespace SmartCmdArgs.ViewModel
                     FireTreeContentChanged(e);
                     break;
                 case CheckStateWillChangeEvent e:
-                    ToolWindowHistory.SaveState();
+                    toolWindowHistory.Value.SaveState();
                     break;
                 case CheckStateChangedEvent e:
                     FireTreeChanged(e);
@@ -375,11 +378,11 @@ namespace SmartCmdArgs.ViewModel
                     if (currentEditingItem != null)
                     {
                         textBeforeEdit = currentEditingItem.Value;
-                        ToolWindowHistory.SaveState();
+                        toolWindowHistory.Value.SaveState();
                     }
                     else if (textBeforeEdit == e.Sender.Value)
                     {
-                        ToolWindowHistory.DeleteNewest();
+                        toolWindowHistory.Value.DeleteNewest();
                         textBeforeEdit = null;
                     }
 

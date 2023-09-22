@@ -86,15 +86,13 @@ namespace SmartCmdArgs
         private IVsEventHandlingService vsEventHandling;
         private IFileStorageEventHandlingService fileStorageEventHandling;
 
-        public ToolWindowViewModel ToolWindowViewModel { get; private set; }
+        private ToolWindowViewModel toolWindowViewModel;
+        private TreeViewModel treeViewModel;
 
         public static CmdArgsPackage Instance { get; private set; }
 
         private ServiceProvider serviceProvider;
         public IServiceProvider ServiceProvider => serviceProvider;
-
-
-        public bool IsSolutionOpen => vsHelper.IsSolutionOpen;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ToolWindow"/> class.
@@ -114,7 +112,8 @@ namespace SmartCmdArgs
 
             serviceProvider = ConfigureServices();
 
-            ToolWindowViewModel = ServiceProvider.GetRequiredService<ToolWindowViewModel>();
+            toolWindowViewModel = ServiceProvider.GetRequiredService<ToolWindowViewModel>();
+            treeViewModel = ServiceProvider.GetService<TreeViewModel>();
 
             vsHelper = ServiceProvider.GetRequiredService<IVisualStudioHelperService>();
             optionsSettings = ServiceProvider.GetRequiredService<IOptionsSettingsService>();
@@ -150,8 +149,6 @@ namespace SmartCmdArgs
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            await Commands.InitializeAsync(this);
-
             await InitializeAsyncServices();
 
             // we want to know about changes to the solution state even if the extension is disabled
@@ -166,7 +163,7 @@ namespace SmartCmdArgs
             await JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Extension window was opend while a solution is already open
-            if (IsSolutionOpen)
+            if (vsHelper.IsSolutionOpen)
             {
                 Logger.Info("Package.Initialize called while solution was already open.");
 
@@ -175,8 +172,8 @@ namespace SmartCmdArgs
 
             lifeCycleService.UpdateDisabledScreen();
 
-            ToolWindowViewModel.UseMonospaceFont = optionsSettings.UseMonospaceFont;
-            ToolWindowViewModel.DisplayTagForCla = optionsSettings.DisplayTagForCla;
+            toolWindowViewModel.UseMonospaceFont = optionsSettings.UseMonospaceFont;
+            toolWindowViewModel.DisplayTagForCla = optionsSettings.DisplayTagForCla;
 
             await base.InitializeAsync(cancellationToken, progress);
         }
@@ -185,9 +182,11 @@ namespace SmartCmdArgs
         {
             var services = new ServiceCollection();
 
+            services.AddSingleton<Commands>();
             services.AddLazySingleton(x => GetDialogPage<CmdArgsOptionPage>());
             services.AddLazySingleton<SettingsViewModel>();
             services.AddLazySingleton<ToolWindowViewModel>();
+            services.AddLazySingleton<TreeViewModel>();
             services.AddLazySingleton<IProjectConfigService, ProjectConfigService>();
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
             services.AddSingleton<IFileStorageService, FileStorageService>();
@@ -203,7 +202,7 @@ namespace SmartCmdArgs
             services.AddSingleton<IFileStorageEventHandlingService, FileStorageEventHandlingService>();
             services.AddSingleton<IOptionsSettingsEventHandlingService, OptionsSettingsEventHandlingService>();
             services.AddSingleton<ITreeViewEventHandlingService, TreeViewEventHandlingService>();
-            services.AddSingleton<IToolWindowHistory, ToolWindowHistory>();
+            services.AddLazySingleton<IToolWindowHistory, ToolWindowHistory>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)
@@ -230,7 +229,7 @@ namespace SmartCmdArgs
         protected override WindowPane InstantiateToolWindow(Type toolWindowType)
         {
             if (toolWindowType == typeof(ToolWindow))
-                return new ToolWindow(ToolWindowViewModel) { Package = this };
+                return new ToolWindow(toolWindowViewModel, treeViewModel) { Package = this };
             else
                 return base.InstantiateToolWindow(toolWindowType);
         }

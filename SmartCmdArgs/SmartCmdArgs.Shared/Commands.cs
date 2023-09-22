@@ -1,37 +1,21 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="Commands.cs" company="Company">
-//     Copyright (c) Company.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.ComponentModel.Design;
-using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Services;
+using SmartCmdArgs.ViewModel;
 
 using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs
 {
-    /// <summary>
-    /// Command handler
-    /// </summary>
-    internal sealed class Commands
+    internal sealed class Commands : IAsyncInitializable
     {
-
-        /// <summary>
-        /// Command menu group (command set GUID).
-        /// </summary>
         public static readonly Guid VSMenuCmdSet = new Guid("C5334667-5DDA-4F4A-BC24-6E0084DC5068");
-
         public const int ToolWindowCommandId = 0x0100;
 
-
         public static readonly Guid CmdArgsToolBarCmdSet = new Guid("53D59879-7413-491E-988C-938117B773E3");
-
         public const int TWToolbar = 0x1000;
         public const int TWToolbarGroup = 0x1050;
         public const int ToolbarAddCommandId = 0x1100;
@@ -48,68 +32,49 @@ namespace SmartCmdArgs
         public const int ToolbarAddWorkDirId = 0x110B;
 
         public static readonly Guid KeyBindingsCmdSet = new Guid("886F463E-7F96-4BA4-BA88-F36D63044A00");
-
         public const int KeyBindingAddCmdId = 0x1200;
 
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
-        private readonly CmdArgsPackage package;
-
-        /// <summary>
-        /// Initializes the singleton instance of the command.
-        /// </summary>
-        /// <param name="package">Owner package, not null.</param>
-        public static async Task InitializeAsync(CmdArgsPackage package)
-        {
-            if (package == null)
-                throw new ArgumentNullException(nameof(package));
-            
-            var cmdService = await package.GetServiceAsync<IMenuCommandService, OleMenuCommandService>();
-
-            // AddCommand needs to be run on main thread!
-            await package.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            Instance = new Commands(package, cmdService);
-        }
+        private readonly ToolWindowViewModel toolWindowViewModel;
+        private readonly TreeViewModel treeViewModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Commands"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
-        /// <param name="package">Owner package, not null.</param>
-        private Commands(CmdArgsPackage package, OleMenuCommandService commandService)
+        public Commands(
+            ToolWindowViewModel toolWindowViewModel,
+            TreeViewModel treeViewModel)
         {
-            this.package = package;
+            this.toolWindowViewModel = toolWindowViewModel;
+            this.treeViewModel = treeViewModel;
+        }
+
+        public async Task InitializeAsync()
+        {
+            var commandService = await CmdArgsPackage.Instance.GetServiceAsync<IMenuCommandService, OleMenuCommandService>();
 
             if (commandService != null)
             {
                 AddCommandToService(commandService, VSMenuCmdSet, ToolWindowCommandId, this.ShowToolWindow);
 
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddCommandId, package.ToolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.CmdArg);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddEnvVarId, package.ToolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.EnvVar);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddWorkDirId, package.ToolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.WorkDir);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddGroupCommandId, package.ToolWindowViewModel.AddGroupCommand);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, package.ToolWindowViewModel.RemoveEntriesCommand);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, package.ToolWindowViewModel.MoveEntriesUpCommand);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, package.ToolWindowViewModel.MoveEntriesDownCommand);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyCommandlineCommandId, package.ToolWindowViewModel.CopyCommandlineCommand);
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyEnvVarsForPSCommandId, package.ToolWindowViewModel.CopyEnvVarsForCommadlineCommand, "PS");
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyEnvVarsForCMDCommandId, package.ToolWindowViewModel.CopyEnvVarsForCommadlineCommand, "CMD");
-                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarOpenSettingsCommandId, package.ToolWindowViewModel.ShowSettingsCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddCommandId, toolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.CmdArg);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddEnvVarId, toolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.EnvVar);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddWorkDirId, toolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.WorkDir);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddGroupCommandId, toolWindowViewModel.AddGroupCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, toolWindowViewModel.RemoveEntriesCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, toolWindowViewModel.MoveEntriesUpCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveDownCommandId, toolWindowViewModel.MoveEntriesDownCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyCommandlineCommandId, toolWindowViewModel.CopyCommandlineCommand);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyEnvVarsForPSCommandId, toolWindowViewModel.CopyEnvVarsForCommadlineCommand, "PS");
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarCopyEnvVarsForCMDCommandId, toolWindowViewModel.CopyEnvVarsForCommadlineCommand, "CMD");
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarOpenSettingsCommandId, toolWindowViewModel.ShowSettingsCommand);
 
-                AddToggleCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarShowAllProjectsCommandId, 
-                    package.ToolWindowViewModel.ShowAllProjectsCommand, () => package.ToolWindowViewModel.TreeViewModel.ShowAllProjects);
+                AddToggleCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarShowAllProjectsCommandId,
+                    toolWindowViewModel.ShowAllProjectsCommand, () => treeViewModel.ShowAllProjects);
             }
-        }
 
-        /// <summary>
-        /// Gets the instance of the command.
-        /// </summary>
-        public static Commands Instance
-        {
-            get;
-            private set;
+            // AddCommand needs to be run on main thread!
+            await CmdArgsPackage.Instance.JoinableTaskFactory.SwitchToMainThreadAsync();
         }
 
         private void AddCommandToService(OleMenuCommandService service, Guid cmdSet, int cmdId, EventHandler handler)
@@ -164,7 +129,7 @@ namespace SmartCmdArgs
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.package.FindToolWindow(typeof(ToolWindow), 0, true);
+            ToolWindowPane window = CmdArgsPackage.Instance.FindToolWindow(typeof(ToolWindow), 0, true);
             if ((null == window) || (null == window.Frame))
             {
                 throw new NotSupportedException("Cannot create tool window");

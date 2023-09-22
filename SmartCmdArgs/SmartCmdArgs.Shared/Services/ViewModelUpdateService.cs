@@ -18,6 +18,7 @@ namespace SmartCmdArgs.Services
     internal class ViewModelUpdateService : IViewModelUpdateService, IDisposable
     {
         private readonly ToolWindowViewModel toolWindowViewModel;
+        private readonly TreeViewModel treeViewModel;
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IFileStorageService fileStorage;
         private readonly IProjectConfigService projectConfig;
@@ -31,6 +32,7 @@ namespace SmartCmdArgs.Services
 
         public ViewModelUpdateService(
             ToolWindowViewModel toolWindowViewModel,
+            TreeViewModel treeViewModel,
             IOptionsSettingsService optionsSettings,
             IFileStorageService fileStorage,
             IProjectConfigService projectConfig,
@@ -41,6 +43,7 @@ namespace SmartCmdArgs.Services
             Lazy<ILifeCycleService> lifeCycleService)
         {
             this.toolWindowViewModel = toolWindowViewModel;
+            this.treeViewModel = treeViewModel;
             this.optionsSettings = optionsSettings;
             this.fileStorage = fileStorage;
             this.projectConfig = projectConfig;
@@ -93,7 +96,7 @@ namespace SmartCmdArgs.Services
             {
                 Logger.Info($"Setting {projectData?.Items?.Count} commands for project '{project.GetName()}' from json-file.");
 
-                var projectListViewModel = toolWindowViewModel.TreeViewModel.Projects.GetValueOrDefault(projectGuid);
+                var projectListViewModel = treeViewModel.Projects.GetValueOrDefault(projectGuid);
 
                 var projHasSuoData = solutionData.ProjectArguments.ContainsKey(projectGuid);
 
@@ -150,7 +153,7 @@ namespace SmartCmdArgs.Services
                 }
             }
             // if we have data in the ViewModel we keep it
-            else if (toolWindowViewModel.TreeViewModel.Projects.ContainsKey(projectGuid))
+            else if (treeViewModel.Projects.ContainsKey(projectGuid))
             {
                 return;
             }
@@ -245,7 +248,7 @@ namespace SmartCmdArgs.Services
 
         private void UpdateIsActiveForArguments()
         {
-            foreach (var cmdProject in toolWindowViewModel.TreeViewModel.AllProjects)
+            foreach (var cmdProject in treeViewModel.AllProjects)
             {
                 if (optionsSettings.DisableInactiveItems == InactiveDisableMode.InAllProjects
                     || (optionsSettings.DisableInactiveItems != InactiveDisableMode.Disabled && cmdProject.IsStartupProject))
@@ -278,8 +281,8 @@ namespace SmartCmdArgs.Services
             var startupProjectGuids = new HashSet<Guid>(vsHelper.StartupProjectUniqueNames()
                 .Select(vsHelper.HierarchyForProjectName).Select(hierarchy => hierarchy.GetGuid()));
 
-            toolWindowViewModel.TreeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
-            toolWindowViewModel.TreeViewModel.UpdateTree();
+            treeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
+            treeViewModel.UpdateTree();
         }
     }
 }

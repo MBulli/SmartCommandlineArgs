@@ -22,6 +22,7 @@ namespace SmartCmdArgs.Services
         private readonly IFileStorageService fileStorage;
         private readonly IViewModelUpdateService viewModelUpdateService;
         private readonly ToolWindowViewModel toolWindowViewModel;
+        private readonly TreeViewModel treeViewModel;
         private readonly IProjectConfigService projectConfigService;
         private readonly IToolWindowHistory toolWindowHistory;
 
@@ -31,6 +32,7 @@ namespace SmartCmdArgs.Services
             IFileStorageService fileStorage,
             IViewModelUpdateService viewModelUpdateService,
             ToolWindowViewModel toolWindowViewModel,
+            TreeViewModel treeViewModel,
             IProjectConfigService projectConfigService,
             IToolWindowHistory toolWindowHistory)
         {
@@ -39,6 +41,7 @@ namespace SmartCmdArgs.Services
             this.fileStorage = fileStorage;
             this.viewModelUpdateService = viewModelUpdateService;
             this.toolWindowViewModel = toolWindowViewModel;
+            this.treeViewModel = treeViewModel;
             this.projectConfigService = projectConfigService;
             this.toolWindowHistory = toolWindowHistory;
         }
@@ -136,7 +139,7 @@ namespace SmartCmdArgs.Services
         {
             Logger.Info("VS-Event: Startup project will run.");
 
-            foreach (var startupProject in toolWindowViewModel.TreeViewModel.StartupProjects)
+            foreach (var startupProject in treeViewModel.StartupProjects)
             {
                 var project = vsHelper.HierarchyForProjectGuid(startupProject.Id);
                 projectConfigService.UpdateConfigurationForProject(project);
@@ -166,7 +169,7 @@ namespace SmartCmdArgs.Services
 
             fileStorage.SaveProject(e.Project);
 
-            toolWindowViewModel.TreeViewModel.Projects.Remove(e.Project.GetGuid());
+            treeViewModel.Projects.Remove(e.Project.GetGuid());
 
             fileStorage.RemoveProject(e.Project);
         }

@@ -64,6 +64,7 @@ namespace SmartCmdArgs.Services
         private readonly IItemPathService itemPathService;
         private readonly SettingsViewModel settingsViewModel;
         private readonly Lazy<ToolWindowViewModel> toolWindowViewModel;
+        private readonly TreeViewModel treeViewModel;
         private readonly Lazy<ILifeCycleService> lifeCycleService;
 
         private FileSystemWatcher settingsFsWatcher;
@@ -78,6 +79,7 @@ namespace SmartCmdArgs.Services
             IItemPathService itemPathService,
             SettingsViewModel settingsViewModel,
             Lazy<ToolWindowViewModel> toolWindowViewModel,
+            TreeViewModel treeViewModel,
             Lazy<ILifeCycleService> lifeCycleService)
         {
             this.vsHelper = vsHelper;
@@ -85,6 +87,7 @@ namespace SmartCmdArgs.Services
             this.itemPathService = itemPathService;
             this.settingsViewModel = settingsViewModel;
             this.toolWindowViewModel = toolWindowViewModel;
+            this.treeViewModel = treeViewModel;
             this.lifeCycleService = lifeCycleService;
         }
 
@@ -311,7 +314,7 @@ namespace SmartCmdArgs.Services
 
             using (solutionFsWatcher?.TemporarilyDisable())
             {
-                var allItemsExceptProjects = toolWindowViewModel.Value.TreeViewModel.AllItems.Where(i => !(i is CmdProject));
+                var allItemsExceptProjects = treeViewModel.AllItems.Where(i => !(i is CmdProject));
                 if (allItemsExceptProjects.Any() || !optionsSettings.DeleteEmptyFilesAutomatically)
                 {
                     if (!vsHelper.CanEditFile(jsonFilename))
@@ -324,7 +327,7 @@ namespace SmartCmdArgs.Services
                         {
                             using (Stream fileStream = File.Open(jsonFilename, FileMode.Create, FileAccess.Write))
                             {
-                                SolutionDataSerializer.Serialize(toolWindowViewModel.Value, fileStream);
+                                SolutionDataSerializer.Serialize(treeViewModel, fileStream);
                             }
                         }
                         catch (Exception e)
@@ -355,7 +358,7 @@ namespace SmartCmdArgs.Services
                 return;
 
             var guid = project.GetGuid();
-            var vm = toolWindowViewModel.Value.TreeViewModel.Projects.GetValueOrDefault(guid);
+            var vm = treeViewModel.Projects.GetValueOrDefault(guid);
             string filePath = FullFilenameForProjectJsonFileFromProject(project);
             FileSystemWatcher fsWatcher = projectFsWatchers.GetValueOrDefault(guid);
 

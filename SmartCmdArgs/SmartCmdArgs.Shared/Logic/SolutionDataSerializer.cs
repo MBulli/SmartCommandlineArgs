@@ -13,7 +13,7 @@ namespace SmartCmdArgs.Logic
 {
     class SolutionDataSerializer : DataSerializer
     {
-        public static SolutionDataJson Serialize(ToolWindowViewModel vm, Stream stream)
+        public static SolutionDataJson Serialize(TreeViewModel vm, Stream stream)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
@@ -29,14 +29,14 @@ namespace SmartCmdArgs.Logic
             return data;
         }
 
-        public static SolutionDataJson Serialize(ToolWindowViewModel vm)
+        public static SolutionDataJson Serialize(TreeViewModel vm)
         {
             if (vm == null)
                 throw new ArgumentNullException(nameof(vm));
 
             var data = new SolutionDataJson();
 
-            foreach (var kvPair in vm.TreeViewModel.Projects)
+            foreach (var kvPair in vm.Projects)
             {
                 var list = new ProjectDataJson
                 {

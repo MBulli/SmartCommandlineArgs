@@ -90,23 +90,23 @@ namespace SmartCmdArgs.Logic
             return result;
         }
 
-        public static SuoDataJson Serialize(ToolWindowViewModel toolWindowViewModel, SettingsViewModel settingsViewModel)
+        public static SuoDataJson Serialize(TreeViewModel treeViewModel, SettingsViewModel settingsViewModel)
         {
-            if (toolWindowViewModel == null)
-                throw new ArgumentNullException(nameof(toolWindowViewModel));
+            if (treeViewModel == null)
+                throw new ArgumentNullException(nameof(treeViewModel));
 
             var data = new SuoDataJson();
 
             data.Settings = new SettingsJson(settingsViewModel);
 
-            data.ShowAllProjects = toolWindowViewModel.TreeViewModel.ShowAllProjects;
-            data.CheckedArguments = new HashSet<Guid>(toolWindowViewModel.TreeViewModel.AllProjects.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
-            data.ExpandedContainer = new HashSet<Guid>(toolWindowViewModel.TreeViewModel.AllItems.OfType<CmdContainer>().Where(con => con.IsExpanded).Select(p => p.Id));
+            data.ShowAllProjects = treeViewModel.ShowAllProjects;
+            data.CheckedArguments = new HashSet<Guid>(treeViewModel.AllProjects.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
+            data.ExpandedContainer = new HashSet<Guid>(treeViewModel.AllItems.OfType<CmdContainer>().Where(con => con.IsExpanded).Select(p => p.Id));
 
-            data.SelectedItems = new HashSet<Guid>(toolWindowViewModel.TreeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).Select(item => item.Id)
-                                                   .Concat(toolWindowViewModel.TreeViewModel.Projects.Values.Where(p => p.IsSelected).Select(p => p.Id)));
+            data.SelectedItems = new HashSet<Guid>(treeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).Select(item => item.Id)
+                                                   .Concat(treeViewModel.Projects.Values.Where(p => p.IsSelected).Select(p => p.Id)));
 
-            foreach (var kvPair in toolWindowViewModel.TreeViewModel.Projects)
+            foreach (var kvPair in treeViewModel.Projects)
             {
                 var list = new ProjectDataJsonVersioned
                 {

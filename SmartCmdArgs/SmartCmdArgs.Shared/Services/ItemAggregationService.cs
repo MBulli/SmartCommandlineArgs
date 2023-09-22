@@ -22,16 +22,16 @@ namespace SmartCmdArgs.Services
     {
         private readonly IItemEvaluationService itemEvaluation;
         private readonly IVisualStudioHelperService vsHelper;
-        private readonly Lazy<ToolWindowViewModel> toolWindowViewModel;
+        private readonly TreeViewModel treeViewModel;
 
         public ItemAggregationService(
             IItemEvaluationService itemEvaluation,
             IVisualStudioHelperService vsHelper,
-            Lazy<ToolWindowViewModel> toolWindowViewModel)
+            TreeViewModel treeViewModel)
         {
             this.itemEvaluation = itemEvaluation;
             this.vsHelper = vsHelper;
-            this.toolWindowViewModel = toolWindowViewModel;
+            this.treeViewModel = treeViewModel;
         }
 
         private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchy project, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
@@ -39,7 +39,7 @@ namespace SmartCmdArgs.Services
             if (project == null)
                 return default;
 
-            var projectCmd = toolWindowViewModel.Value.TreeViewModel.Projects.GetValueOrDefault(project.GetGuid());
+            var projectCmd = treeViewModel.Projects.GetValueOrDefault(project.GetGuid());
             if (projectCmd == null)
                 return default;
 
