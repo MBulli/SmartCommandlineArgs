@@ -33,3 +33,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("2.6.0.0")]
 
 [assembly: InternalsVisibleTo("SmartCmdArgs17.Tests")]
+[assembly: InternalsVisibleTo("SmartCmdArgs.Tests")]

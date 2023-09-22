@@ -21,17 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartCmdArgs17.Tests", "Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartCmdArgs15.Tests", "Testing\SmartCmdArgs15.Tests\SmartCmdArgs15.Tests.csproj", "{5C89C75D-E687-477A-B278-F75EE6800903}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartCmdArgs.Tests", "Testing\SmartCmdArgs.Tests\SmartCmdArgs.Tests.csproj", "{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Testing\SmartCmdArgs.Tests.Shared\SmartCmdArgs.Tests.Shared.projitems*{5c89c75d-e687-477a-b278-f75ee6800903}*SharedItemsImports = 5
-		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{676c8571-fc9d-43dd-948e-897817a07039}*SharedItemsImports = 13
-		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{745982f0-9e21-4f74-b349-788957f07d38}*SharedItemsImports = 4
-		Testing\SmartCmdArgs.Tests.Shared\SmartCmdArgs.Tests.Shared.projitems*{9b12a2a1-b8c7-4c26-931f-6101b15a7f33}*SharedItemsImports = 13
-		Testing\SmartCmdArgs.Tests.Shared\SmartCmdArgs.Tests.Shared.projitems*{a647d729-17fa-46ae-af30-907f112ce4c7}*SharedItemsImports = 5
-		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{be0acaf0-cbf3-47b3-bc3f-7a5cbbabb7ae}*SharedItemsImports = 4
-		Testing\SmartCmdArgs.Tests.Shared\SmartCmdArgs.Tests.Shared.projitems*{dc8c54e0-f8bc-4056-b13b-5441f41f51c5}*SharedItemsImports = 5
-		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{fc5fa6d9-ad78-4915-b47c-af9eeae5dd86}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
@@ -87,6 +79,14 @@ Global
 		{5C89C75D-E687-477A-B278-F75EE6800903}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5C89C75D-E687-477A-B278-F75EE6800903}.Release|x86.ActiveCfg = Release|Any CPU
 		{5C89C75D-E687-477A-B278-F75EE6800903}.Release|x86.Build.0 = Release|Any CPU
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}.Debug|x86.Build.0 = Debug|Any CPU
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}.Release|x86.ActiveCfg = Release|Any CPU
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -96,8 +96,19 @@ Global
 		{9B12A2A1-B8C7-4C26-931F-6101B15A7F33} = {F62F97BB-2B8A-4004-9BFA-F4D7E9D9FDC7}
 		{DC8C54E0-F8BC-4056-B13B-5441F41F51C5} = {F62F97BB-2B8A-4004-9BFA-F4D7E9D9FDC7}
 		{5C89C75D-E687-477A-B278-F75EE6800903} = {F62F97BB-2B8A-4004-9BFA-F4D7E9D9FDC7}
+		{8E55ADE3-4D0C-443F-AC99-B9D4C03AF128} = {F62F97BB-2B8A-4004-9BFA-F4D7E9D9FDC7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {31AF3769-0BE0-43A8-924B-0C272428BCBF}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Testing\SmartCmdArgs.Tests.Shared\SmartCmdArgs.Tests.Shared.projitems*{5c89c75d-e687-477a-b278-f75ee6800903}*SharedItemsImports = 5
+		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{676c8571-fc9d-43dd-948e-897817a07039}*SharedItemsImports = 13
+		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{745982f0-9e21-4f74-b349-788957f07d38}*SharedItemsImports = 4
+		Testing\SmartCmdArgs.Tests.Shared\SmartCmdArgs.Tests.Shared.projitems*{9b12a2a1-b8c7-4c26-931f-6101b15a7f33}*SharedItemsImports = 13
+		Testing\SmartCmdArgs.Tests.Shared\SmartCmdArgs.Tests.Shared.projitems*{a647d729-17fa-46ae-af30-907f112ce4c7}*SharedItemsImports = 5
+		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{be0acaf0-cbf3-47b3-bc3f-7a5cbbabb7ae}*SharedItemsImports = 4
+		Testing\SmartCmdArgs.Tests.Shared\SmartCmdArgs.Tests.Shared.projitems*{dc8c54e0-f8bc-4056-b13b-5441f41f51c5}*SharedItemsImports = 5
+		SmartCmdArgs.Shared\SmartCmdArgs.Shared.projitems*{fc5fa6d9-ad78-4915-b47c-af9eeae5dd86}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal
