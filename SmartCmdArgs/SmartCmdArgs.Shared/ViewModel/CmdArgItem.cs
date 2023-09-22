@@ -823,8 +823,8 @@ namespace SmartCmdArgs.ViewModel
         public CmdArgument(Guid id, ArgumentType argType, string arg, bool isChecked = false, bool defaultChecked = false)
             : base(id, arg, isChecked)
         {
-            ArgumentType = argType;
-            DefaultChecked = defaultChecked;
+            this.argumentType = argType;
+            this.defaultChecked = defaultChecked;
         }
 
         public CmdArgument(ArgumentType argType, string arg, bool isChecked = false, bool defaultChecked = false)

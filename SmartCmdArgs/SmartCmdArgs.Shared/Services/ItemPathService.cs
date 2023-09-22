@@ -7,7 +7,7 @@ using System.Text;
 
 namespace SmartCmdArgs.Services
 {
-    internal interface IItemPathService
+    public interface IItemPathService
     {
         string MakePathAbsolute(string path, IVsHierarchy project, string buildConfig = null);
         string MakePathRelativeBasedOnSolutionDir(string path);
