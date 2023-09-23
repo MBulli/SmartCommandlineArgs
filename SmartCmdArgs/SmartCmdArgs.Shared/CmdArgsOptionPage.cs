@@ -12,16 +12,26 @@ using System.Threading.Tasks;
 
 namespace SmartCmdArgs
 {
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
     public enum RelativePathRootOption
     {
+        [Description("Build Target Directory")]
         BuildTargetDirectory,
+
+        [Description("Project Directory")]
         ProjectDirectory
     }
 
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
     public enum InactiveDisableMode
     {
+        [Description("Disabled")]
         Disabled,
+
+        [Description("In all Projects")]
         InAllProjects,
+
+        [Description("Only in Startup Projects")]
         OnlyInStartupProjects,
     }
 

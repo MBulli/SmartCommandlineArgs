@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helper\CpsProjectSupport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)helper\Debouncer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\DelayExecution.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\EnumDescConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\FileSystemWatcherDisabledContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\FolderSelectDialog.cs" />
