@@ -430,8 +430,9 @@ namespace SmartCmdArgs.Services
                 {
                     allArgs.Add(new CmdArgumentJson
                     {
-                        Command = cfg.ConfigurationName,
+                        Command = cfg.Name,
                         ProjectConfig = cfg.ConfigurationName,
+                        ProjectPlatform = cfg.Platform.Name,
                         Items = items
                     });
                 }
