@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,10 @@ namespace SmartCmdArgs.Services
 {
     public interface IItemAggregationService
     {
-        IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchy project);
-        string CreateCommandLineArgsForProject(IVsHierarchy project);
-        IDictionary<string, string> GetEnvVarsForProject(IVsHierarchy project);
-        string GetWorkDirForProject(IVsHierarchy project);
+        IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchyWrapper project);
+        string CreateCommandLineArgsForProject(IVsHierarchyWrapper project);
+        IDictionary<string, string> GetEnvVarsForProject(IVsHierarchyWrapper project);
+        string GetWorkDirForProject(IVsHierarchyWrapper project);
         string CreateCommandLineArgsForProject(Guid guid);
         IDictionary<string, string> GetEnvVarsForProject(Guid guid);
     }
@@ -34,7 +35,7 @@ namespace SmartCmdArgs.Services
             this.treeViewModel = treeViewModel;
         }
 
-        private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchy project, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
+        private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchyWrapper project, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
         {
             if (project == null)
                 return default;
@@ -72,7 +73,7 @@ namespace SmartCmdArgs.Services
             return JoinContainer(projectCmd);
         }
 
-        public IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchy project)
+        public IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchyWrapper project)
         {
             IEnumerable<CmdArgument> joinItems(IEnumerable<CmdBase> items, Func<CmdContainer, IEnumerable<CmdArgument>> joinContainer, CmdContainer parentContainer)
             {
@@ -93,7 +94,7 @@ namespace SmartCmdArgs.Services
             return AggregateComamndLineItemsForProject<IEnumerable<CmdArgument>>(project, joinItems);
         }
 
-        public string CreateCommandLineArgsForProject(IVsHierarchy project)
+        public string CreateCommandLineArgsForProject(IVsHierarchyWrapper project)
         {
             return AggregateComamndLineItemsForProject<string>(project,
                 (items, joinContainer, parentContainer) =>
@@ -111,7 +112,7 @@ namespace SmartCmdArgs.Services
                 });
         }
 
-        public IDictionary<string, string> GetEnvVarsForProject(IVsHierarchy project)
+        public IDictionary<string, string> GetEnvVarsForProject(IVsHierarchyWrapper project)
         {
             var result = new Dictionary<string, string>();
 
@@ -128,7 +129,7 @@ namespace SmartCmdArgs.Services
             return result;
         }
 
-        public string GetWorkDirForProject(IVsHierarchy project)
+        public string GetWorkDirForProject(IVsHierarchyWrapper project)
         {
             var result = "";
 

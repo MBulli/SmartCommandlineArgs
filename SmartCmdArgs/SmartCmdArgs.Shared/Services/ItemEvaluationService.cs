@@ -2,6 +2,7 @@
 using Microsoft.Build.Framework.XamlTypes;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +15,7 @@ namespace SmartCmdArgs.Services
     public interface IItemEvaluationService
     {
         bool TryParseEnvVar(string str, out EnvVar envVar);
-        string EvaluateMacros(string arg, IVsHierarchy project);
+        string EvaluateMacros(string arg, IVsHierarchyWrapper project);
         IEnumerable<string> SplitArgument(string argument);
         IEnumerable<string> ExtractPathsFromItem(CmdArgument item);
     }
@@ -55,7 +56,7 @@ namespace SmartCmdArgs.Services
             return false;
         }
 
-        public string EvaluateMacros(string arg, IVsHierarchy project)
+        public string EvaluateMacros(string arg, IVsHierarchyWrapper project)
         {
             if (!optionsSettings.MacroEvaluationEnabled)
                 return arg;
@@ -75,7 +76,7 @@ namespace SmartCmdArgs.Services
             if (projectGuid == Guid.Empty)
                 return Enumerable.Empty<string>();
 
-            IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projectGuid);
+            IVsHierarchyWrapper project = vsHelper.HierarchyForProjectGuid(projectGuid);
 
             var buildConfig = item.UsedProjectConfig;
 

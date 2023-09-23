@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -121,14 +122,14 @@ namespace SmartCmdArgs.Services
             viewModelUpdateService.UpdateCurrentStartupProject();
         }
 
-        private void VsHelper_ProjectConfigurationChanged(object sender, IVsHierarchy vsHierarchy)
+        private void VsHelper_ProjectConfigurationChanged(object sender, IVsHierarchyWrapper vsHierarchy)
         {
             Logger.Info("VS-Event: Project configuration changed.");
 
             viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
         }
 
-        private void VsHelper_LaunchProfileChanged(object sender, IVsHierarchy e)
+        private void VsHelper_LaunchProfileChanged(object sender, IVsHierarchyWrapper e)
         {
             Logger.Info("VS-Event: Project launch profile changed.");
 
@@ -183,7 +184,7 @@ namespace SmartCmdArgs.Services
             toolWindowViewModel.RenameProject(e.Project);
         }
 
-        private void VsHelper_ProjectAfterLoad(object sender, IVsHierarchy e)
+        private void VsHelper_ProjectAfterLoad(object sender, IVsHierarchyWrapper e)
         {
             Logger.Info("VS-Event: Project loaded.");
 

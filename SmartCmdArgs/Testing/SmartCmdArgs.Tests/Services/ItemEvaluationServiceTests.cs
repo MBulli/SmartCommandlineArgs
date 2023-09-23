@@ -6,6 +6,7 @@ using System;
 using Xunit;
 using System.Collections.Generic;
 using System.Linq;
+using SmartCmdArgs.Wrapper;
 
 namespace SmartCmdArgs.Tests.Services
 {
@@ -143,7 +144,7 @@ namespace SmartCmdArgs.Tests.Services
             var projectMock = new Mock<IVsHierarchy>();
             vsHelperMock.Setup(x => x.HierarchyForProjectGuid(projectGuid)).Returns(projectMock.Object);
             optionsSettingsMock.Setup(x => x.MacroEvaluationEnabled).Returns(false);
-            itemPathMock.Setup(x => x.MakePathAbsolute(It.IsAny<string>(), It.IsAny<IVsHierarchy>(), It.IsAny<string>())).Returns((string path, IVsHierarchy project, string buildConfig) => path);
+            itemPathMock.Setup(x => x.MakePathAbsolute(It.IsAny<string>(), It.IsAny<IVsHierarchyWrapper>(), It.IsAny<string>())).Returns((string path, IVsHierarchyWrapper project, string buildConfig) => path);
 
             // Act
             var result = itemEvaluationService.ExtractPathsFromItem(item);

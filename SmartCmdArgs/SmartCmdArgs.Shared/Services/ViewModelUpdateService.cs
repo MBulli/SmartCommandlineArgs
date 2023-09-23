@@ -2,6 +2,7 @@
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace SmartCmdArgs.Services
 {
     internal interface IViewModelUpdateService
     {
-        void UpdateCommandsForProject(IVsHierarchy project);
+        void UpdateCommandsForProject(IVsHierarchyWrapper project);
         void UpdateIsActiveForArgumentsDebounced();
         void UpdateCurrentStartupProject();
     }
@@ -60,7 +61,7 @@ namespace SmartCmdArgs.Services
             _updateIsActiveDebouncer.Dispose();
         }
 
-        public void UpdateCommandsForProject(IVsHierarchy project)
+        public void UpdateCommandsForProject(IVsHierarchyWrapper project)
         {
             if (!lifeCycleService.Value.IsEnabled)
                 return;
@@ -197,14 +198,14 @@ namespace SmartCmdArgs.Services
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
         }
 
-        private List<CmdArgumentJson> ReadCommandlineArgumentsFromProject(IVsHierarchy project)
+        private List<CmdArgumentJson> ReadCommandlineArgumentsFromProject(IVsHierarchyWrapper project)
         {
             var prjCmdArgs = new List<CmdArgumentJson>();
             projectConfig.AddAllArguments(project, prjCmdArgs);
             return prjCmdArgs;
         }
 
-        private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
+        private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchyWrapper project)
         {
             if (!optionsSettings.ManageCommandLineArgs
                 && !optionsSettings.ManageEnvironmentVars

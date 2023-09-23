@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 
@@ -94,7 +95,7 @@ namespace SmartCmdArgs.Services
 
                 toolWindowHistory.SaveState();
 
-                IEnumerable<IVsHierarchy> projects;
+                IEnumerable<IVsHierarchyWrapper> projects;
                 if (e.IsSolutionWide)
                 {
                     Logger.Info($"Dispatched update commands function calls for the solution.");

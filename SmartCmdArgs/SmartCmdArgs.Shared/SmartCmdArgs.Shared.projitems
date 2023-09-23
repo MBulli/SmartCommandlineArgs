@@ -101,6 +101,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\UserControls\SettingsCheckBox.xaml.cs">
       <DependentUpon>SettingsCheckBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Wrapper\IVsHierarchyWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)View\ArgumentItemView.xaml">

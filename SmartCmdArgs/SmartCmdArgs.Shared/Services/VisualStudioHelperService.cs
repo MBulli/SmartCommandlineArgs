@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,21 +19,21 @@ namespace SmartCmdArgs.Services
 {
     public class ProjectAfterOpenEventArgs
     {
-        public IVsHierarchy Project;
+        public IVsHierarchyWrapper Project;
         public bool IsLoadProcess;
         public bool IsSolutionOpenProcess;
     }
 
     public class ProjectBeforeCloseEventArgs
     {
-        public IVsHierarchy Project;
+        public IVsHierarchyWrapper Project;
         public bool IsUnloadProcess;
         public bool IsSolutionCloseProcess;
     }
 
     public class ProjectAfterRenameEventArgs
     {
-        public IVsHierarchy Project;
+        public IVsHierarchyWrapper Project;
         public string OldProjectName;
         public string OldProjectDir;
     }
@@ -44,8 +45,8 @@ namespace SmartCmdArgs.Services
         event EventHandler ProjectBeforeRun;
 
         event EventHandler StartupProjectChanged;
-        event EventHandler<IVsHierarchy> ProjectConfigurationChanged;
-        event EventHandler<IVsHierarchy> LaunchProfileChanged;
+        event EventHandler<IVsHierarchyWrapper> ProjectConfigurationChanged;
+        event EventHandler<IVsHierarchyWrapper> LaunchProfileChanged;
 
         event EventHandler SolutionAfterOpen;
         event EventHandler SolutionBeforeClose;
@@ -53,22 +54,21 @@ namespace SmartCmdArgs.Services
 
         event EventHandler<ProjectAfterOpenEventArgs> ProjectAfterOpen;
         event EventHandler<ProjectBeforeCloseEventArgs> ProjectBeforeClose;
-        event EventHandler<IVsHierarchy> ProjectAfterLoad;
-        event EventHandler<IVsHierarchy> ProjectBeforeUnload;
+        event EventHandler<IVsHierarchyWrapper> ProjectAfterLoad;
+        event EventHandler<IVsHierarchyWrapper> ProjectBeforeUnload;
         event EventHandler<ProjectAfterRenameEventArgs> ProjectAfterRename;
 
         string GetSolutionFilename();
         IEnumerable<string> StartupProjectUniqueNames();
         void SetNewStartupProject(string projectName);
         void SetAsStartupProject(Guid propjectGuid);
-        IEnumerable<IVsHierarchy> GetSupportedProjects(bool includeUnloaded = false);
+        IEnumerable<IVsHierarchyWrapper> GetSupportedProjects(bool includeUnloaded = false);
         void UpdateShellCommandUI(bool immediateUpdate = true);
-        IVsHierarchy HierarchyForProjectName(string projectName);
-        IVsHierarchy HierarchyForProjectGuid(Guid propjectGuid);
-        Guid ProjectGuidForProjetName(string projectName);
-        string GetUniqueName(IVsHierarchy hierarchy);
-        string GetMSBuildPropertyValueForActiveConfig(IVsHierarchy hierarchy, string propName);
-        string GetMSBuildPropertyValue(IVsHierarchy hierarchy, string propName, string configName = null);
+        IVsHierarchyWrapper HierarchyForProjectName(string projectName);
+        IVsHierarchyWrapper HierarchyForProjectGuid(Guid propjectGuid);
+        string GetUniqueName(IVsHierarchyWrapper hierarchy);
+        string GetMSBuildPropertyValueForActiveConfig(IVsHierarchyWrapper hierarchy, string propName);
+        string GetMSBuildPropertyValue(IVsHierarchyWrapper hierarchy, string propName, string configName = null);
         bool CanEditFile(string fileName);
         Task OpenFileInVisualStudioAsync(string path);
     }
@@ -101,8 +101,8 @@ namespace SmartCmdArgs.Services
         public event EventHandler ProjectBeforeRun;
 
         public event EventHandler StartupProjectChanged;
-        public event EventHandler<IVsHierarchy> ProjectConfigurationChanged;
-        public event EventHandler<IVsHierarchy> LaunchProfileChanged;
+        public event EventHandler<IVsHierarchyWrapper> ProjectConfigurationChanged;
+        public event EventHandler<IVsHierarchyWrapper> LaunchProfileChanged;
 
         public event EventHandler SolutionAfterOpen;
         public event EventHandler SolutionBeforeClose;
@@ -110,8 +110,8 @@ namespace SmartCmdArgs.Services
 
         public event EventHandler<ProjectAfterOpenEventArgs> ProjectAfterOpen;
         public event EventHandler<ProjectBeforeCloseEventArgs> ProjectBeforeClose;
-        public event EventHandler<IVsHierarchy> ProjectAfterLoad;
-        public event EventHandler<IVsHierarchy> ProjectBeforeUnload;
+        public event EventHandler<IVsHierarchyWrapper> ProjectAfterLoad;
+        public event EventHandler<IVsHierarchyWrapper> ProjectBeforeUnload;
         public event EventHandler<ProjectAfterRenameEventArgs> ProjectAfterRename;
 
         private readonly Lazy<IProjectConfigService> _projectConfigService;
@@ -124,7 +124,7 @@ namespace SmartCmdArgs.Services
 
             private IDisposable _launchSettingsChangeListenerDisposable;
 
-            public ProjectState(IVsHierarchy pHierarchy, Action<ILaunchSettings> launchProfileChangeAction)
+            public ProjectState(IVsHierarchyWrapper pHierarchy, Action<ILaunchSettings> launchProfileChangeAction)
             {
                 ProjectDir = pHierarchy.GetProjectDir();
                 ProjectName = pHierarchy.GetName();
@@ -185,7 +185,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        private void AddProjectState(IVsHierarchy pHierarchy)
+        private void AddProjectState(IVsHierarchyWrapper pHierarchy)
         {
             Guid projectGuid = pHierarchy.GetGuid();
             ProjectStateMap.GetValueOrDefault(projectGuid)?.Dispose();
@@ -234,7 +234,7 @@ namespace SmartCmdArgs.Services
             SetNewStartupProject(GetUniqueName(HierarchyForProjectGuid(guid)));
         }
 
-        public IEnumerable<IVsHierarchy> GetSupportedProjects(bool includeUnloaded = false)
+        public IEnumerable<IVsHierarchyWrapper> GetSupportedProjects(bool includeUnloaded = false)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -247,9 +247,10 @@ namespace SmartCmdArgs.Services
             uint fetched = 0;
             for (enumerator.Reset(); enumerator.Next(1, hierarchy, out fetched) == VSConstants.S_OK && fetched == 1; /*nothing*/)
             {
-                if (_projectConfigService.Value.IsSupportedProject(hierarchy[0]))
+                var hierarchyWrapper = hierarchy[0].Wrap();
+                if (_projectConfigService.Value.IsSupportedProject(hierarchyWrapper))
                 {
-                    yield return hierarchy[0];
+                    yield return hierarchyWrapper;
                 }
             }
         }
@@ -261,7 +262,7 @@ namespace SmartCmdArgs.Services
             package.GetService<SVsUIShell, IVsUIShell>()?.UpdateCommandUI(immediateUpdate ? 1 : 0);
         }
 
-        public IVsHierarchy HierarchyForProjectName(string projectName)
+        public IVsHierarchyWrapper HierarchyForProjectName(string projectName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -270,10 +271,10 @@ namespace SmartCmdArgs.Services
             {
                 throw new VisualStudioHelperException("GetProjectOfUniqueName", hr);
             }
-            return hier;
+            return hier.Wrap();
         }
 
-        public IVsHierarchy HierarchyForProjectGuid(Guid propjectGuid)
+        public IVsHierarchyWrapper HierarchyForProjectGuid(Guid propjectGuid)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -282,31 +283,17 @@ namespace SmartCmdArgs.Services
             {
                 throw new VisualStudioHelperException("GetProjectOfGuid", hr);
             }
-            return hier;
+            return hier.Wrap();
         }
 
-        public Guid ProjectGuidForProjetName(string projectName)
+        public string GetUniqueName(IVsHierarchyWrapper hierarchyWrapper)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var hier = HierarchyForProjectName(projectName);
-
-            int hr = solutionService.GetGuidOfProject(hier, out Guid result);
-            if (ErrorHandler.Failed(hr))
-            {
-                throw new VisualStudioHelperException("GetGuidOfProject", hr);
-            }
-            return result;
-        }
-
-        public string GetUniqueName(IVsHierarchy hierarchy)
-        {
-            if (hierarchy == null)
+            if (hierarchyWrapper == null)
                 return null;
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            int hr = solutionService.GetUniqueNameOfProject(hierarchy, out string uniqueName);
+            int hr = solutionService.GetUniqueNameOfProject(hierarchyWrapper.Hierarchy, out string uniqueName);
             if (ErrorHandler.Failed(hr))
             {
                 throw new VisualStudioHelperException("GetUniqueNameOfProject", hr);
@@ -314,7 +301,7 @@ namespace SmartCmdArgs.Services
             return uniqueName;
         }
 
-        public string GetMSBuildPropertyValueForActiveConfig(IVsHierarchy hierarchy, string propName)
+        public string GetMSBuildPropertyValueForActiveConfig(IVsHierarchyWrapper hierarchy, string propName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -335,7 +322,7 @@ namespace SmartCmdArgs.Services
             return GetMSBuildPropertyValue(hierarchy, propName, configName);
         }
 
-        public string GetMSBuildPropertyValue(IVsHierarchy hierarchy, string propName, string configName = null)
+        public string GetMSBuildPropertyValue(IVsHierarchyWrapper hierarchy, string propName, string configName = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -427,7 +414,7 @@ namespace SmartCmdArgs.Services
 
 
         Timer _startupProjectCheckTimer = null;
-        private void OnStartupProjectChanged(IVsHierarchy startupProjectHierarchy)
+        private void OnStartupProjectChanged(IVsHierarchyWrapper startupProjectHierarchy)
         {
             StartupProjectChanged?.Invoke(this, EventArgs.Empty);
 
@@ -484,7 +471,7 @@ namespace SmartCmdArgs.Services
             {
                 if (varValueNew != null)
                 {
-                    OnStartupProjectChanged((IVsHierarchy)varValueNew);
+                    OnStartupProjectChanged((IVsHierarchyWrapper)varValueNew);
                 }
             }
             return S_OK;
@@ -502,7 +489,7 @@ namespace SmartCmdArgs.Services
             // This method is called for each Hierarchy element (e.g. project and folders), thus we filter for the startup project
             // to only trigger the config changed event once.
 
-            ProjectConfigurationChanged?.Invoke(this, pIVsHierarchy);
+            ProjectConfigurationChanged?.Invoke(this, pIVsHierarchy.Wrap());
 
             return S_OK;
         }
@@ -545,25 +532,27 @@ namespace SmartCmdArgs.Services
 
         int IVsSolutionEvents.OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded)
         {
-            if (!_projectConfigService.Value.IsSupportedProject(pHierarchy))
+            var hierarchyWrapper = pHierarchy.Wrap();
+            if (!_projectConfigService.Value.IsSupportedProject(hierarchyWrapper))
                 return LogIgnoringUnsupportedProjectType();
 
-            Guid projectGuid = pHierarchy.GetGuid();
+            Guid projectGuid = hierarchyWrapper.GetGuid();
 
             bool isLoadProcess = ProjectStateMap.TryGetValue(projectGuid, out var state) && state.IsLoaded;
-            AddProjectState(pHierarchy);
+            AddProjectState(hierarchyWrapper);
 
-            ProjectAfterOpen?.Invoke(this, new ProjectAfterOpenEventArgs { Project = pHierarchy, IsLoadProcess = isLoadProcess, IsSolutionOpenProcess = fAdded == 0 });
+            ProjectAfterOpen?.Invoke(this, new ProjectAfterOpenEventArgs { Project = hierarchyWrapper, IsLoadProcess = isLoadProcess, IsSolutionOpenProcess = fAdded == 0 });
 
             return S_OK;
         }
 
         int IVsSolutionEvents.OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved)
         {
-            if (!_projectConfigService.Value.IsSupportedProject(pHierarchy))
+            var hierarchyWrapper = pHierarchy.Wrap();
+            if (!_projectConfigService.Value.IsSupportedProject(hierarchyWrapper))
                 return LogIgnoringUnsupportedProjectType();
 
-            Guid projectGuid = pHierarchy.GetGuid();
+            Guid projectGuid = hierarchyWrapper.GetGuid();
 
             var isUloadProcess = ProjectStateMap.TryGetValue(projectGuid, out var state) && !state.IsLoaded;
 
@@ -573,31 +562,33 @@ namespace SmartCmdArgs.Services
                 ProjectStateMap.Remove(projectGuid);
             }
 
-            ProjectBeforeClose?.Invoke(this, new ProjectBeforeCloseEventArgs { Project = pHierarchy, IsUnloadProcess = isUloadProcess, IsSolutionCloseProcess = fRemoved == 0 });
+            ProjectBeforeClose?.Invoke(this, new ProjectBeforeCloseEventArgs { Project = hierarchyWrapper, IsUnloadProcess = isUloadProcess, IsSolutionCloseProcess = fRemoved == 0 });
 
             return S_OK;
         }
 
         int IVsSolutionEvents.OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
         {
-            if (!_projectConfigService.Value.IsSupportedProject(pRealHierarchy))
+            var realHierarchyWrapper = pRealHierarchy.Wrap();
+            if (!_projectConfigService.Value.IsSupportedProject(realHierarchyWrapper))
                 return LogIgnoringUnsupportedProjectType();
 
-            ProjectStateMap[pRealHierarchy.GetGuid()].IsLoaded = true;
+            ProjectStateMap[realHierarchyWrapper.GetGuid()].IsLoaded = true;
 
-            ProjectAfterLoad?.Invoke(this, pRealHierarchy);
+            ProjectAfterLoad?.Invoke(this, realHierarchyWrapper);
 
             return S_OK;
         }
 
         int IVsSolutionEvents.OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
         {
-            if (!_projectConfigService.Value.IsSupportedProject(pRealHierarchy))
+            var realHierarchyWrapper = pRealHierarchy.Wrap();
+            if (!_projectConfigService.Value.IsSupportedProject(realHierarchyWrapper))
                 return LogIgnoringUnsupportedProjectType();
 
-            ProjectStateMap[pRealHierarchy.GetGuid()].IsLoaded = false;
+            ProjectStateMap[realHierarchyWrapper.GetGuid()].IsLoaded = false;
 
-            ProjectBeforeUnload?.Invoke(this, pRealHierarchy);
+            ProjectBeforeUnload?.Invoke(this, realHierarchyWrapper);
 
             return S_OK;
         }
@@ -605,16 +596,17 @@ namespace SmartCmdArgs.Services
 
         int IVsSolutionEvents4.OnAfterRenameProject(IVsHierarchy pHierarchy)
         {
-            if (!_projectConfigService.Value.IsSupportedProject(pHierarchy))
+            var hierarchyWrapper = pHierarchy.Wrap();
+            if (!_projectConfigService.Value.IsSupportedProject(hierarchyWrapper))
                 return LogIgnoringUnsupportedProjectType();
 
-            Guid projectGuid = pHierarchy.GetGuid();
+            Guid projectGuid = hierarchyWrapper.GetGuid();
             var oldProjectDir = ProjectStateMap[projectGuid].ProjectDir;
             var oldProjectName = ProjectStateMap[projectGuid].ProjectName;
-            ProjectStateMap[projectGuid].ProjectDir = pHierarchy.GetProjectDir();
-            ProjectStateMap[projectGuid].ProjectName = pHierarchy.GetName();
+            ProjectStateMap[projectGuid].ProjectDir = hierarchyWrapper.GetProjectDir();
+            ProjectStateMap[projectGuid].ProjectName = hierarchyWrapper.GetName();
 
-            ProjectAfterRename?.Invoke(this, new ProjectAfterRenameEventArgs { OldProjectDir = oldProjectDir, OldProjectName = oldProjectName, Project = pHierarchy });
+            ProjectAfterRename?.Invoke(this, new ProjectAfterRenameEventArgs { OldProjectDir = oldProjectDir, OldProjectName = oldProjectName, Project = hierarchyWrapper });
 
             return S_OK;
         }

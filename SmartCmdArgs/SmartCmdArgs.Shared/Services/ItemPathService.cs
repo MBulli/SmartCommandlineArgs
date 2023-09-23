@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,11 +10,11 @@ namespace SmartCmdArgs.Services
 {
     public interface IItemPathService
     {
-        string MakePathAbsolute(string path, IVsHierarchy project, string buildConfig = null);
+        string MakePathAbsolute(string path, IVsHierarchyWrapper project, string buildConfig = null);
         string MakePathRelativeBasedOnSolutionDir(string path);
         string MakePathAbsoluteBasedOnSolutionDir(string path);
-        string MakePathAbsoluteBasedOnProjectDir(string path, IVsHierarchy project);
-        string MakePathAbsoluteBasedOnTargetDir(string path, IVsHierarchy project, string buildConfig);
+        string MakePathAbsoluteBasedOnProjectDir(string path, IVsHierarchyWrapper project);
+        string MakePathAbsoluteBasedOnTargetDir(string path, IVsHierarchyWrapper project, string buildConfig);
     }
 
     internal class ItemPathService : IItemPathService
@@ -27,7 +28,7 @@ namespace SmartCmdArgs.Services
             this.vsHelper = vsHelper;
         }
 
-        public string MakePathAbsolute(string path, IVsHierarchy project, string buildConfig = null)
+        public string MakePathAbsolute(string path, IVsHierarchyWrapper project, string buildConfig = null)
         {
             switch (optionsSettings.RelativePathRoot)
             {
@@ -52,13 +53,13 @@ namespace SmartCmdArgs.Services
             return PathHelper.MakePathAbsolute(path, baseDir);
         }
 
-        public string MakePathAbsoluteBasedOnProjectDir(string path, IVsHierarchy project)
+        public string MakePathAbsoluteBasedOnProjectDir(string path, IVsHierarchyWrapper project)
         {
             string baseDir = project?.GetProjectDir();
             return PathHelper.MakePathAbsolute(path, baseDir);
         }
 
-        public string MakePathAbsoluteBasedOnTargetDir(string path, IVsHierarchy project, string buildConfig)
+        public string MakePathAbsoluteBasedOnTargetDir(string path, IVsHierarchyWrapper project, string buildConfig)
         {
             string baseDir = null;
             if (project != null)

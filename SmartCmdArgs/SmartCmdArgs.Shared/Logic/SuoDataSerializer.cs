@@ -78,7 +78,7 @@ namespace SmartCmdArgs.Logic
                 var projectState = ProjectDataSerializer.ParseOldJsonFormat(prop.Value);
 
                 var projectName = prop.Name;
-                var projectGuid = vsHelper.ProjectGuidForProjetName(projectName);
+                var projectGuid = vsHelper.HierarchyForProjectName(projectName).GetGuid();
                 var enabledItems = from item in projectState.Items
                                    where item.Enabled
                                    select item.Id;

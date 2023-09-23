@@ -258,7 +258,7 @@ namespace SmartCmdArgs
 
         public List<string> GetProjectConfigurations(Guid projGuid)
         {
-            IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
+            var project = vsHelper.HierarchyForProjectGuid(projGuid);
 
             var configs = (project.GetProject()?.ConfigurationManager?.ConfigurationRowNames as Array)?.Cast<string>().ToList();
             return configs ?? new List<string>();
@@ -266,7 +266,7 @@ namespace SmartCmdArgs
 
         public List<string> GetProjectPlatforms(Guid projGuid)
         {
-            IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
+            var project = vsHelper.HierarchyForProjectGuid(projGuid);
 
             var platforms = (project.GetProject()?.ConfigurationManager?.PlatformNames as Array)?.Cast<string>().ToList();
             return platforms ?? new List<string>();
@@ -274,7 +274,7 @@ namespace SmartCmdArgs
 
         public List<string> GetLaunchProfiles(Guid projGuid)
         {
-            IVsHierarchy project = vsHelper.HierarchyForProjectGuid(projGuid);
+            var project = vsHelper.HierarchyForProjectGuid(projGuid);
 
             List<string> launchProfiles = null;
             if (project?.IsCpsProject() == true)

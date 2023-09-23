@@ -2,6 +2,7 @@
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,15 +14,15 @@ namespace SmartCmdArgs.Services
     {
         event EventHandler<FileStorageChangedEventArgs> FileStorageChanged;
 
-        void AddProject(IVsHierarchy project);
+        void AddProject(IVsHierarchyWrapper project);
         void RemoveAllProjects();
-        void RemoveProject(IVsHierarchy project);
-        void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName);
+        void RemoveProject(IVsHierarchyWrapper project);
+        void RenameProject(IVsHierarchyWrapper project, string oldProjectDir, string oldProjectName);
         void SaveSettings();
         SettingsJson ReadSettings();
-        ProjectDataJson ReadDataForProject(IVsHierarchy project);
+        ProjectDataJson ReadDataForProject(IVsHierarchyWrapper project);
         void DeleteAllUnusedArgFiles();
-        void SaveProject(IVsHierarchy project);
+        void SaveProject(IVsHierarchyWrapper project);
         void SaveAllProjects();
     }
 
@@ -40,11 +41,11 @@ namespace SmartCmdArgs.Services
         /// The project for that the event was triggered.
         /// Can be null if solution file triggered the event.
         /// </summary>
-        public readonly IVsHierarchy Project;
+        public readonly IVsHierarchyWrapper Project;
 
         public bool IsSolutionWide => Type == FileStorageChanedType.Solution;
 
-        public FileStorageChangedEventArgs(IVsHierarchy project)
+        public FileStorageChangedEventArgs(IVsHierarchyWrapper project)
         {
             Project = project;
             Type = project == null ? FileStorageChanedType.Solution : FileStorageChanedType.Project;
@@ -91,7 +92,7 @@ namespace SmartCmdArgs.Services
             this.lifeCycleService = lifeCycleService;
         }
 
-        public void AddProject(IVsHierarchy project)
+        public void AddProject(IVsHierarchyWrapper project)
         {
             AttachFsWatcherToProject(project);
             AttachSolutionWatcher();
@@ -103,12 +104,12 @@ namespace SmartCmdArgs.Services
             DetachSolutionWatcher();
         }
 
-        public void RemoveProject(IVsHierarchy project)
+        public void RemoveProject(IVsHierarchyWrapper project)
         {
             DetachFsWatcherFromProject(project);
         }
 
-        public void RenameProject(IVsHierarchy project, string oldProjectDir, string oldProjectName)
+        public void RenameProject(IVsHierarchyWrapper project, string oldProjectDir, string oldProjectName)
         {
             if (optionsSettings.UseSolutionDir)
                 return;
@@ -198,7 +199,7 @@ namespace SmartCmdArgs.Services
             return null;
         }
 
-        public ProjectDataJson ReadDataForProject(IVsHierarchy project)
+        public ProjectDataJson ReadDataForProject(IVsHierarchyWrapper project)
         {
             ProjectDataJson result = null;
 
@@ -289,7 +290,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        public void SaveProject(IVsHierarchy project)
+        public void SaveProject(IVsHierarchyWrapper project)
         {
             if (optionsSettings.UseSolutionDir)
                 SaveJsonForSolution();
@@ -352,7 +353,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        private void SaveJsonForProject(IVsHierarchy project)
+        private void SaveJsonForProject(IVsHierarchyWrapper project)
         {
             if (!lifeCycleService.Value.IsEnabled || !optionsSettings.VcsSupportEnabled || project == null)
                 return;
@@ -404,7 +405,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        private string FullFilenameForProjectJsonFileFromProject(IVsHierarchy project)
+        private string FullFilenameForProjectJsonFileFromProject(IVsHierarchyWrapper project)
         {
             var userFilename = vsHelper.GetMSBuildPropertyValue(project, "SmartCmdArgJsonFile");
 
@@ -443,7 +444,7 @@ namespace SmartCmdArgs.Services
             return Path.Combine(jsonDir, filename);
         }
 
-        private void FireFileStorageChanged(IVsHierarchy project)
+        private void FireFileStorageChanged(IVsHierarchyWrapper project)
         {
             FileStorageChanged?.Invoke(this, new FileStorageChangedEventArgs(project));
         }
@@ -453,7 +454,7 @@ namespace SmartCmdArgs.Services
             FileStorageChanged?.Invoke(this, new FileStorageChangedEventArgs(type));
         }
 
-        private void AttachFsWatcherToProject(IVsHierarchy project)
+        private void AttachFsWatcherToProject(IVsHierarchyWrapper project)
         {
             string unrealFilename = FullFilenameForProjectJsonFileFromProject(project);
             string realProjectJsonFileFullName = SymbolicLinkUtils.GetRealPath(unrealFilename);
@@ -490,7 +491,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        private void DetachFsWatcherFromProject(IVsHierarchy project)
+        private void DetachFsWatcherFromProject(IVsHierarchyWrapper project)
         {
             var guid = project.GetGuid();
             if (projectFsWatchers.TryGetValue(guid, out FileSystemWatcher fsWatcher))

@@ -16,6 +16,7 @@ using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.Services;
 using SmartCmdArgs.View;
+using SmartCmdArgs.Wrapper;
 
 namespace SmartCmdArgs.ViewModel
 {
@@ -599,7 +600,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public void RenameProject(IVsHierarchy project)
+        public void RenameProject(IVsHierarchyWrapper project)
         {
             if (treeViewModel.Projects.TryGetValue(project.GetGuid(), out CmdProject cmdProject))
             {
@@ -607,7 +608,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        public void PopulateFromProjectData(IVsHierarchy project, ProjectDataJson data)
+        public void PopulateFromProjectData(IVsHierarchyWrapper project, ProjectDataJson data)
         {
             var guid = project.GetGuid();
 

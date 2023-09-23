@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
+using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +11,11 @@ namespace SmartCmdArgs.Services
 {
     public interface IProjectConfigService
     {
-        bool IsSupportedProject(IVsHierarchy project);
+        bool IsSupportedProject(IVsHierarchyWrapper project);
 
-        void AddAllArguments(IVsHierarchy project, List<CmdArgumentJson> allArgs);
+        void AddAllArguments(IVsHierarchyWrapper project, List<CmdArgumentJson> allArgs);
 
-        void UpdateConfigurationForProject(IVsHierarchy project);
+        void UpdateConfigurationForProject(IVsHierarchyWrapper project);
     }
 
     public class ProjectConfigService : IProjectConfigService
@@ -633,7 +634,7 @@ namespace SmartCmdArgs.Services
                 } },
             };
 
-        public bool IsSupportedProject(IVsHierarchy project)
+        public bool IsSupportedProject(IVsHierarchyWrapper project)
         {
             if (project == null)
                 return false;
@@ -655,7 +656,7 @@ namespace SmartCmdArgs.Services
             return supportedProjects.ContainsKey(project.GetKind());
         }
 
-        private static bool TryGetProjectConfigHandlers(IVsHierarchy project, out ProjectConfigHandlers handler)
+        private static bool TryGetProjectConfigHandlers(IVsHierarchyWrapper project, out ProjectConfigHandlers handler)
         {
             var projectKind = project.GetKind();
 
@@ -673,7 +674,7 @@ namespace SmartCmdArgs.Services
             return supportedProjects.TryGetValue(projectKind, out handler);
         }
 
-        public void AddAllArguments(IVsHierarchy project, List<CmdArgumentJson> allArgs)
+        public void AddAllArguments(IVsHierarchyWrapper project, List<CmdArgumentJson> allArgs)
         {
             if (project.IsCpsProject())
             {
@@ -689,7 +690,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        public void UpdateConfigurationForProject(IVsHierarchy project)
+        public void UpdateConfigurationForProject(IVsHierarchyWrapper project)
         {
             if (!lifeCycleService.Value.IsEnabled || project == null)
                 return;
