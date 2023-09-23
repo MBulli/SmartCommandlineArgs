@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace SmartCmdArgs.Services
@@ -41,7 +43,7 @@ namespace SmartCmdArgs.Services
             set
             {
                 _isEnabledSaved = value;
-                IsEnabled = value ?? optionsSettings.EnabledByDefault;
+                IsEnabled = value ?? GetDefaultEnabled();
             }
         }
 
@@ -93,6 +95,24 @@ namespace SmartCmdArgs.Services
             this.vsEventHandling = vsEventHandling;
             this.optionsSettingsEventHandling = optionsSettingsEventHandling;
             this.treeViewEventHandling = treeViewEventHandling;
+        }
+
+        private bool GetDefaultEnabled()
+        {
+            switch(optionsSettings.EnableBehaviour)
+            {
+                case EnableBehaviour.EnableByDefault: 
+                    return true;
+
+                case EnableBehaviour.AlwaysAsk: 
+                    return false;
+
+                case EnableBehaviour.EnableIfArgJsonIsFound: 
+                    return optionsSettings.VcsSupportEnabled 
+                        && fileStorage.GetAllArgJsonFileNames().Any(File.Exists);
+
+                default: return false;
+            }
         }
 
         public void UpdateDisabledScreen()

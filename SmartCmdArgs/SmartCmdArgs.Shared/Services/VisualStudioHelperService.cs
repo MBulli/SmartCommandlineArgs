@@ -471,7 +471,7 @@ namespace SmartCmdArgs.Services
             {
                 if (varValueNew != null)
                 {
-                    OnStartupProjectChanged((IVsHierarchyWrapper)varValueNew);
+                    OnStartupProjectChanged(((IVsHierarchy)varValueNew).Wrap());
                 }
             }
             return S_OK;

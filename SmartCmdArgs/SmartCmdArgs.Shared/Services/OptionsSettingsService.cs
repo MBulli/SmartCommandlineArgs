@@ -28,7 +28,7 @@ namespace SmartCmdArgs.Services
         bool DisplayTagForCla { get; }
         bool DeleteEmptyFilesAutomatically { get; }
         bool DeleteUnnecessaryFilesAutomatically { get; }
-        bool EnabledByDefault { get; }
+        EnableBehaviour EnableBehaviour { get; }
         InactiveDisableMode DisableInactiveItems { get; }
         RelativePathRootOption RelativePathRoot {  get; }
 
@@ -71,7 +71,7 @@ namespace SmartCmdArgs.Services
         public bool DisplayTagForCla => OptionsPage.DisplayTagForCla;
         public bool DeleteEmptyFilesAutomatically => OptionsPage.DeleteEmptyFilesAutomatically;
         public bool DeleteUnnecessaryFilesAutomatically => OptionsPage.DeleteUnnecessaryFilesAutomatically;
-        public bool EnabledByDefault => OptionsPage.EnabledByDefault;
+        public EnableBehaviour EnableBehaviour => OptionsPage.EnableBehaviour;
         public InactiveDisableMode DisableInactiveItems => OptionsPage.DisableInactiveItems;
         public RelativePathRootOption RelativePathRoot => OptionsPage.RelativePathRoot;
 

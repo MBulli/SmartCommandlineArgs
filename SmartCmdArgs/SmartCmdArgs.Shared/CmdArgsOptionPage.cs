@@ -35,6 +35,19 @@ namespace SmartCmdArgs
         OnlyInStartupProjects,
     }
 
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    public enum EnableBehaviour
+    {
+        [Description("Enable if a *.arg.json file is found")]
+        EnableIfArgJsonIsFound,
+
+        [Description("Always ask for new Solutions")]
+        AlwaysAsk,
+
+        [Description("Enable by default (old behaviour)")]
+        EnableByDefault,
+    }
+
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
         private bool _dontSave = false;
@@ -52,7 +65,7 @@ namespace SmartCmdArgs
             }
         }
 
-        private bool _enabledByDefault;
+        private EnableBehaviour _enableBehaviour;
         private RelativePathRootOption _relativePathRoot;
 
         private bool _useMonospaceFont;
@@ -69,13 +82,13 @@ namespace SmartCmdArgs
         private bool _macroEvaluationEnabled;
 
         [Category("General")]
-        [DisplayName("Enabled by default")]
-        [Description("Enables this extension by default if a solution is opend for the first time on this machine with this extension. (This information is saved within the '.suo' file inside the '.vs' directory.)")]
-        [DefaultValue(false)]
-        public bool EnabledByDefault
+        [DisplayName("Enable Behaviour")]
+        [Description("Choose whether the extension should enable automatically or ask the user for permission first.")]
+        [DefaultValue(EnableBehaviour.EnableIfArgJsonIsFound)]
+        public EnableBehaviour EnableBehaviour
         {
-            get => _enabledByDefault;
-            set => SetAndNotify(value, ref _enabledByDefault);
+            get => _enableBehaviour;
+            set => SetAndNotify(value, ref _enableBehaviour);
         }
 
         [Category("General")]

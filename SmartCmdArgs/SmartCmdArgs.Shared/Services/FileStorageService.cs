@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.Shell.Interop;
-using SmartCmdArgs.Helper;
+﻿using SmartCmdArgs.Helper;
 using SmartCmdArgs.Logic;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Wrapper;
@@ -24,6 +23,7 @@ namespace SmartCmdArgs.Services
         void DeleteAllUnusedArgFiles();
         void SaveProject(IVsHierarchyWrapper project);
         void SaveAllProjects();
+        IEnumerable<string> GetAllArgJsonFileNames();
     }
 
     enum FileStorageChanedType
@@ -304,6 +304,26 @@ namespace SmartCmdArgs.Services
                 SaveJsonForSolution();
             else
                 vsHelper.GetSupportedProjects().ForEach(SaveJsonForProject);
+        }
+
+        public IEnumerable<string> GetAllArgJsonFileNames()
+        {
+            if (!optionsSettings.VcsSupportEnabled)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            IEnumerable<string> result;
+            if (optionsSettings.UseSolutionDir)
+            {
+                result = new[] { FullFilenameForSolutionJsonFile() };
+            }
+            else
+            {
+                result = vsHelper.GetSupportedProjects().Select(p => FullFilenameForProjectJsonFileFromProject(p));
+            }
+
+            return result;
         }
 
         private void SaveJsonForSolution()
