@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 using SmartCmdArgs.Services;
+using SmartCmdArgs.Wrapper;
 
 namespace SmartCmdArgs.Tests.Services
 {
@@ -69,13 +70,13 @@ namespace SmartCmdArgs.Tests.Services
         {
             // Arrange
             var path = "somepath";
-            var projectMock = new Mock<IVsHierarchy>();
+            var projectMock = new Mock<IVsHierarchyWrapper>();
             optionsSettingsMock.Setup(x => x.RelativePathRoot).Returns(rootOption);
 
             if (rootOption == RelativePathRootOption.ProjectDirectory)
                 projectMock.WithProjectDir(expectedBaseDir);
             else
-                vsHelperMock.Setup(x => x.GetMSBuildPropertyValue(It.IsAny<IVsHierarchy>(), "TargetDir", buildConfig)).Returns(expectedBaseDir);
+                vsHelperMock.Setup(x => x.GetMSBuildPropertyValue(It.IsAny<IVsHierarchyWrapper>(), "TargetDir", buildConfig)).Returns(expectedBaseDir);
 
             var expectedPath = expectedBaseDir == null ? path : $"{expectedBaseDir}\\{path}";
 
@@ -119,7 +120,7 @@ namespace SmartCmdArgs.Tests.Services
         {
             // Arrange
             var path = "somepath";
-            var projectMock = new Mock<IVsHierarchy>();
+            var projectMock = new Mock<IVsHierarchyWrapper>();
             optionsSettingsMock.Setup(x => x.RelativePathRoot).Returns((RelativePathRootOption)(-1)); // Unsupported option
 
             // Act

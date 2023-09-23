@@ -7,6 +7,7 @@ using Xunit;
 using System.Collections.Generic;
 using System.Linq;
 using SmartCmdArgs.Wrapper;
+using SmartCmdArgs.Tests.Utils;
 
 namespace SmartCmdArgs.Tests.Services
 {
@@ -59,7 +60,7 @@ namespace SmartCmdArgs.Tests.Services
             optionsSettingsMock.Setup(x => x.MacroEvaluationEnabled).Returns(false);
 
             // Act
-            var result = itemEvaluationService.EvaluateMacros(arg, Mock.Of<IVsHierarchy>());
+            var result = itemEvaluationService.EvaluateMacros(arg, Mock.Of<IVsHierarchyWrapper>());
 
             // Assert
             Assert.Equal(arg, result);
@@ -71,7 +72,7 @@ namespace SmartCmdArgs.Tests.Services
         public void EvaluateMacros_ShouldReturnExpectedResult(string arg, string expected)
         {
             // Arrange
-            var projectMock = new Mock<IVsHierarchy>();
+            var projectMock = new Mock<IVsHierarchyWrapper>();
             optionsSettingsMock.Setup(x => x.MacroEvaluationEnabled).Returns(true);
             vsHelperMock.Setup(x => x.GetMSBuildPropertyValueForActiveConfig(projectMock.Object, "PropertyName")).Returns("PropertyValue");
 
@@ -121,11 +122,10 @@ namespace SmartCmdArgs.Tests.Services
             var cmdArgumentMock = new Mock<CmdArgument>(argType, value, true, false);
             cmdArgumentMock.SetupGet(x => x.ProjectGuid).Returns(projectGuid);
 
-            var hierarchyMock = new Mock<IVsHierarchy>();
-            vsHelperMock.Setup(x => x.HierarchyForProjectGuid(projectGuid)).Returns(hierarchyMock.Object);
-            vsHelperMock.Setup(x => x.GetMSBuildPropertyValueForActiveConfig(hierarchyMock.Object, "PropertyName")).Returns("PropertyValue");
-            itemPathMock.Setup(x => x.MakePathAbsolute(It.IsAny<string>(), It.IsAny<IVsHierarchy>(), It.IsAny<string>())).Returns((string path, IVsHierarchy project, string buildConfig) => path);
-            itemPathMock.Setup(x => x.MakePathAbsolute("PropertyValue", It.IsAny<IVsHierarchy>(), It.IsAny<string>())).Returns("AbsolutePropertyValue");
+            var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperMock, projectGuid).Object;
+            vsHelperMock.Setup(x => x.GetMSBuildPropertyValueForActiveConfig(project, "PropertyName")).Returns("PropertyValue");
+            itemPathMock.Setup(x => x.MakePathAbsolute(It.IsAny<string>(), It.IsAny<IVsHierarchyWrapper>(), It.IsAny<string>())).Returns((string path, IVsHierarchyWrapper prj, string buildConfig) => path);
+            itemPathMock.Setup(x => x.MakePathAbsolute("PropertyValue", It.IsAny<IVsHierarchyWrapper>(), It.IsAny<string>())).Returns("AbsolutePropertyValue");
             optionsSettingsMock.Setup(x => x.MacroEvaluationEnabled).Returns(true);
 
             // Act
@@ -141,7 +141,7 @@ namespace SmartCmdArgs.Tests.Services
             // Arrange
             var item = new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "some<Arg");
             var projectGuid = Guid.NewGuid();
-            var projectMock = new Mock<IVsHierarchy>();
+            var projectMock = new Mock<IVsHierarchyWrapper>();
             vsHelperMock.Setup(x => x.HierarchyForProjectGuid(projectGuid)).Returns(projectMock.Object);
             optionsSettingsMock.Setup(x => x.MacroEvaluationEnabled).Returns(false);
             itemPathMock.Setup(x => x.MakePathAbsolute(It.IsAny<string>(), It.IsAny<IVsHierarchyWrapper>(), It.IsAny<string>())).Returns((string path, IVsHierarchyWrapper project, string buildConfig) => path);
