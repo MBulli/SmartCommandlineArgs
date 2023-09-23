@@ -118,7 +118,7 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        public static List<CmdArgumentJson> GetCpsProjectAllArguments(EnvDTE.Project project)
+        public static List<CmdArgumentJson> GetCpsProjectAllArguments(EnvDTE.Project project, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -137,17 +137,20 @@ namespace SmartCmdArgs.Helper
                 {
                     var profileGrp = new CmdArgumentJson { Command = profile.Name, LaunchProfile = profile.Name, Items = new List<CmdArgumentJson>() };
 
-                    if (!string.IsNullOrEmpty(profile.CommandLineArgs))
+                    if (includeArgs && !string.IsNullOrEmpty(profile.CommandLineArgs))
                     {
                         profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = profile.CommandLineArgs, Enabled = true });
                     }
 
-                    foreach (var envVarPair in profile.EnvironmentVariables)
+                    if (includeEnvVars)
                     {
-                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
+                        foreach (var envVarPair in profile.EnvironmentVariables)
+                        {
+                            profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
+                        }
                     }
 
-                    if (!string.IsNullOrEmpty(profile.WorkingDirectory))
+                    if (includeWorkDir && !string.IsNullOrEmpty(profile.WorkingDirectory))
                     {
                         profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.WorkDir, Command = profile.WorkingDirectory, Enabled = true });
                     }
