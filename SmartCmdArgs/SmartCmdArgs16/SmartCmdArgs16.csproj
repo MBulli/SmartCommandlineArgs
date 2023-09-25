@@ -45,7 +45,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\SharedResources\CmdArgsPackage.cs">
+      <Link>CmdArgsPackage.cs</Link>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CmdArgsPackage.vsct</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="source.extension.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>source.extension.vsixmanifest</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\SharedResources\Key.snk">
@@ -56,6 +67,9 @@
     </Content>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
+      <Generator>VsixManifestGenerator</Generator>
+      <LastGenOutput>source.extension.cs</LastGenOutput>
+      <CustomToolNamespace>SmartCmdArgs</CustomToolNamespace>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -90,6 +104,9 @@
     <VSCTCompile Include="..\SharedResources\CmdArgsPackage.vsct">
       <Link>CmdArgsPackage.vsct</Link>
       <ResourceName>Menus.ctmenu</ResourceName>
+      <Generator>VsctGenerator</Generator>
+      <LastGenOutput>CmdArgsPackage.cs</LastGenOutput>
+      <CustomToolNamespace>SmartCmdArgs</CustomToolNamespace>
     </VSCTCompile>
     <Content Include="..\SharedResources\Resources\BigIcon.png">
       <Link>Resources\BigIcon.png</Link>

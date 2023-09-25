@@ -112,7 +112,7 @@ namespace SmartCmdArgs.Tests
 
             var shell = GetService<SVsShell, IVsShell>();
 
-            var packageGuid = Guid.Parse(CmdArgsPackage.PackageGuidString);
+            var packageGuid = Guid.Parse(PackageGuids.guidCmdArgsToolWindowPackageString);
 
             if (VSConstants.S_OK == shell.IsPackageLoaded(ref packageGuid, out IVsPackage loadedPackage))
             {

@@ -1,20 +1,14 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="ToolWindow.cs" company="Company">
-//     Copyright (c) Company.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
+﻿using System;
+using System.ComponentModel.Design;
+using System.Runtime.InteropServices;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.PlatformUI;
+using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs
 {
-    using System;
-    using System.ComponentModel.Design;
-    using System.Runtime.InteropServices;
-    using Microsoft.VisualStudio.Shell;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using System.Collections.Generic;
-    using Microsoft.VisualStudio.PlatformUI;
-    using SmartCmdArgs.ViewModel;
-
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.
     /// </summary>
@@ -26,11 +20,9 @@ namespace SmartCmdArgs
     /// implementation of the IVsUIElementPane interface.
     /// </para>
     /// </remarks>
-    [Guid(ToolWindow.ToolWindowGuidString)]
+    [Guid(PackageGuids.guidToolWindowString)]
     public class ToolWindow : ToolWindowPane, IVsWindowFrameNotify3, IVsWindowPaneCommit, IVsWindowPaneCommitFilter
     {
-        public const string ToolWindowGuidString = "a21b35ed-5c13-4d55-a3d2-71054c4e9540";
-
         private readonly ToolWindowViewModel viewModel;
         private readonly TreeViewModel treeViewModel;
 
@@ -61,7 +53,7 @@ namespace SmartCmdArgs
             // The index is actually zero-based, in contrast to the bitmaps in the vsct-file.
             BitmapIndex = 0;
 
-            this.ToolBar = new CommandID(Commands.CmdArgsToolBarCmdSet, Commands.TWToolbar);
+            this.ToolBar = new CommandID(PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.TWToolbar);
 
             matchCaseSearchOption = new WindowSearchBooleanOption("Match Case", "Enable to make search case sensitive.", false);
             searchOptions = new List<IVsWindowSearchOption> {matchCaseSearchOption};
