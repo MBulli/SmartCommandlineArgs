@@ -96,8 +96,8 @@ namespace SmartCmdArgs.DataSerialization
         public List<CmdArgumentJson> Items = null;
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public bool DefaultChecked = false;
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(ArgumentType.CmdArg)]
-        public ArgumentType Type = ArgumentType.CmdArg;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(CmdParamType.CmdArg)]
+        public CmdParamType Type = CmdParamType.CmdArg;
 
         [JsonIgnore]
         public bool Enabled = false;
@@ -111,7 +111,7 @@ namespace SmartCmdArgs.DataSerialization
             .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllItems));
 
         [JsonIgnore]
-        public IEnumerable<CmdArgumentJson> AllArguments => AllItems.Where(item => item.Items == null);
+        public IEnumerable<CmdArgumentJson> AllParameters => AllItems.Where(item => item.Items == null);
 
         [JsonIgnore]
         public IEnumerable<CmdArgumentJson> AllContainer => AllItems.Where(item => item.Items != null);

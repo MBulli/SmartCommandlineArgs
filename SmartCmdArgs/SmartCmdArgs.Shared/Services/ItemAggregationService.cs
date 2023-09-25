@@ -9,7 +9,7 @@ namespace SmartCmdArgs.Services
 {
     public interface IItemAggregationService
     {
-        IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchyWrapper project);
+        IEnumerable<CmdParameter> GetAllComamndLineParamsForProject(IVsHierarchyWrapper project);
         string CreateCommandLineArgsForProject(IVsHierarchyWrapper project);
         IDictionary<string, string> GetEnvVarsForProject(IVsHierarchyWrapper project);
         string GetWorkDirForProject(IVsHierarchyWrapper project);
@@ -71,9 +71,9 @@ namespace SmartCmdArgs.Services
             return JoinContainer(projectCmd);
         }
 
-        public IEnumerable<CmdArgument> GetAllComamndLineItemsForProject(IVsHierarchyWrapper project)
+        public IEnumerable<CmdParameter> GetAllComamndLineParamsForProject(IVsHierarchyWrapper project)
         {
-            IEnumerable<CmdArgument> joinItems(IEnumerable<CmdBase> items, Func<CmdContainer, IEnumerable<CmdArgument>> joinContainer, CmdContainer parentContainer)
+            IEnumerable<CmdParameter> joinItems(IEnumerable<CmdBase> items, Func<CmdContainer, IEnumerable<CmdParameter>> joinContainer, CmdContainer parentContainer)
             {
                 foreach (var item in items)
                 {
@@ -82,14 +82,14 @@ namespace SmartCmdArgs.Services
                         foreach (var child in joinContainer(con))
                             yield return child;
                     }
-                    else if (item is CmdArgument arg)
+                    else if (item is CmdParameter param)
                     {
-                        yield return arg;
+                        yield return param;
                     }
                 }
             }
 
-            return AggregateComamndLineItemsForProject<IEnumerable<CmdArgument>>(project, joinItems);
+            return AggregateComamndLineItemsForProject<IEnumerable<CmdParameter>>(project, joinItems);
         }
 
         public string CreateCommandLineArgsForProject(IVsHierarchyWrapper project)
@@ -98,7 +98,7 @@ namespace SmartCmdArgs.Services
                 (items, joinContainer, parentContainer) =>
                 {
                     var strings = items
-                        .Where(x => !(x is CmdArgument arg) || arg.ArgumentType == ArgumentType.CmdArg)
+                        .Where(x => !(x is CmdParameter param) || param.ParamType == CmdParamType.CmdArg)
                         .Select(x => x is CmdContainer c ? joinContainer(c) : itemEvaluation.EvaluateMacros(x.Value, project))
                         .Where(x => !string.IsNullOrEmpty(x));
 
@@ -114,9 +114,9 @@ namespace SmartCmdArgs.Services
         {
             var result = new Dictionary<string, string>();
 
-            foreach (var item in GetAllComamndLineItemsForProject(project))
+            foreach (var item in GetAllComamndLineParamsForProject(project))
             {
-                if (item.ArgumentType != ArgumentType.EnvVar) continue;
+                if (item.ParamType != CmdParamType.EnvVar) continue;
 
                 if (itemEvaluation.TryParseEnvVar(item.Value, out EnvVar envVar))
                 {
@@ -131,9 +131,9 @@ namespace SmartCmdArgs.Services
         {
             var result = "";
 
-            foreach (var item in GetAllComamndLineItemsForProject(project))
+            foreach (var item in GetAllComamndLineParamsForProject(project))
             {
-                if (item.ArgumentType != ArgumentType.WorkDir) continue;
+                if (item.ParamType != CmdParamType.WorkDir) continue;
 
                 result = itemEvaluation.EvaluateMacros(item.Value, project);
             }

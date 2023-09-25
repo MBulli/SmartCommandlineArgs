@@ -30,7 +30,7 @@ namespace SmartCmdArgs.Tests
             addCommand.Execute(null);
 
             var treeViewModel = package.ServiceProvider.GetService<TreeViewModel>();
-            var args = treeViewModel?.AllArguments?.ToList();
+            var args = treeViewModel?.AllParameters?.ToList();
 
             Assert.NotNull(args);
 

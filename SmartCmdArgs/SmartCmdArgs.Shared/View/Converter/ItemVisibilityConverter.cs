@@ -8,7 +8,7 @@ namespace SmartCmdArgs.View.Converter
     {
         public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is CmdArgument)
+            if (value is CmdParameter)
                 return System.Windows.Visibility.Collapsed;
             return System.Windows.Visibility.Visible;
         }

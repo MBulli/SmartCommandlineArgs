@@ -204,7 +204,7 @@
         <!--<Setter Property="Background" Value="ForestGreen" />-->
     </Style>
 
-    <Style x:Key="ArgumentItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource ItemBaseStyle}">
+    <Style x:Key="ParameterItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource ItemBaseStyle}">
         <!--<Setter Property="Background" Value="SkyBlue" />-->    
     </Style>
 
@@ -217,7 +217,7 @@
         <local:ArgumentItemView DataContext="{Binding}" />
     </HierarchicalDataTemplate>
 
-    <DataTemplate x:Key="ArgumentDataTemplate" DataType="{x:Type vm:CmdArgument}">
+    <DataTemplate x:Key="ParameterDataTemplate" DataType="{x:Type vm:CmdParameter}">
         <local:ArgumentItemView DataContext="{Binding}" />
     </DataTemplate>
 

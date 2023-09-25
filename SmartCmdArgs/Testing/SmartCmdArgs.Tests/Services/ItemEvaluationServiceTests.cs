@@ -101,26 +101,26 @@ namespace SmartCmdArgs.Tests.Services
         public void ExtractPathsFromItem_ShouldReturnEmpty_WhenProjectGuidIsEmpty()
         {
             // Arrange
-            var cmdArgumentMock = new Mock<CmdArgument>(Guid.NewGuid(), ArgumentType.CmdArg, "Arg", true, false);
+            var cmdArgumentMock = new Mock<CmdParameter>(Guid.NewGuid(), CmdParamType.CmdArg, "Arg", true, false);
             cmdArgumentMock.SetupGet(x => x.ProjectGuid).Returns(Guid.Empty);
 
             // Act
-            var result = itemEvaluationService.ExtractPathsFromItem(cmdArgumentMock.Object);
+            var result = itemEvaluationService.ExtractPathsFromParameter(cmdArgumentMock.Object);
 
             // Assert
             Assert.Empty(result);
         }
 
         [Theory]
-        [InlineData(ArgumentType.CmdArg, "-i \"$(PropertyName)\"", new[] { "-i", "AbsolutePropertyValue" })]
-        [InlineData(ArgumentType.EnvVar, "Name=\"$(PropertyName)\"", new[] { "AbsolutePropertyValue" })]
-        [InlineData(ArgumentType.WorkDir, "\"$(PropertyName)\"", new[] { "AbsolutePropertyValue" })]
-        public void ExtractPathsFromItem_ShouldEvaluateMacrosAndMakePathAbsolute_ForDifferentArgumentTypes(ArgumentType argType, string value, string[] expected)
+        [InlineData(CmdParamType.CmdArg, "-i \"$(PropertyName)\"", new[] { "-i", "AbsolutePropertyValue" })]
+        [InlineData(CmdParamType.EnvVar, "Name=\"$(PropertyName)\"", new[] { "AbsolutePropertyValue" })]
+        [InlineData(CmdParamType.WorkDir, "\"$(PropertyName)\"", new[] { "AbsolutePropertyValue" })]
+        public void ExtractPathsFromItem_ShouldEvaluateMacrosAndMakePathAbsolute_ForDifferentArgumentTypes(CmdParamType argType, string value, string[] expected)
         {
             // Arrange
             var projectGuid = Guid.NewGuid();
-            var cmdArgumentMock = new Mock<CmdArgument>(argType, value, true, false);
-            cmdArgumentMock.SetupGet(x => x.ProjectGuid).Returns(projectGuid);
+            var cmdParameterMock = new Mock<CmdParameter>(argType, value, true, false);
+            cmdParameterMock.SetupGet(x => x.ProjectGuid).Returns(projectGuid);
 
             var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperMock, projectGuid).Object;
             vsHelperMock.Setup(x => x.GetMSBuildPropertyValueForActiveConfig(project, "PropertyName")).Returns("PropertyValue");
@@ -129,7 +129,7 @@ namespace SmartCmdArgs.Tests.Services
             optionsSettingsMock.Setup(x => x.MacroEvaluationEnabled).Returns(true);
 
             // Act
-            var result = itemEvaluationService.ExtractPathsFromItem(cmdArgumentMock.Object);
+            var result = itemEvaluationService.ExtractPathsFromParameter(cmdParameterMock.Object);
 
             // Assert
             Assert.Equal(expected, result);
@@ -139,7 +139,7 @@ namespace SmartCmdArgs.Tests.Services
         public void ExtractPathsFromItem_ShouldNotReturnPaths_WithInvalidPathCharacters()
         {
             // Arrange
-            var item = new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "some<Arg");
+            var item = new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "some<Arg");
             var projectGuid = Guid.NewGuid();
             var projectMock = new Mock<IVsHierarchyWrapper>();
             vsHelperMock.Setup(x => x.HierarchyForProjectGuid(projectGuid)).Returns(projectMock.Object);
@@ -147,7 +147,7 @@ namespace SmartCmdArgs.Tests.Services
             itemPathMock.Setup(x => x.MakePathAbsolute(It.IsAny<string>(), It.IsAny<IVsHierarchyWrapper>(), It.IsAny<string>())).Returns((string path, IVsHierarchyWrapper project, string buildConfig) => path);
 
             // Act
-            var result = itemEvaluationService.ExtractPathsFromItem(item);
+            var result = itemEvaluationService.ExtractPathsFromParameter(item);
 
             // Assert
             Assert.Empty(result);

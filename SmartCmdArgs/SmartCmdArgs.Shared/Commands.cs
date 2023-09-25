@@ -34,9 +34,9 @@ namespace SmartCmdArgs
             {
                 AddCommandToService(commandService, PackageGuids.guidVSMenuCmdSet, PackageIds.ToolWindowCommandId, this.ShowToolWindow);
 
-                AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddCommandId, toolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.CmdArg);
-                AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddEnvVarId, toolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.EnvVar);
-                AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddWorkDirId, toolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.WorkDir);
+                AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddCommandId, toolWindowViewModel.AddEntryCommand, ViewModel.CmdParamType.CmdArg);
+                AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddEnvVarId, toolWindowViewModel.AddEntryCommand, ViewModel.CmdParamType.EnvVar);
+                AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddWorkDirId, toolWindowViewModel.AddEntryCommand, ViewModel.CmdParamType.WorkDir);
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddGroupCommandId, toolWindowViewModel.AddGroupCommand);
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarRemoveCommandId, toolWindowViewModel.RemoveEntriesCommand);
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarMoveUpCommandId, toolWindowViewModel.MoveEntriesUpCommand);

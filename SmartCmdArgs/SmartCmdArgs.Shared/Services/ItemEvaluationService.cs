@@ -13,7 +13,7 @@ namespace SmartCmdArgs.Services
         bool TryParseEnvVar(string str, out EnvVar envVar);
         string EvaluateMacros(string arg, IVsHierarchyWrapper project);
         IEnumerable<string> SplitArgument(string argument);
-        IEnumerable<string> ExtractPathsFromItem(CmdArgument item);
+        IEnumerable<string> ExtractPathsFromParameter(CmdParameter param);
     }
 
     public struct EnvVar
@@ -66,32 +66,32 @@ namespace SmartCmdArgs.Services
 
         public IEnumerable<string> SplitArgument(string argument) => SplitArgumentRegex.Matches(argument).Cast<Match>().Select(x => x.Value);
 
-        public IEnumerable<string> ExtractPathsFromItem(CmdArgument item)
+        public IEnumerable<string> ExtractPathsFromParameter(CmdParameter param)
         {
-            var projectGuid = item.ProjectGuid;
+            var projectGuid = param.ProjectGuid;
             if (projectGuid == Guid.Empty)
                 return Enumerable.Empty<string>();
 
             IVsHierarchyWrapper project = vsHelper.HierarchyForProjectGuid(projectGuid);
 
-            var buildConfig = item.UsedProjectConfig;
+            var buildConfig = param.UsedProjectConfig;
 
             var parts = Enumerable.Empty<string>();
 
-            switch (item.ArgumentType)
+            switch (param.ParamType)
             {
-                case ArgumentType.CmdArg:
-                    parts = SplitArgument(EvaluateMacros(item.Value, project));
+                case CmdParamType.CmdArg:
+                    parts = SplitArgument(EvaluateMacros(param.Value, project));
                     break;
 
-                case ArgumentType.EnvVar:
-                    var envVarParts = item.Value.Split(new[] { '=' }, 2);
+                case CmdParamType.EnvVar:
+                    var envVarParts = param.Value.Split(new[] { '=' }, 2);
                     if (envVarParts.Length == 2)
                         parts = new[] { EvaluateMacros(envVarParts[1], project) };
                     break;
 
-                case ArgumentType.WorkDir:
-                    parts = new[] { EvaluateMacros(item.Value, project) };
+                case CmdParamType.WorkDir:
+                    parts = new[] { EvaluateMacros(param.Value, project) };
                     break;
             }
 

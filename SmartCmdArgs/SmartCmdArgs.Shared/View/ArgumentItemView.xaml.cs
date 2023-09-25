@@ -65,11 +65,11 @@ namespace SmartCmdArgs.View
                     Icon.SetBinding(CrispImage.MonikerProperty, bind);
                 }
 
-                if (cmdBase is CmdArgument arg)
+                if (cmdBase is CmdParameter param)
                 {
                     var itemTagTextBinding = new Binding {
-                        Source = arg,
-                        Path = new PropertyPath(nameof(CmdArgument.ArgumentType)),
+                        Source = param,
+                        Path = new PropertyPath(nameof(CmdParameter.ParamType)),
                         Converter = new ItemTagTextConverter(),
                     };
                     ItemTagText.SetBinding(Run.TextProperty, itemTagTextBinding);
@@ -83,8 +83,8 @@ namespace SmartCmdArgs.View
                         Bindings =
                         {
                             new Binding {
-                                Source = arg,
-                                Path = new PropertyPath(nameof(CmdArgument.ArgumentType)),
+                                Source = param,
+                                Path = new PropertyPath(nameof(CmdParameter.ParamType)),
                             },
                             new Binding {
                                 Source = toolWindow.DataContext,
@@ -109,13 +109,13 @@ namespace SmartCmdArgs.View
 
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (sender is CmdArgument cmdArg)
+            if (sender is CmdParameter param)
             {
-                if (e.PropertyName == nameof(CmdArgument.Value)
-                    || e.PropertyName == nameof(CmdArgument.ArgumentType)
-                    || e.PropertyName == nameof(CmdArgument.IsInEditMode))
+                if (e.PropertyName == nameof(CmdParameter.Value)
+                    || e.PropertyName == nameof(CmdParameter.ParamType)
+                    || e.PropertyName == nameof(CmdParameter.IsInEditMode))
                 {
-                    UpdateRedBorderOverlay(cmdArg);
+                    UpdateRedBorderOverlay(param);
                 }
             }
         }
@@ -129,9 +129,9 @@ namespace SmartCmdArgs.View
                 return;
 
             var shouldShow = false;
-            if (cmdBase is CmdArgument cmdArg && cmdArg.ArgumentType == ArgumentType.EnvVar)
+            if (cmdBase is CmdParameter param && param.ParamType == CmdParamType.EnvVar)
             {
-                shouldShow = !cmdArg.IsInEditMode && !string.IsNullOrEmpty(cmdArg.Value) && !cmdArg.Value.Contains('=');
+                shouldShow = !param.IsInEditMode && !string.IsNullOrEmpty(param.Value) && !param.Value.Contains('=');
             }
 
             var isShown = _redBorderAdorner != null;

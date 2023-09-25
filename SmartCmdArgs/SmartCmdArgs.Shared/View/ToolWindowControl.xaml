@@ -52,12 +52,12 @@
             <local:TreeViewEx.ItemContainerStyleSelector>
                 <local:TreeItemStyleSelector ProjectItemStyle="{StaticResource ProjectItemStyle}"
                                             GroupItemStyle="{StaticResource GroupItemStyle}"
-                                            ArgumentItemStyle="{StaticResource ArgumentItemStyle}" />
+                                            ParameterItemStyle="{StaticResource ParameterItemStyle}" />
             </local:TreeViewEx.ItemContainerStyleSelector>
             <local:TreeViewEx.ItemTemplateSelector>
                 <local:TreeDataTemplateSelector ProjectTemplate="{StaticResource ProjectDataTemplate}"
                                                 GroupItemTemplate="{StaticResource GroupDataTemplate}"
-                                                ArgumentItemTemplate="{StaticResource ArgumentDataTemplate}" />
+                                                ParameterItemTemplate="{StaticResource ParameterDataTemplate}" />
             </local:TreeViewEx.ItemTemplateSelector>
         </local:TreeViewEx>
 

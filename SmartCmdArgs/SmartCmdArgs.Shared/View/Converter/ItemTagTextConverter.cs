@@ -8,13 +8,13 @@ namespace SmartCmdArgs.View.Converter
     {
         public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is ArgumentType argType)
+            if (value is CmdParamType argType)
             {
                 switch (argType)
                 {
-                    case ArgumentType.CmdArg: return "CLA";
-                    case ArgumentType.EnvVar: return "ENV";
-                    case ArgumentType.WorkDir: return "WD";
+                    case CmdParamType.CmdArg: return "CLA";
+                    case CmdParamType.EnvVar: return "ENV";
+                    case CmdParamType.WorkDir: return "WD";
                 }
             }
 

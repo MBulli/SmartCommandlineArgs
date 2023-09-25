@@ -59,9 +59,9 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdContainer> AllContainer => this.OfType<CmdContainer>();
 
-        public IEnumerable<CmdArgument> AllArguments => this.OfType<CmdArgument>();
+        public IEnumerable<CmdParameter> AllParameters => this.OfType<CmdParameter>();
 
-        public IEnumerable<CmdArgument> CheckedArguments => AllArguments.Where(arg => arg.IsChecked);
+        public IEnumerable<CmdParameter> CheckedParameters => AllParameters.Where(arg => arg.IsChecked);
 
         public IEnumerable<CmdBase> SelectedItems => this.Where(item => item.IsSelected);
 

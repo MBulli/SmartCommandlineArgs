@@ -48,13 +48,13 @@ namespace SmartCmdArgs.Tests.Services
             // Arrange
             var projectGuid = Guid.NewGuid();
             var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
-            var items = new[] { new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg1", isChecked: true) };
+            var items = new[] { new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true) };
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", items, false, false, " ", "", "");
 
             treeViewModel.Projects.Add(projectGuid, cmdProject);
 
             // Act
-            var result = itemAggregationService.GetAllComamndLineItemsForProject(project).ToList();
+            var result = itemAggregationService.GetAllComamndLineParamsForProject(project).ToList();
 
             // Assert
             Assert.Single(result);
@@ -68,7 +68,7 @@ namespace SmartCmdArgs.Tests.Services
             // Arrange
             var projectGuid = Guid.NewGuid();
             var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
-            var items = new[] { new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg1", isChecked: true) };
+            var items = new[] { new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true) };
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", items, false, false, " ", "", "");
 
             treeViewModel.Projects.Add(projectGuid, cmdProject);
@@ -89,7 +89,7 @@ namespace SmartCmdArgs.Tests.Services
             var projectGuid = Guid.NewGuid();
             var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
 
-            var items = new[] { new CmdArgument(Guid.NewGuid(), ArgumentType.EnvVar, "Name=Value", isChecked: true) };
+            var items = new[] { new CmdParameter(Guid.NewGuid(), CmdParamType.EnvVar, "Name=Value", isChecked: true) };
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", items, isExpanded: false, exclusiveMode: false, delimiter: " ", postfix: "", prefix: "");
             treeViewModel.Projects.Add(projectGuid, cmdProject);
 
@@ -115,7 +115,7 @@ namespace SmartCmdArgs.Tests.Services
             treeViewModel.Projects.Add(projectGuid, cmdProject);
 
             // Act
-            var result = itemAggregationService.GetAllComamndLineItemsForProject(project).ToList();
+            var result = itemAggregationService.GetAllComamndLineParamsForProject(project).ToList();
 
             // Assert
             Assert.Empty(result);
@@ -129,7 +129,7 @@ namespace SmartCmdArgs.Tests.Services
             // Arrange
             var projectGuid = Guid.NewGuid();
             var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
-            var workDirArg = new CmdArgument(Guid.NewGuid(), ArgumentType.WorkDir, "WorkDir", isChecked: true);
+            var workDirArg = new CmdParameter(Guid.NewGuid(), CmdParamType.WorkDir, "WorkDir", isChecked: true);
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", new[] { workDirArg }, false, false, " ", "", "");
 
             treeViewModel.Projects.Add(projectGuid, cmdProject);
@@ -149,7 +149,7 @@ namespace SmartCmdArgs.Tests.Services
             // Arrange
             var projectGuid = Guid.NewGuid();
             var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
-            var items = new[] { new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg1", isChecked: true) };
+            var items = new[] { new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true) };
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", items, false, false, " ", "", "");
 
             treeViewModel.Projects.Add(projectGuid, cmdProject);
@@ -175,11 +175,11 @@ namespace SmartCmdArgs.Tests.Services
 
             var items = new List<CmdBase>
             {
-                new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg1", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg2", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "uncheckedArg", isChecked: false),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.EnvVar, "Name=Value", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.WorkDir, "WorkDir", isChecked: true)
+                new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg2", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "uncheckedArg", isChecked: false),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.EnvVar, "Name=Value", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.WorkDir, "WorkDir", isChecked: true)
             };
 
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", items, isExpanded: false, exclusiveMode: false, delimiter: delimiter, postfix: "", prefix: "");
@@ -203,10 +203,10 @@ namespace SmartCmdArgs.Tests.Services
 
             var items = new List<CmdBase>
             {
-                new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg1", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.EnvVar, "Name1=Value1", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.EnvVar, "Name2=Value2", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.EnvVar, "Unchecked=UncheckedValue", isChecked: false)
+                new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.EnvVar, "Name1=Value1", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.EnvVar, "Name2=Value2", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.EnvVar, "Unchecked=UncheckedValue", isChecked: false)
             };
 
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", items, isExpanded: false, exclusiveMode: false, delimiter: " ", postfix: "", prefix: "");
@@ -237,8 +237,8 @@ namespace SmartCmdArgs.Tests.Services
 
             var items = new List<CmdBase>
             {
-                new CmdArgument(Guid.NewGuid(), ArgumentType.EnvVar, "Name=Value1", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.EnvVar, "Name=Value2", isChecked: true)
+                new CmdParameter(Guid.NewGuid(), CmdParamType.EnvVar, "Name=Value1", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.EnvVar, "Name=Value2", isChecked: true)
             };
 
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", items, isExpanded: false, exclusiveMode: false, delimiter: " ", postfix: "", prefix: "");
@@ -268,8 +268,8 @@ namespace SmartCmdArgs.Tests.Services
 
             var items = new List<CmdBase>
             {
-                new CmdArgument(Guid.NewGuid(), ArgumentType.WorkDir, "WorkDir1", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.WorkDir, "WorkDir2", isChecked: true)
+                new CmdParameter(Guid.NewGuid(), CmdParamType.WorkDir, "WorkDir1", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.WorkDir, "WorkDir2", isChecked: true)
             };
 
             var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", items, isExpanded: false, exclusiveMode: false, delimiter: " ", postfix: "", prefix: "");
@@ -293,15 +293,15 @@ namespace SmartCmdArgs.Tests.Services
 
             var groupItems = new List<CmdBase>
             {
-                new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg2", isChecked: true),
-                new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg3", isChecked: true)
+                new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg2", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg3", isChecked: true)
             };
 
             var cmdGroup = new CmdGroup("GroupName", groupItems, isExpanded: true, exclusiveMode: false, delimiter: ",", prefix: "{", postfix: "}");
 
             var items = new List<CmdBase>
             {
-                new CmdArgument(Guid.NewGuid(), ArgumentType.CmdArg, "arg1", isChecked: true),
+                new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true),
                 cmdGroup
             };
 

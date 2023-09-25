@@ -56,8 +56,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\VisualStudioHelperService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\VsEventHandlingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToolWindow.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdArgBase.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdArgument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdContainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\CmdProject.cs" />

@@ -22,10 +22,10 @@ namespace SmartCmdArgs.DataSerialization
                     Selected = item.IsSelected,
                 };
 
-                if (item is CmdArgument arg)
+                if (item is CmdParameter param)
                 {
-                    newElement.DefaultChecked = arg.DefaultChecked;
-                    newElement.Type = arg.ArgumentType;
+                    newElement.DefaultChecked = param.DefaultChecked;
+                    newElement.Type = param.ParamType;
 
                     // not in JSON
                     newElement.Enabled = item.IsChecked ?? false;

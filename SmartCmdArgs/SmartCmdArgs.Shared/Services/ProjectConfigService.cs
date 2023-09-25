@@ -146,7 +146,7 @@ namespace SmartCmdArgs.Services
                 {
                     allArgs.Add(new CmdArgumentJson
                     {
-                        Type = ViewModel.ArgumentType.CmdArg,
+                        Type = ViewModel.CmdParamType.CmdArg,
                         Command = args,
                         Enabled = true,
                     });
@@ -158,7 +158,7 @@ namespace SmartCmdArgs.Services
                     {
                         allArgs.Add(new CmdArgumentJson
                         {
-                            Type = ViewModel.ArgumentType.EnvVar,
+                            Type = ViewModel.CmdParamType.EnvVar,
                             Command = $"{envVarPair.Key}={envVarPair.Value}",
                             Enabled = true,
                         });
@@ -169,7 +169,7 @@ namespace SmartCmdArgs.Services
                 {
                     allArgs.Add(new CmdArgumentJson
                     {
-                        Type = ViewModel.ArgumentType.WorkDir,
+                        Type = ViewModel.CmdParamType.WorkDir,
                         Command = workDir,
                         Enabled = true,
                     });
@@ -214,7 +214,7 @@ namespace SmartCmdArgs.Services
                             {
                                 items.Add(new CmdArgumentJson
                                 {
-                                    Type = ViewModel.ArgumentType.CmdArg,
+                                    Type = ViewModel.CmdParamType.CmdArg,
                                     Command = args,
                                     Enabled = true,
                                 });
@@ -228,7 +228,7 @@ namespace SmartCmdArgs.Services
                             {
                                 items.Add(new CmdArgumentJson
                                 {
-                                    Type = ViewModel.ArgumentType.WorkDir,
+                                    Type = ViewModel.CmdParamType.WorkDir,
                                     Command = workDir,
                                     Enabled = true,
                                 });
@@ -361,7 +361,7 @@ namespace SmartCmdArgs.Services
                             {
                                 flavourItems.Add(new CmdArgumentJson
                                 {
-                                    Type = ViewModel.ArgumentType.CmdArg,
+                                    Type = ViewModel.CmdParamType.CmdArg,
                                     Command = args,
                                     Enabled = isActiveRule,
                                 });
@@ -377,7 +377,7 @@ namespace SmartCmdArgs.Services
                                 {
                                     flavourItems.Add(new CmdArgumentJson
                                     {
-                                        Type = ViewModel.ArgumentType.EnvVar,
+                                        Type = ViewModel.CmdParamType.EnvVar,
                                         Command = $"{envVarPair.Key}={envVarPair.Value}",
                                         Enabled = isActiveRule,
                                     });
@@ -392,7 +392,7 @@ namespace SmartCmdArgs.Services
                             {
                                 flavourItems.Add(new CmdArgumentJson
                                 {
-                                    Type = ViewModel.ArgumentType.WorkDir,
+                                    Type = ViewModel.CmdParamType.WorkDir,
                                     Command = workDir,
                                     Enabled = isActiveRule,
                                 });
@@ -411,17 +411,17 @@ namespace SmartCmdArgs.Services
                 {
                     if (includeWorkDir && !string.IsNullOrEmpty(dbg?.WorkingDirectory))
                     {
-                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.ArgumentType.WorkDir, Command = dbg?.WorkingDirectory, Enabled = true });
+                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.CmdParamType.WorkDir, Command = dbg?.WorkingDirectory, Enabled = true });
                     }
 
                     if (includeEnvVars && !string.IsNullOrEmpty(dbg?.Environment))
                     {
-                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.ArgumentType.EnvVar, Command = dbg?.Environment, Enabled = true });
+                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.CmdParamType.EnvVar, Command = dbg?.Environment, Enabled = true });
                     }
 
                     if (includeArgs && !string.IsNullOrEmpty(dbg?.CommandArguments))
                     {
-                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = dbg?.CommandArguments, Enabled = true });
+                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.CmdParamType.CmdArg, Command = dbg?.CommandArguments, Enabled = true });
                     }
                 }
 
@@ -517,7 +517,7 @@ namespace SmartCmdArgs.Services
                 {
                     items.Add(new CmdArgumentJson
                     {
-                        Type = ViewModel.ArgumentType.CmdArg,
+                        Type = ViewModel.CmdParamType.CmdArg,
                         Command = dbg.CommandArguments,
                         Enabled = true
                     });
@@ -529,7 +529,7 @@ namespace SmartCmdArgs.Services
                     {
                         items.Add(new CmdArgumentJson
                         {
-                            Type = ViewModel.ArgumentType.EnvVar,
+                            Type = ViewModel.CmdParamType.EnvVar,
                             Command = $"{envVarPair.Key}={envVarPair.Value}",
                             Enabled = true
                         });
@@ -540,7 +540,7 @@ namespace SmartCmdArgs.Services
                 {
                     items.Add(new CmdArgumentJson
                     {
-                        Type = ViewModel.ArgumentType.WorkDir,
+                        Type = ViewModel.CmdParamType.WorkDir,
                         Command = dbg.WorkingDirectory,
                         Enabled = true
                     });

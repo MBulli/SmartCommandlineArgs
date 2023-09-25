@@ -103,12 +103,12 @@ namespace SmartCmdArgs.Services
                 // update enabled state of the project json data (source prio: ViewModel > suo file)
                 if (projectData.Items != null)
                 {
-                    var argumentDataFromProject = projectData.AllArguments;
-                    var argumentDataFromLVM = projectListViewModel?.AllArguments.ToDictionary(arg => arg.Id, arg => arg);
+                    var argumentDataFromProject = projectData.AllParameters;
+                    var argumentDataFromLVM = projectListViewModel?.AllParameters.ToDictionary(arg => arg.Id, arg => arg);
                     foreach (var dataFromProject in argumentDataFromProject)
                     {
-                        if (argumentDataFromLVM != null && argumentDataFromLVM.TryGetValue(dataFromProject.Id, out CmdArgument argFromVM))
-                            dataFromProject.Enabled = argFromVM.IsChecked;
+                        if (argumentDataFromLVM != null && argumentDataFromLVM.TryGetValue(dataFromProject.Id, out CmdParameter paramFromVM))
+                            dataFromProject.Enabled = paramFromVM.IsChecked;
                         else if (projHasSuoData)
                             dataFromProject.Enabled = solutionData.CheckedArguments.Contains(dataFromProject.Id);
                         else
@@ -161,7 +161,7 @@ namespace SmartCmdArgs.Services
             else if (!optionsSettings.VcsSupportEnabled && solutionData.ProjectArguments.TryGetValue(projectGuid, out projectData))
             {
                 Logger.Info($"Will use commands from suo file for project '{project.GetName()}'.");
-                var argumentDataFromProject = projectData.AllArguments;
+                var argumentDataFromProject = projectData.AllParameters;
                 foreach (var arg in argumentDataFromProject)
                 {
                     arg.Enabled = solutionData.CheckedArguments.Contains(arg.Id);
@@ -204,39 +204,39 @@ namespace SmartCmdArgs.Services
             return prjCmdArgs;
         }
 
-        private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchyWrapper project)
+        private ISet<CmdParameter> GetAllActiveItemsForProject(IVsHierarchyWrapper project)
         {
             if (!optionsSettings.ManageCommandLineArgs
                 && !optionsSettings.ManageEnvironmentVars
                 && !optionsSettings.ManageWorkingDirectories)
             {
-                return new HashSet<CmdArgument>();
+                return new HashSet<CmdParameter>();
             }
 
-            var Args = new HashSet<CmdArgument>();
-            var EnvVars = new Dictionary<string, CmdArgument>();
-            CmdArgument workDir = null;
+            var Args = new HashSet<CmdParameter>();
+            var EnvVars = new Dictionary<string, CmdParameter>();
+            CmdParameter workDir = null;
 
-            foreach (var item in itemAggregation.GetAllComamndLineItemsForProject(project))
+            foreach (var item in itemAggregation.GetAllComamndLineParamsForProject(project))
             {
-                if (item.ArgumentType == ArgumentType.CmdArg && optionsSettings.ManageCommandLineArgs)
+                if (item.ParamType == CmdParamType.CmdArg && optionsSettings.ManageCommandLineArgs)
                 {
                     Args.Add(item);
                 }
-                else if (item.ArgumentType == ArgumentType.EnvVar && optionsSettings.ManageEnvironmentVars)
+                else if (item.ParamType == CmdParamType.EnvVar && optionsSettings.ManageEnvironmentVars)
                 {
                     if (itemEvaluation.TryParseEnvVar(item.Value, out EnvVar envVar))
                     {
                         EnvVars[envVar.Name] = item;
                     }
                 }
-                else if (item.ArgumentType == ArgumentType.WorkDir && optionsSettings.ManageWorkingDirectories)
+                else if (item.ParamType == CmdParamType.WorkDir && optionsSettings.ManageWorkingDirectories)
                 {
                     workDir = item;
                 }
             }
 
-            var result = new HashSet<CmdArgument>(Args.Concat(EnvVars.Values));
+            var result = new HashSet<CmdParameter>(Args.Concat(EnvVars.Values));
 
             if (workDir != null)
             {
@@ -256,14 +256,14 @@ namespace SmartCmdArgs.Services
                     var project = vsHelper.HierarchyForProjectGuid(cmdProject.Id);
                     var activeItems = GetAllActiveItemsForProject(project);
 
-                    foreach (var item in cmdProject.AllArguments)
+                    foreach (var item in cmdProject.AllParameters)
                     {
                         item.IsActive = activeItems.Contains(item);
                     }
                 }
                 else
                 {
-                    foreach (var item in cmdProject.AllArguments)
+                    foreach (var item in cmdProject.AllParameters)
                     {
                         item.IsActive = true;
                     }

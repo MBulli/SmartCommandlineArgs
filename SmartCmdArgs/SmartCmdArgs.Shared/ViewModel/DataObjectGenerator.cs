@@ -42,9 +42,9 @@ namespace SmartCmdArgs.ViewModel
             string indent = new String('\t', level);
             foreach (var cmd in data)
             {
-                if (cmd is CmdArgument arg)
+                if (cmd is CmdParameter param)
                 {
-                    yield return indent + arg.Value;
+                    yield return indent + param.Value;
                 }
                 else if (cmd is CmdGroup grp)
                 {
@@ -117,7 +117,7 @@ namespace SmartCmdArgs.ViewModel
                     groupStack.Push(group);
                 }
                 else
-                    groupStack.Peek().Add(new CmdArgument(ArgumentType.CmdArg, trimmedItem));
+                    groupStack.Peek().Add(new CmdParameter(CmdParamType.CmdArg, trimmedItem));
             }
             return rootGroup.Items;
         }
@@ -154,8 +154,8 @@ namespace SmartCmdArgs.ViewModel
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
             public bool DefaultChecked { get; set; } = false;
 
-            [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(ArgumentType.CmdArg)]
-            public ArgumentType Type { get; set; } = ArgumentType.CmdArg;
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(CmdParamType.CmdArg)]
+            public CmdParamType Type { get; set; } = CmdParamType.CmdArg;
 
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public IEnumerable<DataObjectJsonItem> Items { get; set; } = null;
@@ -165,13 +165,13 @@ namespace SmartCmdArgs.ViewModel
             {
                 foreach (var cmd in data)
                 {
-                    if (cmd is CmdArgument arg)
+                    if (cmd is CmdParameter param)
                     {
                         yield return new DataObjectJsonItem {
-                            Type = arg.ArgumentType,
-                            Enabled = arg.IsChecked,
-                            Value = arg.Value,
-                            DefaultChecked = arg.DefaultChecked
+                            Type = param.ParamType,
+                            Enabled = param.IsChecked,
+                            Value = param.Value,
+                            DefaultChecked = param.DefaultChecked
                         };
                     }
                     else if (cmd is CmdGroup grp)
@@ -197,7 +197,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     if (item.Items == null)
                     {
-                        yield return new CmdArgument(
+                        yield return new CmdParameter(
                             item.Type,
                             item.Value,
                             item.Enabled ?? false,

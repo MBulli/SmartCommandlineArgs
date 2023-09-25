@@ -43,7 +43,7 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _showDisabledScreen);
         }
 
-        public RelayCommand<ArgumentType> AddEntryCommand { get; }
+        public RelayCommand<CmdParamType> AddEntryCommand { get; }
 
         public RelayCommand AddGroupCommand { get; }
 
@@ -99,7 +99,7 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand<string> SetDelimiterCommand { get; }
 
-        public RelayCommand<ArgumentType> SetArgumentTypeCommand { get; }
+        public RelayCommand<CmdParamType> SetArgumentTypeCommand { get; }
 
         public RelayCommand ToggleDefaultCheckedCommand { get; }
 
@@ -122,10 +122,10 @@ namespace SmartCmdArgs.ViewModel
             this.toolWindowHistory = toolWindowHistory;
             this.treeViewModel = treeViewModel;
 
-            AddEntryCommand = new RelayCommand<ArgumentType>(
+            AddEntryCommand = new RelayCommand<CmdParamType>(
                 argType => {
                     toolWindowHistory.SaveState();
-                    var newArg = new CmdArgument(argType, arg: "", isChecked: true);
+                    var newArg = new CmdParameter(argType, value: "", isChecked: true);
                     treeViewModel.AddItemAtFocusedItem(newArg);
                     treeViewModel.SelectItemCommand.SafeExecute(newArg);
                 }, canExecute: _ => ExtensionEnabled && HasStartupProject());
@@ -241,26 +241,26 @@ namespace SmartCmdArgs.ViewModel
             SplitArgumentCommand = new RelayCommand(() =>
             {
                 var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
-                if (selectedItem is CmdArgument argument)
+                if (selectedItem is CmdParameter param)
                 {
                     toolWindowHistory.SaveState();
 
-                    var newItems = itemEvaluation.SplitArgument(argument.Value)
-                                   .Select((s) => new CmdArgument(argument.ArgumentType, s, argument.IsChecked, argument.DefaultChecked))
+                    var newItems = itemEvaluation.SplitArgument(param.Value)
+                                   .Select((s) => new CmdParameter(param.ParamType, s, param.IsChecked, param.DefaultChecked))
                                    .ToList();
 
                     treeViewModel.AddItemsAt(selectedItem, newItems);
                     RemoveItems(new[] { selectedItem });
                     treeViewModel.SelectItems(newItems);
                 }
-            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedArgumentOfType(ArgumentType.CmdArg));
+            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedArgumentOfType(CmdParamType.CmdArg));
 
             RevealFileInExplorerCommand = new RelayCommand(() =>
             {
                 var fileName = ExtractFileNameFromSelectedArgument();
                 if (fileName != null)
                     System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fileName}\"");
-            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
+            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdParameter>() && ExtractFileNameFromSelectedArgument() != null);
 
             OpenFileCommand = new RelayCommand(() =>
             {
@@ -269,7 +269,7 @@ namespace SmartCmdArgs.ViewModel
                 {
                     System.Diagnostics.Process.Start(fileName);
                 }
-            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
+            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdParameter>() && ExtractFileNameFromSelectedArgument() != null);
 
             OpenFileInVSCommand = new RelayCommand(() =>
             {
@@ -278,14 +278,14 @@ namespace SmartCmdArgs.ViewModel
                 {
                     var task = vsHelper.OpenFileInVisualStudioAsync(fileName);
                 }
-            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractFileNameFromSelectedArgument() != null);
+            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdParameter>() && ExtractFileNameFromSelectedArgument() != null);
 
             OpenDirectoryCommand = new RelayCommand(() =>
             {
                 var directoryName = ExtractDirectoryNameFromSelectedArgument();
                 if (directoryName != null)
                     System.Diagnostics.Process.Start("explorer.exe", $"\"{directoryName}\"");
-            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdArgument>() && ExtractDirectoryNameFromSelectedArgument() != null);
+            }, canExecute: _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdParameter>() && ExtractDirectoryNameFromSelectedArgument() != null);
 
             NewGroupFromArgumentsCommand = new RelayCommand(() =>
             {
@@ -372,18 +372,18 @@ namespace SmartCmdArgs.ViewModel
                 }
             }, _ => ExtensionEnabled && HasSingleSelectedItemOfType<CmdContainer>());
 
-            SetArgumentTypeCommand = new RelayCommand<ArgumentType>(type =>
+            SetArgumentTypeCommand = new RelayCommand<CmdParamType>(type =>
             {
-                var items = treeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
-                items.ForEach(x => x.ArgumentType = type);
-            }, _ => ExtensionEnabled && HasSelectedItemOfType<CmdArgument>());
+                var items = treeViewModel.SelectedItems.OfType<CmdParameter>().ToList();
+                items.ForEach(x => x.ParamType = type);
+            }, _ => ExtensionEnabled && HasSelectedItemOfType<CmdParameter>());
 
             ToggleDefaultCheckedCommand = new RelayCommand(() =>
             {
-                var items = treeViewModel.SelectedItems.OfType<CmdArgument>().ToList();
+                var items = treeViewModel.SelectedItems.OfType<CmdParameter>().ToList();
                 var hasTrue = items.Any(x => x.DefaultChecked);
                 items.ForEach(x => x.DefaultChecked = !hasTrue);
-            }, _ => ExtensionEnabled && HasSelectedItemOfType<CmdArgument>());
+            }, _ => ExtensionEnabled && HasSelectedItemOfType<CmdParameter>());
 
             ResetToDefaultCheckedCommand = new RelayCommand(() =>
             {
@@ -516,11 +516,11 @@ namespace SmartCmdArgs.ViewModel
         /// Helper method for CanExecute condition of the commands
         /// </summary>
         /// <returns>True if axactly one line is selected and it is a argument of the given type.</returns>
-        private bool HasSingleSelectedArgumentOfType(ArgumentType argumentType)
+        private bool HasSingleSelectedArgumentOfType(CmdParamType argumentType)
         {
             return HasSingleSelectedItem() 
-                && treeViewModel.SelectedItems.FirstOrDefault() is CmdArgument arg 
-                && arg.ArgumentType == argumentType;
+                && treeViewModel.SelectedItems.FirstOrDefault() is CmdParameter param 
+                && param.ParamType == argumentType;
         }
 
         /// <summary>
@@ -535,9 +535,9 @@ namespace SmartCmdArgs.ViewModel
         private IEnumerable<string> ExtractPathFromSelectedArgument()
         {
             var selectedItem = treeViewModel.SelectedItems.FirstOrDefault();
-            if (selectedItem is CmdArgument argument)
+            if (selectedItem is CmdParameter param)
             {
-                return itemEvaluation.ExtractPathsFromItem(argument);
+                return itemEvaluation.ExtractPathsFromParameter(param);
             }
 
             return Enumerable.Empty<string>();
@@ -644,7 +644,7 @@ namespace SmartCmdArgs.ViewModel
             foreach (var item in list)
             {
                 if (item.Items == null)
-                    result = new CmdArgument(item.Id, item.Type, item.Command, item.Enabled, item.DefaultChecked);
+                    result = new CmdParameter(item.Id, item.Type, item.Command, item.Enabled, item.DefaultChecked);
                 else
                     result = new CmdGroup(
                         item.Id,

@@ -2,14 +2,14 @@
 
 namespace SmartCmdArgs.ViewModel
 {
-    public enum ArgumentType
+    public enum CmdParamType
     {
         CmdArg,
         EnvVar,
         WorkDir,
     }
 
-    public class CmdArgument : CmdBase
+    public class CmdParameter : CmdBase
     {
         public override bool IsEditable => true;
 
@@ -22,21 +22,21 @@ namespace SmartCmdArgs.ViewModel
         private bool isActive = true;
         public new bool IsActive { get => isActive; set => SetAndNotify(value, ref isActive); }
 
-        private ArgumentType argumentType;
-        public ArgumentType ArgumentType { get => argumentType; set => OnArgumentTypeChanged(argumentType, value); }
+        private CmdParamType paramType;
+        public CmdParamType ParamType { get => paramType; set => OnParamTypeChanged(paramType, value); }
 
         private bool defaultChecked;
         public bool DefaultChecked { get => defaultChecked; set => OnDefaultCheckedChanged(defaultChecked, value); }
 
-        public CmdArgument(Guid id, ArgumentType argType, string arg, bool isChecked = false, bool defaultChecked = false)
-            : base(id, arg, isChecked)
+        public CmdParameter(Guid id, CmdParamType paramType, string value, bool isChecked = false, bool defaultChecked = false)
+            : base(id, value, isChecked)
         {
-            this.argumentType = argType;
+            this.paramType = paramType;
             this.defaultChecked = defaultChecked;
         }
 
-        public CmdArgument(ArgumentType argType, string arg, bool isChecked = false, bool defaultChecked = false)
-            : this(Guid.NewGuid(), argType, arg, isChecked, defaultChecked)
+        public CmdParameter(CmdParamType paramType, string value, bool isChecked = false, bool defaultChecked = false)
+            : this(Guid.NewGuid(), paramType, value, isChecked, defaultChecked)
         { }
 
         private void OnDefaultCheckedChanged(bool oldValue, bool newValue)
@@ -49,19 +49,19 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        private void OnArgumentTypeChanged(ArgumentType oldValue, ArgumentType newValue)
+        private void OnParamTypeChanged(CmdParamType oldValue, CmdParamType newValue)
         {
-            SetAndNotify(newValue, ref argumentType, nameof(ArgumentType));
+            SetAndNotify(newValue, ref paramType, nameof(ParamType));
 
             if (oldValue != newValue)
             {
-                BubbleEvent(new ArgumentTypeChangedEvent(this, oldValue, newValue));
+                BubbleEvent(new ParamTypeChangedEvent(this, oldValue, newValue));
             }
         }
 
         public override CmdBase Copy()
         {
-            return new CmdArgument(ArgumentType, Value, IsChecked, DefaultChecked);
+            return new CmdParameter(ParamType, Value, IsChecked, DefaultChecked);
         }
     }
 }

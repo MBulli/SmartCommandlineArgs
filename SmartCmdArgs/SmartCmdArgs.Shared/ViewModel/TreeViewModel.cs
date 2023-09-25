@@ -95,7 +95,7 @@ namespace SmartCmdArgs.ViewModel
 
         public IEnumerable<CmdBase> AllItems => AllProjects.Concat(AllProjects.SelectMany(p => p));
 
-        public IEnumerable<CmdArgument> AllArguments => AllProjects.SelectMany(p => p.AllArguments);
+        public IEnumerable<CmdParameter> AllParameters => AllProjects.SelectMany(p => p.AllParameters);
 
         public IEnumerable<CmdBase> SelectedItems => AllItems.Where(item => item.IsSelected);
 
@@ -254,7 +254,7 @@ namespace SmartCmdArgs.ViewModel
                 if (!string.IsNullOrEmpty(filterString))
                 {
                     filter = item => 
-                           item is CmdArgument && item.Value.Contains(filterString, matchCase ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase) 
+                           item is CmdParameter && item.Value.Contains(filterString, matchCase ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase) 
                         || item is CmdContainer && !((CmdContainer)item).ItemsView.IsEmpty;
                 }
 
@@ -290,9 +290,9 @@ namespace SmartCmdArgs.ViewModel
         {
             var selectedItems = SelectedItems.ToList();
 
-            var selectedArgs = new HashSet<CmdArgument>();
-            selectedArgs.AddRange(selectedItems.OfType<CmdContainer>().SelectMany(con => con.AllArguments));
-            selectedArgs.AddRange(selectedItems.OfType<CmdArgument>());
+            var selectedArgs = new HashSet<CmdParameter>();
+            selectedArgs.AddRange(selectedItems.OfType<CmdContainer>().SelectMany(con => con.AllParameters));
+            selectedArgs.AddRange(selectedItems.OfType<CmdParameter>());
 
             selectedArgs.ForEach(arg => arg.IsChecked = arg.DefaultChecked);
         }
@@ -411,7 +411,7 @@ namespace SmartCmdArgs.ViewModel
                 case DefaultCheckedChangedEvent e:
                     FireTreeContentChanged(e);
                     break;
-                case ArgumentTypeChangedEvent e:
+                case ParamTypeChangedEvent e:
                     FireTreeContentChanged(e);
                     break;
                 default:

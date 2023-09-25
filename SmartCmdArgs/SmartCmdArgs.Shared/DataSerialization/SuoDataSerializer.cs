@@ -97,7 +97,7 @@ namespace SmartCmdArgs.DataSerialization
             data.Settings = new SettingsJson(settingsViewModel);
 
             data.ShowAllProjects = treeViewModel.ShowAllProjects;
-            data.CheckedArguments = new HashSet<Guid>(treeViewModel.AllProjects.SelectMany(p => p.CheckedArguments).Select(arg => arg.Id));
+            data.CheckedArguments = new HashSet<Guid>(treeViewModel.AllProjects.SelectMany(p => p.CheckedParameters).Select(arg => arg.Id));
             data.ExpandedContainer = new HashSet<Guid>(treeViewModel.AllItems.OfType<CmdContainer>().Where(con => con.IsExpanded).Select(p => p.Id));
 
             data.SelectedItems = new HashSet<Guid>(treeViewModel.Projects.Values.SelectMany(p => p.SelectedItems).Select(item => item.Id)

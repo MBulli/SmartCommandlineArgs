@@ -32,7 +32,7 @@ namespace SmartCmdArgs.Tests.LanguageSpecificTests
             Assert.False(settingsViewModel?.VcsSupportEnabled, "VCS support must be disabled");
 
             var treeViewModel = package.ServiceProvider.GetService<TreeViewModel>();
-            var args = treeViewModel?.AllArguments?.ToList();
+            var args = treeViewModel?.AllParameters?.ToList();
 
             Assert.NotNull(args);
 
@@ -64,7 +64,7 @@ namespace SmartCmdArgs.Tests.LanguageSpecificTests
 
             Assert.NotNull(project);
 
-            project.InsertRange(0, args.Select(x => new ViewModel.CmdArgument(argType: ViewModel.ArgumentType.CmdArg, arg: x.Arg, isChecked: x.Enabled)));
+            project.InsertRange(0, args.Select(x => new ViewModel.CmdParameter(paramType: ViewModel.CmdParamType.CmdArg, value: x.Arg, isChecked: x.Enabled)));
 
             Dte.Solution.SolutionBuild.Build(true);
 

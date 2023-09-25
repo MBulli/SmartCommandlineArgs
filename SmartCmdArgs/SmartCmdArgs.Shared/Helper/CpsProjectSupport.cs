@@ -136,20 +136,20 @@ namespace SmartCmdArgs.Helper
 
                     if (includeArgs && !string.IsNullOrEmpty(profile.CommandLineArgs))
                     {
-                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.CmdArg, Command = profile.CommandLineArgs, Enabled = true });
+                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.CmdParamType.CmdArg, Command = profile.CommandLineArgs, Enabled = true });
                     }
 
                     if (includeEnvVars)
                     {
                         foreach (var envVarPair in profile.EnvironmentVariables)
                         {
-                            profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
+                            profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.CmdParamType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
                         }
                     }
 
                     if (includeWorkDir && !string.IsNullOrEmpty(profile.WorkingDirectory))
                     {
-                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.WorkDir, Command = profile.WorkingDirectory, Enabled = true });
+                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.CmdParamType.WorkDir, Command = profile.WorkingDirectory, Enabled = true });
                     }
 
                     if (profileGrp.Items.Count > 0)

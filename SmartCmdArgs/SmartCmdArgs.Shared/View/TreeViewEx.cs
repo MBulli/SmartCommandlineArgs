@@ -132,8 +132,8 @@ namespace SmartCmdArgs.View
         public static readonly DependencyProperty SetArgumentTypeCommandProperty = DependencyProperty.Register(
             nameof(SetArgumentTypeCommand), typeof(ICommand), typeof(TreeViewEx),
             new PropertyMetadata(default(ICommand), (d, e) => {
-                ((TreeViewEx)d)._argumentTypeCmdArgMenuItem.Command = (ICommand)e.NewValue;
-                ((TreeViewEx)d)._argumentTypeEnvVarMenuItem.Command = (ICommand)e.NewValue;
+                ((TreeViewEx)d)._paramTypeCmdArgMenuItem.Command = (ICommand)e.NewValue;
+                ((TreeViewEx)d)._paramTypeEnvVarMenuItem.Command = (ICommand)e.NewValue;
             }));
         public ICommand SetArgumentTypeCommand { get { return (ICommand)GetValue(SetArgumentTypeCommandProperty); } set { SetValue(SetArgumentTypeCommandProperty, value); } }
 
@@ -193,10 +193,10 @@ namespace SmartCmdArgs.View
         private MenuItem _launchProfileMenuItem;
         private MenuItem _defaultCheckedMenuItem;
         private MenuItem _resetToDefaultMenuItem;
-        private MenuItem _argumentTypeMenuItem;
-        private MenuItem _argumentTypeCmdArgMenuItem;
-        private MenuItem _argumentTypeEnvVarMenuItem;
-        private MenuItem _argumentTypeWorkDirMenuItem;
+        private MenuItem _paramTypeMenuItem;
+        private MenuItem _paramTypeCmdArgMenuItem;
+        private MenuItem _paramTypeEnvVarMenuItem;
+        private MenuItem _paramTypeWorkDirMenuItem;
 
         private TreeViewModel ViewModel => DataContext as TreeViewModel;
 
@@ -227,26 +227,26 @@ namespace SmartCmdArgs.View
             ContextMenu.Items.Add(_projPlatformMenuItem = new MenuItem { Header = "Project Platform" });
             ContextMenu.Items.Add(_launchProfileMenuItem = new MenuItem { Header = "Launch Profile" });
             ContextMenu.Items.Add(new Separator());
-            ContextMenu.Items.Add(_argumentTypeMenuItem = new MenuItem { Header = "Item Type" });
+            ContextMenu.Items.Add(_paramTypeMenuItem = new MenuItem { Header = "Item Type" });
             ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(_defaultCheckedMenuItem = new MenuItem { Header = "Default Checked", IsCheckable = true });
             ContextMenu.Items.Add(_resetToDefaultMenuItem = new MenuItem { Header = "Reset to default checked" });
 
-            _argumentTypeMenuItem.Items.Add(_argumentTypeCmdArgMenuItem = new MenuItem {
+            _paramTypeMenuItem.Items.Add(_paramTypeCmdArgMenuItem = new MenuItem {
                 Header = "Command Line Argument",
-                CommandParameter = ArgumentType.CmdArg,
+                CommandParameter = CmdParamType.CmdArg,
                 IsCheckable = true,
             });
-            _argumentTypeMenuItem.Items.Add(_argumentTypeEnvVarMenuItem = new MenuItem
+            _paramTypeMenuItem.Items.Add(_paramTypeEnvVarMenuItem = new MenuItem
             {
                 Header = "Environment Variable",
-                CommandParameter = ArgumentType.EnvVar,
+                CommandParameter = CmdParamType.EnvVar,
                 IsCheckable = true,
             });
-            _argumentTypeMenuItem.Items.Add(_argumentTypeWorkDirMenuItem = new MenuItem
+            _paramTypeMenuItem.Items.Add(_paramTypeWorkDirMenuItem = new MenuItem
             {
                 Header = "Working Directory",
-                CommandParameter = ArgumentType.WorkDir,
+                CommandParameter = CmdParamType.WorkDir,
                 IsCheckable = true,
             });
 
@@ -265,7 +265,7 @@ namespace SmartCmdArgs.View
             CollapseWhenDisabled(_launchProfileMenuItem);
             CollapseWhenDisabled(_defaultCheckedMenuItem);
             CollapseWhenDisabled(_resetToDefaultMenuItem);
-            CollapseWhenDisabled(_argumentTypeMenuItem);
+            CollapseWhenDisabled(_paramTypeMenuItem);
 
             DataContextChanged += OnDataContextChanged;
             ContextMenuOpening += OnContextMenuOpening;
@@ -326,9 +326,9 @@ namespace SmartCmdArgs.View
             _projConfigMenuItem.IsEnabled = false;
             _projPlatformMenuItem.IsEnabled = false;
             _launchProfileMenuItem.IsEnabled = false;
-            _argumentTypeMenuItem.IsEnabled = false;
+            _paramTypeMenuItem.IsEnabled = false;
 
-            _defaultCheckedMenuItem.IsChecked = SelectedTreeViewItems.Select(x => x.Item).OfType<CmdArgument>().Any(x => x.DefaultChecked);
+            _defaultCheckedMenuItem.IsChecked = SelectedTreeViewItems.Select(x => x.Item).OfType<CmdParameter>().Any(x => x.DefaultChecked);
 
             var fistItem = SelectedTreeViewItems.FirstOrDefault()?.Item;
 
@@ -453,13 +453,13 @@ namespace SmartCmdArgs.View
                 }
             }
 
-            if (fistItem is CmdArgument argument)
+            if (fistItem is CmdParameter param)
             {
-                _argumentTypeMenuItem.IsEnabled = true;
+                _paramTypeMenuItem.IsEnabled = true;
 
-                _argumentTypeCmdArgMenuItem.IsChecked = argument.ArgumentType == ArgumentType.CmdArg;
-                _argumentTypeEnvVarMenuItem.IsChecked = argument.ArgumentType == ArgumentType.EnvVar;
-                _argumentTypeWorkDirMenuItem.IsChecked = argument.ArgumentType == ArgumentType.WorkDir;
+                _paramTypeCmdArgMenuItem.IsChecked = param.ParamType == CmdParamType.CmdArg;
+                _paramTypeEnvVarMenuItem.IsChecked = param.ParamType == CmdParamType.EnvVar;
+                _paramTypeWorkDirMenuItem.IsChecked = param.ParamType == CmdParamType.WorkDir;
             }
         }
 
@@ -1083,7 +1083,7 @@ namespace SmartCmdArgs.View
                              // Remove selection of other items
                             ParentTreeView.SelectItemExclusively(this);
 
-                            if (Item is CmdArgument)
+                            if (Item is CmdParameter)
                             {
                                 if (shouldEnterEditMode)
                                 {

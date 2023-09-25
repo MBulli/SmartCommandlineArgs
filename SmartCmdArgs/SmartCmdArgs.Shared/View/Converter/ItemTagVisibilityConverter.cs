@@ -9,10 +9,10 @@ namespace SmartCmdArgs.View.Converter
     {
         public override object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            var argType = values[0] as ArgumentType?;
+            var argType = values[0] as CmdParamType?;
             var showClaTag = values[1] as bool?;
 
-            if (argType == ArgumentType.EnvVar || argType == ArgumentType.WorkDir || showClaTag == true)
+            if (argType == CmdParamType.EnvVar || argType == CmdParamType.WorkDir || showClaTag == true)
             {
                 return Visibility.Visible;
             }
