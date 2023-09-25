@@ -445,7 +445,7 @@ namespace SmartCmdArgs.ViewModel
         {
             var itemListToCopy = GetSelectedRootItems(includeProjects).ToList();
             if (itemListToCopy.Count > 0)
-                Clipboard.SetDataObject(DataObjectGenerator.Genrate(itemListToCopy, includeObject: false));
+                Clipboard.SetDataObject(DataObjectGenerator.Generate(itemListToCopy, includeObject: false));
         }
 
         private void PasteItemsFromClipboard()

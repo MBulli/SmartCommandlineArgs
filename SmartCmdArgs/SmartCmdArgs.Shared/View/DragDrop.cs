@@ -40,7 +40,7 @@ namespace SmartCmdArgs.View
                 dragInfo.GatherSelectedItems(treeView);
                 if (dragInfo.CanStartDrag())
                 {
-                    var dataObject = DataObjectGenerator.Genrate(dragInfo.SourceItems, includeObject: true);
+                    var dataObject = DataObjectGenerator.Generate(dragInfo.SourceItems, includeObject: true);
 
                     if (dragInfo.DirectVisualSourceItem.Item.IsInEditMode)
                         dragInfo.DirectVisualSourceItem.Item.CommitEdit();
@@ -153,7 +153,7 @@ namespace SmartCmdArgs.View
 
                 var dataList = data.ToList();
                 
-                var souldDeselctItem = dropInfo.InsertPosition.HasFlag(DropInfo.RelativInsertPosition.IntoTargetItem) 
+                var shouldDeselectItem = dropInfo.InsertPosition.HasFlag(DropInfo.RelativInsertPosition.IntoTargetItem) 
                     && dropInfo.TargetItem.Item is CmdContainer tarCon 
                     && !tarCon.IsExpanded;
 
@@ -162,7 +162,7 @@ namespace SmartCmdArgs.View
 
                 foreach (var sourceItem in dataList)
                 {
-                    if (souldDeselctItem)
+                    if (shouldDeselectItem)
                     {
                         if (sourceItem is CmdContainer con)
                         {
@@ -181,7 +181,7 @@ namespace SmartCmdArgs.View
                 var focusItem = dragInfo?.DirectSourceItem ?? dataList.FirstOrDefault();
 
                 var selectItemCommand = dropInfo.TargetItem.ParentTreeView.SelectItemCommand;
-                if (souldDeselctItem)
+                if (shouldDeselectItem)
                     selectItemCommand.SafeExecute(dropInfo.TargetItem.Item);
                 else if (selectItemCommand.SafeExecute(focusItem))
                 {

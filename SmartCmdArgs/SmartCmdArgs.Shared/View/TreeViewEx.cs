@@ -254,18 +254,18 @@ namespace SmartCmdArgs.View
 
             CollapseAllSeperatorsWhenNotNeeded(ContextMenu.Items);
 
-            CollapseWhenDisbaled(_argsDelimiterMenuItem);
-            CollapseWhenDisbaled(_exclusiveModeMenuItem);
-            CollapseWhenDisbaled(_splitArgumentMenuItem);
-            CollapseWhenDisbaled(_fileMenuItem);
-            CollapseWhenDisbaled(_openDirectoryMenuItem);
-            CollapseWhenDisbaled(_setAsStartupProjectMenuItem);
-            CollapseWhenDisbaled(_projConfigMenuItem);
-            CollapseWhenDisbaled(_projPlatformMenuItem);
-            CollapseWhenDisbaled(_launchProfileMenuItem);
-            CollapseWhenDisbaled(_defaultCheckedMenuItem);
-            CollapseWhenDisbaled(_resetToDefaultMenuItem);
-            CollapseWhenDisbaled(_argumentTypeMenuItem);
+            CollapseWhenDisabled(_argsDelimiterMenuItem);
+            CollapseWhenDisabled(_exclusiveModeMenuItem);
+            CollapseWhenDisabled(_splitArgumentMenuItem);
+            CollapseWhenDisabled(_fileMenuItem);
+            CollapseWhenDisabled(_openDirectoryMenuItem);
+            CollapseWhenDisabled(_setAsStartupProjectMenuItem);
+            CollapseWhenDisabled(_projConfigMenuItem);
+            CollapseWhenDisabled(_projPlatformMenuItem);
+            CollapseWhenDisabled(_launchProfileMenuItem);
+            CollapseWhenDisabled(_defaultCheckedMenuItem);
+            CollapseWhenDisabled(_resetToDefaultMenuItem);
+            CollapseWhenDisabled(_argumentTypeMenuItem);
 
             DataContextChanged += OnDataContextChanged;
             ContextMenuOpening += OnContextMenuOpening;
@@ -463,7 +463,7 @@ namespace SmartCmdArgs.View
             }
         }
 
-        private void CollapseWhenDisbaled(FrameworkElement element)
+        private void CollapseWhenDisabled(FrameworkElement element)
         {
             element.SetBinding(FrameworkElement.VisibilityProperty, new Binding
             {
