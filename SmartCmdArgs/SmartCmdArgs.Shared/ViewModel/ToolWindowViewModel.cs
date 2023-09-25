@@ -13,7 +13,7 @@ using EnvDTE;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.Logic;
+using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.Services;
 using SmartCmdArgs.View;
 using SmartCmdArgs.Wrapper;

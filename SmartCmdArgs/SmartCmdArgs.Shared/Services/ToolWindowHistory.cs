@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SmartCmdArgs.Logic;
+using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.Services;
 using SmartCmdArgs.ViewModel;
 using System;

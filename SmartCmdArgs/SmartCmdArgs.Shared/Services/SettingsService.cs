@@ -1,4 +1,4 @@
-﻿using SmartCmdArgs.Logic;
+﻿using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;
 
 namespace SmartCmdArgs.Services

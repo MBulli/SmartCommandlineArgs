@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.Logic;
+using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.Services;
 using System;
 using System.Collections.Generic;

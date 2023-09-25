@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCmdArgs.Logic
+namespace SmartCmdArgs.DataSerialization
 {
     class SolutionDataSerializer : DataSerializer
     {

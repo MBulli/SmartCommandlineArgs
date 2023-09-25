@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 
-namespace SmartCmdArgs.Logic
+namespace SmartCmdArgs.DataSerialization
 {
     class ProjectDataSerializer : DataSerializer
     {

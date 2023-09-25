@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 using SmartCmdArgs.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SmartCmdArgs.Logic
+namespace SmartCmdArgs.DataSerialization
 {
     class SuoDataSerializer : DataSerializer
     {

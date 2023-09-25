@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using SmartCmdArgs.ViewModel;
 
-namespace SmartCmdArgs.Logic
+namespace SmartCmdArgs.DataSerialization
 {
     public class SettingsJson
     {

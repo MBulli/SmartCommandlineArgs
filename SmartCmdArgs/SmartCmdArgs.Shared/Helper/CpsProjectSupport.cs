@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
-using SmartCmdArgs.Logic;
+using SmartCmdArgs.DataSerialization;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

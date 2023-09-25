@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.Logic;
+using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Wrapper;
 using System;

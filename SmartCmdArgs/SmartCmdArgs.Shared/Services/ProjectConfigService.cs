@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.Logic;
+using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;

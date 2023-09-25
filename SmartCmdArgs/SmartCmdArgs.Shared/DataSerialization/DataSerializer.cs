@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SmartCmdArgs.ViewModel;
 
-namespace SmartCmdArgs.Logic
+namespace SmartCmdArgs.DataSerialization
 {
     class DataSerializer
     {

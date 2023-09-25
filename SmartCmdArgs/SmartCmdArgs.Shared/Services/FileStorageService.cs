@@ -1,5 +1,5 @@
 ﻿using SmartCmdArgs.Helper;
-using SmartCmdArgs.Logic;
+using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Wrapper;
 using System;
@@ -213,7 +213,7 @@ namespace SmartCmdArgs.Services
                     {
                         using (Stream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read))
                         {
-                            result = Logic.ProjectDataSerializer.Deserialize(fileStream);
+                            result = DataSerialization.ProjectDataSerializer.Deserialize(fileStream);
                         }
                         Logger.Info($"Read {result?.Items?.Count} commands for project '{project.GetName()}' from json-file '{filePath}'.");
                     }

@@ -30,7 +30,7 @@ using System.Windows.Threading;
 using EnvDTE;
 using Newtonsoft.Json;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.Logic;
+using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Services;
 using SmartCmdArgs.Services.Utils;
