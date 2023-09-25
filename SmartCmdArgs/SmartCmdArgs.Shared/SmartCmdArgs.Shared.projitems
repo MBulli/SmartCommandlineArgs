@@ -21,7 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helper\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\FileSystemWatcherDisabledContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\FolderSelectDialog.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helper\IVsHierarchyExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\Logger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableCollectionEx.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\ObservableDictionary.cs" />
