@@ -1,14 +1,8 @@
-﻿using Microsoft.VisualStudio.Shell;
-using SmartCmdArgs.Helper;
+﻿using SmartCmdArgs.Helper;
 using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.Services;
 using System;
-using System.Collections.Generic;
-using System.IO.Packaging;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace SmartCmdArgs.ViewModel
 {

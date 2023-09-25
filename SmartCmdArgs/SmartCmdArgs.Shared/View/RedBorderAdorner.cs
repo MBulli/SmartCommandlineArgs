@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using SmartCmdArgs.Helper;
 using System;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;

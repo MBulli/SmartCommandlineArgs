@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;

@@ -1,7 +1,5 @@
 ﻿using Microsoft.VisualStudio.Imaging.Interop;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SmartCmdArgs
 {

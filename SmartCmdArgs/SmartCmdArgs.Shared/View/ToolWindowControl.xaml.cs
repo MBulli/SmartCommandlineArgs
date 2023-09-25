@@ -8,8 +8,6 @@ using System.Windows.Input;
 
 namespace SmartCmdArgs.View
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.Windows;
     using System.Windows.Controls;
 
     /// <summary>

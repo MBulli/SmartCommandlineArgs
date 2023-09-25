@@ -1,7 +1,5 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.ViewModel;
-using System;
 
 namespace SmartCmdArgs.View
 {

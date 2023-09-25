@@ -1,10 +1,7 @@
-﻿using Microsoft.VisualStudio.Shell.Interop;
-using SmartCmdArgs.Helper;
+﻿using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Wrapper;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SmartCmdArgs.Services
 {

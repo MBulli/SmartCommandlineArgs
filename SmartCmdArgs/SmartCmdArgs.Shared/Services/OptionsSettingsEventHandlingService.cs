@@ -1,8 +1,5 @@
-﻿using Microsoft.VisualStudio.Settings;
-using SmartCmdArgs.ViewModel;
+﻿using SmartCmdArgs.ViewModel;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SmartCmdArgs.Services
 {

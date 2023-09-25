@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.Shell.Interop;
-using SmartCmdArgs.Helper;
+﻿using SmartCmdArgs.Helper;
 using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Wrapper;

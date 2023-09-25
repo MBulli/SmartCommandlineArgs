@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SmartCmdArgs.ViewModel;
+﻿using SmartCmdArgs.ViewModel;
 using Microsoft.VisualStudio.PlatformUI;
 
 namespace SmartCmdArgs.View

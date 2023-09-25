@@ -1,11 +1,7 @@
 ﻿using SmartCmdArgs.Helper;
-using SmartCmdArgs.View;
 using SmartCmdArgs.ViewModel;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SmartCmdArgs.Services

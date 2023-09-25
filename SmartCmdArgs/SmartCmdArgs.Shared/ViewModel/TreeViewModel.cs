@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
-using Microsoft.Extensions.DependencyInjection;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Services;
 using SmartCmdArgs.View;

@@ -5,32 +5,17 @@
 //------------------------------------------------------------------------------
 
 using System;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.Win32;
-using System.Text;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Threading;
-using EnvDTE;
-using Newtonsoft.Json;
 using SmartCmdArgs.Helper;
-using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Services;
 using SmartCmdArgs.Services.Utils;

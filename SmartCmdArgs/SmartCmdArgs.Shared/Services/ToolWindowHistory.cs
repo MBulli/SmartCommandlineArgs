@@ -1,13 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using SmartCmdArgs.DataSerialization;
-using SmartCmdArgs.Services;
+﻿using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartCmdArgs.Services
 {

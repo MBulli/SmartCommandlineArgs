@@ -1,8 +1,6 @@
 ﻿using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SmartCmdArgs.Services
 {

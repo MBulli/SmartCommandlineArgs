@@ -1,13 +1,9 @@
-﻿using EnvDTE;
-using Microsoft.Build.Framework.XamlTypes;
-using Microsoft.VisualStudio.Shell.Interop;
-using SmartCmdArgs.ViewModel;
+﻿using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SmartCmdArgs.Services
