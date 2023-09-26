@@ -84,7 +84,7 @@ namespace SmartCmdArgs.DataSerialization
             {
                 foreach (var item in root["DataCollection"])
                 {
-                    var listItem = new CmdArgumentJson();
+                    var listItem = new CmdItemJson();
                     result.Items.Add(listItem);
 
                     listItem.Command = (string)item["Command"];

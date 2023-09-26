@@ -638,7 +638,7 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        private IEnumerable<CmdBase> ListEntriesToCmdObjects(List<CmdArgumentJson> list)
+        private IEnumerable<CmdBase> ListEntriesToCmdObjects(List<CmdItemJson> list)
         {
             CmdBase result = null;
             foreach (var item in list)

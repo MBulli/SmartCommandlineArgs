@@ -12,7 +12,7 @@ namespace SmartCmdArgs.Services
     {
         bool IsSupportedProject(IVsHierarchyWrapper project);
 
-        void AddAllArguments(IVsHierarchyWrapper project, List<CmdArgumentJson> allArgs);
+        void AddAllArguments(IVsHierarchyWrapper project, List<CmdItemJson> allArgs);
 
         void UpdateConfigurationForProject(IVsHierarchyWrapper project);
     }
@@ -36,7 +36,7 @@ namespace SmartCmdArgs.Services
         private class ProjectConfigHandlers
         {
             public delegate void SetConfigDelegate(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir);
-            public delegate void GetAllArgumentsDelegate(EnvDTE.Project project, List<CmdArgumentJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir);
+            public delegate void GetAllArgumentsDelegate(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir);
             public SetConfigDelegate SetConfig;
             public GetAllArgumentsDelegate GetAllArguments;
         }
@@ -140,11 +140,11 @@ namespace SmartCmdArgs.Services
 
         private static ProjectConfigHandlers.GetAllArgumentsDelegate GetSingleConfigAllItems(string argsPropName, string envVarPropName, string workDirPropName)
         {
-            return (EnvDTE.Project project, List<CmdArgumentJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir) =>
+            return (EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir) =>
             {
                 if (includeArgs && argsPropName != null && TryGetSingleConfigProperty(project, argsPropName, out string args))
                 {
-                    allArgs.Add(new CmdArgumentJson
+                    allArgs.Add(new CmdItemJson
                     {
                         Type = ViewModel.CmdParamType.CmdArg,
                         Command = args,
@@ -156,7 +156,7 @@ namespace SmartCmdArgs.Services
                 {
                     foreach (var envVarPair in GetEnvVarDictFromString(envVarsStr))
                     {
-                        allArgs.Add(new CmdArgumentJson
+                        allArgs.Add(new CmdItemJson
                         {
                             Type = ViewModel.CmdParamType.EnvVar,
                             Command = $"{envVarPair.Key}={envVarPair.Value}",
@@ -167,7 +167,7 @@ namespace SmartCmdArgs.Services
 
                 if (includeWorkDir && argsPropName != null && TryGetSingleConfigProperty(project, workDirPropName, out string workDir))
                 {
-                    allArgs.Add(new CmdArgumentJson
+                    allArgs.Add(new CmdItemJson
                     {
                         Type = ViewModel.CmdParamType.WorkDir,
                         Command = workDir,
@@ -196,7 +196,7 @@ namespace SmartCmdArgs.Services
 
         private static ProjectConfigHandlers.GetAllArgumentsDelegate GetMultiConfigAllItems(string argsPropName, string workDirPropName = null)
         {
-            return (EnvDTE.Project project, List<CmdArgumentJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir) =>
+            return (EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir) =>
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -205,14 +205,14 @@ namespace SmartCmdArgs.Services
                 {
                     try
                     {
-                        var items = new List<CmdArgumentJson>();
+                        var items = new List<CmdItemJson>();
 
                         if (includeArgs)
                         {
                             string args = config.Properties.Item(argsPropName)?.Value as string;
                             if (!string.IsNullOrEmpty(args))
                             {
-                                items.Add(new CmdArgumentJson
+                                items.Add(new CmdItemJson
                                 {
                                     Type = ViewModel.CmdParamType.CmdArg,
                                     Command = args,
@@ -226,7 +226,7 @@ namespace SmartCmdArgs.Services
                             string workDir = config.Properties.Item(workDirPropName)?.Value as string;
                             if (!string.IsNullOrEmpty(workDir))
                             {
-                                items.Add(new CmdArgumentJson
+                                items.Add(new CmdItemJson
                                 {
                                     Type = ViewModel.CmdParamType.WorkDir,
                                     Command = workDir,
@@ -237,7 +237,7 @@ namespace SmartCmdArgs.Services
 
                         if (items.Count > 0)
                         {
-                            allArgs.Add(new CmdArgumentJson
+                            allArgs.Add(new CmdItemJson
                             {
                                 Command = config.ConfigurationName,
                                 ProjectConfig = config.ConfigurationName,
@@ -321,7 +321,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        private static void GetVCProjEngineConfig(EnvDTE.Project project, List<CmdArgumentJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
+        private static void GetVCProjEngineConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -339,7 +339,7 @@ namespace SmartCmdArgs.Services
                 dynamic cfg = configs.Item(index); // is VCConfiguration
                 dynamic dbg = cfg.DebugSettings;  // is VCDebugSettings
 
-                var items = new List<CmdArgumentJson>();
+                var items = new List<CmdItemJson>();
 
                 var foundActiveFlavour = false;
 
@@ -352,14 +352,14 @@ namespace SmartCmdArgs.Services
                         var isActiveRule = activeDebuggerFlavour == vcPropInfo.RuleName;
                         foundActiveFlavour |= isActiveRule;
 
-                        var flavourItems = new List<CmdArgumentJson>();
+                        var flavourItems = new List<CmdItemJson>();
 
                         if (includeArgs)
                         {
                             var args = rule.GetUnevaluatedPropertyValue(vcPropInfo.ArgsPropName);
                             if (!string.IsNullOrEmpty(args))
                             {
-                                flavourItems.Add(new CmdArgumentJson
+                                flavourItems.Add(new CmdItemJson
                                 {
                                     Type = ViewModel.CmdParamType.CmdArg,
                                     Command = args,
@@ -375,7 +375,7 @@ namespace SmartCmdArgs.Services
                             {
                                 foreach (var envVarPair in GetEnvVarDictFromString(envVars))
                                 {
-                                    flavourItems.Add(new CmdArgumentJson
+                                    flavourItems.Add(new CmdItemJson
                                     {
                                         Type = ViewModel.CmdParamType.EnvVar,
                                         Command = $"{envVarPair.Key}={envVarPair.Value}",
@@ -390,7 +390,7 @@ namespace SmartCmdArgs.Services
                             var workDir = rule.GetUnevaluatedPropertyValue(vcPropInfo.WorkDirPropName);
                             if (!string.IsNullOrEmpty(workDir))
                             {
-                                flavourItems.Add(new CmdArgumentJson
+                                flavourItems.Add(new CmdItemJson
                                 {
                                     Type = ViewModel.CmdParamType.WorkDir,
                                     Command = workDir,
@@ -401,7 +401,7 @@ namespace SmartCmdArgs.Services
 
                         if (flavourItems.Count > 0)
                         {
-                            items.Add(new CmdArgumentJson { Command = vcPropInfo.RuleName, Items = flavourItems });
+                            items.Add(new CmdItemJson { Command = vcPropInfo.RuleName, Items = flavourItems });
                         }
                     }
                     else Logger.Info($"GetVCProjEngineAllArguments: ProjectConfig Rule '{vcPropInfo.RuleName}' returned null");
@@ -411,23 +411,23 @@ namespace SmartCmdArgs.Services
                 {
                     if (includeWorkDir && !string.IsNullOrEmpty(dbg?.WorkingDirectory))
                     {
-                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.CmdParamType.WorkDir, Command = dbg?.WorkingDirectory, Enabled = true });
+                        items.Insert(0, new CmdItemJson { Type = ViewModel.CmdParamType.WorkDir, Command = dbg?.WorkingDirectory, Enabled = true });
                     }
 
                     if (includeEnvVars && !string.IsNullOrEmpty(dbg?.Environment))
                     {
-                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.CmdParamType.EnvVar, Command = dbg?.Environment, Enabled = true });
+                        items.Insert(0, new CmdItemJson { Type = ViewModel.CmdParamType.EnvVar, Command = dbg?.Environment, Enabled = true });
                     }
 
                     if (includeArgs && !string.IsNullOrEmpty(dbg?.CommandArguments))
                     {
-                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.CmdParamType.CmdArg, Command = dbg?.CommandArguments, Enabled = true });
+                        items.Insert(0, new CmdItemJson { Type = ViewModel.CmdParamType.CmdArg, Command = dbg?.CommandArguments, Enabled = true });
                     }
                 }
 
                 if (items.Count > 0)
                 {
-                    allArgs.Add(new CmdArgumentJson
+                    allArgs.Add(new CmdItemJson
                     {
                         Command = cfg.Name,
                         ProjectConfig = cfg.ConfigurationName,
@@ -491,7 +491,7 @@ namespace SmartCmdArgs.Services
         // which isn't included in the objects obtained form `Project.Object.Configurations`. It's a bit
         // missleading because a property called `ConfigurationName` exists there but when called throws
         // an NotImplementedException.
-        private static void GetVFProjEngineConfig(EnvDTE.Project project, List<CmdArgumentJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
+        private static void GetVFProjEngineConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -511,11 +511,11 @@ namespace SmartCmdArgs.Services
                 dynamic vfCfg = configs.Item(VFFormatConfigName(vcCfg)); // is VCConfiguration
                 dynamic dbg = vfCfg.DebugSettings;  // is VCDebugSettings
 
-                var items = new List<CmdArgumentJson>();
+                var items = new List<CmdItemJson>();
 
                 if (includeArgs && !string.IsNullOrEmpty(dbg?.CommandArguments))
                 {
-                    items.Add(new CmdArgumentJson
+                    items.Add(new CmdItemJson
                     {
                         Type = ViewModel.CmdParamType.CmdArg,
                         Command = dbg.CommandArguments,
@@ -527,7 +527,7 @@ namespace SmartCmdArgs.Services
                 {
                     foreach (var envVarPair in GetEnvVarDictFromString(dbg.Environment))
                     {
-                        items.Add(new CmdArgumentJson
+                        items.Add(new CmdItemJson
                         {
                             Type = ViewModel.CmdParamType.EnvVar,
                             Command = $"{envVarPair.Key}={envVarPair.Value}",
@@ -538,7 +538,7 @@ namespace SmartCmdArgs.Services
 
                 if (includeWorkDir && !string.IsNullOrEmpty(dbg?.WorkingDirectory))
                 {
-                    items.Add(new CmdArgumentJson
+                    items.Add(new CmdItemJson
                     {
                         Type = ViewModel.CmdParamType.WorkDir,
                         Command = dbg.WorkingDirectory,
@@ -548,7 +548,7 @@ namespace SmartCmdArgs.Services
 
                 if (items.Count > 0)
                 {
-                    allArgs.Add(new CmdArgumentJson
+                    allArgs.Add(new CmdItemJson
                     {
                         Command = vcCfg.ConfigurationName,
                         ProjectConfig = vcCfg.ConfigurationName,
@@ -570,7 +570,7 @@ namespace SmartCmdArgs.Services
             CpsProjectSupport.SetCpsProjectConfig(project, arguments, envVars, workDir);
         }
 
-        private static void GetCpsProjectConfig(EnvDTE.Project project, List<CmdArgumentJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
+        private static void GetCpsProjectConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
         {
             // Should only be called in VS 2017 or higher
             // see SetCpsProjectArguments
@@ -698,7 +698,7 @@ namespace SmartCmdArgs.Services
             return supportedProjects.TryGetValue(projectKind, out handler);
         }
 
-        public void AddAllArguments(IVsHierarchyWrapper project, List<CmdArgumentJson> allArgs)
+        public void AddAllArguments(IVsHierarchyWrapper project, List<CmdItemJson> allArgs)
         {
             if (TryGetProjectConfigHandlers(project, out ProjectConfigHandlers handler))
             {

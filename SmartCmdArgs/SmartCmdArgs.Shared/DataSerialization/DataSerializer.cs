@@ -5,12 +5,12 @@ namespace SmartCmdArgs.DataSerialization
 {
     class DataSerializer
     {
-        protected static List<CmdArgumentJson> TransformCmdList(ICollection<CmdBase> items)
+        protected static List<CmdItemJson> TransformCmdList(ICollection<CmdBase> items)
         {
-            var result = new List<CmdArgumentJson>(items.Count);
+            var result = new List<CmdItemJson>(items.Count);
             foreach (var item in items)
             {
-                var newElement = new CmdArgumentJson
+                var newElement = new CmdItemJson
                 {
                     Id = item.Id,
                     Command = item.Value,

@@ -115,12 +115,12 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        public static List<CmdArgumentJson> GetCpsProjectAllArguments(EnvDTE.Project project, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
+        public static List<CmdItemJson> GetCpsProjectAllArguments(EnvDTE.Project project, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
 
-            var result = new List<CmdArgumentJson>();
+            var result = new List<CmdItemJson>();
 
             if (TryGetProjectServices(project, out unconfiguredProjectServices, out projectServices))
             {
@@ -132,24 +132,24 @@ namespace SmartCmdArgs.Helper
 
                 foreach (var profile in launchProfiles)
                 {
-                    var profileGrp = new CmdArgumentJson { Command = profile.Name, LaunchProfile = profile.Name, Items = new List<CmdArgumentJson>() };
+                    var profileGrp = new CmdItemJson { Command = profile.Name, LaunchProfile = profile.Name, Items = new List<CmdItemJson>() };
 
                     if (includeArgs && !string.IsNullOrEmpty(profile.CommandLineArgs))
                     {
-                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.CmdParamType.CmdArg, Command = profile.CommandLineArgs, Enabled = true });
+                        profileGrp.Items.Add(new CmdItemJson { Type = ViewModel.CmdParamType.CmdArg, Command = profile.CommandLineArgs, Enabled = true });
                     }
 
                     if (includeEnvVars)
                     {
                         foreach (var envVarPair in profile.EnvironmentVariables)
                         {
-                            profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.CmdParamType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
+                            profileGrp.Items.Add(new CmdItemJson { Type = ViewModel.CmdParamType.EnvVar, Command = $"{envVarPair.Key}={envVarPair.Value}", Enabled = true });
                         }
                     }
 
                     if (includeWorkDir && !string.IsNullOrEmpty(profile.WorkingDirectory))
                     {
-                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.CmdParamType.WorkDir, Command = profile.WorkingDirectory, Enabled = true });
+                        profileGrp.Items.Add(new CmdItemJson { Type = ViewModel.CmdParamType.WorkDir, Command = profile.WorkingDirectory, Enabled = true });
                     }
 
                     if (profileGrp.Items.Count > 0)

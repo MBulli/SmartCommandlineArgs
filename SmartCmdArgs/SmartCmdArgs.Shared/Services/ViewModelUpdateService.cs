@@ -197,9 +197,9 @@ namespace SmartCmdArgs.Services
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
         }
 
-        private List<CmdArgumentJson> ReadCommandlineArgumentsFromProject(IVsHierarchyWrapper project)
+        private List<CmdItemJson> ReadCommandlineArgumentsFromProject(IVsHierarchyWrapper project)
         {
-            var prjCmdArgs = new List<CmdArgumentJson>();
+            var prjCmdArgs = new List<CmdItemJson>();
             projectConfig.AddAllArguments(project, prjCmdArgs);
             return prjCmdArgs;
         }

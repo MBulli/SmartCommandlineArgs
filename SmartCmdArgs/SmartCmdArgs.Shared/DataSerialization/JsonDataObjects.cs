@@ -60,11 +60,11 @@ namespace SmartCmdArgs.DataSerialization
         public List<ProjectDataJson> ProjectArguments = new List<ProjectDataJson>();
     }
 
-    public class ProjectDataJson : CmdArgumentJson
+    public class ProjectDataJson : CmdItemJson
     {
         public ProjectDataJson()
         {
-            Items = new List<CmdArgumentJson>();
+            Items = new List<CmdItemJson>();
         }
     }
 
@@ -73,7 +73,7 @@ namespace SmartCmdArgs.DataSerialization
         public int FileVersion = 2;
     }
 
-    public class CmdArgumentJson
+    public class CmdItemJson
     {
         public Guid Id = Guid.NewGuid();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -93,7 +93,7 @@ namespace SmartCmdArgs.DataSerialization
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, NullValueHandling = NullValueHandling.Ignore), DefaultValue("")]
         public string Prefix = "";
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<CmdArgumentJson> Items = null;
+        public List<CmdItemJson> Items = null;
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public bool DefaultChecked = false;
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate), DefaultValue(CmdParamType.CmdArg)]
@@ -107,14 +107,14 @@ namespace SmartCmdArgs.DataSerialization
         public bool Selected = false;
 
         [JsonIgnore]
-        public IEnumerable<CmdArgumentJson> AllItems => Items
+        public IEnumerable<CmdItemJson> AllItems => Items
             .Concat(Items.Where(item => item.Items != null).SelectMany(container => container.AllItems));
 
         [JsonIgnore]
-        public IEnumerable<CmdArgumentJson> AllParameters => AllItems.Where(item => item.Items == null);
+        public IEnumerable<CmdItemJson> AllParameters => AllItems.Where(item => item.Items == null);
 
         [JsonIgnore]
-        public IEnumerable<CmdArgumentJson> AllContainer => AllItems.Where(item => item.Items != null);
+        public IEnumerable<CmdItemJson> AllContainer => AllItems.Where(item => item.Items != null);
 
         [OnError]
         public void OnError(StreamingContext context, ErrorContext errorContext)
