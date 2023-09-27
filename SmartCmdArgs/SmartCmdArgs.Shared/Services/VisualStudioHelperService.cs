@@ -325,7 +325,7 @@ namespace SmartCmdArgs.Services
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var propStorage = hierarchy as IVsBuildPropertyStorage;
+            var propStorage = hierarchy.Hierarchy as IVsBuildPropertyStorage;
 
             if (propStorage == null)
                 return null;
