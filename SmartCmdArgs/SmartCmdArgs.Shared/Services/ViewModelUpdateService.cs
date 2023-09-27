@@ -188,20 +188,13 @@ namespace SmartCmdArgs.Services
                 projectData = new ProjectDataJson();
 
                 Logger.Info($"Gathering commands from configurations for project '{project.GetName()}'.");
-                projectData.Items.AddRange(ReadCommandlineArgumentsFromProject(project));
+                projectData.Items.AddRange(projectConfig.GetItemsFromProjectConfig(project));
             }
 
             // push projectData to the ViewModel
             toolWindowViewModel.PopulateFromProjectData(project, projectData);
 
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
-        }
-
-        private List<CmdItemJson> ReadCommandlineArgumentsFromProject(IVsHierarchyWrapper project)
-        {
-            var prjCmdArgs = new List<CmdItemJson>();
-            projectConfig.GetItemsFromProjectConfig(project, prjCmdArgs);
-            return prjCmdArgs;
         }
 
         private ISet<CmdParameter> GetAllActiveItemsForProject(IVsHierarchyWrapper project)

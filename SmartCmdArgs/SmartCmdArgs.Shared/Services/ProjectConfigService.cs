@@ -12,7 +12,7 @@ namespace SmartCmdArgs.Services
     {
         bool IsSupportedProject(IVsHierarchyWrapper project);
 
-        void GetItemsFromProjectConfig(IVsHierarchyWrapper project, List<CmdItemJson> allArgs);
+        List<CmdItemJson> GetItemsFromProjectConfig(IVsHierarchyWrapper project);
 
         void UpdateProjectConfig(IVsHierarchyWrapper project);
     }
@@ -698,17 +698,21 @@ namespace SmartCmdArgs.Services
             return supportedProjects.TryGetValue(projectKind, out handler);
         }
 
-        public void GetItemsFromProjectConfig(IVsHierarchyWrapper project, List<CmdItemJson> allArgs)
+        public List<CmdItemJson> GetItemsFromProjectConfig(IVsHierarchyWrapper project)
         {
+            var result = new List<CmdItemJson>();
+
             if (TryGetProjectConfigHandlers(project, out ProjectConfigHandlers handler))
             {
                 handler.GetItemsFromConfig(
                     project.GetProject(),
-                    allArgs,
+                    result,
                     includeArgs: optionsSettings.ManageCommandLineArgs,
                     includeEnvVars: optionsSettings.ManageEnvironmentVars,
                     includeWorkDir: optionsSettings.ManageWorkingDirectories);
             }
+
+            return result;
         }
 
         public void UpdateProjectConfig(IVsHierarchyWrapper project)
