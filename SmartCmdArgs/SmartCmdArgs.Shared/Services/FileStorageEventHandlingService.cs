@@ -115,7 +115,7 @@ namespace SmartCmdArgs.Services
                     viewModelUpdateService.UpdateCommandsForProject(project);
                 }
 
-                viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
+                viewModelUpdateService.UpdateIsActiveForParamsDebounced();
             });
         }
     }

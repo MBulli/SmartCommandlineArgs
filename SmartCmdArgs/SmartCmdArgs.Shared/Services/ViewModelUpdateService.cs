@@ -11,7 +11,7 @@ namespace SmartCmdArgs.Services
     internal interface IViewModelUpdateService
     {
         void UpdateCommandsForProject(IVsHierarchyWrapper project);
-        void UpdateIsActiveForArgumentsDebounced();
+        void UpdateIsActiveForParamsDebounced();
         void UpdateCurrentStartupProject();
     }
 
@@ -271,7 +271,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        public void UpdateIsActiveForArgumentsDebounced()
+        public void UpdateIsActiveForParamsDebounced()
         {
             _updateIsActiveDebouncer.CallActionDebounced();
         }

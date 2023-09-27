@@ -123,14 +123,14 @@ namespace SmartCmdArgs.Services
         {
             Logger.Info("VS-Event: Project configuration changed.");
 
-            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
+            viewModelUpdateService.UpdateIsActiveForParamsDebounced();
         }
 
         private void VsHelper_LaunchProfileChanged(object sender, IVsHierarchyWrapper e)
         {
             Logger.Info("VS-Event: Project launch profile changed.");
 
-            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
+            viewModelUpdateService.UpdateIsActiveForParamsDebounced();
         }
 
         private void VsHelper_ProjectWillRun(object sender, EventArgs e)

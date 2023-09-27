@@ -64,12 +64,12 @@ namespace SmartCmdArgs.Services
                 case nameof(IOptionsSettingsService.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(IOptionsSettingsService.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(IOptionsSettingsService.UseSolutionDir): UseSolutionDirChanged(); break;
-                case nameof(IOptionsSettingsService.ManageCommandLineArgs): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(IOptionsSettingsService.ManageEnvironmentVars): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
-                case nameof(IOptionsSettingsService.ManageWorkingDirectories): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageCommandLineArgs): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageEnvironmentVars): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageWorkingDirectories): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
                 case nameof(IOptionsSettingsService.UseMonospaceFont): UseMonospaceFontChanged(); break;
                 case nameof(IOptionsSettingsService.DisplayTagForCla): DisplayTagForClaChanged(); break;
-                case nameof(IOptionsSettingsService.DisableInactiveItems): viewModelUpdateService.UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(IOptionsSettingsService.DisableInactiveItems): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
             }
         }
 

@@ -91,7 +91,7 @@ namespace SmartCmdArgs.Services
 
         private void OnTreeChanged(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
-            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
+            viewModelUpdateService.UpdateIsActiveForParamsDebounced();
         }
     }
 }

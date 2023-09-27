@@ -177,7 +177,7 @@ namespace SmartCmdArgs.Services
                 fileStorage.AddProject(project);
             }
             viewModelUpdateService.UpdateCurrentStartupProject();
-            viewModelUpdateService.UpdateIsActiveForArgumentsDebounced();
+            viewModelUpdateService.UpdateIsActiveForParamsDebounced();
         }
 
         private void FinalizeDataForSolution()
