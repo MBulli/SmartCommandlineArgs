@@ -12,9 +12,9 @@ namespace SmartCmdArgs.Services
     {
         bool IsSupportedProject(IVsHierarchyWrapper project);
 
-        void AddAllArguments(IVsHierarchyWrapper project, List<CmdItemJson> allArgs);
+        void GetItemsFromProjectConfig(IVsHierarchyWrapper project, List<CmdItemJson> allArgs);
 
-        void UpdateConfigurationForProject(IVsHierarchyWrapper project);
+        void UpdateProjectConfig(IVsHierarchyWrapper project);
     }
 
     public class ProjectConfigService : IProjectConfigService
@@ -38,7 +38,7 @@ namespace SmartCmdArgs.Services
             public delegate void SetConfigDelegate(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir);
             public delegate void GetAllArgumentsDelegate(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir);
             public SetConfigDelegate SetConfig;
-            public GetAllArgumentsDelegate GetAllArguments;
+            public GetAllArgumentsDelegate GetItemsFromConfig;
         }
 
         private static string GetEnvVarStringFromDict(IDictionary<string, string> envVars)
@@ -138,7 +138,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        private static ProjectConfigHandlers.GetAllArgumentsDelegate GetSingleConfigAllItems(string argsPropName, string envVarPropName, string workDirPropName)
+        private static ProjectConfigHandlers.GetAllArgumentsDelegate GetItemsFromSingleConfig(string argsPropName, string envVarPropName, string workDirPropName)
         {
             return (EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir) =>
             {
@@ -194,7 +194,7 @@ namespace SmartCmdArgs.Services
             catch (Exception ex) { Logger.Error($"Failed to set multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
 
-        private static ProjectConfigHandlers.GetAllArgumentsDelegate GetMultiConfigAllItems(string argsPropName, string workDirPropName = null)
+        private static ProjectConfigHandlers.GetAllArgumentsDelegate GetItemsFromMultiConfig(string argsPropName, string workDirPropName = null)
         {
             return (EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir) =>
             {
@@ -321,7 +321,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        private static void GetVCProjEngineConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
+        private static void GetItemsFromVCProjEngineConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -491,7 +491,7 @@ namespace SmartCmdArgs.Services
         // which isn't included in the objects obtained form `Project.Object.Configurations`. It's a bit
         // missleading because a property called `ConfigurationName` exists there but when called throws
         // an NotImplementedException.
-        private static void GetVFProjEngineConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
+        private static void GetItemsFromVFProjEngineConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -570,7 +570,7 @@ namespace SmartCmdArgs.Services
             CpsProjectSupport.SetCpsProjectConfig(project, arguments, envVars, workDir);
         }
 
-        private static void GetCpsProjectConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
+        private static void GetItemsFromCpsProjectConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
         {
             // Should only be called in VS 2017 or higher
             // see SetCpsProjectArguments
@@ -587,12 +587,12 @@ namespace SmartCmdArgs.Services
                         SetMultiConfigProperty(project, arguments, "StartArguments");
                         SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
                     },
-                    GetAllArguments = GetMultiConfigAllItems("StartArguments", "StartWorkingDirectory")
+                    GetItemsFromConfig = GetItemsFromMultiConfig("StartArguments", "StartWorkingDirectory")
                 } },
                 // C# UWP
                 {ProjectKinds.CS_UWP, new ProjectConfigHandlers() {
                     SetConfig = (project, arguments, envVars, workDir) => SetMultiConfigProperty(project, arguments, "UAPDebug.CommandLineArguments"),
-                    GetAllArguments = GetMultiConfigAllItems("UAPDebug.CommandLineArguments")
+                    GetItemsFromConfig = GetItemsFromMultiConfig("UAPDebug.CommandLineArguments")
                 } },
 
                 // VB.NET
@@ -601,12 +601,12 @@ namespace SmartCmdArgs.Services
                         SetMultiConfigProperty(project, arguments, "StartArguments");
                         SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
                     },
-                    GetAllArguments = GetMultiConfigAllItems("StartArguments", "StartWorkingDirectory")
+                    GetItemsFromConfig = GetItemsFromMultiConfig("StartArguments", "StartWorkingDirectory")
                 } },
                 // C/C++
                 {ProjectKinds.CPP, new ProjectConfigHandlers() {
                     SetConfig = (project, arguments, envVars, workDir) => SetVCProjEngineConfig(project, arguments, envVars, workDir),
-                    GetAllArguments = GetVCProjEngineConfig
+                    GetItemsFromConfig = GetItemsFromVCProjEngineConfig
                 } },
                 // Python
                 {ProjectKinds.Py, new ProjectConfigHandlers() {
@@ -615,7 +615,7 @@ namespace SmartCmdArgs.Services
                         SetSingleConfigEnvVars(project, envVars, "Environment");
                         SetSingleConfigProperty(project, workDir, "WorkingDirectory");
                     },
-                    GetAllArguments = GetSingleConfigAllItems("CommandLineArguments", "Environment", "WorkingDirectory"),
+                    GetItemsFromConfig = GetItemsFromSingleConfig("CommandLineArguments", "Environment", "WorkingDirectory"),
                 } },
                 // Node.js
                 {ProjectKinds.Node, new ProjectConfigHandlers() {
@@ -624,12 +624,12 @@ namespace SmartCmdArgs.Services
                         SetSingleConfigEnvVars(project, envVars, "Environment");
                         SetSingleConfigProperty(project, workDir, "WorkingDirectory");
                     },
-                    GetAllArguments = GetSingleConfigAllItems("ScriptArguments", "Environment", "WorkingDirectory"),
+                    GetItemsFromConfig = GetItemsFromSingleConfig("ScriptArguments", "Environment", "WorkingDirectory"),
                 } },
                 // C# - Lagacy DotNetCore
                 {ProjectKinds.CSCore, new ProjectConfigHandlers() {
                     SetConfig = (project, arguments, envVars, workDir) => SetCpsProjectConfig(project, arguments, envVars, workDir),
-                    GetAllArguments = GetCpsProjectConfig
+                    GetItemsFromConfig = GetItemsFromCpsProjectConfig
                 } },
                 // F#
                 {ProjectKinds.FS, new ProjectConfigHandlers() {
@@ -637,18 +637,18 @@ namespace SmartCmdArgs.Services
                         SetMultiConfigProperty(project, arguments, "StartArguments");
                         SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
                     },
-                    GetAllArguments = GetMultiConfigAllItems("StartArguments", "StartWorkingDirectory")
+                    GetItemsFromConfig = GetItemsFromMultiConfig("StartArguments", "StartWorkingDirectory")
                 } },
                 // Fortran
                 {ProjectKinds.Fortran, new ProjectConfigHandlers() {
                     SetConfig = (project, arguments, envVars, workDir) => SetVFProjEngineConfig(project, arguments, envVars, workDir),
-                    GetAllArguments = GetVFProjEngineConfig
+                    GetItemsFromConfig = GetItemsFromVFProjEngineConfig
                 } },
             };
 
         private static ProjectConfigHandlers CpsProjectConfigHandlers = new ProjectConfigHandlers
             {
-                GetAllArguments = GetCpsProjectConfig,
+                GetItemsFromConfig = GetItemsFromCpsProjectConfig,
                 SetConfig = SetCpsProjectConfig,
             };
 
@@ -698,11 +698,11 @@ namespace SmartCmdArgs.Services
             return supportedProjects.TryGetValue(projectKind, out handler);
         }
 
-        public void AddAllArguments(IVsHierarchyWrapper project, List<CmdItemJson> allArgs)
+        public void GetItemsFromProjectConfig(IVsHierarchyWrapper project, List<CmdItemJson> allArgs)
         {
             if (TryGetProjectConfigHandlers(project, out ProjectConfigHandlers handler))
             {
-                handler.GetAllArguments(
+                handler.GetItemsFromConfig(
                     project.GetProject(),
                     allArgs,
                     includeArgs: optionsSettings.ManageCommandLineArgs,
@@ -711,7 +711,7 @@ namespace SmartCmdArgs.Services
             }
         }
 
-        public void UpdateConfigurationForProject(IVsHierarchyWrapper project)
+        public void UpdateProjectConfig(IVsHierarchyWrapper project)
         {
             if (!lifeCycleService.Value.IsEnabled || project == null)
                 return;

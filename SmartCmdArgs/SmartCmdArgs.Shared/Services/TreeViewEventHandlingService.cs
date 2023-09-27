@@ -86,7 +86,7 @@ namespace SmartCmdArgs.Services
         {
             var projectGuid = e.AffectedProject.Id;
             var project = vsHelper.HierarchyForProjectGuid(projectGuid);
-            projectConfigService.UpdateConfigurationForProject(project);
+            projectConfigService.UpdateProjectConfig(project);
         }
 
         private void OnTreeChanged(object sender, TreeViewModel.TreeChangedEventArgs e)

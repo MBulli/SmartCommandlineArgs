@@ -140,7 +140,7 @@ namespace SmartCmdArgs.Services
             foreach (var startupProject in treeViewModel.StartupProjects)
             {
                 var project = vsHelper.HierarchyForProjectGuid(startupProject.Id);
-                projectConfigService.UpdateConfigurationForProject(project);
+                projectConfigService.UpdateProjectConfig(project);
                 fileStorage.SaveProject(project);
             }
         }

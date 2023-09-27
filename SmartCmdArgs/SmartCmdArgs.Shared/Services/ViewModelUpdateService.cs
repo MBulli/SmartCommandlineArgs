@@ -200,7 +200,7 @@ namespace SmartCmdArgs.Services
         private List<CmdItemJson> ReadCommandlineArgumentsFromProject(IVsHierarchyWrapper project)
         {
             var prjCmdArgs = new List<CmdItemJson>();
-            projectConfig.AddAllArguments(project, prjCmdArgs);
+            projectConfig.GetItemsFromProjectConfig(project, prjCmdArgs);
             return prjCmdArgs;
         }
 
