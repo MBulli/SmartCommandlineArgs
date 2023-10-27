@@ -66,6 +66,10 @@
                 <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Working Directories" IsChecked="{Binding ManageWorkingDirectories}" DefaultValue="{Binding Package.Options.ManageWorkingDirectories, Mode=OneWay}" 
                                      Description="If enabled the working directories are set automatically when a project is started/debugged."/>
 
+                <!-- Manage Launch Application -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Launch Application" IsChecked="{Binding ManageLaunchApplication}" DefaultValue="{Binding Package.Options.ManageLaunchApplication, Mode=OneWay}" 
+                                     Description="If enabled the launch application is set automatically when a project is started/debugged."/>
+
                 <Separator Margin="0,10,0,0"/>
 
                 <!-- Enable version control support -->

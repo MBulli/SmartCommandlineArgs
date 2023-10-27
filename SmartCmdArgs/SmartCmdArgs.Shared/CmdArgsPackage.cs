@@ -89,6 +89,7 @@ namespace SmartCmdArgs
         public bool ManageCommandLineArgs => Settings.ManageCommandLineArgs ?? Options.ManageCommandLineArgs;
         public bool ManageEnvironmentVars => Settings.ManageEnvironmentVars ?? Options.ManageEnvironmentVars;
         public bool ManageWorkingDirectories => Settings.ManageWorkingDirectories ?? Options.ManageWorkingDirectories;
+        public bool ManageLaunchApplication => Settings.ManageLaunchApplication ?? Options.ManageLaunchApplication;
         public bool UseCustomJsonRoot => Settings.UseCustomJsonRoot;
         public string JsonRootPath => Settings.JsonRootPath;
         public bool IsVcsSupportEnabled => Settings.VcsSupportEnabled ?? Options.VcsSupportEnabled;
@@ -163,7 +164,7 @@ namespace SmartCmdArgs
         #region IsActive Management for Items
         private ISet<CmdArgument> GetAllActiveItemsForProject(IVsHierarchy project)
         {
-            if (!ManageCommandLineArgs && !ManageEnvironmentVars && !ManageWorkingDirectories)
+            if (!ManageCommandLineArgs && !ManageEnvironmentVars && !ManageWorkingDirectories && !ManageLaunchApplication)
             {
                 return new HashSet<CmdArgument>();
             }
@@ -171,6 +172,7 @@ namespace SmartCmdArgs
             var Args = new HashSet<CmdArgument>();
             var EnvVars = new Dictionary<string, CmdArgument>();
             CmdArgument workDir = null;
+            CmdArgument launchApp = null;
 
             foreach (var item in GetAllComamndLineItemsForProject(project))
             {
@@ -189,6 +191,10 @@ namespace SmartCmdArgs
                 {
                     workDir = item;
                 }
+                else if (item.ArgumentType == ArgumentType.LaunchApp && ManageLaunchApplication)
+                {
+                    launchApp = item;
+                }
             }
 
             var result = new HashSet<CmdArgument>(Args.Concat(EnvVars.Values));
@@ -196,6 +202,11 @@ namespace SmartCmdArgs
             if (workDir != null)
             {
                 result.Add(workDir);
+            }
+
+            if (launchApp != null)
+            {
+                result.Add(launchApp);
             }
 
             return result;
@@ -313,6 +324,7 @@ namespace SmartCmdArgs
                 case nameof(CmdArgsOptionPage.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
                 case nameof(CmdArgsOptionPage.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
                 case nameof(CmdArgsOptionPage.ManageWorkingDirectories): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(CmdArgsOptionPage.ManageLaunchApplication): UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
@@ -331,6 +343,7 @@ namespace SmartCmdArgs
                 case nameof(SettingsViewModel.ManageCommandLineArgs): UpdateIsActiveForArgumentsDebounced(); break;
                 case nameof(SettingsViewModel.ManageEnvironmentVars): UpdateIsActiveForArgumentsDebounced(); break;
                 case nameof(SettingsViewModel.ManageWorkingDirectories): UpdateIsActiveForArgumentsDebounced(); break;
+                case nameof(SettingsViewModel.ManageLaunchApplication): UpdateIsActiveForArgumentsDebounced(); break;
             }
         }
 
@@ -418,11 +431,12 @@ namespace SmartCmdArgs
             var commandLineArgs = ManageCommandLineArgs ? CreateCommandLineArgsForProject(project) : null;
             var envVars = ManageEnvironmentVars ? GetEnvVarsForProject(project) : null;
             var workDir = ManageWorkingDirectories ? GetWorkDirForProject(project) : null;
+            var launchApp = ManageLaunchApplication ? GetLaunchAppForProject(project) : null;
 
-            if (commandLineArgs is null && envVars is null && workDir is null)
+            if (commandLineArgs is null && envVars is null && workDir is null && launchApp is null)
                 return;
 
-            ProjectConfigHelper.SetConfig(project, commandLineArgs, envVars, workDir);
+            ProjectConfigHelper.SetConfig(project, commandLineArgs, envVars, workDir, launchApp);
             Logger.Info($"Updated Configuration for Project: {project.GetName()}");
         }
 
@@ -595,6 +609,20 @@ namespace SmartCmdArgs
             foreach (var item in GetAllComamndLineItemsForProject(project))
             {
                 if (item.ArgumentType != ArgumentType.WorkDir) continue;
+
+                result = EvaluateMacros(item.Value, project);
+            }
+
+            return result;
+        }
+
+        private string GetLaunchAppForProject(IVsHierarchy project)
+        {
+            var result = "";
+
+            foreach (var item in GetAllComamndLineItemsForProject(project))
+            {
+                if (item.ArgumentType != ArgumentType.LaunchApp) continue;
 
                 result = EvaluateMacros(item.Value, project);
             }

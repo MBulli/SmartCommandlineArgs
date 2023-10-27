@@ -539,6 +539,7 @@ namespace SmartCmdArgs.ViewModel
                         break;
 
                     case ArgumentType.WorkDir:
+                    case ArgumentType.LaunchApp:
                         parts = new[] { CmdArgsPackage.EvaluateMacros(argument.Value, project) };
                         break;
                 }

@@ -84,7 +84,7 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir)
+        public static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -107,6 +107,9 @@ namespace SmartCmdArgs.Helper
 
                 if (workDir != null)
                     writableLaunchProfile.WorkingDirectory = workDir;
+
+                if (launchApp != null)
+                    writableLaunchProfile.CommandName = launchApp;
 
                 // Does not work on VS2015, which should be okay ...
                 // We don't hold references for VS2015, where the interface is called IThreadHandling
@@ -152,6 +155,11 @@ namespace SmartCmdArgs.Helper
                         profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.WorkDir, Command = profile.WorkingDirectory, Enabled = true });
                     }
 
+                    if (!string.IsNullOrEmpty(profile.CommandName))
+                    {
+                        profileGrp.Items.Add(new CmdArgumentJson { Type = ViewModel.ArgumentType.LaunchApp, Command = profile.CommandName, Enabled = true });
+                    }
+
                     if (profileGrp.Items.Count > 0)
                     {
                         result.Add(profileGrp);
@@ -170,6 +178,7 @@ namespace SmartCmdArgs.Helper
         public string ExecutablePath { set; get; }
         public string CommandLineArgs { set; get; }
         public string WorkingDirectory { set; get; }
+        public string LaunchApp { set; get; }
         public bool LaunchBrowser { set; get; }
         public string LaunchUrl { set; get; }
         public ImmutableDictionary<string, string> EnvironmentVariables { set; get; }

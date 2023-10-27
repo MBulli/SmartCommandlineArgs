@@ -19,6 +19,7 @@ namespace SmartCmdArgs.ViewModel
         private bool? _manageCommandLineArgs;
         private bool? _manageEnvironmentVars;
         private bool? _manageWorkingDirectories;
+        private bool? _manageLaunchApplication;
         private bool _useCustomJsonRoot;
         private string _jsonRootPath;
         private bool? _vcsSupportEnabled;
@@ -47,6 +48,12 @@ namespace SmartCmdArgs.ViewModel
         {
             get => _manageWorkingDirectories;
             set => SetAndNotify(value, ref _manageWorkingDirectories);
+        }
+
+        public bool? ManageLaunchApplication
+        {
+            get => _manageLaunchApplication;
+            set => SetAndNotify(value, ref _manageLaunchApplication);
         }
 
         public bool? VcsSupportEnabled
@@ -116,6 +123,7 @@ namespace SmartCmdArgs.ViewModel
                 ManageCommandLineArgs = other.ManageCommandLineArgs;
                 ManageEnvironmentVars = other.ManageEnvironmentVars;
                 ManageWorkingDirectories = other.ManageWorkingDirectories;
+                ManageLaunchApplication = other.ManageLaunchApplication;
                 UseCustomJsonRoot = other.UseCustomJsonRoot;
                 JsonRootPath = other.JsonRootPath;
                 VcsSupportEnabled = other.VcsSupportEnabled;

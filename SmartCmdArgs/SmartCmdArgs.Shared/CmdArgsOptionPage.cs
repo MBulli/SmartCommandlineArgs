@@ -53,6 +53,7 @@ namespace SmartCmdArgs
 
         private bool _manageCommandLineArgs;
         private bool _manageEnvironmentVars;
+        private bool _manageLaunchApplication;
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
@@ -145,6 +146,16 @@ namespace SmartCmdArgs
         {
             get => _manageEnvironmentVars;
             set => SetAndNotify(value, ref _manageEnvironmentVars);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Manage Launch Application")]
+        [Description("If enabled the launch application is set automatically when a project is started/debugged.")]
+        [DefaultValue(false)]
+        public bool ManageLaunchApplication
+        {
+            get => _manageLaunchApplication;
+            set => SetAndNotify(value, ref _manageLaunchApplication);
         }
 
         [Category("Settings Defaults")]

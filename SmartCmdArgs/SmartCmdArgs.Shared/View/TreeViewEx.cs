@@ -207,6 +207,7 @@ namespace SmartCmdArgs.View
         private MenuItem _argumentTypeCmdArgMenuItem;
         private MenuItem _argumentTypeEnvVarMenuItem;
         private MenuItem _argumentTypeWorkDirMenuItem;
+        private MenuItem _argumentTypeLaunchAppItem;
 
         private TreeViewModel ViewModel => DataContext as TreeViewModel;
 
@@ -257,6 +258,12 @@ namespace SmartCmdArgs.View
             {
                 Header = "Working Directory",
                 CommandParameter = ArgumentType.WorkDir,
+                IsCheckable = true,
+            });
+            _argumentTypeMenuItem.Items.Add(_argumentTypeLaunchAppItem = new MenuItem
+            {
+                Header = "Launch Application",
+                CommandParameter = ArgumentType.LaunchApp,
                 IsCheckable = true,
             });
 
@@ -470,6 +477,7 @@ namespace SmartCmdArgs.View
                 _argumentTypeCmdArgMenuItem.IsChecked = argument.ArgumentType == ArgumentType.CmdArg;
                 _argumentTypeEnvVarMenuItem.IsChecked = argument.ArgumentType == ArgumentType.EnvVar;
                 _argumentTypeWorkDirMenuItem.IsChecked = argument.ArgumentType == ArgumentType.WorkDir;
+                _argumentTypeLaunchAppItem.IsChecked = argument.ArgumentType == ArgumentType.LaunchApp;
             }
         }
 

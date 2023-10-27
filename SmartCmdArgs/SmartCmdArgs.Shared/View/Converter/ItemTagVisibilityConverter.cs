@@ -14,7 +14,7 @@ namespace SmartCmdArgs.View.Converter
             var argType = values[0] as ArgumentType?;
             var showClaTag = values[1] as bool?;
 
-            if (argType == ArgumentType.EnvVar || argType == ArgumentType.WorkDir || showClaTag == true)
+            if (argType == ArgumentType.EnvVar || argType == ArgumentType.WorkDir || argType == ArgumentType.LaunchApp || showClaTag == true)
             {
                 return Visibility.Visible;
             }

@@ -46,6 +46,7 @@ namespace SmartCmdArgs
         public const int ToolbarCopyEnvVarsForPSCommandId = 0x1109;
         public const int ToolbarCopyEnvVarsForCMDCommandId = 0x110A;
         public const int ToolbarAddWorkDirId = 0x110B;
+        public const int ToolbarAddLaunchAppId = 0x110C;
 
         public static readonly Guid KeyBindingsCmdSet = new Guid("886F463E-7F96-4BA4-BA88-F36D63044A00");
 
@@ -89,6 +90,7 @@ namespace SmartCmdArgs
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddCommandId, package.ToolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.CmdArg);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddEnvVarId, package.ToolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.EnvVar);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddWorkDirId, package.ToolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.WorkDir);
+                AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddLaunchAppId, package.ToolWindowViewModel.AddEntryCommand, ViewModel.ArgumentType.LaunchApp);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarAddGroupCommandId, package.ToolWindowViewModel.AddGroupCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarRemoveCommandId, package.ToolWindowViewModel.RemoveEntriesCommand);
                 AddCommandToService(commandService, CmdArgsToolBarCmdSet, ToolbarMoveUpCommandId, package.ToolWindowViewModel.MoveEntriesUpCommand);

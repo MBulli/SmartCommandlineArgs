@@ -18,6 +18,7 @@ namespace SmartCmdArgs.ViewModel
         CmdArg,
         EnvVar,
         WorkDir,
+        LaunchApp,
     }
 
     public class CmdBase : PropertyChangedBase

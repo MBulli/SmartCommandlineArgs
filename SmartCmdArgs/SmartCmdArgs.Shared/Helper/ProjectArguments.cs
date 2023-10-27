@@ -15,7 +15,7 @@ namespace SmartCmdArgs.Helper
     {
         private class ProjectConfigHandlers
         {
-            public delegate void SetConfigDelegate(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir);
+            public delegate void SetConfigDelegate(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp);
             public delegate void GetAllArgumentsDelegate(EnvDTE.Project project, List<CmdArgumentJson> allArgs);
             public SetConfigDelegate SetConfig;
             public GetAllArgumentsDelegate GetAllArguments;
@@ -118,7 +118,7 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        private static void GetSingleConfigAllItems(EnvDTE.Project project, List<CmdArgumentJson> allArgs, string argsPropName, string envVarPropName, string workDirPropName)
+        private static void GetSingleConfigAllItems(EnvDTE.Project project, List<CmdArgumentJson> allArgs, string argsPropName, string envVarPropName, string workDirPropName, string launchAppPropName)
         {
             if (argsPropName != null && TryGetSingleConfigProperty(project, argsPropName, out string args))
             {
@@ -143,12 +143,22 @@ namespace SmartCmdArgs.Helper
                 }
             }
 
-            if (argsPropName != null && TryGetSingleConfigProperty(project, workDirPropName, out string workDir))
+            if (workDirPropName != null && TryGetSingleConfigProperty(project, workDirPropName, out string workDir))
             {
                 allArgs.Add(new CmdArgumentJson
                 {
                     Type = ViewModel.ArgumentType.WorkDir,
                     Command = workDir,
+                    Enabled = true,
+                });
+            }
+
+            if (launchAppPropName != null && TryGetSingleConfigProperty(project, launchAppPropName, out string launchApp))
+            {
+                allArgs.Add(new CmdArgumentJson
+                {
+                    Type = ViewModel.ArgumentType.LaunchApp,
+                    Command = launchApp,
                     Enabled = true,
                 });
             }
@@ -171,7 +181,7 @@ namespace SmartCmdArgs.Helper
             catch (Exception ex) { Logger.Error($"Failed to set multi config arguments for project '{project.UniqueName}' with error '{ex}'"); }
         }
 
-        private static void GetMultiConfigAllItems(EnvDTE.Project project, List<CmdArgumentJson> allArgs, string argsPropName, string workDirPropName = null)
+        private static void GetMultiConfigAllItems(EnvDTE.Project project, List<CmdArgumentJson> allArgs, string argsPropName, string workDirPropName = null, string launchAppPropName = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -207,6 +217,20 @@ namespace SmartCmdArgs.Helper
                         }
                     }
 
+                    if (launchAppPropName != null)
+                    {
+                        string launcApp = config.Properties.Item(launchAppPropName)?.Value as string;
+                        if (!string.IsNullOrEmpty(launcApp))
+                        {
+                            items.Add(new CmdArgumentJson
+                            {
+                                Type = ViewModel.ArgumentType.LaunchApp,
+                                Command = launcApp,
+                                Enabled = true,
+                            });
+                        }
+                    }
+
                     if (items.Count > 0)
                     {
                         allArgs.Add(new CmdArgumentJson
@@ -226,19 +250,19 @@ namespace SmartCmdArgs.Helper
 
         #region VCProjEngine (C/C++)
 
-        private static readonly List<(string RuleName, string ArgsPropName, string EnvPropName, string WorkDirPropName)> VCPropInfo = new List<(string RuleName, string PropName, string EnvPropName, string WorkDirPropName)>
+        private static readonly List<(string RuleName, string ArgsPropName, string EnvPropName, string WorkDirPropName, string LaunchAppPropName)> VCPropInfo = new List<(string RuleName, string PropName, string EnvPropName, string WorkDirPropName, string LaunchAppPropName)>
         {
-            ("WindowsLocalDebugger", "LocalDebuggerCommandArguments", "LocalDebuggerEnvironment", "LocalDebuggerWorkingDirectory"),
-            ("WindowsRemoteDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment", "RemoteDebuggerWorkingDirectory"),
-            ("LinuxWSLDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment", "RemoteDebuggerWorkingDirectory"),
-            ("GoogleAndroidDebugger", "LaunchFlags", null, null),
-            ("GamingDesktopDebugger", "CommandLineArgs", null, null),
-            ("OasisNXDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment", "RemoteDebuggerWorkingDirectory"),
-            ("LinuxDebugger", "RemoteDebuggerCommandArguments", null, "RemoteDebuggerWorkingDirectory"),
-            ("AppHostLocalDebugger", "CommandLineArgs", null, null),
+            ("WindowsLocalDebugger", "LocalDebuggerCommandArguments", "LocalDebuggerEnvironment", "LocalDebuggerWorkingDirectory", "LocalDebuggerCommand"),
+            ("WindowsRemoteDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment", "RemoteDebuggerWorkingDirectory", "RemoteDebuggerCommand"),
+            ("LinuxWSLDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment", "RemoteDebuggerWorkingDirectory", "RemoteDebuggerCommand"),
+            ("GoogleAndroidDebugger", "LaunchFlags", null, null, null),
+            ("GamingDesktopDebugger", "CommandLineArgs", null, null, null),
+            ("OasisNXDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment", "RemoteDebuggerWorkingDirectory", "RemoteDebuggerCommand"),
+            ("LinuxDebugger", "RemoteDebuggerCommandArguments", null, "RemoteDebuggerWorkingDirectory", null),
+            ("AppHostLocalDebugger", "CommandLineArgs", null, null, null),
         };
 
-        private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir)
+        private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -269,6 +293,9 @@ namespace SmartCmdArgs.Helper
 
                 if (workDir != null)
                     vcDbg.WorkingDirectory = workDir;
+
+                if (launchApp != null)
+                    vcDbg.Command = launchApp;
             }
             else
                 Logger.Info("SetVCProjEngineArguments: VCProject?.ActiveConfiguration?.DebugSettings returned null");
@@ -286,6 +313,9 @@ namespace SmartCmdArgs.Helper
 
                     if (vcPropInfo.WorkDirPropName != null && workDir != null)
                         rule.SetPropertyValue(vcPropInfo.WorkDirPropName, workDir);
+
+                    if (vcPropInfo.LaunchAppPropName != null && launchApp != null)
+                        rule.SetPropertyValue(vcPropInfo.LaunchAppPropName, launchApp);
                 }
                 else
                     Logger.Info($"SetVCProjEngineArguments: ProjectConfig Rule '{vcPropInfo.RuleName}' returned null");
@@ -367,6 +397,20 @@ namespace SmartCmdArgs.Helper
                             }
                         }
 
+                        if (vcPropInfo.LaunchAppPropName != null)
+                        {
+                            var launchApp = rule.GetUnevaluatedPropertyValue(vcPropInfo.LaunchAppPropName);
+                            if (!string.IsNullOrEmpty(launchApp))
+                            {
+                                flavourItems.Add(new CmdArgumentJson
+                                {
+                                    Type = ViewModel.ArgumentType.LaunchApp,
+                                    Command = launchApp,
+                                    Enabled = isActiveRule,
+                                });
+                            }
+                        }
+
                         if (flavourItems.Count > 0)
                         {
                             items.Add(new CmdArgumentJson { Command = vcPropInfo.RuleName, Items = flavourItems });
@@ -380,6 +424,11 @@ namespace SmartCmdArgs.Helper
                     if (!string.IsNullOrEmpty(dbg?.WorkingDirectory))
                     {
                         items.Insert(0, new CmdArgumentJson { Type = ViewModel.ArgumentType.WorkDir, Command = dbg?.WorkingDirectory, Enabled = true });
+                    }
+
+                    if (!string.IsNullOrEmpty(dbg?.Command))
+                    {
+                        items.Insert(0, new CmdArgumentJson { Type = ViewModel.ArgumentType.LaunchApp, Command = dbg?.Command, Enabled = true });
                     }
 
                     if (!string.IsNullOrEmpty(dbg?.Environment))
@@ -422,7 +471,7 @@ namespace SmartCmdArgs.Helper
         // to optain the right configurations object from `Project.Object.Configurations`
         // this object is simmilar to the VCProjEngine configuration and has `DebugSettings`
         // which contain the CommandArguments which we can use to set the args.
-        private static void SetVFProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir)
+        private static void SetVFProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -448,6 +497,9 @@ namespace SmartCmdArgs.Helper
 
                 if (workDir != null)
                     vfDbg.WorkingDirectory = workDir;
+
+                if (workDir != null)
+                    vfDbg.Command = launchApp;
             }
             else
                 Logger.Info("SetVCProjEngineArguments: VCProject?.ActiveConfiguration?.DebugSettings returned null");
@@ -512,6 +564,16 @@ namespace SmartCmdArgs.Helper
                     });
                 }
 
+                if (!string.IsNullOrEmpty(dbg?.Command))
+                {
+                    items.Add(new CmdArgumentJson
+                    {
+                        Type = ViewModel.ArgumentType.LaunchApp,
+                        Command = dbg.Command,
+                        Enabled = true
+                    });
+                }
+
                 if (items.Count > 0)
                 {
                     allArgs.Add(new CmdArgumentJson {
@@ -528,11 +590,11 @@ namespace SmartCmdArgs.Helper
 
         #region Common Project System (CPS)
 
-        private static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir)
+        private static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
             // Should only be called in VS 2017 or higher
             // .Net Core 2 is not supported by VS 2015, so this should not cause problems
-            CpsProjectSupport.SetCpsProjectConfig(project, arguments, envVars, workDir);
+            CpsProjectSupport.SetCpsProjectConfig(project, arguments, envVars, workDir, launchApp);
         }
 
         private static void GetCpsProjectConfig(EnvDTE.Project project, List<CmdArgumentJson> allArgs)
@@ -548,65 +610,68 @@ namespace SmartCmdArgs.Helper
         {
             // C#
             {ProjectKinds.CS, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, envVars, workDir) => {
+                SetConfig = (project, arguments, envVars, workDir, launchApp) => {
                     SetMultiConfigProperty(project, arguments, "StartArguments");
                     SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
+                    SetMultiConfigProperty(project, launchApp, "StartProgram");
                 },
-                GetAllArguments = (project, allArgs) => GetMultiConfigAllItems(project, allArgs, "StartArguments", "StartWorkingDirectory")
+                GetAllArguments = (project, allArgs) => GetMultiConfigAllItems(project, allArgs, "StartArguments", "StartWorkingDirectory", "StartProgram")
             } },
             // C# UWP
             {ProjectKinds.CS_UWP, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, envVars, workDir) => SetMultiConfigProperty(project, arguments, "UAPDebug.CommandLineArguments"),
+                SetConfig = (project, arguments, envVars, workDir, launchApp) => SetMultiConfigProperty(project, arguments, "UAPDebug.CommandLineArguments"),
                 GetAllArguments = (project, allArgs) => GetMultiConfigAllItems(project, allArgs, "UAPDebug.CommandLineArguments")
             } },
 
             // VB.NET
             {ProjectKinds.VB, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, envVars, workDir) => {
+                SetConfig = (project, arguments, envVars, workDir, launcApp) => {
                     SetMultiConfigProperty(project, arguments, "StartArguments");
                     SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
+                    SetMultiConfigProperty(project, launcApp, "StartProgram"); ;
                 },
-                GetAllArguments = (project, allArgs) => GetMultiConfigAllItems(project, allArgs, "StartArguments", "StartWorkingDirectory")
+                GetAllArguments = (project, allArgs) => GetMultiConfigAllItems(project, allArgs, "StartArguments", "StartWorkingDirectory", "StartProgram")
             } },
             // C/C++
             {ProjectKinds.CPP, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, envVars, workDir) => SetVCProjEngineConfig(project, arguments, envVars, workDir),
+                SetConfig = (project, arguments, envVars, workDir, launchApp) => SetVCProjEngineConfig(project, arguments, envVars, workDir, launchApp),
                 GetAllArguments = (project, allArgs) => GetVCProjEngineConfig(project, allArgs)
             } },
             // Python
             {ProjectKinds.Py, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, envVars, workDir) => {
+                SetConfig = (project, arguments, envVars, workDir, launchApp) => {
                     SetSingleConfigProperty(project, arguments, "CommandLineArguments");
                     SetSingleConfigEnvVars(project, envVars, "Environment");
                     SetSingleConfigProperty(project, workDir, "WorkingDirectory");
                 },
-                GetAllArguments = (project, allArgs) => GetSingleConfigAllItems(project, allArgs, "CommandLineArguments", "Environment", "WorkingDirectory"),
+                GetAllArguments = (project, allArgs) => GetSingleConfigAllItems(project, allArgs, "CommandLineArguments", "Environment", "WorkingDirectory", null),
             } },
             // Node.js
             {ProjectKinds.Node, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, envVars, workDir) => {
+                SetConfig = (project, arguments, envVars, workDir, launchApp) => {
                     SetSingleConfigProperty(project, arguments, "ScriptArguments");
                     SetSingleConfigEnvVars(project, envVars, "Environment");
                     SetSingleConfigProperty(project, workDir, "WorkingDirectory");
                 },
-                GetAllArguments = (project, allArgs) => GetSingleConfigAllItems(project, allArgs, "ScriptArguments", "Environment", "WorkingDirectory"),
+                GetAllArguments = (project, allArgs) => GetSingleConfigAllItems(project, allArgs, "ScriptArguments", "Environment", "WorkingDirectory", null),
             } },
             // C# - Lagacy DotNetCore
             {ProjectKinds.CSCore, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, envVars, workDir) => SetCpsProjectConfig(project, arguments, envVars, workDir),
+                SetConfig = (project, arguments, envVars, workDir, launchApp) => SetCpsProjectConfig(project, arguments, envVars, workDir, launchApp),
                 GetAllArguments = (project, allArgs) => GetCpsProjectConfig(project, allArgs)
             } },
             // F#
             {ProjectKinds.FS, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, _, workDir) => {
+                SetConfig = (project, arguments, _, workDir, launchApp) => {
                     SetMultiConfigProperty(project, arguments, "StartArguments");
                     SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
+                    SetMultiConfigProperty(project, workDir, "StartProgram");
                 },
-                GetAllArguments = (project, allArgs) => GetMultiConfigAllItems(project, allArgs, "StartArguments", "StartWorkingDirectory")
+                GetAllArguments = (project, allArgs) => GetMultiConfigAllItems(project, allArgs, "StartArguments", "StartWorkingDirectory", "StartProgram")
             } },
             // Fortran
             {ProjectKinds.Fortran, new ProjectConfigHandlers() {
-                SetConfig = (project, arguments, envVars, workDir) => SetVFProjEngineConfig(project, arguments, envVars, workDir),
+                SetConfig = (project, arguments, envVars, workDir, launchApp) => SetVFProjEngineConfig(project, arguments, envVars, workDir, launchApp),
                 GetAllArguments = (project, allArgs) => GetVFProjEngineConfig(project, allArgs)
             } },
         };
@@ -667,18 +732,18 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        public static void SetConfig(IVsHierarchy project, string arguments, IDictionary<string, string> envVars, string workDir)
+        public static void SetConfig(IVsHierarchy project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
             if (project.IsCpsProject())
             {
                 Logger.Info($"Setting arguments on CPS project of type '{project.GetKind()}'.");
-                SetCpsProjectConfig(project.GetProject(), arguments, envVars, workDir);
+                SetCpsProjectConfig(project.GetProject(), arguments, envVars, workDir, launchApp);
             }
             else
             {
                 if (TryGetProjectConfigHandlers(project, out ProjectConfigHandlers handler))
                 {
-                    handler.SetConfig(project.GetProject(), arguments, envVars, workDir);
+                    handler.SetConfig(project.GetProject(), arguments, envVars, workDir, launchApp);
                 }
             }
         }
