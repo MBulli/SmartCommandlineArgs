@@ -450,6 +450,7 @@ namespace SmartCmdArgs
                     case VSConstants.VSStd97CmdID.Start:
                     case VSConstants.VSStd97CmdID.StartNoDebug:
                     case VSConstants.VSStd97CmdID.Restart:
+                    case VSConstants.VSStd97CmdID.StepInto:
                         ProjectBeforeRun?.Invoke(this, EventArgs.Empty);
                         break;
                 }
