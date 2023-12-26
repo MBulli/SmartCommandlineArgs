@@ -169,8 +169,7 @@ namespace SmartCmdArgs.Logic
             else
             {
                 Guid projectGui = project.GetGuid();
-                string slnFilename = vsHelper.GetSolutionFilename();
-                string jsonFilename = Path.ChangeExtension(slnFilename, "args.json");
+                string jsonFilename = FullFilenameForSolutionJsonFile();
 
                 if (File.Exists(jsonFilename))
                 {
