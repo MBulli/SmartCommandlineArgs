@@ -165,7 +165,7 @@ namespace SmartCmdArgs.Services
                     }
                 }
 
-                if (includeWorkDir && argsPropName != null && TryGetSingleConfigProperty(project, workDirPropName, out string workDir))
+                if (includeWorkDir && workDirPropName != null && TryGetSingleConfigProperty(project, workDirPropName, out string workDir))
                 {
                     allArgs.Add(new CmdItemJson
                     {

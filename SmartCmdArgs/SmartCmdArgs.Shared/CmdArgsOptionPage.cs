@@ -75,6 +75,7 @@ namespace SmartCmdArgs
 
         private bool _manageCommandLineArgs;
         private bool _manageEnvironmentVars;
+        private bool _manageWorkingDirectories;
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
@@ -175,8 +176,8 @@ namespace SmartCmdArgs
         [DefaultValue(false)]
         public bool ManageWorkingDirectories
         {
-            get => _manageEnvironmentVars;
-            set => SetAndNotify(value, ref _manageEnvironmentVars);
+            get => _manageWorkingDirectories;
+            set => SetAndNotify(value, ref _manageWorkingDirectories);
         }
 
         [Category("Settings Defaults")]

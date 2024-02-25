@@ -134,6 +134,7 @@ namespace SmartCmdArgs.View
             new PropertyMetadata(default(ICommand), (d, e) => {
                 ((TreeViewEx)d)._paramTypeCmdArgMenuItem.Command = (ICommand)e.NewValue;
                 ((TreeViewEx)d)._paramTypeEnvVarMenuItem.Command = (ICommand)e.NewValue;
+                ((TreeViewEx)d)._paramTypeWorkDirMenuItem.Command = (ICommand)e.NewValue;
             }));
         public ICommand SetArgumentTypeCommand { get { return (ICommand)GetValue(SetArgumentTypeCommandProperty); } set { SetValue(SetArgumentTypeCommandProperty, value); } }
 
