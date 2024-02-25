@@ -33,6 +33,9 @@ namespace SmartCmdArgs
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
     public enum EnableBehaviour
     {
+        [Description("Enable if a *.arg.json file or an entry in the *.suo file is found")]
+        EnableIfArgJsonOrSuoEntryIsFound,
+
         [Description("Enable if a *.arg.json file is found")]
         EnableIfArgJsonIsFound,
 
@@ -79,7 +82,7 @@ namespace SmartCmdArgs
         [Category("General")]
         [DisplayName("Enable Behaviour")]
         [Description("Choose whether the extension should enable automatically or ask the user for permission first.")]
-        [DefaultValue(EnableBehaviour.EnableIfArgJsonIsFound)]
+        [DefaultValue(EnableBehaviour.EnableIfArgJsonOrSuoEntryIsFound)]
         public EnableBehaviour EnableBehaviour
         {
             get => _enableBehaviour;

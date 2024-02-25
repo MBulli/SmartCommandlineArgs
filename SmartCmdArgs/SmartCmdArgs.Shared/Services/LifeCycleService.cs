@@ -105,11 +105,17 @@ namespace SmartCmdArgs.Services
                     return false;
 
                 case EnableBehaviour.EnableIfArgJsonIsFound: 
-                    return optionsSettings.VcsSupportEnabled 
-                        && fileStorage.GetAllArgJsonFileNames().Any(File.Exists);
+                    return JsonFileExists();
+
+                case EnableBehaviour.EnableIfArgJsonOrSuoEntryIsFound:
+                    return JsonFileExists() || suoDataService.SuoDataJson?.ProjectArguments.Any() == true;
 
                 default: return false;
             }
+
+            bool JsonFileExists() =>
+                optionsSettings.VcsSupportEnabled
+                && fileStorage.GetAllArgJsonFileNames().Any(File.Exists);
         }
 
         public void UpdateDisabledScreen()
