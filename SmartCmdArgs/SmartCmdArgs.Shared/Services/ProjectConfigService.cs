@@ -532,7 +532,7 @@ namespace SmartCmdArgs.Services
                 if (workDir != null)
                     vfDbg.WorkingDirectory = workDir;
 
-                if (workDir != null)
+                if (launchApp != null)
                     vfDbg.Command = launchApp;
             }
             else
@@ -660,7 +660,7 @@ namespace SmartCmdArgs.Services
 
                 // VB.NET
                 {ProjectKinds.VB, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, envVars, workDir, launchApp) => {
+                    SetConfig = (project, arguments, _, workDir, launchApp) => {
                         SetMultiConfigProperty(project, arguments, "StartArguments");
                         SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
                         SetMultiConfigProperty(project, launchApp, "StartProgram");
@@ -674,7 +674,7 @@ namespace SmartCmdArgs.Services
                 } },
                 // Python
                 {ProjectKinds.Py, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, envVars, workDir, launchApp) => {
+                    SetConfig = (project, arguments, envVars, workDir, _) => {
                         SetSingleConfigProperty(project, arguments, "CommandLineArguments");
                         SetSingleConfigEnvVars(project, envVars, "Environment");
                         SetSingleConfigProperty(project, workDir, "WorkingDirectory");
@@ -683,7 +683,7 @@ namespace SmartCmdArgs.Services
                 } },
                 // Node.js
                 {ProjectKinds.Node, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, envVars, workDir, launchApp) => {
+                    SetConfig = (project, arguments, envVars, workDir, _) => {
                         SetSingleConfigProperty(project, arguments, "ScriptArguments");
                         SetSingleConfigEnvVars(project, envVars, "Environment");
                         SetSingleConfigProperty(project, workDir, "WorkingDirectory");

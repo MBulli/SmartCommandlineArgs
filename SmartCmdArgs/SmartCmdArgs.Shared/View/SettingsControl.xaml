@@ -65,8 +65,8 @@
                                      Description="If enabled the working directories are set automatically when a project is started/debugged."/>
 
                 <!-- Manage Launch App -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Launch Apps" IsChecked="{Binding ManageLaunchApplication}" DefaultValue="{Binding Options.ManageLaunchApplication, Mode=OneWay}" 
-                                     Description="If enabled the launch app is set automatically when a project is started/debugged."/>
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Manage Launch Application" IsChecked="{Binding ManageLaunchApplication}" DefaultValue="{Binding Options.ManageLaunchApplication, Mode=OneWay}" 
+                                     Description="If enabled the launch application is set automatically when a project is started/debugged."/>
 
                 <Separator Margin="0,10,0,0"/>
 

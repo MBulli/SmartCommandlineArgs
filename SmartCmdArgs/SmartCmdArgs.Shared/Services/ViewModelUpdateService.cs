@@ -201,7 +201,8 @@ namespace SmartCmdArgs.Services
         {
             if (!optionsSettings.ManageCommandLineArgs
                 && !optionsSettings.ManageEnvironmentVars
-                && !optionsSettings.ManageWorkingDirectories)
+                && !optionsSettings.ManageWorkingDirectories
+                && !optionsSettings.ManageLaunchApplication)
             {
                 return new HashSet<CmdParameter>();
             }

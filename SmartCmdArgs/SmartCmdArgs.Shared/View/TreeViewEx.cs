@@ -254,7 +254,7 @@ namespace SmartCmdArgs.View
             });
             _paramTypeMenuItem.Items.Add(_paramTypeLaunchAppMenuItem = new MenuItem
             {
-                Header = "Launch App",
+                Header = "Launch Application",
                 CommandParameter = CmdParamType.LaunchApp,
                 IsCheckable = true,
             });
