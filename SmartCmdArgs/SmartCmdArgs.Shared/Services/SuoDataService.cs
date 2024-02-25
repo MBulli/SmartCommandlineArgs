@@ -4,12 +4,15 @@ using SmartCmdArgs.DataSerialization;
 using SmartCmdArgs.ViewModel;
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SmartCmdArgs.Services
 {
     internal interface ISuoDataService
     {
         SuoDataJson SuoDataJson { get; }
+        HashSet<Guid> ParametersOfSuoData { get; }
 
         void LoadFromStream(Stream stream);
         void Deserialize();
@@ -33,9 +36,24 @@ namespace SmartCmdArgs.Services
         // the json string from the suo is saved in this variable and
         // processed later.
         private string suoDataStr;
-        private SuoDataJson suoDataJson;
 
-        public SuoDataJson SuoDataJson => suoDataJson;
+        public HashSet<Guid> ParametersOfSuoData { get; } = new HashSet<Guid>();
+
+        private SuoDataJson suoDataJson;
+        public SuoDataJson SuoDataJson
+        {
+            get => suoDataJson;
+            private set
+            {
+                ParametersOfSuoData.Clear();
+                suoDataJson = value;
+
+                if (suoDataJson != null)
+                {
+                    ParametersOfSuoData.AddRange(suoDataJson.ProjectArguments.Values.SelectMany(x => x.AllParameters).Select(x => x.Id));
+                }
+            }
+        }
 
         public SuoDataService(
             IVisualStudioHelperService visualStudioHelper,
@@ -59,7 +77,7 @@ namespace SmartCmdArgs.Services
 
         public void Deserialize()
         {
-            suoDataJson = SuoDataSerializer.Deserialize(suoDataStr, visualStudioHelper);
+            SuoDataJson = SuoDataSerializer.Deserialize(suoDataStr, visualStudioHelper);
         }
 
         public void SaveToStream(Stream stream)
@@ -73,16 +91,16 @@ namespace SmartCmdArgs.Services
 
         public void Update()
         {
-            suoDataJson = SuoDataSerializer.Serialize(treeViewModel, settingsViewModel.Value);
-            suoDataJson.IsEnabled = lifeCycleService.Value.IsEnabledSaved;
+            SuoDataJson = SuoDataSerializer.Serialize(treeViewModel, settingsViewModel.Value);
+            SuoDataJson.IsEnabled = lifeCycleService.Value.IsEnabledSaved;
 
-            suoDataStr = JsonConvert.SerializeObject(suoDataJson);
+            suoDataStr = JsonConvert.SerializeObject(SuoDataJson);
         }
 
         public void Reset()
         {
             suoDataStr = "";
-            suoDataJson = null;
+            SuoDataJson = null;
         }
     }
 }

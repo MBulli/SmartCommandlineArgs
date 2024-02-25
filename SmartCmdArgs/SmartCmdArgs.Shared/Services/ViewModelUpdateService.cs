@@ -78,6 +78,7 @@ namespace SmartCmdArgs.Services
             }
 
             var solutionData = suoDataService.SuoDataJson ?? new SuoDataJson();
+            var solutionDataParameters = suoDataService.ParametersOfSuoData;
 
             // joins data from solution and project
             //  => overrides solution commands for a project if a project json file exists
@@ -98,8 +99,6 @@ namespace SmartCmdArgs.Services
 
                 var projectListViewModel = treeViewModel.Projects.GetValueOrDefault(projectGuid);
 
-                var projHasSuoData = solutionData.ProjectArguments.ContainsKey(projectGuid);
-
                 // update enabled state of the project json data (source prio: ViewModel > suo file)
                 if (projectData.Items != null)
                 {
@@ -109,7 +108,7 @@ namespace SmartCmdArgs.Services
                     {
                         if (argumentDataFromLVM != null && argumentDataFromLVM.TryGetValue(dataFromProject.Id, out CmdParameter paramFromVM))
                             dataFromProject.Enabled = paramFromVM.IsChecked;
-                        else if (projHasSuoData)
+                        else if (solutionDataParameters.Contains(dataFromProject.Id))
                             dataFromProject.Enabled = solutionData.CheckedArguments.Contains(dataFromProject.Id);
                         else
                             dataFromProject.Enabled = dataFromProject.DefaultChecked;
