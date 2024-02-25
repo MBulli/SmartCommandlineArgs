@@ -13,6 +13,7 @@ namespace SmartCmdArgs.Services
         string CreateCommandLineArgsForProject(IVsHierarchyWrapper project);
         IDictionary<string, string> GetEnvVarsForProject(IVsHierarchyWrapper project);
         string GetWorkDirForProject(IVsHierarchyWrapper project);
+        string GetLaunchAppForProject(IVsHierarchyWrapper project);
         string CreateCommandLineArgsForProject(Guid guid);
         IDictionary<string, string> GetEnvVarsForProject(Guid guid);
     }
@@ -141,6 +142,20 @@ namespace SmartCmdArgs.Services
             return result;
         }
 
+        public string GetLaunchAppForProject(IVsHierarchyWrapper project)
+        {
+            var result = "";
+
+            foreach (var item in GetAllComamndLineParamsForProject(project))
+            {
+                if (item.ParamType != CmdParamType.LaunchApp) continue;
+
+                result = itemEvaluation.EvaluateMacros(item.Value, project);
+            }
+
+            return result;
+        }
+
         public string CreateCommandLineArgsForProject(Guid guid)
         {
             return CreateCommandLineArgsForProject(vsHelper.HierarchyForProjectGuid(guid));
@@ -150,6 +165,5 @@ namespace SmartCmdArgs.Services
         {
             return GetEnvVarsForProject(vsHelper.HierarchyForProjectGuid(guid));
         }
-
     }
 }

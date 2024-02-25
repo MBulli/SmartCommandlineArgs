@@ -67,6 +67,7 @@ namespace SmartCmdArgs.Services
                 case nameof(IOptionsSettingsService.ManageCommandLineArgs): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
                 case nameof(IOptionsSettingsService.ManageEnvironmentVars): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
                 case nameof(IOptionsSettingsService.ManageWorkingDirectories): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
+                case nameof(IOptionsSettingsService.ManageLaunchApplication): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
                 case nameof(IOptionsSettingsService.UseMonospaceFont): UseMonospaceFontChanged(); break;
                 case nameof(IOptionsSettingsService.DisplayTagForCla): DisplayTagForClaChanged(); break;
                 case nameof(IOptionsSettingsService.DisableInactiveItems): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;

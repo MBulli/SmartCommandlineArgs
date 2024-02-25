@@ -135,6 +135,7 @@ namespace SmartCmdArgs.View
                 ((TreeViewEx)d)._paramTypeCmdArgMenuItem.Command = (ICommand)e.NewValue;
                 ((TreeViewEx)d)._paramTypeEnvVarMenuItem.Command = (ICommand)e.NewValue;
                 ((TreeViewEx)d)._paramTypeWorkDirMenuItem.Command = (ICommand)e.NewValue;
+                ((TreeViewEx)d)._paramTypeLaunchAppMenuItem.Command = (ICommand)e.NewValue;
             }));
         public ICommand SetArgumentTypeCommand { get { return (ICommand)GetValue(SetArgumentTypeCommandProperty); } set { SetValue(SetArgumentTypeCommandProperty, value); } }
 
@@ -198,6 +199,7 @@ namespace SmartCmdArgs.View
         private MenuItem _paramTypeCmdArgMenuItem;
         private MenuItem _paramTypeEnvVarMenuItem;
         private MenuItem _paramTypeWorkDirMenuItem;
+        private MenuItem _paramTypeLaunchAppMenuItem;
 
         private TreeViewModel ViewModel => DataContext as TreeViewModel;
 
@@ -248,6 +250,12 @@ namespace SmartCmdArgs.View
             {
                 Header = "Working Directory",
                 CommandParameter = CmdParamType.WorkDir,
+                IsCheckable = true,
+            });
+            _paramTypeMenuItem.Items.Add(_paramTypeLaunchAppMenuItem = new MenuItem
+            {
+                Header = "Launch App",
+                CommandParameter = CmdParamType.LaunchApp,
                 IsCheckable = true,
             });
 
@@ -461,6 +469,7 @@ namespace SmartCmdArgs.View
                 _paramTypeCmdArgMenuItem.IsChecked = param.ParamType == CmdParamType.CmdArg;
                 _paramTypeEnvVarMenuItem.IsChecked = param.ParamType == CmdParamType.EnvVar;
                 _paramTypeWorkDirMenuItem.IsChecked = param.ParamType == CmdParamType.WorkDir;
+                _paramTypeLaunchAppMenuItem.IsChecked = param.ParamType == CmdParamType.LaunchApp;
             }
         }
 

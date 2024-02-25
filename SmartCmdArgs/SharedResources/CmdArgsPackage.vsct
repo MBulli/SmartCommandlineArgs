@@ -136,6 +136,12 @@
           <ButtonText>Add Working Directory</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddLaunchAppId" priority="0x0100" type="Button">
+        <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAdd" />
+        <Strings>
+          <ButtonText>Add Launch Application</ButtonText>
+        </Strings>
+      </Button>
 
       <Button guid="guidCmdArgsToolBarCmdSet" id="ToolbarAddGroupCommandId" priority="0x0102" type="Button">
         <Parent guid="guidCmdArgsToolBarCmdSet" id="TWToolbarGroupAddRemove" />
@@ -256,6 +262,7 @@
       <IDSymbol name="ToolbarCopyEnvVarsForPSCommandId" value="0x1109"/>
       <IDSymbol name="ToolbarCopyEnvVarsForCMDCommandId" value="0x110A"/>
       <IDSymbol name="ToolbarAddWorkDirId" value="0x110B"/>
+      <IDSymbol name="ToolbarAddLaunchAppId" value="0x110C"/>
       
       <IDSymbol name="TWToolbar" value="0x1000" />
       <IDSymbol name="TWToolbarGroupAddRemove" value="0x1050" />

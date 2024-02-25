@@ -37,6 +37,7 @@ namespace SmartCmdArgs
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddCommandId, toolWindowViewModel.AddEntryCommand, ViewModel.CmdParamType.CmdArg);
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddEnvVarId, toolWindowViewModel.AddEntryCommand, ViewModel.CmdParamType.EnvVar);
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddWorkDirId, toolWindowViewModel.AddEntryCommand, ViewModel.CmdParamType.WorkDir);
+                AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddLaunchAppId, toolWindowViewModel.AddEntryCommand, ViewModel.CmdParamType.LaunchApp);
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddGroupCommandId, toolWindowViewModel.AddGroupCommand);
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarRemoveCommandId, toolWindowViewModel.RemoveEntriesCommand);
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarMoveUpCommandId, toolWindowViewModel.MoveEntriesUpCommand);

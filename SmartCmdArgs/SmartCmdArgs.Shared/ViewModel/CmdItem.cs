@@ -7,6 +7,7 @@ namespace SmartCmdArgs.ViewModel
         CmdArg,
         EnvVar,
         WorkDir,
+        LaunchApp,
     }
 
     public class CmdParameter : CmdBase

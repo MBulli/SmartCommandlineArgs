@@ -81,7 +81,7 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir)
+        public static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -105,6 +105,9 @@ namespace SmartCmdArgs.Helper
                 if (workDir != null)
                     writableLaunchProfile.WorkingDirectory = workDir;
 
+                if (launchApp != null)
+                    writableLaunchProfile.CommandName = launchApp;
+
                 // Does not work on VS2015, which should be okay ...
                 // We don't hold references for VS2015, where the interface is called IThreadHandling
                 IProjectThreadingService projectThreadingService = projectServices.ThreadingPolicy;
@@ -115,7 +118,7 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        public static List<CmdItemJson> GetCpsProjectAllArguments(EnvDTE.Project project, bool includeArgs, bool includeEnvVars, bool includeWorkDir)
+        public static List<CmdItemJson> GetCpsProjectAllArguments(EnvDTE.Project project, bool includeArgs, bool includeEnvVars, bool includeWorkDir, bool includeLaunchApp)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -150,6 +153,11 @@ namespace SmartCmdArgs.Helper
                     if (includeWorkDir && !string.IsNullOrEmpty(profile.WorkingDirectory))
                     {
                         profileGrp.Items.Add(new CmdItemJson { Type = ViewModel.CmdParamType.WorkDir, Command = profile.WorkingDirectory, Enabled = true });
+                    }
+
+                    if (includeLaunchApp && !string.IsNullOrEmpty(profile.CommandName))
+                    {
+                        profileGrp.Items.Add(new CmdItemJson { Type = ViewModel.CmdParamType.LaunchApp, Command = profile.CommandName, Enabled = true });
                     }
 
                     if (profileGrp.Items.Count > 0)

@@ -48,6 +48,7 @@ namespace SmartCmdArgs
         public const int ToolbarCopyEnvVarsForPSCommandId = 0x1109;
         public const int ToolbarCopyEnvVarsForCMDCommandId = 0x110A;
         public const int ToolbarAddWorkDirId = 0x110B;
+        public const int ToolbarAddLaunchAppId = 0x110C;
         public const int TWToolbar = 0x1000;
         public const int TWToolbarGroupAddRemove = 0x1050;
         public const int TWToolbarGroupMove = 0x1051;

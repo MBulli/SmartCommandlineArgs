@@ -93,6 +93,10 @@ namespace SmartCmdArgs.Services
                 case CmdParamType.WorkDir:
                     parts = new[] { EvaluateMacros(param.Value, project) };
                     break;
+
+                case CmdParamType.LaunchApp:
+                    parts = new[] { EvaluateMacros(param.Value, project) };
+                    break;
             }
 
             return parts

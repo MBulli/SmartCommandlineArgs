@@ -209,6 +209,7 @@ namespace SmartCmdArgs.Services
             var Args = new HashSet<CmdParameter>();
             var EnvVars = new Dictionary<string, CmdParameter>();
             CmdParameter workDir = null;
+            CmdParameter launchApp = null;
 
             foreach (var item in itemAggregation.GetAllComamndLineParamsForProject(project))
             {
@@ -227,6 +228,10 @@ namespace SmartCmdArgs.Services
                 {
                     workDir = item;
                 }
+                else if (item.ParamType == CmdParamType.LaunchApp && optionsSettings.ManageLaunchApplication)
+                {
+                    launchApp = item;
+                }
             }
 
             var result = new HashSet<CmdParameter>(Args.Concat(EnvVars.Values));
@@ -234,6 +239,11 @@ namespace SmartCmdArgs.Services
             if (workDir != null)
             {
                 result.Add(workDir);
+            }
+
+            if (launchApp != null)
+            {
+                result.Add(launchApp);
             }
 
             return result;

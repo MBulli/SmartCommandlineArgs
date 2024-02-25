@@ -15,6 +15,7 @@ namespace SmartCmdArgs.View.Converter
                     case CmdParamType.CmdArg: return "CLA";
                     case CmdParamType.EnvVar: return "ENV";
                     case CmdParamType.WorkDir: return "WD";
+                    case CmdParamType.LaunchApp: return "APP";
                 }
             }
 
