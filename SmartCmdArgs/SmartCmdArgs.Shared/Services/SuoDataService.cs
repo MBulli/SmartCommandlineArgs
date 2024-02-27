@@ -25,7 +25,6 @@ namespace SmartCmdArgs.Services
     internal class SuoDataService : ISuoDataService
     {
         private readonly IVisualStudioHelperService visualStudioHelper;
-        private readonly Lazy<ToolWindowViewModel> toolWindowViewModel;
         private readonly TreeViewModel treeViewModel;
         private readonly Lazy<SettingsViewModel> settingsViewModel;
         private readonly Lazy<ILifeCycleService> lifeCycleService;
@@ -57,13 +56,11 @@ namespace SmartCmdArgs.Services
 
         public SuoDataService(
             IVisualStudioHelperService visualStudioHelper,
-            Lazy<ToolWindowViewModel> toolWindowViewModel,
             TreeViewModel treeViewModel,
             Lazy<SettingsViewModel> settingsViewModel,
             Lazy<ILifeCycleService> lifeCycleService)
         {
             this.visualStudioHelper = visualStudioHelper;
-            this.toolWindowViewModel = toolWindowViewModel;
             this.treeViewModel = treeViewModel;
             this.settingsViewModel = settingsViewModel;
             this.lifeCycleService = lifeCycleService;

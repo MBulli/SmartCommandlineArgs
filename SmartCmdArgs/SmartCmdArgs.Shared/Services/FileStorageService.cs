@@ -64,7 +64,6 @@ namespace SmartCmdArgs.Services
         private readonly IOptionsSettingsService optionsSettings;
         private readonly IItemPathService itemPathService;
         private readonly SettingsViewModel settingsViewModel;
-        private readonly Lazy<ToolWindowViewModel> toolWindowViewModel;
         private readonly TreeViewModel treeViewModel;
         private readonly Lazy<ILifeCycleService> lifeCycleService;
 
@@ -79,7 +78,6 @@ namespace SmartCmdArgs.Services
             IOptionsSettingsService optionsSettings,
             IItemPathService itemPathService,
             SettingsViewModel settingsViewModel,
-            Lazy<ToolWindowViewModel> toolWindowViewModel,
             TreeViewModel treeViewModel,
             Lazy<ILifeCycleService> lifeCycleService)
         {
@@ -87,7 +85,6 @@ namespace SmartCmdArgs.Services
             this.optionsSettings = optionsSettings;
             this.itemPathService = itemPathService;
             this.settingsViewModel = settingsViewModel;
-            this.toolWindowViewModel = toolWindowViewModel;
             this.treeViewModel = treeViewModel;
             this.lifeCycleService = lifeCycleService;
         }
