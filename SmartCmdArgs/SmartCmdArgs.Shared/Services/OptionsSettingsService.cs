@@ -23,6 +23,7 @@ namespace SmartCmdArgs.Services
         bool UseSolutionDir { get; }
 
         // Options
+        bool UseCpsVirtualProfile { get; }
         bool UseMonospaceFont { get; }
         bool DisplayTagForCla { get; }
         bool DeleteEmptyFilesAutomatically { get; }
@@ -67,6 +68,11 @@ namespace SmartCmdArgs.Services
         public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settingsViewModel.UseSolutionDir ?? OptionsPage.UseSolutionDir);
 
         // Options
+#if VS17
+        public bool UseCpsVirtualProfile => OptionsPage.UseCpsVirtualProfile;
+#else
+        public bool UseCpsVirtualProfile => false;
+#endif
         public bool UseMonospaceFont => OptionsPage.UseMonospaceFont;
         public bool DisplayTagForCla => OptionsPage.DisplayTagForCla;
         public bool DeleteEmptyFilesAutomatically => OptionsPage.DeleteEmptyFilesAutomatically;
