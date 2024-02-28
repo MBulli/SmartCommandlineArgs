@@ -114,6 +114,7 @@ namespace SmartCmdArgs.Services
         public event EventHandler<ProjectAfterRenameEventArgs> ProjectAfterRename;
 
         private readonly Lazy<IProjectConfigService> _projectConfigService;
+        private readonly Lazy<ICpsProjectConfigService> cpsProjectConfigService;
 
         class ProjectState : IDisposable
         {
@@ -123,14 +124,14 @@ namespace SmartCmdArgs.Services
 
             private IDisposable _launchSettingsChangeListenerDisposable;
 
-            public ProjectState(IVsHierarchyWrapper pHierarchy, Action<ILaunchSettings> launchProfileChangeAction)
+            public ProjectState(IVsHierarchyWrapper pHierarchy, ICpsProjectConfigService cpsProjectConfigService, Action<ILaunchSettings> launchProfileChangeAction)
             {
                 ProjectDir = pHierarchy.GetProjectDir();
                 ProjectName = pHierarchy.GetName();
                 IsLoaded = pHierarchy.IsLoaded();
 
                 if (pHierarchy.IsCpsProject())
-                    _launchSettingsChangeListenerDisposable = CpsProjectSupport.ListenToLaunchProfileChanges(pHierarchy.GetProject(), launchProfileChangeAction);
+                    _launchSettingsChangeListenerDisposable = cpsProjectConfigService.ListenToLaunchProfileChanges(pHierarchy.GetProject(), launchProfileChangeAction);
             }
 
             public void Dispose()
@@ -141,10 +142,13 @@ namespace SmartCmdArgs.Services
 
         private Dictionary<Guid, ProjectState> ProjectStateMap = new Dictionary<Guid, ProjectState>();
 
-        public VisualStudioHelperService(Lazy<IProjectConfigService> projectConfigService)
+        public VisualStudioHelperService(
+            Lazy<IProjectConfigService> projectConfigService,
+            Lazy<ICpsProjectConfigService> cpsProjectConfigService)
         {
             this.package = CmdArgsPackage.Instance;
             _projectConfigService = projectConfigService;
+            this.cpsProjectConfigService = cpsProjectConfigService;
 
             _VSConstants_VSStd97CmdID_GUID = typeof(VSConstants.VSStd97CmdID).GUID.ToString("B").ToUpper();
             _VSConstants_VSStd2KCmdID_GUID = typeof(VSConstants.VSStd2KCmdID).GUID.ToString("B").ToUpper();
@@ -188,7 +192,7 @@ namespace SmartCmdArgs.Services
         {
             Guid projectGuid = pHierarchy.GetGuid();
             ProjectStateMap.GetValueOrDefault(projectGuid)?.Dispose();
-            ProjectStateMap[projectGuid] = new ProjectState(pHierarchy, profile =>
+            ProjectStateMap[projectGuid] = new ProjectState(pHierarchy, cpsProjectConfigService.Value, profile =>
             {
                 ThreadHelper.JoinableTaskFactory.Run(async () =>
                 {

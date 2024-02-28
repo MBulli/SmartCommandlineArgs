@@ -14,7 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Commands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomMonikers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\BindingListEx.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helper\CpsProjectSupport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)helper\Debouncer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\DelayExecution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper\EnumDescConverter.cs" />
@@ -37,6 +36,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataSerialization\SettingsSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataSerialization\SolutionDataSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataSerialization\SuoDataSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\CpsProjectConfigService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\FileStorageEventHandlingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\OptionsSettingsEventHandlingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\TreeViewEventHandlingService.cs" />
