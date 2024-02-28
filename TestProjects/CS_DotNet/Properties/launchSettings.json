@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "CS_DotNet": {
+      "commandName": "Project",
+      "commandLineArgs": "-i InputImage.png --log-level debug -l debug.log",
+      "environmentVariables": {
+        "ENVIRONMENT": "DEVELOPMENT"
+      },
+      "sqlDebugging": false,
+      "nativeDebugging": false
+    }
+  }
+}
