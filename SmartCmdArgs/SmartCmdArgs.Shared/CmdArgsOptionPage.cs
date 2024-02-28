@@ -77,6 +77,7 @@ namespace SmartCmdArgs
         private bool _manageEnvironmentVars;
         private bool _manageWorkingDirectories;
         private bool _manageLaunchApplication;
+        private bool _useCpsVirtualProfile;
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
@@ -189,6 +190,16 @@ namespace SmartCmdArgs
         {
             get => _manageLaunchApplication;
             set => SetAndNotify(value, ref _manageLaunchApplication);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Use CPS Virtual Profile")]
+        [Description("If enabled a virtual profile is created for CPS projects and only this profile is changed by the extension.")]
+        [DefaultValue(false)]
+        public bool UseCpsVirtualProfile
+        {
+            get => _useCpsVirtualProfile;
+            set => SetAndNotify(value, ref _useCpsVirtualProfile);
         }
 
         [Category("Settings Defaults")]
