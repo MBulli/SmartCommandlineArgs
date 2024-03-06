@@ -6,7 +6,7 @@ For VS 2017 go to [Smart Command Line Arguments VS2017](https://marketplace.visu
 
 For VS 2015 the last supported version is [v2.3.2](https://github.com/MBulli/SmartCommandlineArgs/releases/download/v2.3.2/SmartCmdArgs-v2.3.2.vsix)
 
-A Visual Studio Extension which aims to provide a better UI to manage your command line arguments and environment variables.
+A Visual Studio Extension which aims to provide a better UI to manage your command line arguments, environment variables, working directory, and launch app.
 
 ![Main Window](vsix_preview_image.png "Command Line Arguments window, showning all projects")
 
@@ -31,8 +31,11 @@ If you're using Cmake make sure to read the [Cmake support wiki page](https://g
 Open the tool window via:  
 View → Other Windows → Commandline Arguments
 
-If the window is open or minimized the commandline arguments should not be edited via the project properties.  
-Changes which are made in the window are applied to all project configurations (Release/Debug etc.) of the current startup project.
+The extension must be enabled manually from within the extension window when opening a solution for the first time.
+This behaviour can be chnaged via the [Options](#user-content-options).
+The extension can be disabled via the [Settings](#user-content-settings).  
+If the extions is enabled it controls command line arguments, environment variables, working directory, and/or the launch app depending on the 'Manage *' settings/options.
+The project/launch configuration is changed every time items are changed in the extension window or the program is launched.
  
 ### Interface (Toolwindow Buttons)
 - **Add**: Add new line (Command Line Argument or Environment Variable)
@@ -45,15 +48,37 @@ Changes which are made in the window are applied to all project configurations (
 
 ### Settings
 If the checkboxes are filled with a square the default value is used.
-The default value for these settings can be configured under `Tools → Options → Smart Commandline Arguments → Settings Defaults`.
+The default value for these settings can be configured under [`Tools → Options → Smart Commandline Arguments → Settings Defaults`](#user-content-settings-defaults).
 
 - **Save Settings to JSON**: If true then the these settings are stored in a JSON file next to the solution file.
 - **Manage Command Line Arguments**: If enabled the arguments are set automatically when a project is started/debugged.
 - **Manage Environment Variables**: If enabled the environment variables are set automatically when a project is started/debugged.
+- **Manage Working Directories**: If enabled the working directories are set automatically when a project is started/debugged.
+- **Manage Launch App**: If enabled the launch application is set automatically when a project is started/debugged.
 - **Enable version control support**: If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions `.suo-file` which is usally ignored by version control.
 - **Use Solution Directory**: If enabled all arguments of every project will be stored in a single file next to the *.sln file. (Only if version control support is enabled)
 - **Use Custom JSON Path**: If enabled the *.args.json file is saved at a custom location. Relative paths are based on the solution directory. (Only if 'Use Solution Directory' is enabled)
 - **Enable Macro evaluation**: If enabled Macros like '$(ProjectDir)' will be evaluated and replaced by the corresponding string.
+- **Disable Extension for Solution**: Disables the extion for the current solution. The extension can be enbaled again via the extension window.
+
+## Options
+Options can be found at `Tools → Options → Smart Commandline Arguments`.
+
+### General
+- **Enable Behaviour**: Controls if and how the extension enables itself by default. If the extension is disabled it can also be enabled via the extension window.
+- **Relative path root**: Sets the base path that is used to resolve relative paths for the open/reveal file/folder context menu option.
+
+### Appearance
+- **Use Monospace Font**: If enabled the fontfamily is changed to 'Consolas'.
+- **Display Tags for CLAs**: If enabled the item tag 'CLA' is displayed for Command Line Arguments. Normally tags are only displayed for environment variables (ENV), working directories (WD), and launch apps (APP).
+- **Grey out inactive items**: Controls if items should be greyed out if are currently not applied.
+
+### Cleanup
+- **Delete empty files automatically**: Controls if empty '*.args.json' files will be delete automatically.
+
+### Settings Defaults
+This contols the default behaviour for [Settings](#user-content-settings)
+
 
 ### Hotkeys
 
