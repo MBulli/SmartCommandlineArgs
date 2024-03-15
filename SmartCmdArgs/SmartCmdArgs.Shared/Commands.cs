@@ -32,6 +32,9 @@ namespace SmartCmdArgs
 
             if (commandService != null)
             {
+                // AddCommand needs to be run on main thread!
+                await CmdArgsPackage.Instance.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 AddCommandToService(commandService, PackageGuids.guidVSMenuCmdSet, PackageIds.ToolWindowCommandId, this.ShowToolWindow);
 
                 AddCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarAddCommandId, toolWindowViewModel.AddEntryCommand, ViewModel.CmdParamType.CmdArg);
@@ -50,9 +53,6 @@ namespace SmartCmdArgs
                 AddToggleCommandToService(commandService, PackageGuids.guidCmdArgsToolBarCmdSet, PackageIds.ToolbarShowAllProjectsCommandId,
                     toolWindowViewModel.ShowAllProjectsCommand, () => treeViewModel.ShowAllProjects);
             }
-
-            // AddCommand needs to be run on main thread!
-            await CmdArgsPackage.Instance.JoinableTaskFactory.SwitchToMainThreadAsync();
         }
 
         private void AddCommandToService(OleMenuCommandService service, Guid cmdSet, int cmdId, EventHandler handler)
