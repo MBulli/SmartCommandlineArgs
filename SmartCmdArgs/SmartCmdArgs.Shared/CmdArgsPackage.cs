@@ -167,7 +167,7 @@ namespace SmartCmdArgs
             var services = new ServiceCollection();
 
             services.AddSingleton<Commands>();
-            services.AddLazySingleton(x => GetDialogPage<CmdArgsOptionPage>());
+            services.AddSingleton(x => GetDialogPage<CmdArgsOptionPage>());
             services.AddLazySingleton<SettingsViewModel>();
             services.AddLazySingleton<ToolWindowViewModel>();
             services.AddLazySingleton<TreeViewModel>();
