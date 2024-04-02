@@ -44,6 +44,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <GetVsixSourceItemsDependsOn>$(GetVsixSourceItemsDependsOn);IncludeNuGetResolvedAssets</GetVsixSourceItemsDependsOn>
+  </PropertyGroup>
+  <Target Name="IncludeNuGetResolvedAssets" DependsOnTargets="ResolveNuGetPackageAssets">
+    <ItemGroup>
+      <!-- Include dependecies of Microsoft.Extensions.DependencyInjection which are not included by default -->
+      <VSIXCopyLocalReferenceSourceItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'System.Threading.Tasks.Extensions.dll'" />
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <Compile Include="..\SharedResources\CmdArgsPackage.cs">
       <Link>CmdArgsPackage.cs</Link>

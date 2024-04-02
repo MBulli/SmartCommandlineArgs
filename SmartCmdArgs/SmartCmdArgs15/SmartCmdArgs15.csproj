@@ -49,7 +49,7 @@
   </PropertyGroup>
   <Target Name="IncludeNuGetResolvedAssets" DependsOnTargets="ResolveNuGetPackageAssets">
     <ItemGroup>
-      <!-- Include System.Threading.Tasks.Extensions.dll for dependency injection with Microsoft.Extensions.DependencyInjection -->
+      <!-- Include dependecies of Microsoft.Extensions.DependencyInjection which are not included by default -->
       <VSIXCopyLocalReferenceSourceItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'System.Threading.Tasks.Extensions.dll'" />
     </ItemGroup>
   </Target>
@@ -108,9 +108,6 @@
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5233" />
-    <PackageReference Include="System.Threading.Tasks.Extensions">
-      <Version>4.5.4</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="..\SharedResources\CmdArgsPackage.vsct">
