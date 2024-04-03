@@ -1,6 +1,5 @@
 ﻿using EnvDTE;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SmartCmdArgs.Helper;
@@ -123,7 +122,7 @@ namespace SmartCmdArgs.Services
 
             private IDisposable _launchSettingsChangeListenerDisposable;
 
-            public ProjectState(IVsHierarchyWrapper pHierarchy, Action<ILaunchSettings> launchProfileChangeAction)
+            public ProjectState(IVsHierarchyWrapper pHierarchy, Action launchProfileChangeAction)
             {
                 ProjectDir = pHierarchy.GetProjectDir();
                 ProjectName = pHierarchy.GetName();
@@ -188,7 +187,7 @@ namespace SmartCmdArgs.Services
         {
             Guid projectGuid = pHierarchy.GetGuid();
             ProjectStateMap.GetValueOrDefault(projectGuid)?.Dispose();
-            ProjectStateMap[projectGuid] = new ProjectState(pHierarchy, profile =>
+            ProjectStateMap[projectGuid] = new ProjectState(pHierarchy, () =>
             {
                 ThreadHelper.JoinableTaskFactory.Run(async () =>
                 {

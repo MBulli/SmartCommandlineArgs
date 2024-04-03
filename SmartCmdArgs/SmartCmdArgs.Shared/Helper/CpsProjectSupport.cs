@@ -8,6 +8,17 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
 
+// This isolation of Microsoft.VisualStudio.ProjectSystem dependencies into one file ensures compatibility
+// across various Visual Studio installations. This is crucial because not all Visual Studio workloads
+// include the ManagedProjectSystem extension by default. For instance, installing Visual Studio with only
+// the C++ workload does not install this extension, whereas it's included with the .NET workload at
+// "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\ManagedProjectSystem".
+// One might consider adding the Microsoft.VisualStudio.ProjectSystem assembly to the VSIX. However, this approach fails due to
+// Visual Studio's configuration file (located at "%userprofile%\AppData\Local\Microsoft\VisualStudio\17.0_xxxxxxxx\devenv.exe.config")
+// specifying a binding redirect for Microsoft.VisualStudio.ProjectSystem.Managed to the latest version.
+// As such, ensuring compatibility requires knowledge of the version Visual Studio redirects to, which varies
+// by Visual Studio installation version.
+
 namespace SmartCmdArgs.Helper
 {
     public static class CpsProjectSupport
@@ -64,7 +75,7 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static IDisposable ListenToLaunchProfileChanges(EnvDTE.Project project, Action<ILaunchSettings> listener)
+        public static IDisposable ListenToLaunchProfileChanges(EnvDTE.Project project, Action listener)
         {
             if (TryGetProjectServices(project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices))
             {
@@ -74,7 +85,7 @@ namespace SmartCmdArgs.Helper
                     return null;
 
                 return launchSettingsProvider.SourceBlock.LinkTo(
-                    new ActionBlock<ILaunchSettings>(listener),
+                    new ActionBlock<ILaunchSettings>(_ => listener()),
                     new DataflowLinkOptions { PropagateCompletion = true });
             }
 
