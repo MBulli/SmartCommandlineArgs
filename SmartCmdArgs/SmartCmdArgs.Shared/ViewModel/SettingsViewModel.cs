@@ -8,7 +8,7 @@ namespace SmartCmdArgs.ViewModel
 {
     public class SettingsViewModel : PropertyChangedBase
     {
-        private readonly CmdArgsOptionPage optionPage;
+        private readonly Lazy<CmdArgsOptionPage> optionPage;
         private readonly Lazy<ILifeCycleService> lifeCycleService;
         private bool _saveSettingsToJson;
         private bool? _manageCommandLineArgs;
@@ -83,13 +83,13 @@ namespace SmartCmdArgs.ViewModel
 
         public RelayCommand DisableExtensionCommand { get; }
 
-        public CmdArgsOptionPage Options => optionPage;
+        public CmdArgsOptionPage Options => optionPage.Value;
         public ILifeCycleService LifeCycle => lifeCycleService.Value;
 
         public RelayCommand OpenOptionsCommand { get; }
 
         public SettingsViewModel(
-            CmdArgsOptionPage optionPage,
+            Lazy<CmdArgsOptionPage> optionPage,
             Lazy<ILifeCycleService> lifeCycleService)
         {
             this.optionPage = optionPage;

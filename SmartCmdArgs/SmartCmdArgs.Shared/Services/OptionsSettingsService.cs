@@ -38,19 +38,19 @@ namespace SmartCmdArgs.Services
     {
         private readonly IVisualStudioHelperService _vsHelperService;
         private readonly SettingsViewModel settingsViewModel;
-        private readonly CmdArgsOptionPage optionPage;
+        private readonly Lazy<CmdArgsOptionPage> lazyOptionsPage;
 
         public OptionsSettingsService(
             IVisualStudioHelperService vsHelperService,
             SettingsViewModel settingsViewModel,
-            CmdArgsOptionPage optionPage)
+            Lazy<CmdArgsOptionPage> lazyOptionsPage)
         {
             _vsHelperService = vsHelperService;
             this.settingsViewModel = settingsViewModel;
-            this.optionPage = optionPage;
+            this.lazyOptionsPage = lazyOptionsPage;
         }
 
-        private CmdArgsOptionPage OptionsPage => optionPage;
+        private CmdArgsOptionPage OptionsPage => lazyOptionsPage.Value;
 
         // Settings (possibly with options default)
         public bool SaveSettingsToJson => settingsViewModel.SaveSettingsToJson;
