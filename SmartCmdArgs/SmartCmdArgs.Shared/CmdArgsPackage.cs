@@ -127,7 +127,6 @@ namespace SmartCmdArgs
         internal Page GetDialogPage<Page>()
             where Page : class
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
             return GetDialogPage(typeof(Page)) as Page;
         }
 
