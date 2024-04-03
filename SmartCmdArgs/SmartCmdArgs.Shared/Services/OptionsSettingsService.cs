@@ -4,6 +4,8 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
+using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
+
 namespace SmartCmdArgs.Services
 {
     public interface IOptionsSettingsService
@@ -85,12 +87,12 @@ namespace SmartCmdArgs.Services
             OnNotifyPropertyChanged(e.PropertyName);
         }
 
-        public Task InitializeAsync()
+        public async Task InitializeAsync()
         {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             settingsViewModel.PropertyChanged += Settings_PropertyChanged;
             OptionsPage.PropertyChanged += Options_PropertyChanged;
-
-            return Task.CompletedTask;
         }
     }
 }
