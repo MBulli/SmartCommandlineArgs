@@ -10,20 +10,16 @@ namespace SmartCmdArgs.DataSerialization
 {
     class SolutionDataSerializer : DataSerializer
     {
-        public static SolutionDataJson Serialize(TreeViewModel vm, Stream stream)
+        public static void Serialize(SolutionDataJson data, Stream stream)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-
-            var data = Serialize(vm);
 
             string jsonStr = JsonConvert.SerializeObject(data, Formatting.Indented);
 
             StreamWriter sw = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             sw.Write(jsonStr);
             sw.Flush();
-
-            return data;
         }
 
         public static SolutionDataJson Serialize(TreeViewModel vm)

@@ -229,7 +229,6 @@ namespace SmartCmdArgs.Services
             }
             else
             {
-                Guid projectGui = project.GetGuid();
                 string jsonFilename = FullFilenameForSolutionJsonFile();
 
                 if (File.Exists(jsonFilename))
@@ -240,7 +239,14 @@ namespace SmartCmdArgs.Services
                         {
                             SolutionDataJson slnData = SolutionDataSerializer.Deserialize(fileStream);
 
+                            Guid projectGui = project.GetGuid();
                             result = slnData.ProjectArguments.FirstOrDefault(p => p.Id == projectGui);
+
+                            if (result == null)
+                            {
+                                string projectFullName = vsHelper.GetUniqueName(project);
+                                result = slnData.ProjectArguments.FirstOrDefault(p => p.Command == projectFullName);
+                            }
                         }
                         Logger.Info($"Read {result?.Items?.Count} commands for project '{project.GetName()}' from json-file '{jsonFilename}'.");
                     }
@@ -344,7 +350,15 @@ namespace SmartCmdArgs.Services
                         {
                             using (Stream fileStream = File.Open(jsonFilename, FileMode.Create, FileAccess.Write))
                             {
-                                SolutionDataSerializer.Serialize(treeViewModel, fileStream);
+                                var solutionData = SolutionDataSerializer.Serialize(treeViewModel);
+
+                                foreach(var projectData in solutionData.ProjectArguments)
+                                {
+                                    var project = vsHelper.HierarchyForProjectGuid(projectData.Id);
+                                    projectData.Command = vsHelper.GetUniqueName(project);
+                                }
+
+                                SolutionDataSerializer.Serialize(solutionData, fileStream);
                             }
                         }
                         catch (Exception e)
