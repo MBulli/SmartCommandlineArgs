@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // <copyright file="CmdArgsPackage.cs" company="Company">
 //     Copyright (c) Company.  All rights reserved.
 // </copyright>
@@ -70,6 +70,7 @@ namespace SmartCmdArgs
         private ILifeCycleService lifeCycleService;
         private IVsEventHandlingService vsEventHandling;
         private IFileStorageEventHandlingService fileStorageEventHandling;
+        private ICpsProjectConfigService cpsProjectConfigService;
 
         private ToolWindowViewModel toolWindowViewModel;
         private TreeViewModel treeViewModel;
@@ -106,6 +107,7 @@ namespace SmartCmdArgs
             lifeCycleService = ServiceProvider.GetRequiredService<ILifeCycleService>();
             vsEventHandling = ServiceProvider.GetRequiredService<IVsEventHandlingService>();
             fileStorageEventHandling = ServiceProvider.GetRequiredService<IFileStorageEventHandlingService>();
+            cpsProjectConfigService = ServiceProvider.GetRequiredService<ICpsProjectConfigService>();
         }
 
         protected override void Dispose(bool disposing)
@@ -171,6 +173,7 @@ namespace SmartCmdArgs
             services.AddLazySingleton<SettingsViewModel>();
             services.AddLazySingleton<ToolWindowViewModel>();
             services.AddLazySingleton<TreeViewModel>();
+            services.AddLazySingleton<ICpsProjectConfigService, CpsProjectConfigService>();
             services.AddLazySingleton<IProjectConfigService, ProjectConfigService>();
             services.AddSingleton<IVisualStudioHelperService, VisualStudioHelperService>();
             services.AddSingleton<IFileStorageService, FileStorageService>();
@@ -264,7 +267,7 @@ namespace SmartCmdArgs
             List<string> launchProfiles = null;
             if (project?.IsCpsProject() == true)
             {
-                launchProfiles = CpsProjectSupport.GetLaunchProfileNames(project.GetProject())?.ToList();
+                launchProfiles = cpsProjectConfigService.GetLaunchProfileNames(project.GetProject())?.ToList();
             }
 
             return launchProfiles ?? new List<string>();

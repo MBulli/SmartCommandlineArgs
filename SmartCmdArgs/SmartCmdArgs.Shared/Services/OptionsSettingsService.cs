@@ -1,4 +1,4 @@
-﻿using SmartCmdArgs.Helper;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 using System;
 using System.ComponentModel;
@@ -24,6 +24,7 @@ namespace SmartCmdArgs.Services
         bool? GatherArgsIgnoreCpp { get; }
 
         // Options
+        bool UseCpsVirtualProfile { get; }
         bool UseMonospaceFont { get; }
         bool DisplayTagForCla { get; }
         bool DeleteEmptyFilesAutomatically { get; }
@@ -69,6 +70,11 @@ namespace SmartCmdArgs.Services
         public bool? GatherArgsIgnoreCpp => settingsViewModel.GatherArgsIgnoreCpp;
 
         // Options
+#if VS17
+        public bool UseCpsVirtualProfile => OptionsPage.UseCpsVirtualProfile;
+#else
+        public bool UseCpsVirtualProfile => false;
+#endif
         public bool UseMonospaceFont => OptionsPage.UseMonospaceFont;
         public bool DisplayTagForCla => OptionsPage.DisplayTagForCla;
         public bool DeleteEmptyFilesAutomatically => OptionsPage.DeleteEmptyFilesAutomatically;

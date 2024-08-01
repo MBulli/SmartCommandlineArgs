@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.ProjectSystem;
+using EnvDTE;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using SmartCmdArgs.DataSerialization;
@@ -19,11 +20,32 @@ using System.Threading.Tasks.Dataflow;
 // As such, ensuring compatibility requires knowledge of the version Visual Studio redirects to, which varies
 // by Visual Studio installation version.
 
-namespace SmartCmdArgs.Helper
+namespace SmartCmdArgs.Services
 {
-    public static class CpsProjectSupport
+    public interface ICpsProjectConfigService
     {
-        private static bool TryGetProjectServices(EnvDTE.Project project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices)
+       string GetActiveLaunchProfileName(Project project);
+        void GetItemsFromConfig(Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir, bool includeLaunchApp);
+        IEnumerable<string> GetLaunchProfileNames(Project project);
+        IDisposable ListenToLaunchProfileChanges(Project project, Action listener);
+        void SetActiveLaunchProfileByName(Project project, string profileName);
+        void SetActiveLaunchProfileToVirtualProfile(Project project);
+        void SetConfig(Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp);
+    }
+
+    public class CpsProjectConfigService : ICpsProjectConfigService
+    {
+        public static string VirtualProfileName = "Smart CLI Args";
+
+        private readonly IOptionsSettingsService optionsSettingsService;
+
+        public CpsProjectConfigService(
+            IOptionsSettingsService optionsSettingsService)
+        {
+            this.optionsSettingsService = optionsSettingsService;
+        }
+
+        private bool TryGetProjectServices(EnvDTE.Project project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null && project != null)
@@ -55,7 +77,7 @@ namespace SmartCmdArgs.Helper
             }
         }
 
-        public static string GetActiveLaunchProfileName(EnvDTE.Project project)
+        public string GetActiveLaunchProfileName(EnvDTE.Project project)
         {
             if (TryGetProjectServices(project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices))
             {
@@ -65,7 +87,21 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static IEnumerable<string> GetLaunchProfileNames(EnvDTE.Project project)
+        public void SetActiveLaunchProfileByName(EnvDTE.Project project, string profileName)
+        {
+            if (TryGetProjectServices(project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices))
+            {
+                var launchSettingsProvider = unconfiguredProjectServices.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
+                projectServices.ThreadingPolicy.ExecuteSynchronously(async () =>
+                {
+                    await launchSettingsProvider.SetActiveProfileAsync(profileName);
+                });
+            }
+        }
+
+        public void SetActiveLaunchProfileToVirtualProfile(EnvDTE.Project project) => SetActiveLaunchProfileByName(project, VirtualProfileName);
+
+        public IEnumerable<string> GetLaunchProfileNames(EnvDTE.Project project)
         {
             if (TryGetProjectServices(project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices))
             {
@@ -75,10 +111,11 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static IDisposable ListenToLaunchProfileChanges(EnvDTE.Project project, Action listener)
+        public IDisposable ListenToLaunchProfileChanges(EnvDTE.Project project, Action listener)
         {
             if (TryGetProjectServices(project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices))
             {
+                
                 var launchSettingsProvider = unconfiguredProjectServices.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
 
                 if (launchSettingsProvider == null)
@@ -92,7 +129,7 @@ namespace SmartCmdArgs.Helper
             return null;
         }
 
-        public static void SetCpsProjectConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
+        public void SetConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -100,12 +137,21 @@ namespace SmartCmdArgs.Helper
             if (TryGetProjectServices(project, out unconfiguredProjectServices, out projectServices))
             {
                 var launchSettingsProvider = unconfiguredProjectServices.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
-                var activeLaunchProfile = launchSettingsProvider?.ActiveProfile;
+                ILaunchProfile baseLaunchProfile = null;
+                if (optionsSettingsService.UseCpsVirtualProfile)
+                {
+                    baseLaunchProfile = launchSettingsProvider.CurrentSnapshot.Profiles.FirstOrDefault(x => x.Name == VirtualProfileName);
+                }
 
-                if (activeLaunchProfile == null)
+                if (baseLaunchProfile == null)
+                {
+                    baseLaunchProfile = launchSettingsProvider?.ActiveProfile;
+                }
+
+                if (baseLaunchProfile == null)
                     return;
 
-                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(activeLaunchProfile);
+                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(baseLaunchProfile);
 
                 if (arguments != null)
                     writableLaunchProfile.CommandLineArgs = arguments;
@@ -119,22 +165,23 @@ namespace SmartCmdArgs.Helper
                 if (launchApp != null)
                     writableLaunchProfile.CommandName = launchApp;
 
-                // Does not work on VS2015, which should be okay ...
-                // We don't hold references for VS2015, where the interface is called IThreadHandling
-                IProjectThreadingService projectThreadingService = projectServices.ThreadingPolicy;
-                projectThreadingService.ExecuteSynchronously(() =>
+                if (optionsSettingsService.UseCpsVirtualProfile)
+                {
+                    writableLaunchProfile.Name = VirtualProfileName;
+                    writableLaunchProfile.DoNotPersist = true;
+                }
+
+                projectServices.ThreadingPolicy.ExecuteSynchronously(() =>
                 {
                     return launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
                 });
             }
         }
 
-        public static List<CmdItemJson> GetCpsProjectAllArguments(EnvDTE.Project project, bool includeArgs, bool includeEnvVars, bool includeWorkDir, bool includeLaunchApp)
+        public void GetItemsFromConfig(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir, bool includeLaunchApp)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
-
-            var result = new List<CmdItemJson>();
 
             if (TryGetProjectServices(project, out unconfiguredProjectServices, out projectServices))
             {
@@ -142,7 +189,7 @@ namespace SmartCmdArgs.Helper
                 var launchProfiles = launchSettingsProvider?.CurrentSnapshot?.Profiles;
 
                 if (launchProfiles == null)
-                    return result;
+                    return;
 
                 foreach (var profile in launchProfiles)
                 {
@@ -173,17 +220,19 @@ namespace SmartCmdArgs.Helper
 
                     if (profileGrp.Items.Count > 0)
                     {
-                        result.Add(profileGrp);
+                        allArgs.Add(profileGrp);
                     }
                 }
             }
-
-            return result;
         }
     }
 
     class WritableLaunchProfile : ILaunchProfile
+#if VS17
+        , IPersistOption
+#endif
     {
+        // ILaunchProfile
         public string Name { set; get; }
         public string CommandName { set; get; }
         public string ExecutablePath { set; get; }
@@ -194,8 +243,12 @@ namespace SmartCmdArgs.Helper
         public ImmutableDictionary<string, string> EnvironmentVariables { set; get; }
         public ImmutableDictionary<string, object> OtherSettings { set; get; }
 
+        // IPersistOption
+        public bool DoNotPersist { get; set; }
+
         public WritableLaunchProfile(ILaunchProfile launchProfile)
         {
+             // ILaunchProfile
             Name = launchProfile.Name;
             ExecutablePath = launchProfile.ExecutablePath;
             CommandName = launchProfile.CommandName;
@@ -205,6 +258,13 @@ namespace SmartCmdArgs.Helper
             LaunchUrl = launchProfile.LaunchUrl;
             EnvironmentVariables = launchProfile.EnvironmentVariables;
             OtherSettings = launchProfile.OtherSettings;
+#if VS17
+            if (launchProfile is IPersistOption persistOptionLaunchProfile)
+            {
+                // IPersistOption
+                DoNotPersist = persistOptionLaunchProfile.DoNotPersist;
+            }
+#endif
         }
     }
 }

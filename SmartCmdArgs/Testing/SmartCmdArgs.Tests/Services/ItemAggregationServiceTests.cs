@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using System;
 using System.Collections.Generic;
 using SmartCmdArgs.ViewModel;
@@ -19,6 +19,7 @@ namespace SmartCmdArgs.Tests.Services
         private readonly Mock<IItemEvaluationService> itemEvaluationServiceMock;
         private readonly Mock<IVisualStudioHelperService> vsHelperServiceMock;
         private readonly Mock<IToolWindowHistory> toolWindowHistoryMock;
+        private readonly Mock<ICpsProjectConfigService> cpsProjectConfigService;
         private readonly TreeViewModel treeViewModel;
         private readonly ItemAggregationService itemAggregationService;
 
@@ -29,6 +30,7 @@ namespace SmartCmdArgs.Tests.Services
             itemEvaluationServiceMock = new Mock<IItemEvaluationService>();
             vsHelperServiceMock = new Mock<IVisualStudioHelperService>();
             toolWindowHistoryMock = new Mock<IToolWindowHistory>();
+            cpsProjectConfigService = new Mock<ICpsProjectConfigService>();
             treeViewModel = new TreeViewModel(toolWindowHistoryMock.LazyObject());
 
             itemEvaluationServiceMock.Setup(x => x.EvaluateMacros(It.IsAny<string>(), It.IsAny<IVsHierarchyWrapper>())).Returns<string, IVsHierarchyWrapper>((arg, _) => arg);
@@ -36,7 +38,8 @@ namespace SmartCmdArgs.Tests.Services
             itemAggregationService = new ItemAggregationService(
                 itemEvaluationServiceMock.Object,
                 vsHelperServiceMock.Object,
-                treeViewModel
+                treeViewModel,
+                cpsProjectConfigService.Object
             );
         }
 

@@ -1,5 +1,6 @@
-﻿using SmartCmdArgs.ViewModel;
+using SmartCmdArgs.ViewModel;
 using System;
+using System.Linq;
 
 namespace SmartCmdArgs.Services
 {
@@ -18,6 +19,8 @@ namespace SmartCmdArgs.Services
         private readonly IViewModelUpdateService viewModelUpdateService;
         private readonly ToolWindowViewModel toolWindowViewModel;
         private readonly IToolWindowHistory toolWindowHistory;
+        private readonly IProjectConfigService projectConfigService;
+        private readonly ICpsProjectConfigService cpsProjectConfigService;
 
         public OptionsSettingsEventHandlingService(
             IOptionsSettingsService optionsSettings,
@@ -26,7 +29,9 @@ namespace SmartCmdArgs.Services
             IVisualStudioHelperService vsHelper,
             IViewModelUpdateService viewModelUpdateService,
             ToolWindowViewModel toolWindowViewModel,
-            IToolWindowHistory toolWindowHistory)
+            IToolWindowHistory toolWindowHistory,
+            IProjectConfigService projectConfigService,
+            ICpsProjectConfigService cpsProjectConfigService)
         {
             this.optionsSettings = optionsSettings;
             this.settingsService = settingsService;
@@ -35,6 +40,8 @@ namespace SmartCmdArgs.Services
             this.viewModelUpdateService = viewModelUpdateService;
             this.toolWindowViewModel = toolWindowViewModel;
             this.toolWindowHistory = toolWindowHistory;
+            this.projectConfigService = projectConfigService;
+            this.cpsProjectConfigService = cpsProjectConfigService;
         }
 
         public void Dispose()
@@ -64,6 +71,7 @@ namespace SmartCmdArgs.Services
                 case nameof(IOptionsSettingsService.JsonRootPath): JsonRootPathChanged(); break;
                 case nameof(IOptionsSettingsService.VcsSupportEnabled): VcsSupportChanged(); break;
                 case nameof(IOptionsSettingsService.UseSolutionDir): UseSolutionDirChanged(); break;
+                case nameof(IOptionsSettingsService.UseCpsVirtualProfile): UseCpsVirtualProfileChanged(); break;
                 case nameof(IOptionsSettingsService.ManageCommandLineArgs): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
                 case nameof(IOptionsSettingsService.ManageEnvironmentVars): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
                 case nameof(IOptionsSettingsService.ManageWorkingDirectories): viewModelUpdateService.UpdateIsActiveForParamsDebounced(); break;
@@ -115,6 +123,14 @@ namespace SmartCmdArgs.Services
         {
             fileStorage.DeleteAllUnusedArgFiles();
             fileStorage.SaveAllProjects();
+        }
+        private void UseCpsVirtualProfileChanged()
+        {
+            foreach (var project in vsHelper.GetSupportedProjects().Where(x => x.IsCpsProject()))
+            {
+                projectConfigService.UpdateProjectConfig(project);
+                cpsProjectConfigService.SetActiveLaunchProfileToVirtualProfile(project.GetProject());
+            }
         }
     }
 }
