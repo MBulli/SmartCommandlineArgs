@@ -8,6 +8,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
+#if DYNAMIC_VSProjectManaged
+using System.Reflection;
+using System.Reflection.Emit;
+using Expression = System.Linq.Expressions.Expression;
+#endif
 
 // This isolation of Microsoft.VisualStudio.ProjectSystem dependencies into one file ensures compatibility
 // across various Visual Studio installations. This is crucial because not all Visual Studio workloads
@@ -151,7 +156,7 @@ namespace SmartCmdArgs.Services
                 if (baseLaunchProfile == null)
                     return;
 
-                WritableLaunchProfile writableLaunchProfile = new WritableLaunchProfile(baseLaunchProfile);
+                var writableLaunchProfile = WritableLaunchProfile.GetWritableLaunchProfile(baseLaunchProfile);
 
                 if (arguments != null)
                     writableLaunchProfile.CommandLineArgs = arguments;
@@ -226,9 +231,8 @@ namespace SmartCmdArgs.Services
             }
         }
     }
-
-    class WritableLaunchProfile : ILaunchProfile
-#if VS17
+    public class WritableLaunchProfile : ILaunchProfile //must be public to avoid having to declare our dynamic assembly a friend
+#if VS17 && ! DYNAMIC_VSProjectManaged
         , IPersistOption
 #endif
     {
@@ -245,7 +249,10 @@ namespace SmartCmdArgs.Services
 
         // IPersistOption
         public bool DoNotPersist { get; set; }
-
+#if DYNAMIC_VSProjectManaged
+        private static Func<ILaunchProfile, bool> LaunchProfileIsDoNotPersistFunc;
+#endif
+        private static Lazy<Type> IPersistOptionType = new Lazy<Type>(() => typeof(ILaunchProfile).Assembly.GetType("Microsoft.VisualStudio.ProjectSystem.Debug.IPersistOption"));
         public WritableLaunchProfile(ILaunchProfile launchProfile)
         {
              // ILaunchProfile
@@ -259,12 +266,78 @@ namespace SmartCmdArgs.Services
             EnvironmentVariables = launchProfile.EnvironmentVariables;
             OtherSettings = launchProfile.OtherSettings;
 #if VS17
+#if DYNAMIC_VSProjectManaged
+            if (LaunchProfileIsDoNotPersistFunc == null)
+            {
+                if (IPersistOptionType.Value == null)
+                    LaunchProfileIsDoNotPersistFunc = (_) => false;
+                else
+                {
+                    var instanceParam = Expression.Parameter(typeof(ILaunchProfile));
+                    var asIPersist = Expression.TypeAs(instanceParam, IPersistOptionType.Value);
+                    var expr = Expression.Condition(Expression.Equal(asIPersist, Expression.Constant(null)), Expression.Constant(false), Expression.Property(asIPersist, nameof(DoNotPersist)));
+                    LaunchProfileIsDoNotPersistFunc = Expression.Lambda<Func<ILaunchProfile, bool>>(expr, instanceParam).Compile();
+                }
+            }
+            DoNotPersist = LaunchProfileIsDoNotPersistFunc(launchProfile);
+
+#else
             if (launchProfile is IPersistOption persistOptionLaunchProfile)
             {
                 // IPersistOption
                 DoNotPersist = persistOptionLaunchProfile.DoNotPersist;
             }
 #endif
+#endif
         }
+
+        private static Func<ILaunchProfile, WritableLaunchProfile> getWritableProfileFunc;
+        internal static WritableLaunchProfile GetWritableLaunchProfile(ILaunchProfile profile)
+        {
+#if DYNAMIC_VSProjectManaged
+            if (getWritableProfileFunc == null && IPersistOptionType.Value != null)
+            {
+                var ourType = typeof(WritableLaunchProfile);
+                var asmName = new AssemblyName() { Name = "SmartCLIArgsDynamicAsm" };
+                asmName.SetPublicKey(ourType.Assembly.GetName().GetPublicKey());
+                var assemBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
+
+                var classBuilder = assemBuilder.DefineDynamicModule("SmartCLIArgsDynamicMod").DefineType("DynamicWritableLaunchProfile", TypeAttributes.NotPublic | TypeAttributes.Class, ourType);
+                classBuilder.AddInterfaceImplementation(IPersistOptionType.Value);
+                // not sure why  AssemblyBuilder is a baby true IL code doesn't define interface impelmentations that are just inherited
+                var persist_get = classBuilder.DefineMethod("get_" + nameof(DoNotPersist), MethodAttributes.Virtual | MethodAttributes.Public, typeof(bool), Type.EmptyTypes);
+                var il = persist_get.GetILGenerator();
+                il.Emit(OpCodes.Ldarg_0);
+                il.EmitCall(OpCodes.Callvirt, ourType.GetMethod(persist_get.Name), null);
+                il.Emit(OpCodes.Ret);
+
+
+                classBuilder.DefineMethodOverride(persist_get, IPersistOptionType.Value.GetMethod(persist_get.Name));
+
+                var constructorArgTypes = new[] { typeof(ILaunchProfile) };
+                var constructor = classBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, constructorArgTypes);
+                var baseConstructor = ourType.GetConstructor(constructorArgTypes);
+                il = constructor.GetILGenerator();
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Call, baseConstructor);
+                il.Emit(OpCodes.Nop);
+                il.Emit(OpCodes.Nop);
+                il.Emit(OpCodes.Ret);
+                var DynamicWritableLaunchProfileType = classBuilder.CreateType();
+                var constructorInfo = DynamicWritableLaunchProfileType.GetConstructor(constructorArgTypes);
+                var instanceParam = Expression.Parameter(typeof(ILaunchProfile));
+                var expr = Expression.TypeAs(Expression.New(constructorInfo, instanceParam), ourType);
+                getWritableProfileFunc = Expression.Lambda<Func<ILaunchProfile, WritableLaunchProfile>>(expr, instanceParam).Compile();
+
+            }
+            if (IPersistOptionType.Value != null)
+                return getWritableProfileFunc(profile);
+#endif
+            return new WritableLaunchProfile(profile);
+
+
+        }
+
     }
 }
