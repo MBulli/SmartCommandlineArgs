@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell;
 using SmartCmdArgs.Helper;
 using System.ComponentModel;
 using System.Linq;
@@ -78,6 +78,7 @@ namespace SmartCmdArgs
         private bool _manageWorkingDirectories;
         private bool _manageLaunchApplication;
         private bool _vcsSupportEnabled;
+        private bool _useCpsVirtualProfile;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
 
@@ -110,6 +111,7 @@ namespace SmartCmdArgs
             get => _useMonospaceFont;
             set => SetAndNotify(value, ref _useMonospaceFont);
         }
+
 
         [Category("Appearance")]
         [DisplayName("Display Tags for CLAs")]
@@ -199,6 +201,16 @@ namespace SmartCmdArgs
         {
             get => _vcsSupportEnabled;
             set => SetAndNotify(value, ref _vcsSupportEnabled);
+        }
+
+         [Category("Settings Defaults")]
+        [DisplayName("Use CPS Virtual Profile")]
+        [Description("If enabled a virtual profile is created for CPS projects and only this profile is changed by the extension.")]
+        [DefaultValue(false)]
+        public bool UseCpsVirtualProfile
+        {
+            get => _useCpsVirtualProfile;
+            set => SetAndNotify(value, ref _useCpsVirtualProfile);
         }
 
         [Category("Settings Defaults")]
