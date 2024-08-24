@@ -1,4 +1,4 @@
-﻿using SmartCmdArgs.Helper;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.ViewModel;
 using SmartCmdArgs.Wrapper;
 using System;
@@ -23,15 +23,19 @@ namespace SmartCmdArgs.Services
         private readonly IItemEvaluationService itemEvaluation;
         private readonly IVisualStudioHelperService vsHelper;
         private readonly TreeViewModel treeViewModel;
+        private readonly ICpsProjectConfigService cpsProjectConfigService;
+
 
         public ItemAggregationService(
             IItemEvaluationService itemEvaluation,
             IVisualStudioHelperService vsHelper,
-            TreeViewModel treeViewModel)
+            TreeViewModel treeViewModel,
+            ICpsProjectConfigService cpsProjectConfigService)
         {
             this.itemEvaluation = itemEvaluation;
             this.vsHelper = vsHelper;
             this.treeViewModel = treeViewModel;
+            this.cpsProjectConfigService = cpsProjectConfigService;
         }
 
         private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchyWrapper project, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
@@ -49,8 +53,8 @@ namespace SmartCmdArgs.Services
             string projPlatform = projectObj?.ConfigurationManager?.ActiveConfiguration?.PlatformName;
 
             string activeLaunchProfile = null;
-            if (project.IsCpsProject())
-                activeLaunchProfile = CpsProjectSupport.GetActiveLaunchProfileName(projectObj);
+            if (project.SupportsLaunchProfiles())
+                activeLaunchProfile = cpsProjectConfigService.GetActiveLaunchProfileName(projectObj);
 
             TResult JoinContainer(CmdContainer con)
             {

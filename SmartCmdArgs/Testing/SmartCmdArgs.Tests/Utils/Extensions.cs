@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using SmartCmdArgs.Services;
@@ -35,7 +35,7 @@ namespace SmartCmdArgs.Tests.Utils
 
         public static Mock<IVsHierarchyWrapper> AsCpsProject(this Mock<IVsHierarchyWrapper> mock)
         {
-            mock.Setup(x => x.IsCpsProject()).Returns(true);
+            mock.Setup(x => x.SupportsLaunchProfiles()).Returns(true);
             return mock;
         }
 
