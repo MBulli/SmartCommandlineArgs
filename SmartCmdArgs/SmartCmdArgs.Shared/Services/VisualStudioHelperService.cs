@@ -129,7 +129,7 @@ namespace SmartCmdArgs.Services
                 ProjectName = pHierarchy.GetName();
                 IsLoaded = pHierarchy.IsLoaded();
 
-                if (pHierarchy.IsCpsProject())
+                if (pHierarchy.SupportsLaunchProfiles())
                     _launchSettingsChangeListenerDisposable = cpsProjectConfigService.ListenToLaunchProfileChanges(pHierarchy.GetProject(), launchProfileChangeAction);
             }
 

@@ -23,7 +23,7 @@ namespace SmartCmdArgs.Wrapper
         string GetName();
         Project GetProject();
         string GetProjectDir();
-        bool IsCpsProject();
+        bool SupportsLaunchProfiles();
         bool IsSharedAssetsProject();
         bool IsLoaded();
         bool TryGetIconMoniker(out ImageMoniker iconMoniker);
@@ -81,9 +81,9 @@ namespace SmartCmdArgs.Wrapper
         /// see: https://github.com/dotnet/project-system
         /// see: https://github.com/Microsoft/VSProjectSystem/blob/master/doc/automation/detect_whether_a_project_is_a_CPS_project.md
         /// </summary>
-        public bool IsCpsProject()
+        public bool SupportsLaunchProfiles()
         {
-            return hierarchy.IsCapabilityMatch("CPS");
+            return hierarchy.IsCapabilityMatch("LaunchProfiles"); // https://github.com/Microsoft/VSProjectSystem/blob/master/doc/overview/project_capabilities.md not all cps projects support profiles  https://github.com/microsoft/service-fabric-issues/issues/1095
         }
 
         public bool IsSharedAssetsProject()

@@ -265,7 +265,7 @@ namespace SmartCmdArgs
             var project = vsHelper.HierarchyForProjectGuid(projGuid);
 
             List<string> launchProfiles = null;
-            if (project?.IsCpsProject() == true)
+            if (project?.SupportsLaunchProfiles() == true)
             {
                 launchProfiles = cpsProjectConfigService.GetLaunchProfileNames(project.GetProject())?.ToList();
             }

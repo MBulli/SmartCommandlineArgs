@@ -126,7 +126,7 @@ namespace SmartCmdArgs.Services
         }
         private void UseCpsVirtualProfileChanged()
         {
-            foreach (var project in vsHelper.GetSupportedProjects().Where(x => x.IsCpsProject()))
+            foreach (var project in vsHelper.GetSupportedProjects().Where(x => x.SupportsLaunchProfiles()))
             {
                 projectConfigService.UpdateProjectConfig(project);
                 cpsProjectConfigService.SetActiveLaunchProfileToVirtualProfile(project.GetProject());

@@ -53,7 +53,7 @@ namespace SmartCmdArgs.Services
             string projPlatform = projectObj?.ConfigurationManager?.ActiveConfiguration?.PlatformName;
 
             string activeLaunchProfile = null;
-            if (project.IsCpsProject())
+            if (project.SupportsLaunchProfiles())
                 activeLaunchProfile = cpsProjectConfigService.GetActiveLaunchProfileName(projectObj);
 
             TResult JoinContainer(CmdContainer con)
