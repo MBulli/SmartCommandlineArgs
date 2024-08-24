@@ -733,7 +733,7 @@ namespace SmartCmdArgs.Services
 
         private bool TryGetProjectConfigHandlers(IVsHierarchyWrapper project, out ProjectConfigHandlers handler)
         {
-            if (project.IsCpsProject())
+            if (project.SupportsLaunchProfiles())
             {
                 handler = cpsProjectConfigHandlers;
                 return true;
