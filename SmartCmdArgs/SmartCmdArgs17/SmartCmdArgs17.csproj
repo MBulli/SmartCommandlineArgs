@@ -32,7 +32,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;VS17;DYNAMIC_VSProjectManaged</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;VS17;DYNAMIC-DISABLED_VSProjectManaged</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -99,8 +99,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
       <Version>7.0.0</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.31902.203" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.5.4065">
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.9.37000" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.9.3184">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -108,6 +108,9 @@
     <Choose>
       <When Condition="$(DefineConstants.Contains(DYNAMIC_VSProjectManaged))">
           <ItemGroup>
+        <PackageReference Include="Microsoft.VisualStudio.ProjectSystem">
+          <Version>17.9.380</Version>
+        </PackageReference>
               <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Managed">
                   <Version>2.0.6142705</Version>
               </PackageReference>
@@ -116,7 +119,7 @@
       <Otherwise>
           <ItemGroup>
               <PackageReference Include="CI.Microsoft.VisualStudio.ProjectSystem.Managed">
-                  <Version>17.11.1.102</Version>
+          <Version>17.7.37.99</Version>
               </PackageReference>
           </ItemGroup>  
       </Otherwise>
