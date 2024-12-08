@@ -102,7 +102,7 @@ namespace SmartCmdArgs.ViewModel
 
         public List<TreeViewItemEx> DragedTreeViewItems { get; }
 
-        public RelayCommand<int> SelectIndexCommand { get; set; }
+        public RelayCommand<(int idx, bool? shouldFocus)> SelectIndexCommand { get; set; }
 
         public RelayCommand<object> SelectItemCommand { get; set; }
 
@@ -203,7 +203,7 @@ namespace SmartCmdArgs.ViewModel
                 }
             }
 
-            SelectIndexCommand?.SafeExecute(0);
+            SelectIndexCommand?.SafeExecute((0, (bool?)null));
         }
 
         public void SelectItems(IEnumerable<CmdBase> items)

@@ -571,11 +571,15 @@ namespace SmartCmdArgs.ViewModel
                     .TakeWhile(item => !itemsSet.Contains(item)).Count();
             }
 
+            bool shouldFocus = false;
             bool removedAnItem = false;
             foreach (var item in itemsSet)
             {
                 if (item.Parent != null)
                 {
+                    if (item.IsFocusedItem)
+                        shouldFocus = true;
+
                     item.Parent.Items.Remove(item);
                     removedAnItem = true;
                 }
@@ -588,7 +592,7 @@ namespace SmartCmdArgs.ViewModel
                 indexToSelect = treeViewModel.TreeItemsView.OfType<CmdBase>()
                     .SelectMany(item => item is CmdContainer con ? con.GetEnumerable(true, true, false) : Enumerable.Repeat(item, 1))
                     .Take(indexToSelect + 1).Count() - 1;
-                treeViewModel.SelectIndexCommand.SafeExecute(indexToSelect);
+                treeViewModel.SelectIndexCommand.SafeExecute((indexToSelect, (bool?)shouldFocus));
             }
         }
 

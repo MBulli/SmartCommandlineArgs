@@ -282,9 +282,10 @@ namespace SmartCmdArgs.View
 
         private void OnDataContextChanged(object tv, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
-            SelectIndexCommand = new RelayCommand<int>(idx =>
+            SelectIndexCommand = new RelayCommand<(int idx, bool? shouldFocus)>((props) =>
             {
-                var shouldFocus = TreeHelper.FindAncestorOrSelf<Border>(this, "PART_ContentPanel")?.IsKeyboardFocusWithin ?? false;
+                var idx = props.idx;
+                var shouldFocus = props.shouldFocus ?? TreeHelper.FindAncestorOrSelf<Border>(this, "PART_ContentPanel")?.IsKeyboardFocusWithin ?? false;
 
                 ClearSelection();
 
@@ -304,7 +305,7 @@ namespace SmartCmdArgs.View
                     curIdx++;
                 }
                 focusItem?.Focus();
-            }, i => i >= 0);
+            }, p => p.idx >= 0);
 
             SelectItemCommand = new RelayCommand<object>(item =>
             {
@@ -815,7 +816,7 @@ namespace SmartCmdArgs.View
                 if (indexToSelect >= 0)
                 {
                     indexToSelect = Math.Min(items.Count - 1, indexToSelect + 1);
-                    ParentTreeView.SelectIndexCommand.SafeExecute(indexToSelect);
+                    ParentTreeView.SelectIndexCommand.SafeExecute((indexToSelect, (bool?)null));
                 }
             }
         }
