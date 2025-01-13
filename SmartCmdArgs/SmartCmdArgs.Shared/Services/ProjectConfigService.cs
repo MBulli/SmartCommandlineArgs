@@ -8,13 +8,16 @@ using System.Linq;
 
 namespace SmartCmdArgs.Services
 {
+    public enum UpdateProjectConfigReason{ RunDebugLaunch, TreeChange,UseVirtualProfileChanged }
     public interface IProjectConfigService
     {
         bool IsSupportedProject(IVsHierarchyWrapper project);
 
         List<CmdItemJson> GetItemsFromProjectConfig(IVsHierarchyWrapper project);
 
-        void UpdateProjectConfig(IVsHierarchyWrapper project);
+        void UpdateProjectConfig(IVsHierarchyWrapper project, UpdateProjectConfigReason reason);
+
+
     }
 
     public class ProjectConfigService : IProjectConfigService
@@ -48,7 +51,7 @@ namespace SmartCmdArgs.Services
 
         private class ProjectConfigHandlers
         {
-            public delegate void SetConfigDelegate(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp);
+            public delegate void SetConfigDelegate(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp, UpdateProjectConfigReason reason);
             public delegate void GetAllArgumentsDelegate(EnvDTE.Project project, List<CmdItemJson> allArgs, bool includeArgs, bool includeEnvVars, bool includeWorkDir, bool includeLaunchApp);
             public SetConfigDelegate SetConfig;
             public GetAllArgumentsDelegate GetItemsFromConfig;
@@ -59,7 +62,7 @@ namespace SmartCmdArgs.Services
             {
                 // C#
                 {ProjectKinds.CS, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, envVars, workDir, launchApp) => {
+                    SetConfig = (project, arguments, envVars, workDir, launchApp, reason) => {
                         SetMultiConfigProperty(project, arguments, "StartArguments");
                         SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
                         SetMultiConfigProperty(project, launchApp, "StartProgram");
@@ -68,13 +71,13 @@ namespace SmartCmdArgs.Services
                 } },
                 // C# UWP
                 {ProjectKinds.CS_UWP, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, envVars, workDir, launchApp) => SetMultiConfigProperty(project, arguments, "UAPDebug.CommandLineArguments"),
+                    SetConfig = (project, arguments, envVars, workDir, launchApp, reason) => SetMultiConfigProperty(project, arguments, "UAPDebug.CommandLineArguments"),
                     GetItemsFromConfig = GetItemsFromMultiConfig("UAPDebug.CommandLineArguments")
                 } },
 
                 // VB.NET
                 {ProjectKinds.VB, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, _, workDir, launchApp) => {
+                    SetConfig = (project, arguments, _, workDir, launchApp, reason) => {
                         SetMultiConfigProperty(project, arguments, "StartArguments");
                         SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
                         SetMultiConfigProperty(project, launchApp, "StartProgram");
@@ -88,7 +91,7 @@ namespace SmartCmdArgs.Services
                 } },
                 // Python
                 {ProjectKinds.Py, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, envVars, workDir, _) => {
+                    SetConfig = (project, arguments, envVars, workDir, _, reason) => {
                         SetSingleConfigProperty(project, arguments, "CommandLineArguments");
                         SetSingleConfigEnvVars(project, envVars, "Environment");
                         SetSingleConfigProperty(project, workDir, "WorkingDirectory");
@@ -97,7 +100,7 @@ namespace SmartCmdArgs.Services
                 } },
                 // Node.js
                 {ProjectKinds.Node, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, envVars, workDir, _) => {
+                    SetConfig = (project, arguments, envVars, workDir, _, reason) => {
                         SetSingleConfigProperty(project, arguments, "ScriptArguments");
                         SetSingleConfigEnvVars(project, envVars, "Environment");
                         SetSingleConfigProperty(project, workDir, "WorkingDirectory");
@@ -111,7 +114,7 @@ namespace SmartCmdArgs.Services
                 } },
                 // F#
                 {ProjectKinds.FS, new ProjectConfigHandlers() {
-                    SetConfig = (project, arguments, _, workDir, launchApp) => {
+                    SetConfig = (project, arguments, _, workDir, launchApp, reason) => {
                         SetMultiConfigProperty(project, arguments, "StartArguments");
                         SetMultiConfigProperty(project, workDir, "StartWorkingDirectory");
                         SetMultiConfigProperty(project, launchApp, "StartProgram");
@@ -377,7 +380,7 @@ namespace SmartCmdArgs.Services
                 ("AppHostLocalDebugger", "CommandLineArgs", null, null, null),
             };
 
-        private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
+        private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp, UpdateProjectConfigReason reason)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -591,7 +594,7 @@ namespace SmartCmdArgs.Services
         // to optain the right configurations object from `Project.Object.Configurations`
         // this object is simmilar to the VCProjEngine configuration and has `DebugSettings`
         // which contain the CommandArguments which we can use to set the args.
-        private static void SetVFProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
+        private static void SetVFProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp, UpdateProjectConfigReason reason)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -773,7 +776,7 @@ namespace SmartCmdArgs.Services
             return result;
         }
 
-        public void UpdateProjectConfig(IVsHierarchyWrapper project)
+        public void UpdateProjectConfig(IVsHierarchyWrapper project, UpdateProjectConfigReason reason)
         {
             if (!lifeCycleService.Value.IsEnabled || project == null)
                 return;
@@ -788,10 +791,11 @@ namespace SmartCmdArgs.Services
 
             if (TryGetProjectConfigHandlers(project, out ProjectConfigHandlers handler))
             {
-                handler.SetConfig(project.GetProject(), commandLineArgs, envVars, workDir, launchApp);
+                handler.SetConfig(project.GetProject(), commandLineArgs, envVars, workDir, launchApp, reason);
+                
             }
 
-            Logger.Info($"Updated Configuration for Project: {project.GetName()}");
+            Logger.Info($"Updated Configuration for Project: {project.GetName()} command line: {commandLineArgs}");
         }
     }
 

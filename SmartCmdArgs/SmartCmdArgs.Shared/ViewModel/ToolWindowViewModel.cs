@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -34,6 +34,13 @@ namespace SmartCmdArgs.ViewModel
         {
             get => _displayTagForCla;
             set => SetAndNotify(value, ref _displayTagForCla);
+        }
+
+         private SetActiveProfileBehavior _setActiveProfileBehavior;
+        public SetActiveProfileBehavior SetActiveProfileBehavior
+        {
+            get => _setActiveProfileBehavior;
+            set => SetAndNotify(value, ref _setActiveProfileBehavior);
         }
 
 

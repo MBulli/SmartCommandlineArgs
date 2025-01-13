@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.Shell;
 using SmartCmdArgs.Helper;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -45,6 +46,19 @@ namespace SmartCmdArgs
         [Description("Enable by default (old behaviour)")]
         EnableByDefault,
     }
+    [Flags]
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    public enum SetActiveProfileBehavior
+    {
+        [Description("Never, due to a bug in virtual profiles you will have to reselect Smart CLI Args every time you open a project")]
+        Never = 1 << 0,
+        [Description("On Smart CLI Arg tree changed (ie option checked)")]
+        OnTreeChanged = 1 << 1,
+        [Description("On first run/debug")]
+        OnRun = 1 << 2,
+        [Description("On Smart CLI Arg option checked or first run/debug")]
+        OnCheckedOrRun = OnTreeChanged | OnRun
+    }
 
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
@@ -64,6 +78,7 @@ namespace SmartCmdArgs
         }
 
         private EnableBehaviour _enableBehaviour;
+        private SetActiveProfileBehavior _setActiveProfileBehavior;
         private RelativePathRootOption _relativePathRoot;
 
         private bool _useMonospaceFont;
@@ -90,6 +105,16 @@ namespace SmartCmdArgs
         {
             get => _enableBehaviour;
             set => SetAndNotify(value, ref _enableBehaviour);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Set Active Profile Behavior")]
+        [Description("When we should automatically make ourselves the active profile")]
+        [DefaultValue(SetActiveProfileBehavior.OnTreeChanged)]
+        public SetActiveProfileBehavior SetActiveProfileBehavior
+        {
+            get => _setActiveProfileBehavior;
+            set => SetAndNotify(value, ref _setActiveProfileBehavior);
         }
 
         [Category("General")]

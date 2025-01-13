@@ -30,6 +30,7 @@ namespace SmartCmdArgs.Services
         bool DeleteEmptyFilesAutomatically { get; }
         bool DeleteUnnecessaryFilesAutomatically { get; }
         EnableBehaviour EnableBehaviour { get; }
+        SetActiveProfileBehavior SetActiveProfileBehavior { get; }
         InactiveDisableMode DisableInactiveItems { get; }
         RelativePathRootOption RelativePathRoot {  get; }
 
@@ -77,6 +78,7 @@ namespace SmartCmdArgs.Services
 #endif
         public bool UseMonospaceFont => OptionsPage.UseMonospaceFont;
         public bool DisplayTagForCla => OptionsPage.DisplayTagForCla;
+        public SetActiveProfileBehavior SetActiveProfileBehavior => OptionsPage.SetActiveProfileBehavior;
         public bool DeleteEmptyFilesAutomatically => OptionsPage.DeleteEmptyFilesAutomatically;
         public bool DeleteUnnecessaryFilesAutomatically => OptionsPage.DeleteUnnecessaryFilesAutomatically;
         public EnableBehaviour EnableBehaviour => OptionsPage.EnableBehaviour;

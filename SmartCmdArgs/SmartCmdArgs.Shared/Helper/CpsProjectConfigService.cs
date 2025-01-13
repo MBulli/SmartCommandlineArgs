@@ -35,7 +35,7 @@ namespace SmartCmdArgs.Services
         IDisposable ListenToLaunchProfileChanges(Project project, Action listener);
         void SetActiveLaunchProfileByName(Project project, string profileName);
         void SetActiveLaunchProfileToVirtualProfile(Project project);
-        void SetConfig(Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp);
+        void SetConfig(Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp, UpdateProjectConfigReason reason);
     }
 
     public class CpsProjectConfigService : ICpsProjectConfigService
@@ -134,7 +134,7 @@ namespace SmartCmdArgs.Services
             return null;
         }
 
-        public void SetConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
+        public void SetConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp, UpdateProjectConfigReason reason)
         {
             IUnconfiguredProjectServices unconfiguredProjectServices;
             IProjectServices projectServices;
@@ -143,6 +143,7 @@ namespace SmartCmdArgs.Services
             {
                 var launchSettingsProvider = unconfiguredProjectServices.ExportProvider.GetExportedValue<ILaunchSettingsProvider>();
                 ILaunchProfile baseLaunchProfile = null;
+                var applyProfileFix=true;
                 if (optionsSettingsService.UseCpsVirtualProfile)
                 {
                     baseLaunchProfile = launchSettingsProvider.CurrentSnapshot.Profiles.FirstOrDefault(x => x.Name == VirtualProfileName);
@@ -152,7 +153,12 @@ namespace SmartCmdArgs.Services
                 {
                     baseLaunchProfile = launchSettingsProvider?.ActiveProfile;
                 }
+                else
+                    applyProfileFix = false; //we already existed
 
+                var dbgsnapshot = launchSettingsProvider.CurrentSnapshot;
+                var dbgactiveProfile = launchSettingsProvider.ActiveProfile;
+                //OurLogger.Info(LogCat.Other, $"dbgsnapshot {dbgsnapshot?.ActiveProfile?.Name}, dbgactiveProfile {dbgactiveProfile?.Name}, baseLaunchProfile: {baseLaunchProfile?.Name} forceOurProfileActive: {applyProfileFix}");
                 if (baseLaunchProfile == null)
                     return;
 
@@ -160,6 +166,8 @@ namespace SmartCmdArgs.Services
 
                 if (arguments != null)
                     writableLaunchProfile.CommandLineArgs = arguments;
+                else
+                    applyProfileFix = false;//incase not used on a solution
                 
                 if (envVars != null)
                     writableLaunchProfile.EnvironmentVariables = envVars.ToImmutableDictionary();
@@ -175,10 +183,23 @@ namespace SmartCmdArgs.Services
                     writableLaunchProfile.Name = VirtualProfileName;
                     writableLaunchProfile.DoNotPersist = true;
                 }
+                var activeProfileBehavior = optionsSettingsService.SetActiveProfileBehavior;
+                var setActiveProfile = (activeProfileBehavior.HasFlag(SetActiveProfileBehavior.OnRun) && (reason == UpdateProjectConfigReason.RunDebugLaunch && applyProfileFix)) || (activeProfileBehavior.HasFlag(SetActiveProfileBehavior.OnTreeChanged) && reason == UpdateProjectConfigReason.TreeChange); //applyprofilefix is set on first run only when we are added, if this happens due to a tree change but the behavior is OnRun we want to set the active profile.  Note as this only happens on first run it is not the same as setting it active on every tree change
 
-                projectServices.ThreadingPolicy.ExecuteSynchronously(() =>
+
+                projectServices.ThreadingPolicy.ExecuteSynchronously(async () =>
                 {
-                    return launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
+                    
+                    if (applyProfileFix){
+                        var activeProfile = launchSettingsProvider.ActiveProfile?.Name;
+                        if (! String.IsNullOrWhiteSpace( activeProfile))
+                            await launchSettingsProvider.SetActiveProfileAsync(activeProfile);
+                    }
+
+                    await launchSettingsProvider.AddOrUpdateProfileAsync(writableLaunchProfile, addToFront: false);
+                    if (setActiveProfile) 
+                        await launchSettingsProvider.SetActiveProfileAsync(writableLaunchProfile.Name);
+
                 });
             }
         }
@@ -340,4 +361,5 @@ namespace SmartCmdArgs.Services
         }
 
     }
+
 }

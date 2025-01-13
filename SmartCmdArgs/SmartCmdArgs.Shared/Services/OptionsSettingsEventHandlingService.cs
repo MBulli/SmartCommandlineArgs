@@ -128,7 +128,7 @@ namespace SmartCmdArgs.Services
         {
             foreach (var project in vsHelper.GetSupportedProjects().Where(x => x.SupportsLaunchProfiles()))
             {
-                projectConfigService.UpdateProjectConfig(project);
+                projectConfigService.UpdateProjectConfig(project, UpdateProjectConfigReason.UseVirtualProfileChanged);
                 cpsProjectConfigService.SetActiveLaunchProfileToVirtualProfile(project.GetProject());
             }
         }
