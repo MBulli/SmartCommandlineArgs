@@ -8,7 +8,7 @@ For VS 2015 the last supported version is [v2.3.2](https://github.com/MBulli/Sma
 
 A Visual Studio Extension which aims to provide a better UI to manage your command line arguments, environment variables, working directory, and launch app.
 
-![Main Window](vsix_preview_image.png "Command Line Arguments window, showning all projects")
+![Main Window](https://raw.githubusercontent.com/MBulli/SmartCommandlineArgs/master/Doc/Images/MainWindow.png "Command Line Arguments window, showning all projects")
 
 Visual Studio 2017, 2019 and 2022 and the following project types are supported:
 
@@ -24,7 +24,7 @@ Visual Studio 2017, 2019 and 2022 and the following project types are supported:
 - Android Native Debugger
 - Oasis NX Debugger
 
-If you're using Cmake make sure to read the [Cmake support wiki page](https://github.com/MBulli/SmartCommandlineArgs/wiki/Cmake-support "Cmake").
+If you're using Cmake make sure to read the [Cmake support wiki page](https://github.com/MBulli/SmartCommandlineArgs/wiki/Cmake-support "Cmake").
 
 ### Usage
 
