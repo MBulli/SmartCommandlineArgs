@@ -9,7 +9,6 @@
         <Icon>Resources\BigIcon.png</Icon>
         <PreviewImage>Resources\vsix_preview_image.png</PreviewImage>
         <Tags>Commandline Command Line Arguments cmd project</Tags>
-        <Preview>true</Preview>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
