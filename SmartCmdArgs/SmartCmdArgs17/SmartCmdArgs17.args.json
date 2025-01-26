@@ -7,6 +7,10 @@
       "Command": "\"$(ProjectDir)..\\..\\TestProjects\\TestProjects.sln\""
     },
     {
+      "Id": "11d335a8-8b92-46b9-bd24-bb27dabb0824",
+      "Command": "\"G:\\GitRepos\\UnrealEngine\\UE5.sln\""
+    },
+    {
       "Id": "935f1ca6-2ebb-4325-8ad4-71366379f946",
       "Command": "/RootSuffix Exp",
       "DefaultChecked": true
