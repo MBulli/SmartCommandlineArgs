@@ -105,15 +105,7 @@ namespace SmartCmdArgs.Services
                     projects = new[] { e.Project };
                 }
 
-                foreach (var project in projects)
-                {
-                    if (project.GetGuid() == Guid.Empty)
-                    {
-                        Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
-                    }
-
-                    viewModelUpdateService.UpdateCommandsForProject(project);
-                }
+                viewModelUpdateService.UpdateCommandsForAllProjects();
 
                 viewModelUpdateService.UpdateIsActiveForParamsDebounced();
             });

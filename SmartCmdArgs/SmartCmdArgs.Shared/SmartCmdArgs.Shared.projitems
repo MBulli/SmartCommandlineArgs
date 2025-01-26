@@ -89,6 +89,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\Converter\TreeLevelMarginConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\DragDrop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\DropTargetAdorner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\GatherArgsQuestionControl.xaml.cs">
+      <DependentUpon>GatherArgsQuestionControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\GatherArgsQuestionDialog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\RedBorderAdorner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\SetCustomDelimiterControl.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\SetCustomDelimiterDialog.cs" />
@@ -111,6 +115,10 @@
     <Page Include="$(MSBuildThisFileDirectory)View\ArgumentItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\GatherArgsQuestionControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\SetCustomDelimiterControl.xaml">
       <SubType>Designer</SubType>

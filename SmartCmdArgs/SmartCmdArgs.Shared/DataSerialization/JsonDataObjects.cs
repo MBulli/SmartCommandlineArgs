@@ -20,6 +20,7 @@ namespace SmartCmdArgs.DataSerialization
         public bool? VcsSupportEnabled { get; set; }
         public bool? UseSolutionDir { get; set; }
         public bool? MacroEvaluationEnabled { get; set; }
+        public bool? GatherArgsIgnoreCpp { get; set; }
 
         public SettingsJson() { }
 
@@ -33,6 +34,7 @@ namespace SmartCmdArgs.DataSerialization
             UseSolutionDir = settingsViewModel.UseSolutionDir;
             MacroEvaluationEnabled = settingsViewModel.MacroEvaluationEnabled;
             UseCustomJsonRoot = settingsViewModel.UseCustomJsonRoot;
+            GatherArgsIgnoreCpp = settingsViewModel.GatherArgsIgnoreCpp;
 
             if (UseCustomJsonRoot)
                 JsonRootPath = settingsViewModel.JsonRootPath;

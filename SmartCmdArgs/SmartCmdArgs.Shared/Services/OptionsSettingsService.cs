@@ -21,6 +21,7 @@ namespace SmartCmdArgs.Services
         bool VcsSupportEnabled { get; }
         bool MacroEvaluationEnabled { get; }
         bool UseSolutionDir { get; }
+        bool? GatherArgsIgnoreCpp { get; }
 
         // Options
         bool UseMonospaceFont { get; }
@@ -65,6 +66,7 @@ namespace SmartCmdArgs.Services
         public bool VcsSupportEnabled => settingsViewModel.VcsSupportEnabled ?? OptionsPage.VcsSupportEnabled;
         public bool MacroEvaluationEnabled => settingsViewModel.MacroEvaluationEnabled ?? OptionsPage.MacroEvaluationEnabled;
         public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settingsViewModel.UseSolutionDir ?? OptionsPage.UseSolutionDir);
+        public bool? GatherArgsIgnoreCpp => settingsViewModel.GatherArgsIgnoreCpp;
 
         // Options
         public bool UseMonospaceFont => OptionsPage.UseMonospaceFont;

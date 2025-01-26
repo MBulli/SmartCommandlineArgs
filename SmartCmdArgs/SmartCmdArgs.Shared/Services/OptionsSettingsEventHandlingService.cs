@@ -96,10 +96,8 @@ namespace SmartCmdArgs.Services
 
             toolWindowHistory.SaveState();
 
-            foreach (var project in vsHelper.GetSupportedProjects())
-            {
-                viewModelUpdateService.UpdateCommandsForProject(project);
-            }
+            viewModelUpdateService.UpdateCommandsForAllProjects();
+
             fileStorage.SaveAllProjects();
         }
 

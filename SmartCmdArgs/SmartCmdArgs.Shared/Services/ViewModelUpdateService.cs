@@ -5,12 +5,15 @@ using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SmartCmdArgs.View;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SmartCmdArgs.Services
 {
     internal interface IViewModelUpdateService
     {
-        void UpdateCommandsForProject(IVsHierarchyWrapper project);
+        void UpdateCommandsForProject(IVsHierarchyWrapper project, bool gatherArgsWhenNotFound = true);
+        void UpdateCommandsForAllProjects(Action<IVsHierarchyWrapper> actionAfterUpdate = null);
         void UpdateIsActiveForParamsDebounced();
         void UpdateCurrentStartupProject();
     }
@@ -60,7 +63,7 @@ namespace SmartCmdArgs.Services
             _updateIsActiveDebouncer.Dispose();
         }
 
-        public void UpdateCommandsForProject(IVsHierarchyWrapper project)
+        public void UpdateCommandsForProject(IVsHierarchyWrapper project, bool gatherArgsWhenNotFound)
         {
             if (!lifeCycleService.Value.IsEnabled)
                 return;
@@ -186,14 +189,57 @@ namespace SmartCmdArgs.Services
             {
                 projectData = new ProjectDataJson();
 
-                Logger.Info($"Gathering commands from configurations for project '{project.GetName()}'.");
-                projectData.Items.AddRange(projectConfig.GetItemsFromProjectConfig(project));
+                if (gatherArgsWhenNotFound)
+                {
+                    Logger.Info($"Gathering commands from configurations for project '{project.GetName()}'.");
+                    try
+                    {
+                        projectData.Items.AddRange(projectConfig.GetItemsFromProjectConfig(project));
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error($"Failed to gather comamnds from configurations for project '{project.GetName()}'.", ex);
+                    }
+                }
             }
 
             // push projectData to the ViewModel
             toolWindowViewModel.PopulateFromProjectData(project, projectData);
 
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
+        }
+
+        public void UpdateCommandsForAllProjects(Action<IVsHierarchyWrapper> actionAfterUpdate)
+        {
+            var supportedProjects = vsHelper.GetSupportedProjects();
+
+            var cppProjectCount = supportedProjects.Count(x => x.GetKind() == ProjectKinds.CPP);
+
+            var gatherForCppProjects = false;
+            if (optionsSettings.GatherArgsIgnoreCpp == null)
+            {
+                if (cppProjectCount > 15)
+                {
+                    var dialog = CmdArgsPackage.Instance.ServiceProvider.GetService<GatherArgsQuestionDialog>();
+                    gatherForCppProjects = dialog.ShowModal(ProjectKinds.CPP, cppProjectCount) == false;
+                }
+            }
+            else
+            {
+                gatherForCppProjects = !optionsSettings.GatherArgsIgnoreCpp.Value;
+            }
+            
+            foreach (var project in supportedProjects)
+            {
+                if (project.GetGuid() == Guid.Empty)
+                {
+                    Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
+                }
+
+                var gatherArgs = gatherForCppProjects || project.GetKind() != ProjectKinds.CPP;
+                UpdateCommandsForProject(project, gatherArgs);
+                actionAfterUpdate?.Invoke(project);
+            }
         }
 
         private ISet<CmdParameter> GetAllActiveItemsForProject(IVsHierarchyWrapper project)
