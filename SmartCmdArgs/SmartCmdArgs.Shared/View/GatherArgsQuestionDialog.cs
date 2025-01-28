@@ -22,7 +22,7 @@ namespace SmartCmdArgs.View
             this.settingsViewModel = settingsViewModel;
 
             Width = 400;
-            Height = 210;
+            Height = 240;
 
             ResizeMode = System.Windows.ResizeMode.NoResize;
 
