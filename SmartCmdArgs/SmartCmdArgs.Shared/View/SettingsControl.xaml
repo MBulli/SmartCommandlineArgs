@@ -8,14 +8,17 @@
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:uc="clr-namespace:SmartCmdArgs.View.UserControls"
+             xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              mc:Ignorable="d" 
              d:DesignHeight="1000"
              d:DesignWidth="600"
              d:Background="White"
-             d:DataContext="{x:Type vm:SettingsViewModel}">
+             d:DataContext="{x:Type vm:SettingsViewModel}"
+             Background="{DynamicResource VsBrush.Window}">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
         <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource VsBrush.WindowText}"/>
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Foreground">
@@ -26,7 +29,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <Style TargetType="CheckBox">
+        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ThemedDialogCheckBoxStyleKey}}">
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Foreground">
@@ -37,6 +40,12 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ThemedDialogButtonStyleKey}}"/>
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ThemedDialogTextBoxStyleKey}}"/>
+        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ThemedDialogComboBoxStyleKey}}"/>
+        <Style TargetType="Label" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ThemedDialogLabelStyleKey}}"/>
+        <Style TargetType="ScrollViewer" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ScrollViewerStyleKey}}"/>
+        <Style TargetType="ScrollBar" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ScrollBarStyleKey}}"/>
     </UserControl.Resources>
     <Grid Margin="10,5,10,10">
         <Grid.RowDefinitions>
