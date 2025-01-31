@@ -8,10 +8,11 @@
              xmlns:c="clr-namespace:SmartCmdArgs.View.Converter"
              x:Class="SmartCmdArgs.View.ToolWindowControl"
              mc:Ignorable="d"
+             d:DesignHeight="300"
+             d:DesignWidth="300"
+             d:DataContext="{d:DesignData ToolWindowViewModel}"
              Background="{DynamicResource vs:EnvironmentColors.ToolWindowBackgroundBrushKey}"
              Foreground="{DynamicResource VsBrush.WindowText}"
-             d:DesignHeight="300" d:DesignWidth="300"
-             d:DataContext="{d:DesignData ToolWindowViewModel}"
              x:Name="MyToolWindow">
     <UserControl.Resources>
         <ResourceDictionary>

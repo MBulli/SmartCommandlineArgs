@@ -9,7 +9,10 @@
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:uc="clr-namespace:SmartCmdArgs.View.UserControls"
              mc:Ignorable="d" 
-             d:DesignHeight="400" d:DesignWidth="600" d:DataContext="{x:Type vm:SettingsViewModel}">
+             d:DesignHeight="1000"
+             d:DesignWidth="600"
+             d:Background="White"
+             d:DataContext="{x:Type vm:SettingsViewModel}">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
         <Style TargetType="TextBlock">

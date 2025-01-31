@@ -5,7 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="16" d:DesignWidth="300"
+             d:DesignHeight="16"
+             d:DesignWidth="300"
+             d:Background="White"
              x:Name="SettingsCheckBoxControl">
     <StackPanel>
         <CheckBox x:Name="MainCheckBox" IsChecked="{Binding IsChecked, ElementName=SettingsCheckBoxControl}" IsEnabled="{Binding RequiredValue, ElementName=SettingsCheckBoxControl}">
