@@ -4,10 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
     mc:Ignorable="d"
     d:DesignWidth="253"
-    d:Background="White" 
-    Height="125">
+    d:Background="White"
+    toolkit:Themes.UseVsTheme="True">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -23,13 +24,13 @@
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Row="0" Grid.Column="0">Delimiter:</TextBlock>
+        <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Delimiter:</TextBlock>
         <TextBox x:Name="DelimiterTextBox" Grid.Row="0" Grid.Column="1" Text="{Binding Delimiter}"/>
 
-        <TextBlock Grid.Row="2" Grid.Column="0">Prefix:</TextBlock>
+        <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Prefix:</TextBlock>
         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Prefix}"/>
 
-        <TextBlock Grid.Row="4" Grid.Column="0">Postfix:</TextBlock>
+        <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center">Postfix:</TextBlock>
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Postfix}"/>
 
         <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">

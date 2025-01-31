@@ -8,35 +8,15 @@
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              xmlns:vm="clr-namespace:SmartCmdArgs.ViewModel"
              xmlns:uc="clr-namespace:SmartCmdArgs.View.UserControls"
+             xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="1000"
              d:DesignWidth="600"
              d:Background="White"
-             d:DataContext="{x:Type vm:SettingsViewModel}">
+             d:DataContext="{x:Type vm:SettingsViewModel}"
+             toolkit:Themes.UseVsTheme="True">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-        <Style TargetType="TextBlock">
-            <Style.Triggers>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground">
-                        <Setter.Value>
-                            <DynamicResource ResourceKey="{x:Static SystemColors.GrayTextBrushKey}" />
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style TargetType="CheckBox">
-            <Style.Triggers>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground">
-                        <Setter.Value>
-                            <DynamicResource ResourceKey="{x:Static SystemColors.GrayTextBrushKey}" />
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
     </UserControl.Resources>
     <Grid Margin="10,5,10,10">
         <Grid.RowDefinitions>
@@ -105,7 +85,7 @@
                         <Run Text="Path where to save the arguments JSON file"/>
                     </TextBlock>
                     <DockPanel Margin="0,2,0,2" LastChildFill="True">
-                        <Button DockPanel.Dock="Right" Name="BtnOpen" Margin="0,0,5,0" Padding="2,2" Click="BtnOpen_Click">
+                        <Button DockPanel.Dock="Right" Name="BtnOpen" Margin="0,0,5,0" Padding="2,2" Click="BtnOpen_Click" MinWidth="34">
                             <imaging:CrispImage Moniker="{x:Static catalog:KnownMonikers.FolderBrowserDialogControl}"/>
                         </Button>
                         <TextBox Margin="0,0,5,0" x:Name="CustomRootPath" Text="{Binding JsonRootPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" TextChanged="CustomRootPathChanged"/>

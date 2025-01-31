@@ -18,7 +18,7 @@ namespace SmartCmdArgs.View
         {
             ResizeMode = System.Windows.ResizeMode.NoResize;
             Width = 260;
-            Height = 160;
+            Height = 220;
 
             _control = new SetCustomDelimiterControl();
             _control.DataContext = vm;
