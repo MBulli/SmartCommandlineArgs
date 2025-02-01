@@ -5,22 +5,21 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="16"
-             d:DesignWidth="300"
+             d:DesignWidth="400"
              d:Background="White"
              x:Name="SettingsCheckBoxControl">
     <StackPanel>
         <CheckBox x:Name="MainCheckBox" IsChecked="{Binding IsChecked, ElementName=SettingsCheckBoxControl}" IsEnabled="{Binding RequiredValue, ElementName=SettingsCheckBoxControl}">
             <StackPanel Orientation="Horizontal">
-                <TextBlock FontWeight="Bold" Text="{Binding LabelText, ElementName=SettingsCheckBoxControl}"/>
-                <TextBlock Margin="5,0,0,0" Visibility="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type CheckBox}}, Converter={c:NullToVisibilityConverter HideVisibility=Collapsed, Inverted=True}}">
-                (Default: <Run Text="{Binding DefaultValue, ElementName=SettingsCheckBoxControl}" />)
+                <TextBlock FontWeight="Bold" Text="{Binding LabelText, ElementName=SettingsCheckBoxControl}" d:Text="Option Label"/>
+                <TextBlock Margin="5,0,0,0" Visibility="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type CheckBox}}, Converter={c:NullToVisibilityConverter HideVisibility=Collapsed, Inverted=True}}" d:Visibility="Visible">
+                (Default: <Run Text="{Binding DefaultValue, ElementName=SettingsCheckBoxControl}" d:Text="true" />)
                 </TextBlock>
                 <TextBlock Margin="5,0,0,0" Visibility="{Binding RequiredValue, ElementName=SettingsCheckBoxControl, Converter={c:BoolToVisibilityConverter HideVisibility=Collapsed, Inverted=True}}">
-                (Requires: <Run x:Name="RequiredDisplayNameRun"></Run>)
+                (Requires: <Run x:Name="RequiredDisplayNameRun" d:Text="Other Option"/>)
                 </TextBlock>
             </StackPanel>
         </CheckBox>
-        <TextBlock x:Name="DescriptionTextBlock" Margin="15,5,10,0" TextWrapping="WrapWithOverflow" Visibility="Collapsed" />
+        <TextBlock x:Name="DescriptionTextBlock" Margin="15,5,10,0" TextWrapping="WrapWithOverflow" Visibility="Collapsed" d:Text="This is the design description and is meant to show how the text would look like. Even for multiple lines" d:Visibility="Visible"/>
     </StackPanel>
 </UserControl>
