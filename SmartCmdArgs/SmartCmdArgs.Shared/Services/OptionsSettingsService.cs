@@ -21,7 +21,6 @@ namespace SmartCmdArgs.Services
         bool VcsSupportEnabled { get; }
         bool MacroEvaluationEnabled { get; }
         bool UseSolutionDir { get; }
-        bool? GatherArgsIgnoreCpp { get; }
 
         // Options
         bool UseMonospaceFont { get; }
@@ -31,6 +30,7 @@ namespace SmartCmdArgs.Services
         EnableBehaviour EnableBehaviour { get; }
         InactiveDisableMode DisableInactiveItems { get; }
         RelativePathRootOption RelativePathRoot {  get; }
+        CppProjectScanHandling CppProjectScanHandling { get; }
 
         // Events
 
@@ -66,7 +66,6 @@ namespace SmartCmdArgs.Services
         public bool VcsSupportEnabled => settingsViewModel.VcsSupportEnabled ?? OptionsPage.VcsSupportEnabled;
         public bool MacroEvaluationEnabled => settingsViewModel.MacroEvaluationEnabled ?? OptionsPage.MacroEvaluationEnabled;
         public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settingsViewModel.UseSolutionDir ?? OptionsPage.UseSolutionDir);
-        public bool? GatherArgsIgnoreCpp => settingsViewModel.GatherArgsIgnoreCpp;
 
         // Options
         public bool UseMonospaceFont => OptionsPage.UseMonospaceFont;
@@ -76,6 +75,7 @@ namespace SmartCmdArgs.Services
         public EnableBehaviour EnableBehaviour => OptionsPage.EnableBehaviour;
         public InactiveDisableMode DisableInactiveItems => OptionsPage.DisableInactiveItems;
         public RelativePathRootOption RelativePathRoot => OptionsPage.RelativePathRoot;
+        public CppProjectScanHandling CppProjectScanHandling => OptionsPage.CppProjectScanHandling;
 
 
         // Event Handlers

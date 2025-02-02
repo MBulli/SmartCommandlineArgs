@@ -96,7 +96,7 @@ namespace SmartCmdArgs.Services
 
             toolWindowHistory.SaveState();
 
-            viewModelUpdateService.UpdateCommandsForAllProjects();
+            viewModelUpdateService.UpdateCommandsForProjects(vsHelper.GetSupportedProjects());
 
             fileStorage.SaveAllProjects();
         }

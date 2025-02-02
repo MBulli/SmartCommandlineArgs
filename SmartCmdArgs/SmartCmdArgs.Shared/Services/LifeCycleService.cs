@@ -177,7 +177,7 @@ namespace SmartCmdArgs.Services
 
             treeViewModel.ShowAllProjects = suoDataService.SuoDataJson.ShowAllProjects;
 
-            viewModelUpdateService.UpdateCommandsForAllProjects(actionAfterUpdate: fileStorage.AddProject);
+            viewModelUpdateService.UpdateCommandsForProjects(vsHelper.GetSupportedProjects(), actionAfterUpdate: fileStorage.AddProject);
             viewModelUpdateService.UpdateCurrentStartupProject();
             viewModelUpdateService.UpdateIsActiveForParamsDebounced();
         }

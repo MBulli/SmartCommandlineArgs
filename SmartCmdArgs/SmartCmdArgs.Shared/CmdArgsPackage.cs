@@ -187,7 +187,6 @@ namespace SmartCmdArgs
             services.AddSingleton<IOptionsSettingsEventHandlingService, OptionsSettingsEventHandlingService>();
             services.AddSingleton<ITreeViewEventHandlingService, TreeViewEventHandlingService>();
             services.AddLazySingleton<IToolWindowHistory, ToolWindowHistory>();
-            services.AddTransient<GatherArgsQuestionDialog>();
 
             var asyncInitializableServices = services
                 .Where(x => x.Lifetime == ServiceLifetime.Singleton)

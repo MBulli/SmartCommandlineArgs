@@ -105,7 +105,7 @@ namespace SmartCmdArgs.Services
                     projects = new[] { e.Project };
                 }
 
-                viewModelUpdateService.UpdateCommandsForAllProjects();
+                viewModelUpdateService.UpdateCommandsForProjects(projects);
 
                 viewModelUpdateService.UpdateIsActiveForParamsDebounced();
             });

@@ -12,8 +12,8 @@ namespace SmartCmdArgs.Services
 {
     internal interface IViewModelUpdateService
     {
-        void UpdateCommandsForProject(IVsHierarchyWrapper project, bool gatherArgsWhenNotFound = true);
-        void UpdateCommandsForAllProjects(Action<IVsHierarchyWrapper> actionAfterUpdate = null);
+        void UpdateCommandsForProject(IVsHierarchyWrapper project, bool gatherArgsWhenNotFound = true, bool gatherArgsForEmptyViewModels = false);
+        void UpdateCommandsForProjects(IEnumerable<IVsHierarchyWrapper> projects, Action<IVsHierarchyWrapper> actionAfterUpdate = null);
         void UpdateIsActiveForParamsDebounced();
         void UpdateCurrentStartupProject();
     }
@@ -63,7 +63,7 @@ namespace SmartCmdArgs.Services
             _updateIsActiveDebouncer.Dispose();
         }
 
-        public void UpdateCommandsForProject(IVsHierarchyWrapper project, bool gatherArgsWhenNotFound)
+        public void UpdateCommandsForProject(IVsHierarchyWrapper project, bool gatherArgsWhenNotFound, bool gatherArgsForEmptyViewModels)
         {
             if (!lifeCycleService.Value.IsEnabled)
                 return;
@@ -155,7 +155,7 @@ namespace SmartCmdArgs.Services
                 }
             }
             // if we have data in the ViewModel we keep it
-            else if (treeViewModel.Projects.ContainsKey(projectGuid))
+            else if (treeViewModel.Projects.TryGetValue(projectGuid, out CmdProject cmdProject) && (cmdProject.Items.Count > 0 || !gatherArgsForEmptyViewModels))
             {
                 return;
             }
@@ -209,26 +209,12 @@ namespace SmartCmdArgs.Services
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
         }
 
-        public void UpdateCommandsForAllProjects(Action<IVsHierarchyWrapper> actionAfterUpdate)
+        public void UpdateCommandsForProjects(IEnumerable<IVsHierarchyWrapper> projects, Action<IVsHierarchyWrapper> actionAfterUpdate)
         {
             var supportedProjects = vsHelper.GetSupportedProjects();
 
-            var cppProjectCount = supportedProjects.Count(x => x.GetKind() == ProjectKinds.CPP);
+            List<IVsHierarchyWrapper> startupProjects = null; 
 
-            var gatherForCppProjects = false;
-            if (optionsSettings.GatherArgsIgnoreCpp == null)
-            {
-                if (cppProjectCount > 15)
-                {
-                    var dialog = CmdArgsPackage.Instance.ServiceProvider.GetService<GatherArgsQuestionDialog>();
-                    gatherForCppProjects = dialog.ShowModal(ProjectKinds.CPP, cppProjectCount) == false;
-                }
-            }
-            else
-            {
-                gatherForCppProjects = !optionsSettings.GatherArgsIgnoreCpp.Value;
-            }
-            
             foreach (var project in supportedProjects)
             {
                 if (project.GetGuid() == Guid.Empty)
@@ -236,8 +222,19 @@ namespace SmartCmdArgs.Services
                     Logger.Info($"Race condition might occurred while dispatching update commands function call. Project is already unloaded.");
                 }
 
-                var gatherArgs = gatherForCppProjects || project.GetKind() != ProjectKinds.CPP;
-                UpdateCommandsForProject(project, gatherArgs);
+                var gatherArgs = true;
+                if (optionsSettings.CppProjectScanHandling != CppProjectScanHandling.All && project.GetKind() == ProjectKinds.CPP)
+                {
+                    if (optionsSettings.CppProjectScanHandling == CppProjectScanHandling.OnlyStartup)
+                    {
+                        if (startupProjects == null)
+                            startupProjects = vsHelper.GetStartupProjects().ToList();
+
+                        gatherArgs = startupProjects.Contains(project);
+                    }
+                }
+
+                UpdateCommandsForProject(project, gatherArgs, false);
                 actionAfterUpdate?.Invoke(project);
             }
         }
@@ -327,9 +324,17 @@ namespace SmartCmdArgs.Services
 
         public void UpdateCurrentStartupProject()
         {
-            var startupProjectGuids = new HashSet<Guid>(vsHelper.StartupProjectUniqueNames()
-                .Select(vsHelper.HierarchyForProjectName).Select(hierarchy => hierarchy.GetGuid()));
+            var startupProjects = vsHelper.GetStartupProjects().ToList();
 
+            if (optionsSettings.CppProjectScanHandling == CppProjectScanHandling.OnlyStartup)
+            {
+                foreach (var project in startupProjects.Where(x => x.GetKind() == ProjectKinds.CPP))
+                {
+                    UpdateCommandsForProject(project, true, true);
+                }
+            }
+
+            var startupProjectGuids = new HashSet<Guid>(startupProjects.Select(hierarchy => hierarchy.GetGuid()));
             treeViewModel.Projects.ForEach(p => p.Value.IsStartupProject = startupProjectGuids.Contains(p.Key));
             treeViewModel.UpdateTree();
         }

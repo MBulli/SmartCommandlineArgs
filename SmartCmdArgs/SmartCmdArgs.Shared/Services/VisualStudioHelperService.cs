@@ -58,6 +58,7 @@ namespace SmartCmdArgs.Services
 
         string GetSolutionFilename();
         IEnumerable<string> StartupProjectUniqueNames();
+        IEnumerable<IVsHierarchyWrapper> GetStartupProjects();
         void SetNewStartupProject(string projectName);
         void SetAsStartupProject(Guid propjectGuid);
         IEnumerable<IVsHierarchyWrapper> GetSupportedProjects(bool includeUnloaded = false);
@@ -217,6 +218,11 @@ namespace SmartCmdArgs.Services
         public IEnumerable<string> StartupProjectUniqueNames()
         {
             return (this.appObject?.Solution?.SolutionBuild?.StartupProjects as object[])?.Cast<string>() ?? Enumerable.Empty<string>();
+        }
+
+        public IEnumerable<IVsHierarchyWrapper> GetStartupProjects()
+        {
+            return StartupProjectUniqueNames().Select(HierarchyForProjectName);
         }
 
         public void SetNewStartupProject(string ProjectName)

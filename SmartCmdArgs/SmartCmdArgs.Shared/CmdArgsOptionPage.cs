@@ -46,6 +46,17 @@ namespace SmartCmdArgs
         EnableByDefault,
     }
 
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    public enum CppProjectScanHandling
+    {
+        [Description("Ignore C++ projects")]
+        None,
+        [Description("Gather args only from startup projects")]
+        OnlyStartup,
+        [Description("Gather args from all projects")]
+        All,
+    }
+
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
         private bool _dontSave = false;
@@ -80,6 +91,7 @@ namespace SmartCmdArgs
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
+        private CppProjectScanHandling _cppProjectScanHandling;
 
         [Category("General")]
         [DisplayName("Enable Behaviour")]
@@ -99,6 +111,16 @@ namespace SmartCmdArgs
         {
             get => _relativePathRoot;
             set => SetAndNotify(value, ref _relativePathRoot);
+        }
+
+        [Category("General")]
+        [DisplayName("C++ Project Scan Handling")]
+        [Description("Select from which C++ projects the existing command line args should be collected if no extension data is found for the project. This option exists to improve load times for big C++ projects like Unreal.")]
+        [DefaultValue(CppProjectScanHandling.OnlyStartup)]
+        public CppProjectScanHandling CppProjectScanHandling
+        {
+            get => _cppProjectScanHandling;
+            set => SetAndNotify(value, ref _cppProjectScanHandling);
         }
 
         [Category("Appearance")]

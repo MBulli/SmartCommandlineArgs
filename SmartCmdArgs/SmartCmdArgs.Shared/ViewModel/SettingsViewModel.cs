@@ -21,8 +21,6 @@ namespace SmartCmdArgs.ViewModel
         private bool? _useSolutionDir;
         private bool? _macroEvaluationEnabled;
 
-        private bool? _gatherArgsIgnoreCpp;
-
         public bool SaveSettingsToJson
         {
             get => _saveSettingsToJson;
@@ -83,12 +81,6 @@ namespace SmartCmdArgs.ViewModel
             set => SetAndNotify(value, ref _macroEvaluationEnabled);
         }
 
-        public bool? GatherArgsIgnoreCpp
-        {
-            get => _gatherArgsIgnoreCpp;
-            set => SetAndNotify(value, ref _gatherArgsIgnoreCpp);
-        }
-
         public RelayCommand DisableExtensionCommand { get; }
 
         public CmdArgsOptionPage Options => optionPage.Value;
@@ -145,7 +137,6 @@ namespace SmartCmdArgs.ViewModel
                 VcsSupportEnabled = other.VcsSupportEnabled;
                 UseSolutionDir = other.UseSolutionDir;
                 MacroEvaluationEnabled = other.MacroEvaluationEnabled;
-                GatherArgsIgnoreCpp = other.GatherArgsIgnoreCpp;
             }
         }
     }
