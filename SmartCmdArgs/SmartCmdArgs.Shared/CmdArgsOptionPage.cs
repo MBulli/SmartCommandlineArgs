@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace SmartCmdArgs
 {
@@ -57,6 +58,7 @@ namespace SmartCmdArgs
         All,
     }
 
+    [ComVisible(true)]
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
         private bool _dontSave = false;
