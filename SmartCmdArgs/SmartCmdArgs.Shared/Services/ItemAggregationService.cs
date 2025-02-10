@@ -9,8 +9,8 @@ namespace SmartCmdArgs.Services
 {
     public interface IItemAggregationService
     {
-        IEnumerable<CmdParameter> GetAllComamndLineParamsForProject(IVsHierarchyWrapper project);
-        string CreateCommandLineArgsForProject(IVsHierarchyWrapper project);
+        IEnumerable<CmdParameter> GetAllComamndLineParamsForProject(IVsHierarchyWrapper project, CmdContainer startContainer = null);
+        string CreateCommandLineArgsForProject(IVsHierarchyWrapper project, CmdContainer startContainer = null);
         IDictionary<string, string> GetEnvVarsForProject(IVsHierarchyWrapper project);
         string GetWorkDirForProject(IVsHierarchyWrapper project);
         string GetLaunchAppForProject(IVsHierarchyWrapper project);
@@ -34,13 +34,15 @@ namespace SmartCmdArgs.Services
             this.treeViewModel = treeViewModel;
         }
 
-        private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchyWrapper project, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
+        private TResult AggregateComamndLineItemsForProject<TResult>(IVsHierarchyWrapper project, CmdContainer startContainer, Func<IEnumerable<CmdBase>, Func<CmdContainer, TResult>, CmdContainer, TResult> joinItems)
         {
             if (project == null)
                 return default;
 
-            var projectCmd = treeViewModel.Projects.GetValueOrDefault(project.GetGuid());
-            if (projectCmd == null)
+            if (startContainer == null)
+                startContainer = treeViewModel.Projects.GetValueOrDefault(project.GetGuid());
+
+            if (startContainer == null)
                 return default;
 
             var projectObj = project.GetProject();
@@ -69,10 +71,10 @@ namespace SmartCmdArgs.Services
                 return joinItems(items, JoinContainer, con);
             }
 
-            return JoinContainer(projectCmd);
+            return JoinContainer(startContainer);
         }
 
-        public IEnumerable<CmdParameter> GetAllComamndLineParamsForProject(IVsHierarchyWrapper project)
+        public IEnumerable<CmdParameter> GetAllComamndLineParamsForProject(IVsHierarchyWrapper project, CmdContainer startContainer = null)
         {
             IEnumerable<CmdParameter> joinItems(IEnumerable<CmdBase> items, Func<CmdContainer, IEnumerable<CmdParameter>> joinContainer, CmdContainer parentContainer)
             {
@@ -90,12 +92,12 @@ namespace SmartCmdArgs.Services
                 }
             }
 
-            return AggregateComamndLineItemsForProject<IEnumerable<CmdParameter>>(project, joinItems);
+            return AggregateComamndLineItemsForProject<IEnumerable<CmdParameter>>(project, startContainer, joinItems);
         }
 
-        public string CreateCommandLineArgsForProject(IVsHierarchyWrapper project)
+        public string CreateCommandLineArgsForProject(IVsHierarchyWrapper project, CmdContainer startContainer = null)
         {
-            return AggregateComamndLineItemsForProject<string>(project,
+            return AggregateComamndLineItemsForProject<string>(project, startContainer,
                 (items, joinContainer, parentContainer) =>
                 {
                     var strings = items

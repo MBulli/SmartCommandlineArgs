@@ -48,6 +48,11 @@ namespace SmartCmdArgs.Helper
             if (Equals(newValue, field)) return;
             field = newValue;
 
+            NotifyPropertyChanged(propertyName);
+        }
+
+        protected void NotifyPropertyChanged(string propertyName)
+        {
             if (_notificationStore == null)
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

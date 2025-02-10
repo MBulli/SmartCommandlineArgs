@@ -9,6 +9,9 @@
     d:DesignWidth="253"
     d:Background="White"
     toolkit:Themes.UseVsTheme="True">
+    <UserControl.Resources>
+        <Thickness x:Key="{x:Static toolkit:ToolkitResourceKeys.InputPaddingKey}">1,1,1,1</Thickness>
+    </UserControl.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

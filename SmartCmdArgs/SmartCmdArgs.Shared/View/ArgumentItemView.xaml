@@ -57,7 +57,7 @@
                    VerticalAlignment="Center"
                    Height="{Binding ElementName=textbox, Path=Height}"
                    Margin="4,0,0,0"
-                   Text="{Binding Value, Mode=OneWay}"
+                   Text="{Binding DisplayText, Mode=OneWay}"
                    IsEnabled="{Binding IsActive}"
                    FontWeight="{Binding FontWeight, ElementName=argView}">
             <TextBlock.Style>

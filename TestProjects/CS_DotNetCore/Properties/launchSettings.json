@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CS_DotNetCore": {
+      "commandName": "Project",
+      "commandLineArgs": "123"
+    }
+  }
+}

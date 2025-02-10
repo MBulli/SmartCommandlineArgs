@@ -13,7 +13,18 @@ namespace SmartCmdArgs.ViewModel
         public CmdContainer Parent { get => parent; set => OnParentChanged(parent, value); }
 
         private string value;
-        public string Value { get => value; set => OnValueChanged(this.value, value); }
+        public string Value
+        {
+            get => value;
+            set
+            {
+                if (value == this.@value) return;
+                OnValueChanged(this.@value, value);
+                NotifyPropertyChanged(nameof(DisplayText));
+            }
+        }
+
+        public virtual string DisplayText { get => value; }
 
         protected bool? isChecked;
         public bool? IsChecked

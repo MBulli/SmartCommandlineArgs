@@ -29,6 +29,7 @@ namespace SmartCmdArgs.Services
         bool DeleteUnnecessaryFilesAutomatically { get; }
         EnableBehaviour EnableBehaviour { get; }
         InactiveDisableMode DisableInactiveItems { get; }
+        GroupNameMode GroupNameMode { get; }
         RelativePathRootOption RelativePathRoot {  get; }
         CppProjectScanHandling CppProjectScanHandling { get; }
 
@@ -74,6 +75,7 @@ namespace SmartCmdArgs.Services
         public bool DeleteUnnecessaryFilesAutomatically => OptionsPage.DeleteUnnecessaryFilesAutomatically;
         public EnableBehaviour EnableBehaviour => OptionsPage.EnableBehaviour;
         public InactiveDisableMode DisableInactiveItems => OptionsPage.DisableInactiveItems;
+        public GroupNameMode GroupNameMode => OptionsPage.GroupNameMode;
         public RelativePathRootOption RelativePathRoot => OptionsPage.RelativePathRoot;
         public CppProjectScanHandling CppProjectScanHandling => OptionsPage.CppProjectScanHandling;
 

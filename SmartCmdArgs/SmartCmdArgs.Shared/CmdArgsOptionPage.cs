@@ -58,6 +58,19 @@ namespace SmartCmdArgs
         All,
     }
 
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    public enum GroupNameMode
+    {
+        [Description("Show name only")]
+        NameOnly,
+        [Description("Show name and content")]
+        NameAndContent,
+        [Description("Show content only")]
+        ContentOnly,
+        [Description("Show content and if thats empty the name")]
+        ContentAndNameIfEmpty,
+    }
+
     [ComVisible(true)]
     public class CmdArgsOptionPage : DialogPage, INotifyPropertyChanged
     {
@@ -82,6 +95,7 @@ namespace SmartCmdArgs
         private bool _useMonospaceFont;
         private bool _displayTagForCla;
         private InactiveDisableMode _disableInactiveItems;
+        private GroupNameMode _groupNameMode;
 
         private bool _deleteEmptyFilesAutomatically;
         private bool _deleteUnnecessaryFilesAutomatically;
@@ -153,6 +167,16 @@ namespace SmartCmdArgs
         {
             get => _disableInactiveItems;
             set => SetAndNotify(value, ref _disableInactiveItems);
+        }
+
+        [Category("Appearance")]
+        [DisplayName("Group label option")]
+        [Description("Configures how the labels of groups are filled.")]
+        [DefaultValue(GroupNameMode.NameOnly)]
+        public GroupNameMode GroupNameMode
+        {
+            get => _groupNameMode;
+            set => SetAndNotify(value, ref _groupNameMode);
         }
 
         [Category("Cleanup")]
