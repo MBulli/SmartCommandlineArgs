@@ -95,6 +95,8 @@ namespace SmartCmdArgs.Services
                 projectData = fileStorage.ReadDataForProject(project);
             }
 
+            var saveData = false;
+
             // data in project json overrides current data if it exists to respond to changes made by git to the file
             if (projectData != null)
             {
@@ -195,6 +197,7 @@ namespace SmartCmdArgs.Services
                     try
                     {
                         projectData.Items.AddRange(projectConfig.GetItemsFromProjectConfig(project));
+                        saveData = true;
                     }
                     catch (Exception ex)
                     {
@@ -205,6 +208,11 @@ namespace SmartCmdArgs.Services
 
             // push projectData to the ViewModel
             toolWindowViewModel.PopulateFromProjectData(project, projectData);
+
+            if (saveData)
+            {
+                fileStorage.SaveProject(project);
+            }
 
             Logger.Info($"Updated Commands for project '{project.GetName()}'.");
         }
