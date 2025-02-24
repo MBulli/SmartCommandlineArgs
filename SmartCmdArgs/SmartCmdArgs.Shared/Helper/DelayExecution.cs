@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
+using System;
 using System.Threading;
-using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace SmartCmdArgs.Helper
 {
@@ -13,19 +15,15 @@ namespace SmartCmdArgs.Helper
 
         internal static void ExecuteAfter(TimeSpan delay, CancellationToken cancelToken, Action action)
         {
-            SynchronizationContext context = SynchronizationContext.Current;
-
-            Task.Delay(delay, cancelToken).ContinueWith((_) =>
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                context.Post((__) => 
-                {
-                    if (!cancelToken.IsCancellationRequested)
-                    {
-                        action();
-                    }                   
-                }, null);
-            }, cancelToken);
-        }
+                await Task.Delay(delay, cancelToken);
 
+                if (!cancelToken.IsCancellationRequested)
+                {
+                    action();
+                }
+            }).Task.Forget();
+        }
     }
 }

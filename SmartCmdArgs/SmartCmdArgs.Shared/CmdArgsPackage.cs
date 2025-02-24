@@ -133,7 +133,7 @@ namespace SmartCmdArgs
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            await InitializeAsyncServices();
+            await InitializeServicesAsync();
 
             // we want to know about changes to the solution state even if the extension is disabled
             // so we can update our interface
@@ -201,7 +201,7 @@ namespace SmartCmdArgs
             return services.BuildServiceProvider();
         }
 
-        private async Task InitializeAsyncServices()
+        private async Task InitializeServicesAsync()
         {
             var initializableServices = ServiceProvider.GetServices<IAsyncInitializable>();
             foreach (var service in initializableServices)

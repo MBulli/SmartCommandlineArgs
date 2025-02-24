@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
+using Microsoft.VisualStudio.Shell;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Services;
 using SmartCmdArgs.View;
@@ -248,13 +249,15 @@ namespace SmartCmdArgs.ViewModel
 
         public void SetStringFilter(string filterString, bool matchCase = false)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 Predicate<CmdBase> filter = null;
                 if (!string.IsNullOrEmpty(filterString))
                 {
-                    filter = item => 
-                           item is CmdParameter && item.Value.Contains(filterString, matchCase ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase) 
+                    filter = item =>
+                           item is CmdParameter && item.Value.Contains(filterString, matchCase ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase)
                         || item is CmdContainer && !((CmdContainer)item).ItemsView.IsEmpty;
                 }
 

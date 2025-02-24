@@ -146,7 +146,12 @@ namespace SmartCmdArgs
 
             protected override void OnStartSearch()
             {
+                #pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
+                // If we throw If not on UI thread the app will crash
+                // It is also used like this in the documentation
+                // See: https://learn.microsoft.com/en-us/visualstudio/extensibility/adding-search-to-a-tool-window
                 treeViewModel.SetStringFilter(SearchQuery.SearchString, toolWindow.matchCaseSearchOption.Value);
+                #pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
 
                 // Call the implementation of this method in the base class.   
                 // This sets the task status to complete and reports task completion.   

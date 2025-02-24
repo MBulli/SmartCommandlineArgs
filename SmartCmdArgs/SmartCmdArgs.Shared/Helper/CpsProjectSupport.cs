@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Debug;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
+using Microsoft.VisualStudio.Shell;
 using SmartCmdArgs.DataSerialization;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,8 @@ namespace SmartCmdArgs.Helper
     {
         private static bool TryGetProjectServices(EnvDTE.Project project, out IUnconfiguredProjectServices unconfiguredProjectServices, out IProjectServices projectServices)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null && project != null)
             {

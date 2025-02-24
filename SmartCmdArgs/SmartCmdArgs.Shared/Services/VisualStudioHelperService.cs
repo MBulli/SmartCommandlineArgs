@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Wrapper;
 using System;
@@ -416,29 +417,23 @@ namespace SmartCmdArgs.Services
             appObject.ItemOperations.OpenFile(path);
         }
 
-
-        Timer _startupProjectCheckTimer = null;
+        private CancellationTokenSource startupProjectChangedCTS = null;
         private void OnStartupProjectChanged(IVsHierarchyWrapper startupProjectHierarchy)
         {
             StartupProjectChanged?.Invoke(this, EventArgs.Empty);
 
             var curStartUpProjects = StartupProjectUniqueNames().ToList();
 
-            SynchronizationContext context = SynchronizationContext.Current;
+            startupProjectChangedCTS?.Cancel();
+            startupProjectChangedCTS = new CancellationTokenSource();
 
-            _startupProjectCheckTimer?.Dispose();
-            _startupProjectCheckTimer = new Timer(
-                (ignore) =>
-                {
-                    _startupProjectCheckTimer?.Dispose();
-                    context.Post(ignore2 =>
-                    {
-                        var newStartUpProjects = StartupProjectUniqueNames().ToList();
-                        if (newStartUpProjects.Count != curStartUpProjects.Count || newStartUpProjects.Zip(curStartUpProjects, (s1, s2) => s1 != s2).Any(b => b))
-                            StartupProjectChanged?.Invoke(this, EventArgs.Empty);
-                    }, null);
-
-                }, null, 500, Timeout.Infinite);
+            DelayExecution.ExecuteAfter(TimeSpan.FromMilliseconds(500), startupProjectChangedCTS.Token, () =>
+            {
+                startupProjectChangedCTS = null;
+                var newStartUpProjects = StartupProjectUniqueNames().ToList();
+                if (newStartUpProjects.Count != curStartUpProjects.Count || newStartUpProjects.Zip(curStartUpProjects, (s1, s2) => s1 != s2).Any(b => b))
+                    StartupProjectChanged?.Invoke(this, EventArgs.Empty);
+            });
         }
 
         private void CommandEventsOnBeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)

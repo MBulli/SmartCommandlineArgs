@@ -63,7 +63,7 @@ namespace SmartCmdArgs
     {
         private bool _dontSave = false;
 
-        public CmdArgsOptionPage() : base()
+        public CmdArgsOptionPage() : base(ThreadHelper.JoinableTaskContext)
         {
             _dontSave = true;
             try

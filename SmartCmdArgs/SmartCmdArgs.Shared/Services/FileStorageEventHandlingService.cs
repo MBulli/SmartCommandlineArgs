@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using SmartCmdArgs.Helper;
 using SmartCmdArgs.Wrapper;
 using System;
@@ -108,7 +109,7 @@ namespace SmartCmdArgs.Services
                 viewModelUpdateService.UpdateCommandsForProjects(projects);
 
                 viewModelUpdateService.UpdateIsActiveForParamsDebounced();
-            });
+            }).Task.Forget(); ;
         }
     }
 }
