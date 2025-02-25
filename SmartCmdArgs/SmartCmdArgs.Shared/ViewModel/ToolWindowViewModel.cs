@@ -642,18 +642,27 @@ namespace SmartCmdArgs.ViewModel
             }
         }
 
-        private IEnumerable<CmdBase> ListEntriesToCmdObjects(List<CmdItemJson> list)
+        private IEnumerable<CmdBase> ListEntriesToCmdObjects(List<CmdItemJson> list, HashSet<Guid> usedGuids = null)
         {
-            CmdBase result = null;
+            if (usedGuids == null)
+                usedGuids = new HashSet<Guid>();
+
             foreach (var item in list)
             {
+                var id = item.Id;
+                if (usedGuids.Contains(id))
+                    id = Guid.NewGuid();
+                else
+                    usedGuids.Add(id);
+
+                CmdBase result;
                 if (item.Items == null)
-                    result = new CmdParameter(item.Id, item.Type, item.Command, item.Enabled, item.DefaultChecked);
+                    result = new CmdParameter(id, item.Type, item.Command, item.Enabled, item.DefaultChecked);
                 else
                     result = new CmdGroup(
-                        item.Id,
+                        id,
                         item.Command,
-                        ListEntriesToCmdObjects(item.Items),
+                        ListEntriesToCmdObjects(item.Items, usedGuids),
                         item.Expanded,
                         item.ExclusiveMode,
                         item.ProjectConfig,
