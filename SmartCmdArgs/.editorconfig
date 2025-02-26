@@ -1,0 +1,2 @@
+[*Tests.cs]
+dotnet_diagnostic.VSTHRD200.severity = none
