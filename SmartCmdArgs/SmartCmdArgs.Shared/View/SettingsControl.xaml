@@ -53,13 +53,13 @@
 
                 <Separator Margin="0,10,0,0"/>
 
-                <!-- Continous Profile Updates -->
-                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Continous Profile Updates" IsChecked="{Binding AutoProfileUpdates}" DefaultValue="{Binding Options.AutoProfileUpdates, Mode=OneWay}"
-                                     Description="If enabled the launch profile is updated every time the content of the extension window changes. Otherwise the profile is only updated on programm launch."/>
+                <!-- Continuous Profile Updates -->
+                <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Continuous Profile Updates" IsChecked="{Binding AutoProfileUpdates}" DefaultValue="{Binding Options.AutoProfileUpdates, Mode=OneWay}"
+                                     Description="If enabled the launch profile is updated every time the content of the extension window changes. Otherwise the profile is only updated on program launch."/>
 
                 <!-- Enable version control support -->
                 <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Enable version control support" IsChecked="{Binding VcsSupportEnabled}" DefaultValue="{Binding Options.VcsSupportEnabled, Mode=OneWay}"
-                                     Description="If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control."/>
+                                     Description="If enabled the extension will store the command line arguments into an json file at the same location as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control."/>
 
                 <!-- Use Solution Directory -->
                 <uc:SettingsCheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,10,5,0" LabelText="Use Solution Directory" IsChecked="{Binding UseSolutionDir}" DefaultValue="{Binding Options.UseSolutionDir, Mode=OneWay}" RequiredDisplayName="Version Control Support" RequiredValue="{Binding VcsSupportEnabled}"
