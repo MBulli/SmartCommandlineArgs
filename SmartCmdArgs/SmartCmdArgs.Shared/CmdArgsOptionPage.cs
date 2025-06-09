@@ -138,7 +138,7 @@ namespace SmartCmdArgs
 
         [Category("Appearance")]
         [DisplayName("Display Tags for CLAs")]
-        [Description("If enabled the item tag 'CLA' is displayed for Command Line Arguments. Normally the tag 'ENV' is only displayed for environment varibales.")]
+        [Description("If enabled the item tag 'CLA' is displayed for Command Line Arguments. Normally the tag 'ENV' is only displayed for environment variables.")]
         [DefaultValue(false)]
         public bool DisplayTagForCla
         {
@@ -158,7 +158,7 @@ namespace SmartCmdArgs
 
         [Category("Cleanup")]
         [DisplayName("Delete empty files automatically")]
-        [Description("If enabled, '*.args.json' files which would contain no arguments will be delete automatically.")]
+        [Description("If enabled, '*.args.json' files which would contain no arguments will be deleted automatically.")]
         [DefaultValue(true)]
         public bool DeleteEmptyFilesAutomatically
         {
@@ -168,7 +168,7 @@ namespace SmartCmdArgs
 
         [Category("Cleanup")]
         [DisplayName("Delete unnecessary files automatically")]
-        [Description("If enabled, '*.args.json' whcih are unnecessary will be deleted automatically. Such a file is unnecessary if it belongs to a project and 'Use Solution Directory' is enbaled or belongs to a solution and 'Use Solution Directory' is disabled.")]
+        [Description("If enabled, '*.args.json' which are unnecessary will be deleted automatically. Such a file is unnecessary if it belongs to a project and 'Use Solution Directory' is enbaled or belongs to a solution and 'Use Solution Directory' is disabled.")]
         [DefaultValue(true)]
         public bool DeleteUnnecessaryFilesAutomatically
         {
@@ -217,8 +217,8 @@ namespace SmartCmdArgs
         }
 
         [Category("Settings Defaults")]
-        [DisplayName("Continous Profile Updates")]
-        [Description("If enabled the launch profile is updated every time the content of the extension window changes. Otherwise the profile is only updated on programm launch.")]
+        [DisplayName("Continuous Profile Updates")]
+        [Description("If enabled the launch profile is updated every time the content of the extension window changes. Otherwise the profile is only updated on program launch.")]
         [DefaultValue(true)]
         public bool AutoProfileUpdates
         {
@@ -228,7 +228,7 @@ namespace SmartCmdArgs
 
         [Category("Settings Defaults")]
         [DisplayName("Enable version control support")]
-        [Description("If enabled the extension will store the command line arguments into an json file at the same loctation as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control. The default value for this setting is True.")]
+        [Description("If enabled the extension will store the command line arguments into an json file at the same location as the related project file. That way the command line arguments might be version controlled by a VCS. If disabled the extension will store everything inside the solutions .suo-file which is usally ignored by version control. The default value for this setting is True.")]
         [DefaultValue(true)]
         public bool VcsSupportEnabled
         {
