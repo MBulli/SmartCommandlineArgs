@@ -17,6 +17,7 @@ namespace SmartCmdArgs.DataSerialization
         public bool? ManageLaunchApplication { get; set; }
         public bool UseCustomJsonRoot { get; set; }
         public string JsonRootPath { get; set; }
+        public bool? AutoProfileUpdates { get; set; }
         public bool? VcsSupportEnabled { get; set; }
         public bool? UseSolutionDir { get; set; }
         public bool? MacroEvaluationEnabled { get; set; }
@@ -29,6 +30,7 @@ namespace SmartCmdArgs.DataSerialization
             ManageEnvironmentVars = settingsViewModel.ManageEnvironmentVars;
             ManageWorkingDirectories = settingsViewModel.ManageWorkingDirectories;
             ManageLaunchApplication = settingsViewModel.ManageLaunchApplication;
+            AutoProfileUpdates = settingsViewModel.AutoProfileUpdates;
             VcsSupportEnabled = settingsViewModel.VcsSupportEnabled;
             UseSolutionDir = settingsViewModel.UseSolutionDir;
             MacroEvaluationEnabled = settingsViewModel.MacroEvaluationEnabled;

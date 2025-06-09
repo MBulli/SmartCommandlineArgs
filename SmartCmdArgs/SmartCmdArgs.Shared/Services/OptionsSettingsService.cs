@@ -18,6 +18,7 @@ namespace SmartCmdArgs.Services
         bool ManageLaunchApplication { get; }
         bool UseCustomJsonRoot { get; }
         string JsonRootPath { get; }
+        bool AutoProfileUpdates { get; }
         bool VcsSupportEnabled { get; }
         bool MacroEvaluationEnabled { get; }
         bool UseSolutionDir { get; }
@@ -63,6 +64,7 @@ namespace SmartCmdArgs.Services
         public bool ManageLaunchApplication => settingsViewModel.ManageLaunchApplication ?? OptionsPage.ManageLaunchApplication;
         public bool UseCustomJsonRoot => settingsViewModel.UseCustomJsonRoot;
         public string JsonRootPath => settingsViewModel.JsonRootPath;
+        public bool AutoProfileUpdates => settingsViewModel.AutoProfileUpdates ?? OptionsPage.AutoProfileUpdates;
         public bool VcsSupportEnabled => settingsViewModel.VcsSupportEnabled ?? OptionsPage.VcsSupportEnabled;
         public bool MacroEvaluationEnabled => settingsViewModel.MacroEvaluationEnabled ?? OptionsPage.MacroEvaluationEnabled;
         public bool UseSolutionDir => _vsHelperService?.GetSolutionFilename() != null && (settingsViewModel.UseSolutionDir ?? OptionsPage.UseSolutionDir);

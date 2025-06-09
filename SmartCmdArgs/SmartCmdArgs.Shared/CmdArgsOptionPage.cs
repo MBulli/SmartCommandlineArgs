@@ -90,6 +90,7 @@ namespace SmartCmdArgs
         private bool _manageEnvironmentVars;
         private bool _manageWorkingDirectories;
         private bool _manageLaunchApplication;
+        private bool _autoProfileUpdates;
         private bool _vcsSupportEnabled;
         private bool _useSolutionDir;
         private bool _macroEvaluationEnabled;
@@ -213,6 +214,16 @@ namespace SmartCmdArgs
         {
             get => _manageLaunchApplication;
             set => SetAndNotify(value, ref _manageLaunchApplication);
+        }
+
+        [Category("Settings Defaults")]
+        [DisplayName("Continous Profile Updates")]
+        [Description("If enabled the launch profile is updated every time the content of the extension window changes. Otherwise the profile is only updated on programm launch.")]
+        [DefaultValue(true)]
+        public bool AutoProfileUpdates
+        {
+            get => _autoProfileUpdates;
+            set => SetAndNotify(value, ref _autoProfileUpdates);
         }
 
         [Category("Settings Defaults")]

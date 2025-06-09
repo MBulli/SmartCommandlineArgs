@@ -84,9 +84,12 @@ namespace SmartCmdArgs.Services
 
         private void OnTreeChangedThrottled(object sender, TreeViewModel.TreeChangedEventArgs e)
         {
-            var projectGuid = e.AffectedProject.Id;
-            var project = vsHelper.HierarchyForProjectGuid(projectGuid);
-            projectConfigService.UpdateProjectConfig(project);
+            if (optionsSettings.AutoProfileUpdates)
+            {
+                var projectGuid = e.AffectedProject.Id;
+                var project = vsHelper.HierarchyForProjectGuid(projectGuid);
+                projectConfigService.UpdateProjectConfig(project);
+            }
         }
 
         private void OnTreeChanged(object sender, TreeViewModel.TreeChangedEventArgs e)

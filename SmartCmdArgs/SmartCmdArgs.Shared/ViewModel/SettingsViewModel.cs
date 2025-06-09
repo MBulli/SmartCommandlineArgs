@@ -17,6 +17,7 @@ namespace SmartCmdArgs.ViewModel
         private bool? _manageLaunchApplication;
         private bool _useCustomJsonRoot;
         private string _jsonRootPath;
+        private bool? _autoProfileUpdates;
         private bool? _vcsSupportEnabled;
         private bool? _useSolutionDir;
         private bool? _macroEvaluationEnabled;
@@ -49,6 +50,12 @@ namespace SmartCmdArgs.ViewModel
         {
             get => _manageLaunchApplication;
             set => SetAndNotify(value, ref _manageLaunchApplication);
+        }
+
+        public bool? AutoProfileUpdates
+        {
+            get => _autoProfileUpdates;
+            set => SetAndNotify(value, ref _autoProfileUpdates);
         }
 
         public bool? VcsSupportEnabled
@@ -134,6 +141,7 @@ namespace SmartCmdArgs.ViewModel
                 ManageLaunchApplication = other.ManageLaunchApplication;
                 UseCustomJsonRoot = other.UseCustomJsonRoot;
                 JsonRootPath = other.JsonRootPath;
+                AutoProfileUpdates = other.AutoProfileUpdates;
                 VcsSupportEnabled = other.VcsSupportEnabled;
                 UseSolutionDir = other.UseSolutionDir;
                 MacroEvaluationEnabled = other.MacroEvaluationEnabled;
