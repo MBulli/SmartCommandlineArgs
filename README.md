@@ -81,6 +81,42 @@ Options can be found at `Tools → Options → Smart Commandline Arguments`.
 ### Settings Defaults
 This contols the default behaviour for [Settings](#settings)
 
+### Custom Debugger Rules
+
+The extension ships with built-in support for common C/C++ debugger flavors (Windows Local/Remote, Linux, WSL, Android, Oasis NX, etc.). If your project uses a debugger flavor that is not listed above, you can register it via a JSON config file without modifying the extension.
+
+Create a file at:
+
+```
+%LOCALAPPDATA%\SmartCmdArgs\custom_debugger_rules.json
+```
+
+The file contains a JSON array of rule objects. Each rule maps a debugger flavor (the `DebuggerFlavor` value in your `.vcxproj.user`) to the project properties the extension should read from and write to:
+
+```json
+[
+  {
+    "RuleName": "MyCustomDebugger",
+    "ArgsPropName": "RemoteDebuggerCommandArguments",
+    "EnvPropName": "RemoteDebuggerEnvironment",
+    "WorkDirPropName": "RemoteDebuggerWorkingDirectory",
+    "LaunchAppPropName": "RemoteDebuggerCommand"
+  }
+]
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `RuleName` | Yes | The debugger flavor name, matching the `DebuggerFlavor` property in the `.vcxproj.user` file. |
+| `ArgsPropName` | Yes | The property name for command line arguments. |
+| `EnvPropName` | No | The property name for environment variables. |
+| `WorkDirPropName` | No | The property name for the working directory. |
+| `LaunchAppPropName` | No | The property name for the launch application/command. |
+
+Rules with a `RuleName` that duplicates a built-in rule are ignored. Errors loading the file are logged to the Visual Studio Activity Log.
+
+To find the correct `RuleName` for your debugger, set the debugger flavor and some arguments in Visual Studio, save, and inspect the `<DebuggerFlavor>` value under `DebuggerGeneralProperties` in your `.vcxproj.user` file.
+
 ## Hotkeys
 - <kbd>CTRL</kbd>+<kbd>↑</kbd> / <kbd>CTRL</kbd>+<kbd>↓</kbd>: Move selected items.
 - <kbd>Space</kbd>: Disable/Enable selected items.
