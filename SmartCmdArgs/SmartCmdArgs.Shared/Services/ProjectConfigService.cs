@@ -1,9 +1,11 @@
 using Microsoft.VisualStudio.Shell;
-using SmartCmdArgs.Helper;
+using Newtonsoft.Json;
 using SmartCmdArgs.DataSerialization;
+using SmartCmdArgs.Helper;
 using SmartCmdArgs.Wrapper;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SmartCmdArgs.Services
@@ -279,7 +281,20 @@ namespace SmartCmdArgs.Services
 
         #region VCProjEngine (C/C++)
 
-        private static readonly List<(string RuleName, string ArgsPropName, string EnvPropName, string WorkDirPropName, string LaunchAppPropName)> VCPropInfo = new List<(string RuleName, string PropName, string EnvPropName, string WorkDirPropName, string LaunchAppPropName)>
+        private static readonly List<(string RuleName, string ArgsPropName, string EnvPropName, string WorkDirPropName, string LaunchAppPropName)> VCPropInfo = LoadVCPropInfo();
+
+        private class CustomDebuggerRule
+        {
+            public string RuleName { get; set; }
+            public string ArgsPropName { get; set; }
+            public string EnvPropName { get; set; }
+            public string WorkDirPropName { get; set; }
+            public string LaunchAppPropName { get; set; }
+        }
+
+        private static List<(string RuleName, string ArgsPropName, string EnvPropName, string WorkDirPropName, string LaunchAppPropName)> LoadVCPropInfo()
+        {
+            var list = new List<(string, string, string, string, string)>
             {
                 ("WindowsLocalDebugger", "LocalDebuggerCommandArguments", "LocalDebuggerEnvironment", "LocalDebuggerWorkingDirectory", "LocalDebuggerCommand"),
                 ("WindowsRemoteDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment", "RemoteDebuggerWorkingDirectory", "RemoteDebuggerCommand"),
@@ -290,6 +305,47 @@ namespace SmartCmdArgs.Services
                 ("LinuxDebugger", "RemoteDebuggerCommandArguments", null, "RemoteDebuggerWorkingDirectory", null),
                 ("AppHostLocalDebugger", "CommandLineArgs", null, null, null),
             };
+
+            try
+            {
+                string configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SmartCmdArgs");
+                string configPath = Path.Combine(configDir, "custom_debugger_rules.json");
+
+                if (File.Exists(configPath))
+                {
+                    string json = File.ReadAllText(configPath);
+                    var customRules = JsonConvert.DeserializeObject<List<CustomDebuggerRule>>(json);
+                    if (customRules != null)
+                    {
+                        var existingNames = new HashSet<string>(list.Select(r => r.Item1), StringComparer.OrdinalIgnoreCase);
+                        foreach (var rule in customRules)
+                        {
+                            if (string.IsNullOrEmpty(rule.RuleName) || string.IsNullOrEmpty(rule.ArgsPropName))
+                            {
+                                Logger.Warn($"Skipping custom debugger rule with missing RuleName or ArgsPropName.");
+                                continue;
+                            }
+                            if (existingNames.Contains(rule.RuleName))
+                            {
+                                Logger.Warn($"Custom debugger rule '{rule.RuleName}' duplicates a built-in rule; ignoring.");
+                            }
+                            else
+                            {
+                                list.Add((rule.RuleName, rule.ArgsPropName, rule.EnvPropName, rule.WorkDirPropName, rule.LaunchAppPropName));
+                                existingNames.Add(rule.RuleName);
+                                Logger.Info($"Loaded custom debugger rule '{rule.RuleName}' from '{configPath}'.");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to load custom debugger rules from config file", ex);
+            }
+
+            return list;
+        }
 
         private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
