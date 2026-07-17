@@ -289,6 +289,8 @@ namespace SmartCmdArgs.Services
                 ("OasisNXDebugger", "RemoteDebuggerCommandArguments", "RemoteDebuggerEnvironment", "RemoteDebuggerWorkingDirectory", "RemoteDebuggerCommand"),
                 ("LinuxDebugger", "RemoteDebuggerCommandArguments", null, "RemoteDebuggerWorkingDirectory", null),
                 ("AppHostLocalDebugger", "CommandLineArgs", null, null, null),
+                ("NintendoGDBDebugger", "RemoteDebuggerCommandArguments", null, null, null),
+                ("NintendoLLDBDebugger", "RemoteDebuggerCommandArguments", null, null, null),
             };
 
         private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
