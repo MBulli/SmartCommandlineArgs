@@ -1,0 +1,52 @@
+name: Build and Draft Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history + tags, required for `git describe --tags`
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore SmartCmdArgs\SmartCmdArgs.sln
+
+      - name: Build solution (Release)
+        run: msbuild SmartCmdArgs\SmartCmdArgs.sln /p:Configuration=Release /p:DeployExtension=false /m
+
+      - name: Gather and rename VSIX files
+        shell: pwsh
+        run: .\GatherVsixFiles.ps1
+
+      - name: Verify expected files exist
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path . -Filter "SmartCmdArgs-vs20*.vsix"
+          if ($files.Count -eq 0) {
+            Write-Error "No VSIX files were produced - check the build/gather steps above."
+            exit 1
+          }
+          $files | ForEach-Object { Write-Host "Found: $($_.Name)" }
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: SmartCmdArgs-vs20*.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
