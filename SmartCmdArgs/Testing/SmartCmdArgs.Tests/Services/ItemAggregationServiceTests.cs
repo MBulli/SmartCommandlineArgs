@@ -142,6 +142,88 @@ namespace SmartCmdArgs.Tests.Services
         }
 
         [Fact]
+        public async Task GetWorkDirForProject_ShouldReturnNull_WhenProjectHasNoWorkDirItem()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // Arrange
+            var projectGuid = Guid.NewGuid();
+            var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
+            var cmdArg = new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true);
+            var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", new[] { cmdArg }, false, false, " ", "", "");
+
+            treeViewModel.Projects.Add(projectGuid, cmdProject);
+
+            // Act
+            var result = itemAggregationService.GetWorkDirForProject(project);
+
+            // Assert
+            // null means "not managed by this extension" so the project's own working directory is kept
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetWorkDirForProject_ShouldReturnEmpty_WhenWorkDirItemIsUnchecked()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // Arrange
+            var projectGuid = Guid.NewGuid();
+            var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
+            var workDirArg = new CmdParameter(Guid.NewGuid(), CmdParamType.WorkDir, "WorkDir", isChecked: false);
+            var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", new[] { workDirArg }, false, false, " ", "", "");
+
+            treeViewModel.Projects.Add(projectGuid, cmdProject);
+
+            // Act
+            var result = itemAggregationService.GetWorkDirForProject(project);
+
+            // Assert
+            // the item exists but was disabled by the user, so the setting is cleared
+            Assert.Equal("", result);
+        }
+
+        [Fact]
+        public async Task GetLaunchAppForProject_ShouldReturnNull_WhenProjectHasNoLaunchAppItem()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // Arrange
+            var projectGuid = Guid.NewGuid();
+            var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
+            var cmdArg = new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true);
+            var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", new[] { cmdArg }, false, false, " ", "", "");
+
+            treeViewModel.Projects.Add(projectGuid, cmdProject);
+
+            // Act
+            var result = itemAggregationService.GetLaunchAppForProject(project);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetEnvVarsForProject_ShouldReturnNull_WhenProjectHasNoEnvVarItem()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // Arrange
+            var projectGuid = Guid.NewGuid();
+            var project = new Mock<IVsHierarchyWrapper>().Register(vsHelperServiceMock, projectGuid).Object;
+            var cmdArg = new CmdParameter(Guid.NewGuid(), CmdParamType.CmdArg, "arg1", isChecked: true);
+            var cmdProject = new CmdProject(projectGuid, Guid.Empty, "TestProject", new[] { cmdArg }, false, false, " ", "", "");
+
+            treeViewModel.Projects.Add(projectGuid, cmdProject);
+
+            // Act
+            var result = itemAggregationService.GetEnvVarsForProject(project);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
         public async Task CreateCommandLineArgsForProject_WithGuid_ShouldCreateCommandLineArgs()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
