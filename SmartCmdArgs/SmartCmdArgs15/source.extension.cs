@@ -12,7 +12,7 @@ namespace SmartCmdArgs
         public const string Name = "Smart Command Line Arguments VS2017";
         public const string Description = @"A Visual Studio 2017 Extension which aims to provide a better UI to manage your command line arguments.";
         public const string Language = "en-US";
-        public const string Version = "3.4.0";
+        public const string Version = "3.5.0";
         public const string Author = "Irame & MBulli";
         public const string Tags = "Commandline Command Line Arguments cmd project";
         public const bool IsPreview = false;
