@@ -349,13 +349,57 @@ namespace SmartCmdArgs.Services
             return list;
         }
 
+        /// <summary>
+        /// Returns the VCConfiguration the debug settings should be written to.
+        /// <para>
+        /// <c>VCProject.ActiveConfiguration</c> is not reliable, it can return a configuration which is
+        /// not the one currently selected (observed in VS2026). The arguments themselves are selected
+        /// based on <c>Project.ConfigurationManager.ActiveConfiguration</c> (see
+        /// <see cref="ItemAggregationService"/>), so they have to be written to that very same
+        /// configuration. Otherwise they end up in a configuration which is not the one being debugged.
+        /// </para>
+        /// </summary>
+        private static dynamic GetActiveVCConfiguration(EnvDTE.Project project, dynamic vcPrj)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            try
+            {
+                var dteCfg = project?.ConfigurationManager?.ActiveConfiguration;
+                if (dteCfg != null)
+                {
+                    // VCConfiguration.Name has the form "Configuration|Platform"
+                    var wantedName = $"{dteCfg.ConfigurationName}|{dteCfg.PlatformName}";
+
+                    dynamic configs = vcPrj?.Configurations; // is IVCCollection
+                    if (configs != null)
+                    {
+                        for (int index = 1; index <= configs.Count; index++)
+                        {
+                            dynamic cfg = configs.Item(index); // is VCConfiguration
+                            if (cfg != null && string.Equals((string)cfg.Name, wantedName, StringComparison.OrdinalIgnoreCase))
+                                return cfg;
+                        }
+                    }
+
+                    Logger.Warn($"GetActiveVCConfiguration: no VCConfiguration named '{wantedName}' found, falling back to VCProject.ActiveConfiguration");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("GetActiveVCConfiguration: failed to resolve the active configuration via ConfigurationManager", ex);
+            }
+
+            return vcPrj?.ActiveConfiguration;
+        }
+
         private static void SetVCProjEngineConfig(EnvDTE.Project project, string arguments, IDictionary<string, string> envVars, string workDir, string launchApp)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Use late binding to support VS2015 and VS2017
             dynamic vcPrj = (dynamic)project.Object; // is VCProject
-            dynamic vcCfg = vcPrj?.ActiveConfiguration; // is VCConfiguration
+            dynamic vcCfg = GetActiveVCConfiguration(project, vcPrj); // is VCConfiguration
 
             if (vcCfg == null)
             {
